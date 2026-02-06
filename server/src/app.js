@@ -24,6 +24,9 @@ import cartRoutes from "./routes/cart.routes.js";
 
 const app = express();
 
+// Trust proxy so OAuth callbacks use correct HTTPS URL on Render
+app.set("trust proxy", 1);
+
 // Session middleware (required for OAuth)
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
