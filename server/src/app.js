@@ -27,6 +27,11 @@ const app = express();
 // Trust proxy so OAuth callbacks use correct HTTPS URL on Render
 app.set("trust proxy", 1);
 
+// Support multiple frontend origins in comma-separated CLIENT_URL
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(",").map((origin) => origin.trim())
+  : undefined;
+
 // Session middleware (required for OAuth)
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
@@ -45,7 +50,7 @@ app.use(passport.session());
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,

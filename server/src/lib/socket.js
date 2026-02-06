@@ -7,9 +7,13 @@ let ioInstance = null;
 export const initSocket = (httpServer) => {
   if (ioInstance) return ioInstance;
 
+  const allowedOrigins = process.env.CLIENT_URL
+    ? process.env.CLIENT_URL.split(",").map((origin) => origin.trim())
+    : undefined;
+
   const io = new Server(httpServer, {
     cors: {
-      origin: process.env.CLIENT_URL,
+      origin: allowedOrigins,
       methods: ["GET", "POST"],
       credentials: true,
     },
