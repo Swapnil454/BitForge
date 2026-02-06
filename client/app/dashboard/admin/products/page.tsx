@@ -104,6 +104,36 @@ export default function AdminProductsPage() {
 
   /* ================= ACTIONS ================= */
 
+  // Actions for brand new pending products
+  const approvePendingProduct = async (id: string) => {
+    setProcessingId(id);
+    try {
+      await adminAPI.approveProduct(id);
+      toast.success("Product approved");
+      await fetchNew();
+    } catch {
+      toast.error("Failed to approve product");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const rejectPendingProduct = async (id: string) => {
+    const reason = prompt("Rejection reason:");
+    if (!reason) return;
+
+    setProcessingId(id);
+    try {
+      await adminAPI.rejectProduct(id, reason);
+      toast.success("Product rejected");
+      await fetchNew();
+    } catch {
+      toast.error("Failed to reject product");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   const approveOne = async (id: string) => {
     setProcessingId(id);
     try {
@@ -239,7 +269,58 @@ export default function AdminProductsPage() {
           </div>
         )}
 
-        {/* Content */}
+        {/* Content - New products */}
+        {!loading && activeTab === "new" && (
+          <div className="space-y-4">
+            {products.length === 0 ? (
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center text-white/70">
+                No new products awaiting approval.
+              </div>
+            ) : (
+              products.map(p => (
+                <div
+                  key={p._id}
+                  className="bg-white/5 border border-white/10 rounded-2xl p-6"
+                >
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-lg">{p.title}</h3>
+                      <p className="text-sm text-white/60 line-clamp-3">{p.description}</p>
+                      <p className="text-sm text-white/60">
+                        Seller: <span className="font-medium">{p.sellerId?.email}</span>
+                      </p>
+                      <div className="flex gap-3 text-sm text-white/80">
+                        <span>Price: ₹{p.price}</span>
+                        {typeof p.discount === "number" && p.discount > 0 && (
+                          <span>Discount: {p.discount}%</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 sm:flex-col sm:items-end">
+                      <button
+                        onClick={() => approvePendingProduct(p._id)}
+                        disabled={processingId === p._id}
+                        className="px-4 py-2 rounded-lg bg-green-500/20 border border-green-400/40 text-green-300 text-sm disabled:opacity-60"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => rejectPendingProduct(p._id)}
+                        disabled={processingId === p._id}
+                        className="px-4 py-2 rounded-lg bg-red-500/20 border border-red-400/40 text-red-300 text-sm disabled:opacity-60"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Content - Pending change requests */}
         {!loading && activeTab === "changes" && (
           <div className="space-y-4">
             {changes.map(p => (
