@@ -341,14 +341,37 @@ export default function AdminProductsPage() {
                       <p className="text-sm text-white/60">
                         Seller: {p.sellerId.email}
                       </p>
+                      {p.changeRequest && (
+                        <div className="mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs
+                          border-white/15 bg-white/5 text-white/80">
+                          <span className="h-2 w-2 rounded-full bg-purple-400" />
+                          <span>
+                            {p.changeRequest === "pending_update"
+                              ? "Update request"
+                              : p.changeRequest === "pending_deletion"
+                              ? "Deletion request"
+                              : "Change request"}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    {p.pendingChanges && (
+                    {p.changeRequest === "pending_update" && p.pendingChanges && (
                       <div className="space-y-2">
+                        <p className="text-xs text-white/50 uppercase tracking-wide">
+                          Requested field changes
+                        </p>
                         <DiffRow label="Title" oldValue={p.title} newValue={p.pendingChanges.title} />
                         <DiffRow label="Description" oldValue={p.description} newValue={p.pendingChanges.description} />
                         <DiffRow label="Price" oldValue={p.price} newValue={p.pendingChanges.price} />
                         <DiffRow label="Discount" oldValue={p.discount} newValue={p.pendingChanges.discount} />
+                      </div>
+                    )}
+
+                    {p.changeRequest === "pending_deletion" && (
+                      <div className="rounded-lg border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-200">
+                        The seller has requested this product to be permanently
+                        deleted from the marketplace.
                       </div>
                     )}
 
