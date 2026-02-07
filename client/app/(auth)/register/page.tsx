@@ -6,13 +6,13 @@ import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { FaGoogle, FaGithub } from "react-icons/fa";
 import { FiPhone } from "react-icons/fi";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { authAPI } from "@/lib/api";
 import Image from "next/image";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -211,5 +211,20 @@ function OAuthButton({ label, role }: any) {
       {label === "Google" ? <FaGoogle /> : <FaGithub />}
       Continue with {label}
     </button>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#05050a] text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-cyan-400 border-r-transparent"></div>
+          <p className="mt-4 text-sm text-white/60">Loading...</p>
+        </div>
+      </div>
+    }>
+      <RegisterForm />
+    </Suspense>
   );
 }
