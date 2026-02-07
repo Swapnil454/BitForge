@@ -122,6 +122,7 @@ export const createNotification = async (userId, type, title, message, relatedId
       seller_deletion_rejected: "❌",
       account_deleted_by_admin: "🚫",
       profile_edited_by_admin: "✏️",
+      contact_message: "📨",
     };
 
     const notification = new Notification({

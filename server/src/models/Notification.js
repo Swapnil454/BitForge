@@ -28,7 +28,9 @@ const notificationSchema = new mongoose.Schema({
       "seller_deletion_approved",
       "seller_deletion_rejected",
       "account_deleted_by_admin",
-      "profile_edited_by_admin"
+      "profile_edited_by_admin",
+      // Generic contact / support message from public site
+      "contact_message"
     ],
     required: true,
   },

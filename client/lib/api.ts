@@ -477,6 +477,15 @@ export const notificationAPI = {
 };
 
 
+// Public contact API
+export const contactAPI = {
+    submitMessage: async (payload: { name: string; email: string; type: string; message: string }) => {
+        const response = await api.post('/contact', payload);
+        return response.data;
+    }
+};
+
+
 
 // User API functions
 export const userAPI = {

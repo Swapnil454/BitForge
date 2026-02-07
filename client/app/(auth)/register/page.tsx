@@ -7,18 +7,21 @@ import { Eye, EyeOff } from "lucide-react";
 import { FaGoogle, FaGithub } from "react-icons/fa";
 import { FiPhone } from "react-icons/fi";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { authAPI } from "@/lib/api";
 import Image from "next/image";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const roleFromQuery = searchParams.get("role");
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("buyer");
+  const [role, setRole] = useState(roleFromQuery === "seller" ? "seller" : "buyer");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -49,8 +52,8 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-[#05050a] text-white flex items-center justify-center px-4 relative overflow-hidden">
 
       {/* BACKGROUND GLOW */}
-      <div className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full bg-indigo-600/30 blur-[160px]" />
-      <div className="absolute top-1/2 -right-40 w-[600px] h-[600px] rounded-full bg-cyan-500/20 blur-[180px]" />
+      <div className="absolute -top-40 -left-40 w-125 h-125 rounded-full bg-indigo-600/30 blur-[160px]" />
+      <div className="absolute top-1/2 -right-40 w-150 h-150 rounded-full bg-cyan-500/20 blur-[180px]" />
 
       {/* CARD */}
       <div className="relative z-10 mt-10 mb-10 w-full max-w-md rounded-3xl p-8 bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_30px_120px_rgba(56,189,248,0.25)]">
@@ -161,7 +164,7 @@ export default function RegisterPage() {
         <button
           onClick={handleRegister}
           disabled={loading}
-          className="w-full py-3 rounded-xl font-bold text-black bg-gradient-to-r from-cyan-400 to-indigo-500 shadow-[0_0_40px_rgba(56,189,248,0.6)] hover:scale-[1.02] transition"
+          className="w-full py-3 rounded-xl font-bold text-black bg-linear-to-r from-cyan-400 to-indigo-500 shadow-[0_0_40px_rgba(56,189,248,0.6)] hover:scale-[1.02] transition"
         >
           {loading ? "Sending OTP..." : "Register"}
         </button>
