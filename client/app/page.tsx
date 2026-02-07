@@ -518,7 +518,7 @@ export default function LandingPage() {
                 </span>
                 <div className="flex items-center gap-3">
                   <a
-                    href="https://github.com/bitforge"
+                    href="https://github.com/Swapnil454"
                     target="_blank"
                     rel="noreferrer"
                     aria-label="BitForge on GitHub"
@@ -533,7 +533,7 @@ export default function LandingPage() {
                     </svg>
                   </a>
                   <a
-                    href="https://www.linkedin.com/company/bitforge"
+                    href="https://www.linkedin.com/in/swapnil-shelke-178096366"
                     target="_blank"
                     rel="noreferrer"
                     aria-label="BitForge on LinkedIn"
@@ -548,7 +548,7 @@ export default function LandingPage() {
                     </svg>
                   </a>
                   <a
-                    href="https://instagram.com/bitforge"
+                    href="https://instagram.com/bitforge.in"
                     target="_blank"
                     rel="noreferrer"
                     aria-label="BitForge on Instagram"
@@ -565,18 +565,18 @@ export default function LandingPage() {
                     </svg>
                   </a>
                   <a
-                    href="https://x.com/bitforge"
+                    href="https://x.com/me_swapnailed_"
                     target="_blank"
                     rel="noreferrer"
                     aria-label="BitForge on X"
-                    className="transition duration-200 hover:text-cyan-400 hover:scale-105"
+                    className="transition duration-200 hover:text-cyan-400 hover:scale-110"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
                       className="h-5 w-5 fill-current"
                     >
-                      <path d="M18.9 2H21l-4.6 5.26L21.5 22h-4.3l-3.1-8.51L10 22H4.5l4.8-5.5L3 2h4.4l2.8 7.6L18.9 2Zm-2.3 17.8h1.2L8.5 4.1H7.2l9.4 15.7Z" />
+                      <path d="M3 3h4.9l4.6 6.2L18.1 3H21l-7.1 8.5L21.6 21h-4.9l-5-6.7L5.3 21H2.4l7.5-9L3 3Zm3.2 1.6 10.8 14.8h1.8L8 4.6H6.2Z"/>
                     </svg>
                   </a>
                 </div>
