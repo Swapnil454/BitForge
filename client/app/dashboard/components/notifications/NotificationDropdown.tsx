@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { NOTIFICATION_STYLES } from "./notificationStyles";
@@ -29,6 +28,26 @@ export default function NotificationDropdown({
   const [open, setOpen] = useState(false);
 
   const ui = NOTIFICATION_STYLES[role];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!open) return;
+
+    const handleOutsideClick = (event: MouseEvent | TouchEvent) => {
+      if (!ref.current) return;
+      if (!ref.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+    };
+  }, [open]);
 
   return (
     <div className="relative" ref={ref}>
@@ -61,7 +80,7 @@ export default function NotificationDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className={`absolute right-0 mt-3 w-80 md:w-96 rounded-2xl bg-linear-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl border-2 ${ui.dropdownBorder} shadow-2xl z-50`}
+            className={`absolute right-2 sm:right-0 mt-3 w-72 sm:w-80 md:w-96 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-linear-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl border-2 ${ui.dropdownBorder} shadow-2xl z-50`}
           >
             {/* Header */}
             <div className={`px-5 py-4 border-b border-white/10 bg-linear-to-r ${ui.headerBg}`}>
