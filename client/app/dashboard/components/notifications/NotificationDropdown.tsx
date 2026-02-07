@@ -29,25 +29,33 @@ export default function NotificationDropdown({
 
   const ui = NOTIFICATION_STYLES[role];
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking / tapping outside (production-safe)
   useEffect(() => {
     if (!open) return;
 
-    const handleOutsideClick = (event: MouseEvent | TouchEvent) => {
+    const handleOutside = (event: PointerEvent) => {
       if (!ref.current) return;
       if (!ref.current.contains(event.target as Node)) {
         setOpen(false);
       }
     };
 
-    document.addEventListener("mousedown", handleOutsideClick);
-    document.addEventListener("touchstart", handleOutsideClick);
+    // Use capture phase so we receive the event even when
+    // other overlays or handlers might stop propagation
+    document.addEventListener("pointerdown", handleOutside, true);
 
     return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-      document.removeEventListener("touchstart", handleOutsideClick);
+      document.removeEventListener("pointerdown", handleOutside, true);
     };
   }, [open]);
+
+  // Close dropdown on browser navigation (back/forward)
+  useEffect(() => {
+    const handleRoute = () => setOpen(false);
+
+    window.addEventListener("popstate", handleRoute);
+    return () => window.removeEventListener("popstate", handleRoute);
+  }, []);
 
   return (
     <div className="relative" ref={ref}>
@@ -80,7 +88,7 @@ export default function NotificationDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className={`absolute right-2 sm:right-0 mt-3 w-72 sm:w-80 md:w-96 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-linear-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl border-2 ${ui.dropdownBorder} shadow-2xl z-50`}
+            className={`fixed top-16 right-2 sm:right-4 w-72 sm:w-80 md:w-96 max-w-[calc(100vw-1rem)] rounded-2xl bg-linear-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl border-2 ${ui.dropdownBorder} shadow-2xl z-[9999]`}
           >
             {/* Header */}
             <div className={`px-5 py-4 border-b border-white/10 bg-linear-to-r ${ui.headerBg}`}>
