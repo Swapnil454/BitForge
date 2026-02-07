@@ -46,7 +46,7 @@ export function ContactForm() {
       form.reset();
     } catch (error) {
       console.error("Contact submit error", error);
-      toast.error("We could not submit the form. Please email help@bitforge.in directly.");
+      toast.error("We could not submit the form. Please email help@bittforge.in directly.");
     } finally {
       setSubmitting(false);
     }

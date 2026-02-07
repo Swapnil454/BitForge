@@ -177,7 +177,7 @@ export default function CareersPage() {
               </p>
             </div>
             <p className="text-xs text-emerald-300/90">
-              No matching role? Write to us at careers@bitforge.in with your portfolio.
+              No matching role? Write to us at careers@bittforge.in with your portfolio.
             </p>
           </div>
 
@@ -207,7 +207,7 @@ export default function CareersPage() {
               <div className="mt-4 flex items-center justify-between text-xs">
                 <span className="text-white/55">Full-time · Competitive compensation &amp; ESOPs</span>
                 <Link
-                  href="mailto:careers@bitforge.in?subject=Senior%20Full%20Stack%20Engineer%20-%20BitForge"
+                  href="mailto:careers@bittforge.in?subject=Senior%20Full%20Stack%20Engineer%20-%20BitForge"
                   className="text-cyan-300 hover:text-cyan-200"
                 >
                   Apply →
@@ -239,7 +239,7 @@ export default function CareersPage() {
               <div className="mt-4 flex items-center justify-between text-xs">
                 <span className="text-white/55">Full-time · Competitive compensation</span>
                 <Link
-                  href="mailto:careers@bitforge.in?subject=Product%20Designer%20-%20BitForge"
+                  href="mailto:careers@bittforge.in?subject=Product%20Designer%20-%20BitForge"
                   className="text-cyan-300 hover:text-cyan-200"
                 >
                   Apply →
@@ -252,7 +252,7 @@ export default function CareersPage() {
             Don&apos;t see a role that matches you? We&apos;re always happy to hear from exceptional
             people across product, engineering, design, and operations. Share your portfolio and a
             short note about what you&apos;d like to work on at
-            <span className="ml-1 font-medium text-cyan-200">careers@bitforge.in</span>.
+            <span className="ml-1 font-medium text-cyan-200">careers@bittforge.in</span>.
           </div>
         </section>
 
@@ -268,7 +268,7 @@ export default function CareersPage() {
             </div>
             <div className="flex flex-col gap-3 text-sm sm:items-end">
               <Link
-                href="mailto:careers@bitforge.in?subject=Joining%20BitForge"
+                href="mailto:careers@bittforge.in?subject=Joining%20BitForge"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black shadow-[0_0_26px_rgba(56,189,248,0.6)] hover:bg-cyan-50"
               >
                 Email the hiring team →

@@ -348,7 +348,7 @@ export default function TermsAndConditionsPage() {
             <p className="mb-3">
               BitForge respects the intellectual property rights of others. If you believe that your
               copyrighted work has been copied in a way that constitutes copyright infringement, please
-              submit a notice to our designated copyright agent at <span className="text-cyan-300">legal@bitforge.in</span> with:
+              submit a notice to our designated copyright agent at <span className="text-cyan-300">legal@bittforge.in</span> with:
             </p>
             <ul className="ml-6 list-disc space-y-2">
               <li>Identification of the copyrighted work claimed to have been infringed;</li>
@@ -424,7 +424,7 @@ export default function TermsAndConditionsPage() {
             <p className="mb-3">
               Disputes between Buyers and Sellers should first be attempted to be resolved directly
               between the parties. If direct resolution fails, either party may contact BitForge
-              support at <span className="text-cyan-300">support@bitforge.in</span> for mediation assistance.
+              support at <span className="text-cyan-300">support@bittforge.in</span> for mediation assistance.
               BitForge&apos;s mediation assistance does not constitute legal arbitration and does not waive
               either party&apos;s right to binding arbitration under Section 16 of these Terms.
             </p>
@@ -520,7 +520,7 @@ export default function TermsAndConditionsPage() {
             <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">13.1 Termination by You</h3>
             <p className="mb-3">
               You may terminate your account at any time by contacting our support team at
-              <span className="text-cyan-300"> support@bitforge.in</span>. Upon termination, you will no
+              <span className="text-cyan-300"> support@bittforge.in</span>. Upon termination, you will no
               longer have access to your account, but you will retain access to any products you have
               purchased as a Buyer.
             </p>
@@ -568,7 +568,7 @@ export default function TermsAndConditionsPage() {
             </p>
             <p>
               For questions about our privacy practices or to exercise your data rights, please contact
-              <span className="text-cyan-300"> privacy@bitforge.in</span>.
+              <span className="text-cyan-300"> privacy@bittforge.in</span>.
             </p>
           </section>
 
@@ -639,8 +639,8 @@ export default function TermsAndConditionsPage() {
             </p>
             <div className="rounded-2xl border border-white/12 bg-white/5 p-5">
               <p className="mb-2 font-semibold text-white">BitForge Technologies Pvt. Ltd.</p>
-              <p className="mb-1 text-white/80">Email: <span className="text-cyan-300">legal@bitforge.in</span></p>
-              <p className="mb-1 text-white/80">Support: <span className="text-cyan-300">support@bitforge.in</span></p>
+              <p className="mb-1 text-white/80">Email: <span className="text-cyan-300">legal@bittforge.in</span></p>
+              <p className="mb-1 text-white/80">Support: <span className="text-cyan-300">support@bittforge.in</span></p>
               <p className="mb-1 text-white/80">Address: Pune, Maharashtra, India</p>
               <p className="text-white/80">Business Hours: Monday - Friday, 9:00 AM - 6:00 PM IST</p>
             </div>
@@ -689,7 +689,7 @@ export default function TermsAndConditionsPage() {
             <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">Notices</h3>
             <p className="mb-3">
               We may provide notices to you via email, regular mail, or postings on the Platform.
-              Notices to BitForge should be sent to <span className="text-cyan-300">legal@bitforge.in</span>.
+              Notices to BitForge should be sent to <span className="text-cyan-300">legal@bittforge.in</span>.
             </p>
           </section>
         </div>

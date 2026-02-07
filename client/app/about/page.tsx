@@ -207,7 +207,7 @@ export default function AboutPage() {
                 <li>• Curated product listings with clear pricing, discounts, and entitlements.</li>
                 <li>• Secure checkout with trusted payment partners and clear error handling.</li>
                 <li>• Instant access to downloads or license keys after successful payment.</li>
-                <li>• Human support via help@bitforge.in for billing or access issues.</li>
+                <li>• Human support via help@bittforge.in for billing or access issues.</li>
               </ul>
             </div>
 

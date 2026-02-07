@@ -94,10 +94,10 @@ export default function ContactPage() {
                 For help with payments, access, or downloads, reach out to our support team.
               </p>
               <a
-                href="mailto:help@bitforge.in"
+                href="mailto:help@bittforge.in"
                 className="mt-2 inline-flex text-sm font-medium text-cyan-300 hover:text-cyan-200 hover:underline underline-offset-2"
               >
-                help@bitforge.in
+                help@bittforge.in
               </a>
               <p className="mt-1 text-[11px] text-white/45">
                 Typical response time: under 24 hours on business days.
@@ -111,10 +111,10 @@ export default function ContactPage() {
                 co-marketing opportunities, our partnerships group can help.
               </p>
               <a
-                href="mailto:partners@bitforge.in"
+                href="mailto:partners@bittforge.in"
                 className="mt-2 inline-flex text-sm font-medium text-cyan-300 hover:text-cyan-200 hover:underline underline-offset-2"
               >
-                partners@bitforge.in
+                partners@bittforge.in
               </a>
               <p className="mt-1 text-[11px] text-white/45">
                 Please include a short description of your company and use case.
@@ -128,10 +128,10 @@ export default function ContactPage() {
                 dedicated mailbox.
               </p>
               <a
-                href="mailto:legal@bitforge.in"
+                href="mailto:legal@bittforge.in"
                 className="mt-2 inline-flex text-sm font-medium text-cyan-300 hover:text-cyan-200 hover:underline underline-offset-2"
               >
-                legal@bitforge.in
+                legal@bittforge.in
               </a>
             </div>
           </aside>

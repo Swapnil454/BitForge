@@ -353,7 +353,7 @@ export default function PrivacyPolicyPage() {
             </p>
             <p className="mt-3">
               If you believe your account has been compromised, please contact us immediately at
-              <span className="text-cyan-300"> security@bitforge.in</span>.
+              <span className="text-cyan-300"> security@bittforge.in</span>.
             </p>
           </section>
 
@@ -392,7 +392,7 @@ export default function PrivacyPolicyPage() {
 
             <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">8.3 Exercising Your Rights</h3>
             <p className="mb-3">
-              To exercise any of these rights, please contact us at <span className="text-cyan-300">privacy@bitforge.in</span>.
+              To exercise any of these rights, please contact us at <span className="text-cyan-300">privacy@bittforge.in</span>.
               We will respond to your request within 30 days (or as required by applicable law).
             </p>
             <p className="mb-3">
@@ -407,7 +407,7 @@ export default function PrivacyPolicyPage() {
             <ul className="ml-6 list-disc space-y-2">
               <li>Clicking the &quot;unsubscribe&quot; link in any marketing email;</li>
               <li>Adjusting your email preferences in your account settings;</li>
-              <li>Contacting us at <span className="text-cyan-300">support@bitforge.in</span>.</li>
+              <li>Contacting us at <span className="text-cyan-300">support@bittforge.in</span>.</li>
             </ul>
             <p className="mt-3">
               Please note that you cannot opt out of transactional or service-related communications
@@ -424,7 +424,7 @@ export default function PrivacyPolicyPage() {
             </p>
             <p className="mb-3">
               If you are a parent or guardian and believe that your child has provided us with personal
-              information without your consent, please contact us at <span className="text-cyan-300">privacy@bitforge.in</span>.
+              information without your consent, please contact us at <span className="text-cyan-300">privacy@bittforge.in</span>.
               We will take steps to delete such information from our systems.
             </p>
             <p>
@@ -516,15 +516,15 @@ export default function PrivacyPolicyPage() {
               <p className="mb-3 font-semibold text-white">BitForge Technologies Pvt. Ltd.</p>
               
               <p className="mb-2 text-sm font-semibold text-white/80">Privacy Inquiries:</p>
-              <p className="mb-1 text-white/70">Email: <span className="text-cyan-300">privacy@bitforge.in</span></p>
+              <p className="mb-1 text-white/70">Email: <span className="text-cyan-300">privacy@bittforge.in</span></p>
               
               <p className="mb-2 mt-4 text-sm font-semibold text-white/80">Grievance Officer (India - DPDP Act):</p>
               <p className="mb-1 text-white/70">Name: Data Protection Officer</p>
-              <p className="mb-1 text-white/70">Email: <span className="text-cyan-300">grievance@bitforge.in</span></p>
+              <p className="mb-1 text-white/70">Email: <span className="text-cyan-300">grievance@bittforge.in</span></p>
               <p className="mb-1 text-white/70">Response Time: Within 30 days of receipt</p>
               
               <p className="mb-2 mt-4 text-sm font-semibold text-white/80">General Support:</p>
-              <p className="mb-1 text-white/70">Email: <span className="text-cyan-300">support@bitforge.in</span></p>
+              <p className="mb-1 text-white/70">Email: <span className="text-cyan-300">support@bittforge.in</span></p>
               
               <p className="mt-4 text-white/70">Address: Pune, Maharashtra, India</p>
               <p className="text-white/70">Business Hours: Monday - Friday, 9:00 AM - 6:00 PM IST</p>

@@ -692,10 +692,10 @@ export default function LandingPage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-col gap-1">
                 <a
-                  href="mailto:help@bitforge.in"
+                  href="mailto:help@bittforge.in"
                   className="text-[13px] font-medium text-white/80 hover:text-cyan-400 hover:underline underline-offset-2 cursor-pointer transition"
                 >
-                  help@bitforge.in
+                  help@bittforge.in
                 </a>
                 <span className="text-[11px] text-white/45">
                   © {new Date().getFullYear()} BitForge. All rights reserved.

@@ -298,7 +298,7 @@ export default function RefundCancellationPolicyPage() {
               contact BitForge support:
             </p>
             <ul className="ml-6 list-disc space-y-2">
-              <li>Email: <span className="text-cyan-300">support@bitforge.in</span></li>
+              <li>Email: <span className="text-cyan-300">support@bittforge.in</span></li>
               <li>Subject Line: &quot;Refund Request - Order #[Your Order Number]&quot;</li>
             </ul>
 
@@ -362,7 +362,7 @@ export default function RefundCancellationPolicyPage() {
             </ul>
             <p className="mt-3">
               If you do not receive your refund within the stated timeframe, please contact your bank or
-              payment provider first, then reach out to us at <span className="text-cyan-300">support@bitforge.in</span>.
+              payment provider first, then reach out to us at <span className="text-cyan-300">support@bittforge.in</span>.
             </p>
 
             <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">6.3 Currency and Exchange Rates</h3>
@@ -392,7 +392,7 @@ export default function RefundCancellationPolicyPage() {
             </ul>
             <p className="mt-3">
               Cancellation requests must be made within <strong>1 hour</strong> of purchase by contacting
-              <span className="text-cyan-300"> support@bitforge.in</span> with your order number.
+              <span className="text-cyan-300"> support@bittforge.in</span> with your order number.
             </p>
 
             <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">7.2 Seller-Initiated Cancellation</h3>
@@ -466,7 +466,7 @@ export default function RefundCancellationPolicyPage() {
               <strong className="text-white/90">Closed Accounts:</strong> If your original payment method
               is no longer active (e.g., card expired, account closed), please contact your bank or payment
               provider. They can assist in redirecting the refund. Alternatively, contact us at
-              <span className="text-cyan-300"> support@bitforge.in</span> with documentation proving account
+              <span className="text-cyan-300"> support@bittforge.in</span> with documentation proving account
               ownership, and we will work with our payment processor to resolve the issue.
             </p>
           </section>
@@ -491,7 +491,7 @@ export default function RefundCancellationPolicyPage() {
             </p>
             <ol className="ml-6 list-decimal space-y-2">
               <li>Contact the Seller to resolve the issue;</li>
-              <li>If unresolved, contact BitForge support at <span className="text-cyan-300">support@bitforge.in</span>;</li>
+              <li>If unresolved, contact BitForge support at <span className="text-cyan-300">support@bittforge.in</span>;</li>
               <li>Wait for our response and refund decision (typically 3–7 business days).</li>
             </ol>
             <p className="mt-3">
@@ -515,7 +515,7 @@ export default function RefundCancellationPolicyPage() {
               <li>Clear evidence of fraud or deception by BitForge (not the Seller).</li>
             </ul>
             <p className="mt-3">
-              In such cases, please notify us at <span className="text-cyan-300">legal@bitforge.in</span> that
+              In such cases, please notify us at <span className="text-cyan-300">legal@bittforge.in</span> that
               you are filing a chargeback and why.
             </p>
           </section>
@@ -579,7 +579,7 @@ export default function RefundCancellationPolicyPage() {
               <p className="mb-3 font-semibold text-white">BitForge Technologies Pvt. Ltd.</p>
               
               <p className="mb-2 text-sm font-semibold text-white/80">Refund &amp; Cancellation Support:</p>
-              <p className="mb-1 text-white/70">Email: <span className="text-cyan-300">support@bitforge.in</span></p>
+              <p className="mb-1 text-white/70">Email: <span className="text-cyan-300">support@bittforge.in</span></p>
               <p className="mb-1 text-white/70">Subject: &quot;Refund Request - Order #[Your Order Number]&quot;</p>
               
               <p className="mb-2 mt-4 text-sm font-semibold text-white/80">Response Time:</p>
@@ -587,7 +587,7 @@ export default function RefundCancellationPolicyPage() {
               <p className="mb-1 text-white/70">Full investigation and decision: 3–7 business days</p>
               
               <p className="mb-2 mt-4 text-sm font-semibold text-white/80">Payment &amp; Technical Issues:</p>
-              <p className="mb-1 text-white/70">Email: <span className="text-cyan-300">help@bitforge.in</span></p>
+              <p className="mb-1 text-white/70">Email: <span className="text-cyan-300">help@bittforge.in</span></p>
               
               <p className="mt-4 text-white/70">Address: Pune, Maharashtra, India</p>
               <p className="text-white/70">Business Hours: Monday - Friday, 9:00 AM - 6:00 PM IST</p>

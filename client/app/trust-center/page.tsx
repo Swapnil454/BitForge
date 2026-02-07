@@ -274,7 +274,7 @@ export default function TrustCenterPage() {
                   <li>Lodge complaints with our Grievance Officer or data protection authorities.</li>
                 </ul>
                 <p className="mt-3 text-sm text-white/70">
-                  Exercise your rights by contacting <span className="text-cyan-300">privacy@bitforge.in</span>.
+                  Exercise your rights by contacting <span className="text-cyan-300">privacy@bittforge.in</span>.
                   See our <Link href="/legal/privacy-policy" className="text-cyan-300 hover:text-cyan-200">Privacy Policy</Link> for details.
                 </p>
               </div>
@@ -627,7 +627,7 @@ export default function TrustCenterPage() {
                   <li>Compliance attestation letters.</li>
                 </ul>
                 <p className="mt-3 text-sm text-white/70">
-                  Request reports at <span className="text-cyan-300">compliance@bitforge.in</span> with your
+                  Request reports at <span className="text-cyan-300">compliance@bittforge.in</span> with your
                   business details and intended use.
                 </p>
               </div>
@@ -652,7 +652,7 @@ export default function TrustCenterPage() {
                   </li>
                   <li>
                     <strong className="text-white/80">Verify Email Communications:</strong> Always check that
-                    emails claiming to be from BitForge come from @bitforge.in addresses.
+                    emails claiming to be from BitForge come from @bittforge.in addresses.
                   </li>
                   <li>
                     <strong className="text-white/80">Keep Software Updated:</strong> Ensure your browser and
@@ -710,7 +710,7 @@ export default function TrustCenterPage() {
                 </ul>
                 <p className="mt-3 text-sm text-white/70">
                   If you receive suspicious communications claiming to be from BitForge, forward them to
-                  <span className="text-cyan-300"> security@bitforge.in</span> immediately.
+                  <span className="text-cyan-300"> security@bittforge.in</span> immediately.
                 </p>
               </div>
             </div>
@@ -733,7 +733,7 @@ export default function TrustCenterPage() {
                 <h3 className="mb-3 text-base font-semibold text-white">How to Report a Vulnerability</h3>
                 
                 <p className="mb-3 text-sm text-white/80">
-                  <strong>Email:</strong> <span className="text-cyan-300">security@bitforge.in</span>
+                  <strong>Email:</strong> <span className="text-cyan-300">security@bittforge.in</span>
                 </p>
                 
                 <p className="mb-2 text-sm text-white/80">Include in your report:</p>
@@ -821,31 +821,31 @@ export default function TrustCenterPage() {
                 <div className="space-y-4 text-sm">
                   <div>
                     <p className="mb-1 font-medium text-white/90">Security Vulnerabilities & Bug Reports</p>
-                    <p className="text-white/70">Email: <span className="text-cyan-300">security@bitforge.in</span></p>
+                    <p className="text-white/70">Email: <span className="text-cyan-300">security@bittforge.in</span></p>
                     <p className="text-xs text-white/60">Use for: Vulnerability disclosure, security bugs, penetration test findings</p>
                   </div>
                   
                   <div>
                     <p className="mb-1 font-medium text-white/90">Privacy & Data Protection</p>
-                    <p className="text-white/70">Email: <span className="text-cyan-300">privacy@bitforge.in</span></p>
+                    <p className="text-white/70">Email: <span className="text-cyan-300">privacy@bittforge.in</span></p>
                     <p className="text-xs text-white/60">Use for: Data access requests, privacy concerns, GDPR/DPDP queries</p>
                   </div>
                   
                   <div>
                     <p className="mb-1 font-medium text-white/90">Grievance Officer (DPDP Act)</p>
-                    <p className="text-white/70">Email: <span className="text-cyan-300">grievance@bitforge.in</span></p>
+                    <p className="text-white/70">Email: <span className="text-cyan-300">grievance@bittforge.in</span></p>
                     <p className="text-xs text-white/60">Use for: Formal complaints, data rights escalation, regulatory concerns</p>
                   </div>
                   
                   <div>
                     <p className="mb-1 font-medium text-white/90">Compliance & Legal</p>
-                    <p className="text-white/70">Email: <span className="text-cyan-300">compliance@bitforge.in</span></p>
+                    <p className="text-white/70">Email: <span className="text-cyan-300">compliance@bittforge.in</span></p>
                     <p className="text-xs text-white/60">Use for: Compliance reports, legal requests, audit inquiries</p>
                   </div>
                   
                   <div>
                     <p className="mb-1 font-medium text-white/90">General Support</p>
-                    <p className="text-white/70">Email: <span className="text-cyan-300">support@bitforge.in</span></p>
+                    <p className="text-white/70">Email: <span className="text-cyan-300">support@bittforge.in</span></p>
                     <p className="text-xs text-white/60">Use for: Account issues, transaction problems, general inquiries</p>
                   </div>
                 </div>
