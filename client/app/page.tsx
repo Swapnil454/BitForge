@@ -604,7 +604,7 @@ export default function LandingPage() {
                       For Buyers
                     </Link>
                   </li>
-                  <li className="hidden sm:list-item">
+                  <li>
                     <Link href="/register?role=seller" className="hover:text-white hover:underline underline-offset-2 transition">
                       For Sellers
                     </Link>
@@ -627,7 +627,7 @@ export default function LandingPage() {
                       Contact
                     </Link>
                   </li>
-                  <li className="hidden sm:list-item">
+                  <li>
                     <Link href="/careers" className="hover:text-white hover:underline underline-offset-2 transition">
                       Careers
                     </Link>
