@@ -308,9 +308,9 @@ node scripts/createTestUsers.js`}
               <CodeBlock
                 language="text"
                 code={`Card Number: 4111 1111 1111 1111
-CVV: Any 3 digits
-Expiry: Any future date
-Name: Any name`}
+                  CVV: Any 3 digits
+                  Expiry: Any future date
+                  Name: Any name`}
               />
             </li>
           </ol>

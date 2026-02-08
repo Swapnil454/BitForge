@@ -24,14 +24,32 @@ export default function TableOfContents() {
     );
 
     // Generate IDs for headings that don't have them
+    const usedIds = new Set<string>();
     headingElements.forEach((heading, index) => {
       if (!heading.id) {
         const text = heading.textContent || "";
-        const id = text
+        let baseId = text
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/(^-|-$)/g, "");
-        heading.id = id || `heading-${index}`;
+        
+        if (!baseId) {
+          baseId = `heading-${index}`;
+        }
+        
+        // Ensure unique ID by adding suffix if duplicate
+        let uniqueId = baseId;
+        let counter = 1;
+        while (usedIds.has(uniqueId)) {
+          uniqueId = `${baseId}-${counter}`;
+          counter++;
+        }
+        
+        heading.id = uniqueId;
+        usedIds.add(uniqueId);
+      } else {
+        // Track existing IDs
+        usedIds.add(heading.id);
       }
     });
 
@@ -47,6 +65,24 @@ export default function TableOfContents() {
 
     if (items.length > 0 && !activeId) {
       setActiveId(items[0].id);
+    }
+
+    // Check for hash in URL on page load and scroll to it
+    const hash = window.location.hash.slice(1);
+    if (hash) {
+      const element = document.getElementById(hash);
+      if (element && mainContent) {
+        // Small delay to ensure content is rendered
+        setTimeout(() => {
+          const elementTop = element.offsetTop;
+          const offset = 100;
+          mainContent.scrollTo({
+            top: elementTop - offset,
+            behavior: "smooth",
+          });
+          setActiveId(hash);
+        }, 100);
+      }
     }
 
     // Set up intersection observer to track visible headings
@@ -71,12 +107,36 @@ export default function TableOfContents() {
       }
     });
 
+    // Handle browser back/forward navigation
+    const handlePopState = () => {
+      const hash = window.location.hash.slice(1); // Remove the # symbol
+      if (hash) {
+        const element = document.getElementById(hash);
+        const mainContent = document.querySelector("main");
+        
+        if (element && mainContent) {
+          const elementTop = element.offsetTop;
+          const offset = 100;
+          
+          mainContent.scrollTo({
+            top: elementTop - offset,
+            behavior: "smooth",
+          });
+          
+          setActiveId(hash);
+        }
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
     return () => {
       headingElements.forEach((elem) => {
         if (elem.id) {
           observer.unobserve(elem);
         }
       });
+      window.removeEventListener("popstate", handlePopState);
     };
   }, [pathname]); // Re-run when page changes
 

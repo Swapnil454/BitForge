@@ -110,7 +110,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
               </span>
             </Link>
 
-            <span className="hidden md:block text-sm text-white/40">/ Docs</span>
+            <span className="hidden md:block text-sm text-white/40"><Link href="/docs">/ Docs</Link></span>
           </div>
 
           <div className="flex items-center gap-3">

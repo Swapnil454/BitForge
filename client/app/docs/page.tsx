@@ -261,7 +261,7 @@ export default function DocsPage() {
 
       <div className="relative z-10 mx-auto max-w-7xl px-5 pb-20 pt-24 sm:pt-28 md:pt-32 md:pb-28">
         {/* HERO */}
-        <section className="mb-16 max-w-4xl">
+        <section className="mb-16 -mt-24 max-w-4xl">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300/80">
             Documentation
           </p>
