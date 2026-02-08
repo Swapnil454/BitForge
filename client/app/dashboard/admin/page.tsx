@@ -302,6 +302,14 @@ export default function AdminDashboard() {
                         setProfileOpen(false);
                       }} 
                     />
+                    <MenuItem 
+                      label="Careers Management" 
+                      icon="💼"
+                      onClick={() => {
+                        router.push("/dashboard/admin/careers");
+                        setProfileOpen(false);
+                      }} 
+                    />
                     <div className="h-px bg-linear-to-r from-transparent via-indigo-500/20 to-transparent" />
                     <MenuItem label="Logout" icon="🚪" danger onClick={logout} />
                   </motion.div>

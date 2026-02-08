@@ -2,8 +2,55 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState, useEffect } from "react";
+import api from "@/lib/api";
+
+interface Career {
+  _id: string;
+  title: string;
+  department: string;
+  location: string;
+  employmentType: string;
+  experience: string;
+  description: string;
+  responsibilities?: string[];
+  requirements?: string[];
+  niceToHave?: string[];
+  benefits?: string[];
+  salary?: {
+    min: number | null;
+    max: number | null;
+    currency: string;
+  };
+  status: string;
+  applyUrl?: string;
+  applyEmail?: string;
+  featured: boolean;
+  openings: number;
+}
 
 export default function CareersPage() {
+  const [careers, setCareers] = useState<Career[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCareers();
+  }, []);
+
+  const fetchCareers = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get("/careers");
+      setCareers(response.data.data || []);
+    } catch (error) {
+      console.error("Error fetching careers:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const latestCareers = careers.slice(0, 2);
+
   return (
     <main className="relative min-h-screen bg-[#05050a] text-white overflow-x-hidden">
       {/* HEADER */}
@@ -75,6 +122,113 @@ export default function CareersPage() {
             <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1">
               Early-stage, well-funded product company
             </span>
+          </div>
+        </section>
+
+        {/* OPEN ROLES (LATEST TWO ONLY) */}
+        <section className="mt-14 border-t border-white/10 pt-10">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold sm:text-2xl">Latest Open Roles</h2>
+              <p className="mt-2 max-w-xl text-sm text-white/70 sm:text-base">
+                Here are the most recently opened positions at BitForge. For the full list of roles,
+                you can browse all openings on the next page.
+              </p>
+            </div>
+            <p className="text-xs text-emerald-300/90">
+              No matching role? Write to us at careers@bitforge.in with your portfolio.
+            </p>
+          </div>
+
+          {loading ? (
+            <div className="mt-6 text-center py-12 bg-white/5 border border-white/10 rounded-2xl">
+              <div className="text-white/60">Loading open positions...</div>
+            </div>
+          ) : careers.length === 0 ? (
+            <div className="mt-6 text-center py-12 bg-white/5 border border-white/10 rounded-2xl">
+              <div className="text-4xl mb-4">💼</div>
+              <p className="text-white/60 mb-2">No open positions at the moment.</p>
+              <p className="text-white/50 text-sm">
+                Check back soon or reach out at careers@bitforge.in.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="mt-6 grid gap-4 md:grid-cols-2">
+                {latestCareers.map((career) => {
+                  const slug = career.title
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, "-")
+                    .replace(/(^-|-$)/g, "");
+
+                  return (
+                    <Link
+                      key={career._id}
+                      href={`/careers/${slug}`}
+                      className="block rounded-2xl border border-white/12 bg-white/5 p-4 hover:bg-white/[0.07] transition-colors group"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <h3 className="text-sm font-semibold group-hover:text-cyan-300 transition-colors">
+                            {career.title}
+                          </h3>
+                          <p className="mt-1 text-[11px] text-white/60">
+                            {career.location} · {career.department}
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-medium text-emerald-200/90 whitespace-nowrap">
+                          {career.featured ? "⭐ Featured" : "Open"}
+                        </span>
+                      </div>
+                      <p className="mt-3 text-xs text-white/70 line-clamp-2">
+                        {career.description}
+                      </p>
+                      {career.requirements && career.requirements.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-white/60">
+                          {career.requirements.slice(0, 3).map((req, idx) => (
+                            <span key={idx} className="rounded-full bg-black/40 px-2.5 py-1">
+                              {req.length > 30 ? req.substring(0, 30) + "..." : req}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <div className="mt-4 flex items-center justify-between text-xs">
+                        <span className="text-white/55">
+                          {career.employmentType}
+                          {career.salary?.min && career.salary?.max && (
+                            <>
+                              {" "}· {career.salary.currency} {career.salary.min.toLocaleString()}-
+                              {career.salary.max.toLocaleString()} LPA
+                            </>
+                          )}
+                        </span>
+                        <span className="text-cyan-300 group-hover:text-cyan-200 flex items-center gap-1">
+                          View details
+                          <span className="group-hover:translate-x-1 transition-transform">→</span>
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              <div className="mt-8 flex justify-center">
+                <Link
+                  href="/careers/openings"
+                  className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-black shadow-[0_0_20px_rgba(56,189,248,0.5)] hover:bg-cyan-50 transition-colors"
+                >
+                  <span>See all openings</span>
+                  <span>→</span>
+                </Link>
+              </div>
+            </>
+          )}
+
+          <div className="mt-6 rounded-2xl border border-dashed border-white/25 bg-black/40 p-4 text-xs text-white/70 sm:text-[13px]">
+            Don&apos;t see a role that matches you? We&apos;re always happy to hear from exceptional
+            people across product, engineering, design, and operations. Share your portfolio and a
+            short note about what you&apos;d like to work on at
+            <span className="ml-1 font-medium text-cyan-200">careers@bitforge.in</span>.
           </div>
         </section>
 
@@ -163,96 +317,6 @@ export default function CareersPage() {
                 transaction.
               </p>
             </div>
-          </div>
-        </section>
-
-        {/* OPEN ROLES */}
-        <section className="mt-14 border-t border-white/10 pt-10">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="text-xl font-semibold sm:text-2xl">Open roles</h2>
-              <p className="mt-2 max-w-xl text-sm text-white/70 sm:text-base">
-                We hire carefully and in small batches. If you don&apos;t see a role that matches your
-                experience, you can still reach out — we review every application.
-              </p>
-            </div>
-            <p className="text-xs text-emerald-300/90">
-              No matching role? Write to us at careers@bittforge.in with your portfolio.
-            </p>
-          </div>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <article className="rounded-2xl border border-white/12 bg-white/5 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-sm font-semibold">Senior Full Stack Engineer</h3>
-                  <p className="mt-1 text-[11px] text-white/60">
-                    Remote · India / EMEA · Engineering
-                  </p>
-                </div>
-                <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-medium text-emerald-200/90">
-                  Actively hiring
-                </span>
-              </div>
-              <p className="mt-3 text-xs text-white/70">
-                Help design and build core marketplace flows, payments, and internal tools using
-                modern TypeScript, Node.js, and cloud-native infrastructure.
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-white/60">
-                <span className="rounded-full bg-black/40 px-2.5 py-1">TypeScript</span>
-                <span className="rounded-full bg-black/40 px-2.5 py-1">Node.js</span>
-                <span className="rounded-full bg-black/40 px-2.5 py-1">Next.js</span>
-                <span className="rounded-full bg-black/40 px-2.5 py-1">MongoDB</span>
-              </div>
-              <div className="mt-4 flex items-center justify-between text-xs">
-                <span className="text-white/55">Full-time · Competitive compensation &amp; ESOPs</span>
-                <Link
-                  href="mailto:careers@bittforge.in?subject=Senior%20Full%20Stack%20Engineer%20-%20BitForge"
-                  className="text-cyan-300 hover:text-cyan-200"
-                >
-                  Apply →
-                </Link>
-              </div>
-            </article>
-
-            <article className="rounded-2xl border border-white/12 bg-white/5 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-sm font-semibold">Product Designer</h3>
-                  <p className="mt-1 text-[11px] text-white/60">
-                    Remote · India / SE Asia · Design
-                  </p>
-                </div>
-                <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-medium text-emerald-200/90">
-                  Open
-                </span>
-              </div>
-              <p className="mt-3 text-xs text-white/70">
-                Define the end-to-end experience for creators and buyers across marketplace,
-                payouts, and support tooling.
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-white/60">
-                <span className="rounded-full bg-black/40 px-2.5 py-1">Product design</span>
-                <span className="rounded-full bg-black/40 px-2.5 py-1">Design systems</span>
-                <span className="rounded-full bg-black/40 px-2.5 py-1">User research</span>
-              </div>
-              <div className="mt-4 flex items-center justify-between text-xs">
-                <span className="text-white/55">Full-time · Competitive compensation</span>
-                <Link
-                  href="mailto:careers@bittforge.in?subject=Product%20Designer%20-%20BitForge"
-                  className="text-cyan-300 hover:text-cyan-200"
-                >
-                  Apply →
-                </Link>
-              </div>
-            </article>
-          </div>
-
-          <div className="mt-6 rounded-2xl border border-dashed border-white/25 bg-black/40 p-4 text-xs text-white/70 sm:text-[13px]">
-            Don&apos;t see a role that matches you? We&apos;re always happy to hear from exceptional
-            people across product, engineering, design, and operations. Share your portfolio and a
-            short note about what you&apos;d like to work on at
-            <span className="ml-1 font-medium text-cyan-200">careers@bittforge.in</span>.
           </div>
         </section>
 
