@@ -1,12 +1,228 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useState, useMemo } from "react";
 
-export const metadata = {
-  title: "Documentation | BitForge",
-  description: "Complete guides, API references, and step-by-step tutorials to help you build, sell, and manage digital products on BitForge.",
+// All documentation cards data
+const allDocs = {
+  sellers: [
+    {
+      title: "Product Management",
+      description: "Upload, update, and manage your digital products with approval workflows.",
+      icon: "📦",
+      href: "/docs/product-management",
+    },
+    {
+      title: "Payout System",
+      description: "Understand how earnings are calculated, held, and transferred to your bank account.",
+      icon: "💰",
+      href: "/docs/payout-system",
+    },
+    {
+      title: "Product Changes API",
+      description: "Request modifications to live products with admin approval system.",
+      icon: "✏️",
+      href: "/docs/product-changes",
+    },
+    {
+      title: "Upload Solutions",
+      description: "Troubleshooting file uploads, format requirements, and error handling.",
+      icon: "📤",
+      href: "/docs/upload-solutions",
+    },
+    {
+      title: "Seller Deletion",
+      description: "Account termination process with admin approval and data retention policies.",
+      icon: "🗑️",
+      href: "/docs/seller-deletion",
+    },
+    {
+      title: "Approved Changes",
+      description: "Track and implement approved product modifications in your dashboard.",
+      icon: "✅",
+      href: "/docs/approved-changes",
+    },
+  ],
+  developers: [
+    {
+      title: "OAuth Setup",
+      description: "Integrate Google and GitHub OAuth authentication for seamless user login.",
+      icon: "🔐",
+      href: "/docs/oauth-setup",
+    },
+    {
+      title: "Admin Products API",
+      description: "Complete API reference for product CRUD operations with role-based access.",
+      icon: "📡",
+      href: "/docs/api/products",
+    },
+    {
+      title: "Payout API Reference",
+      description: "Endpoints for manual payouts, balance checks, and transaction history.",
+      icon: "💸",
+      href: "/docs/api/payouts",
+    },
+    {
+      title: "Orders API",
+      description: "Track purchases, sales history, and transaction details.",
+      icon: "🛒",
+      href: "/docs/api/orders",
+    },
+    {
+      title: "Authentication API",
+      description: "JWT tokens, OAuth flows, and session management.",
+      icon: "🔒",
+      href: "/docs/api/authentication",
+    },
+    {
+      title: "Webhooks",
+      description: "Real-time notifications for payments, payouts, and status updates.",
+      icon: "📢",
+      href: "/docs/webhooks",
+    },
+  ],
+  admins: [
+    {
+      title: "Admin Payout Guide",
+      description: "Manage seller payouts, review holds, process manual disbursements, and reconcile transactions.",
+      icon: "💳",
+      href: "/docs/admin/payouts",
+    },
+    {
+      title: "Product Management",
+      description: "Approve/reject products, manage pending changes, and enforce content policies.",
+      icon: "🛡️",
+      href: "/docs/admin/products",
+    },
+    {
+      title: "User Management",
+      description: "Manage users, roles, permissions, and account actions.",
+      icon: "👥",
+      href: "/docs/admin/users",
+    },
+    {
+      title: "Analytics Dashboard",
+      description: "Platform metrics, revenue reports, and growth analytics.",
+      icon: "📊",
+      href: "/docs/admin/analytics",
+    },
+    {
+      title: "Content Moderation",
+      description: "Review reports, enforce policies, and manage disputes.",
+      icon: "🛡️",
+      href: "/docs/admin/moderation",
+    },
+    {
+      title: "System Settings",
+      description: "Platform configuration, fee structure, and feature flags.",
+      icon: "⚙️",
+      href: "/docs/admin/settings",
+    },
+  ],
+  platform: [
+    {
+      title: "Security Best Practices",
+      description: "Guidelines for secure integration, data handling, and compliance.",
+      icon: "🔒",
+      href: "/docs/security",
+    },
+    {
+      title: "Rate Limits",
+      description: "API rate limits, quotas, and best practices for optimization.",
+      icon: "⏱️",
+      href: "/docs/rate-limits",
+    },
+    {
+      title: "Testing Guide",
+      description: "Test mode, sample data, and integration testing strategies.",
+      icon: "🧪",
+      href: "/docs/testing",
+    },
+    {
+      title: "Troubleshooting",
+      description: "Common issues, debugging tips, and error resolution.",
+      icon: "🔧",
+      href: "/docs/troubleshooting",
+    },
+  ],
 };
 
 export default function DocsPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSearchActive, setIsSearchActive] = useState(false);
+
+  // Get all docs as a flat array for suggestions
+  const allDocsFlat = useMemo(() => {
+    return [
+      ...allDocs.sellers,
+      ...allDocs.developers,
+      ...allDocs.admins,
+      ...allDocs.platform,
+    ];
+  }, []);
+
+  // Get search suggestions (top 5 matches)
+  const suggestions = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+
+    const query = searchQuery.toLowerCase();
+    return allDocsFlat
+      .filter(
+        (doc) =>
+          doc.title.toLowerCase().includes(query) ||
+          doc.description.toLowerCase().includes(query)
+      )
+      .slice(0, 5);
+  }, [searchQuery, allDocsFlat]);
+
+  // Filter docs based on search query (for showing results when search is active)
+  const filteredDocs = useMemo(() => {
+    if (!searchQuery.trim()) return allDocs;
+
+    const query = searchQuery.toLowerCase();
+    return {
+      sellers: allDocs.sellers.filter(
+        (doc) =>
+          doc.title.toLowerCase().includes(query) ||
+          doc.description.toLowerCase().includes(query)
+      ),
+      developers: allDocs.developers.filter(
+        (doc) =>
+          doc.title.toLowerCase().includes(query) ||
+          doc.description.toLowerCase().includes(query)
+      ),
+      admins: allDocs.admins.filter(
+        (doc) =>
+          doc.title.toLowerCase().includes(query) ||
+          doc.description.toLowerCase().includes(query)
+      ),
+      platform: allDocs.platform.filter(
+        (doc) =>
+          doc.title.toLowerCase().includes(query) ||
+          doc.description.toLowerCase().includes(query)
+      ),
+    };
+  }, [searchQuery]);
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      setIsSearchActive(true);
+      setShowSuggestions(false);
+      // Scroll to results section
+      document.getElementById("search-results")?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+    if (e.key === "Escape") {
+      setShowSuggestions(false);
+    }
+  };
   return (
     <main className="relative min-h-screen bg-[#05050a] text-white overflow-x-hidden">
       {/* HEADER */}
@@ -60,28 +276,105 @@ export default function DocsPage() {
             admin tools, and best practices for building a successful digital product business.
           </p>
 
-          {/* Search Bar (Visual) */}
+          {/* Search Bar */}
           <div className="mt-8 max-w-2xl">
             <div className="relative">
-              <input
-                type="text"
-                placeholder="Search documentation..."
-                className="w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3 pl-11 text-sm text-white placeholder:text-white/40 focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                disabled
-              />
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">🔍</span>
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-white/30">
-                Coming soon
-              </span>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    placeholder="Search documentation..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setShowSuggestions(true);
+                      setIsSearchActive(false);
+                    }}
+                    onFocus={() => {
+                      if (searchQuery) setShowSuggestions(true);
+                    }}
+                    onKeyDown={handleKeyDown}
+                    className="w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3 pl-11 pr-16 text-sm text-white placeholder:text-white/40 focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                  />
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">🔍</span>
+                  {searchQuery && (
+                    <button
+                      onClick={() => {
+                        setSearchQuery("");
+                        setShowSuggestions(false);
+                        setIsSearchActive(false);
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-white/50 hover:text-white/80"
+                    >
+                      Clear
+                    </button>
+                  )}
+
+                  {/* Suggestions Dropdown */}
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-[#0a0a0f] border border-white/20 rounded-xl shadow-2xl overflow-hidden z-50">
+                      <div className="p-2">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-white/40 px-3 py-2">
+                          Suggestions
+                        </div>
+                        {suggestions.map((doc) => (
+                          <Link
+                            key={doc.href}
+                            href={doc.href}
+                            onClick={() => {
+                              setShowSuggestions(false);
+                              setSearchQuery("");
+                            }}
+                            className="block px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors"
+                          >
+                            <div className="flex items-start gap-3">
+                              <span className="text-xl flex-shrink-0">{doc.icon}</span>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-medium text-white truncate">
+                                  {doc.title}
+                                </div>
+                                <div className="text-xs text-white/60 truncate">
+                                  {doc.description}
+                                </div>
+                              </div>
+                              <span className="text-white/40 text-xs flex-shrink-0">→</span>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleSearch}
+                  disabled={!searchQuery.trim()}
+                  className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 disabled:bg-white/10 disabled:text-white/40 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors text-sm"
+                >
+                  Search
+                </button>
+              </div>
+
+              {/* Click outside to close suggestions */}
+              {showSuggestions && (
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowSuggestions(false)}
+                />
+              )}
             </div>
           </div>
         </section>
 
-        {/* QUICK START */}
-        <section className="mb-14">
-          <h2 className="mb-6 text-2xl font-semibold text-white">Get Started in Minutes</h2>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="group rounded-2xl border border-emerald-400/30 bg-linear-to-b from-emerald-500/10 to-cyan-500/10 p-6 transition-all hover:border-emerald-400/50 hover:shadow-lg hover:shadow-emerald-500/10">
+        {/* QUICK START - Hide when search is active */}
+        {!isSearchActive && (
+          <section className="mb-14">
+            <h2 className="mb-6 text-2xl font-semibold text-white">Get Started in Minutes</h2>
+            <div className="grid gap-4 md:grid-cols-3">
+            <Link
+              href="/docs/quick-start"
+              className="group rounded-2xl border border-emerald-400/30 bg-linear-to-b from-emerald-500/10 to-cyan-500/10 p-6 transition-all hover:border-emerald-400/50 hover:shadow-lg hover:shadow-emerald-500/10"
+            >
               <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/20 text-2xl">
                 🚀
               </div>
@@ -89,17 +382,15 @@ export default function DocsPage() {
               <p className="mb-4 text-sm text-white/70">
                 Get up and running in 15 minutes with API keys, environment setup, and your first test transaction.
               </p>
-              <a
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/QUICK_START.md"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-sm font-medium text-cyan-300 hover:text-cyan-200"
-              >
+              <span className="inline-flex items-center text-sm font-medium text-cyan-300 group-hover:text-cyan-200">
                 Read guide →
-              </a>
-            </div>
+              </span>
+            </Link>
 
-            <div className="group rounded-2xl border border-cyan-400/30 bg-linear-to-b from-cyan-500/10 to-indigo-500/10 p-6 transition-all hover:border-cyan-400/50 hover:shadow-lg hover:shadow-cyan-500/10">
+            <Link
+              href="/docs/api-keys-setup"
+              className="group rounded-2xl border border-cyan-400/30 bg-linear-to-b from-cyan-500/10 to-indigo-500/10 p-6 transition-all hover:border-cyan-400/50 hover:shadow-lg hover:shadow-cyan-500/10"
+            >
               <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/20 text-2xl">
                 🔑
               </div>
@@ -107,17 +398,15 @@ export default function DocsPage() {
               <p className="mb-4 text-sm text-white/70">
                 Step-by-step instructions to get Razorpay, RazorpayX, and OAuth credentials configured.
               </p>
-              <a
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/API_KEYS_GUIDE.md"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-sm font-medium text-cyan-300 hover:text-cyan-200"
-              >
+              <span className="inline-flex items-center text-sm font-medium text-cyan-300 group-hover:text-cyan-200">
                 Read guide →
-              </a>
-            </div>
+              </span>
+            </Link>
 
-            <div className="group rounded-2xl border border-indigo-400/30 bg-linear-to-b from-indigo-500/10 to-purple-500/10 p-6 transition-all hover:border-indigo-400/50 hover:shadow-lg hover:shadow-indigo-500/10">
+            <Link
+              href="/docs/bank-account-setup"
+              className="group rounded-2xl border border-indigo-400/30 bg-linear-to-b from-indigo-500/10 to-purple-500/10 p-6 transition-all hover:border-indigo-400/50 hover:shadow-lg hover:shadow-indigo-500/10"
+            >
               <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/20 text-2xl">
                 🏦
               </div>
@@ -125,220 +414,148 @@ export default function DocsPage() {
               <p className="mb-4 text-sm text-white/70">
                 Configure payment flows, seller payouts, and commission management with RazorpayX.
               </p>
-              <a
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/BANK_ACCOUNT_SETUP.md"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-sm font-medium text-cyan-300 hover:text-cyan-200"
-              >
+              <span className="inline-flex items-center text-sm font-medium text-cyan-300 group-hover:text-cyan-200">
                 Read guide →
-              </a>
-            </div>
+              </span>
+            </Link>
           </div>
         </section>
+        )}
 
         {/* DOCUMENTATION CATEGORIES */}
-        <section className="space-y-12">
-          {/* For Sellers */}
-          <div>
-            <div className="mb-6 flex items-center gap-3">
-              <span className="text-2xl">💼</span>
-              <h2 className="text-2xl font-semibold text-white">For Sellers</h2>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <DocCard
-                title="Product Management"
-                description="Upload, update, and manage your digital products with approval workflows."
-                icon="📦"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/ADMIN_PRODUCT_MANAGEMENT_GUIDE.md"
-              />
-              <DocCard
-                title="Payout System"
-                description="Understand how earnings are calculated, held, and transferred to your bank account."
-                icon="💰"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/QUICK_START_PAYOUTS.md"
-              />
-              <DocCard
-                title="Product Changes API"
-                description="Request modifications to live products with admin approval system."
-                icon="✏️"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/PRODUCT_CHANGES_API.md"
-              />
-              <DocCard
-                title="Upload Solutions"
-                description="Troubleshooting file uploads, format requirements, and error handling."
-                icon="📤"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/UPLOAD_COMPLETE_SOLUTION.md"
-              />
-              <DocCard
-                title="Seller Deletion"
-                description="Account termination process with admin approval and data retention policies."
-                icon="🗑️"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/SELLER_DELETION_WITH_APPROVAL.md"
-              />
-              <DocCard
-                title="Approved Changes"
-                description="Track and implement approved product modifications in your dashboard."
-                icon="✅"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/APPROVED_PRODUCT_CHANGES.md"
-              />
-            </div>
-          </div>
-
-          {/* For Developers */}
-          <div>
-            <div className="mb-6 flex items-center gap-3">
-              <span className="text-2xl">👨‍💻</span>
-              <h2 className="text-2xl font-semibold text-white">For Developers</h2>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <DocCard
-                title="OAuth Setup"
-                description="Integrate Google and GitHub OAuth authentication for seamless user login."
-                icon="🔐"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/OAUTH_SETUP.md"
-              />
-              <DocCard
-                title="Admin Products API"
-                description="Complete API reference for product CRUD operations with role-based access."
-                icon="📡"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/ADMIN_PRODUCTS_API.md"
-              />
-              <DocCard
-                title="Payout API Reference"
-                description="Endpoints for manual payouts, balance checks, and transaction history."
-                icon="💸"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/PAYOUT_API_REFERENCE.md"
-              />
-              <DocCard
-                title="Workflow Diagrams"
-                description="Visual flowcharts for payment flows, approval processes, and system architecture."
-                icon="📊"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/WORKFLOW_DIAGRAMS.md"
-              />
-              <DocCard
-                title="Implementation Summary"
-                description="Technical overview of features, database models, and integration points."
-                icon="🏗️"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/IMPLEMENTATION_SUMMARY.md"
-              />
-              <DocCard
-                title="Migration Summary"
-                description="Database migrations, schema changes, and version upgrade guides."
-                icon="🔄"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/MIGRATION_SUMMARY.md"
-              />
-            </div>
-          </div>
-
-          {/* For Admins */}
-          <div>
-            <div className="mb-6 flex items-center gap-3">
-              <span className="text-2xl">⚙️</span>
-              <h2 className="text-2xl font-semibold text-white">For Admins</h2>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <DocCard
-                title="Admin Payout Guide"
-                description="Manage seller payouts, review holds, process manual disbursements, and reconcile transactions."
-                icon="💳"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/ADMIN_PAYOUT_GUIDE.md"
-              />
-              <DocCard
-                title="Product Management"
-                description="Approve/reject products, manage pending changes, and enforce content policies."
-                icon="🛡️"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/ADMIN_PRODUCT_MANAGEMENT_COMPLETE.md"
-              />
-              <DocCard
-                title="Manual Payout System"
-                description="Step-by-step process for triggering payouts, validating bank accounts, and error handling."
-                icon="⚡"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/MANUAL_PAYOUT_SYSTEM.md"
-              />
-              <DocCard
-                title="Complete Checklist"
-                description="Pre-launch verification checklist covering security, compliance, and platform readiness."
-                icon="✓"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/COMPLETE_CHECKLIST.md"
-              />
-              <DocCard
-                title="Feature Implementation"
-                description="Roadmap of completed features, pending enhancements, and technical debt."
-                icon="🎯"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/FEATURE_IMPLEMENTATION_COMPLETE.md"
-              />
-              <DocCard
-                title="Changelog"
-                description="Version history, bug fixes, feature additions, and breaking changes."
-                icon="📝"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/CHANGELOG.md"
-              />
-            </div>
-          </div>
-
-          {/* Platform Guides */}
-          <div>
-            <div className="mb-6 flex items-center gap-3">
-              <span className="text-2xl">📚</span>
-              <h2 className="text-2xl font-semibold text-white">Platform Guides</h2>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <DocCard
-                title="Flow Diagrams"
-                description="End-to-end process visualizations for buyer purchases, seller onboarding, and dispute resolution."
-                icon="🔀"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/FLOW_DIAGRAM.md"
-              />
-              <DocCard
-                title="Visual Summary"
-                description="Infographics and screenshots of key platform features and user journeys."
-                icon="🖼️"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/VISUAL_SUMMARY.md"
-              />
-              <DocCard
-                title="Upload Visual Summary"
-                description="Image-based guide to file upload UI, validation, and progress tracking."
-                icon="📸"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/UPLOAD_VISUAL_SUMMARY.md"
-              />
-              <DocCard
-                title="README Changes"
-                description="Project documentation updates, setup improvements, and contribution guidelines."
-                icon="📄"
-                href="https://github.com/yourusername/contentSellify/blob/main/docs/README_CHANGES.md"
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* SUPPORT CTA */}
-        <section className="mt-16 rounded-2xl border border-white/10 bg-linear-to-r from-cyan-500/10 to-indigo-500/10 p-8 md:p-10">
-          <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-            <div>
-              <h2 className="mb-2 text-2xl font-semibold text-white">Can&apos;t find what you&apos;re looking for?</h2>
-              <p className="text-sm text-white/70">
-                Our support team is here to help with technical questions, integration challenges, or custom use cases.
+        <section id="search-results" className="space-y-12">
+          {/* Search Results Header */}
+          {isSearchActive && searchQuery && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-semibold text-white mb-2">
+                Search Results for &quot;{searchQuery}&quot;
+              </h2>
+              <p className="text-white/60 text-sm">
+                Found {
+                  filteredDocs.sellers.length +
+                  filteredDocs.developers.length +
+                  filteredDocs.admins.length +
+                  filteredDocs.platform.length
+                } results
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/contact"
-                className="inline-flex items-center rounded-lg bg-cyan-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-cyan-400"
-              >
-                Contact Support
-              </Link>
-              <a
-                href="https://github.com/yourusername/contentSellify/issues"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center rounded-lg border border-white/20 px-5 py-2.5 text-sm font-medium text-white/90 hover:border-white/40 hover:bg-white/5"
-              >
-                Report Issue
-              </a>
+          )}
+
+          {/* For Sellers */}
+          {filteredDocs.sellers.length > 0 && (!isSearchActive || searchQuery) && (
+            <div>
+              <div className="mb-6 flex items-center gap-3">
+                <span className="text-2xl">💼</span>
+                <h2 className="text-2xl font-semibold text-white">For Sellers</h2>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredDocs.sellers.map((doc) => (
+                  <DocCard key={doc.href} {...doc} />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* For Developers */}
+          {filteredDocs.developers.length > 0 && (!isSearchActive || searchQuery) && (
+            <div>
+              <div className="mb-6 flex items-center gap-3">
+                <span className="text-2xl">👨‍💻</span>
+                <h2 className="text-2xl font-semibold text-white">For Developers</h2>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredDocs.developers.map((doc) => (
+                  <DocCard key={doc.href} {...doc} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* For Admins */}
+          {filteredDocs.admins.length > 0 && (!isSearchActive || searchQuery) && (
+            <div>
+              <div className="mb-6 flex items-center gap-3">
+                <span className="text-2xl">⚙️</span>
+                <h2 className="text-2xl font-semibold text-white">For Admins</h2>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredDocs.admins.map((doc) => (
+                  <DocCard key={doc.href} {...doc} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Platform Guides */}
+          {filteredDocs.platform.length > 0 && (!isSearchActive || searchQuery) && (
+            <div>
+              <div className="mb-6 flex items-center gap-3">
+                <span className="text-2xl">📚</span>
+                <h2 className="text-2xl font-semibold text-white">Platform Guides</h2>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredDocs.platform.map((doc) => (
+                  <DocCard key={doc.href} {...doc} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* No Results */}
+          {isSearchActive &&
+            searchQuery &&
+            filteredDocs.sellers.length === 0 &&
+            filteredDocs.developers.length === 0 &&
+            filteredDocs.admins.length === 0 &&
+            filteredDocs.platform.length === 0 && (
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-12 text-center">
+                <div className="text-5xl mb-4">🔍</div>
+                <h3 className="text-xl font-semibold text-white mb-2">No results found</h3>
+                <p className="text-white/60 mb-4">
+                  No documentation matches &quot;{searchQuery}&quot;
+                </p>
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setIsSearchActive(false);
+                  }}
+                  className="text-cyan-400 hover:text-cyan-300 underline text-sm"
+                >
+                  Clear search and view all documentation
+                </button>
+              </div>
+            )}
         </section>
+
+        {/* SUPPORT CTA - Hide when search is active */}
+        {!isSearchActive && (
+          <section className="mt-16 rounded-2xl border border-white/10 bg-linear-to-r from-cyan-500/10 to-indigo-500/10 p-8 md:p-10">
+            <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+              <div>
+                <h2 className="mb-2 text-2xl font-semibold text-white">Can&apos;t find what you&apos;re looking for?</h2>
+                <p className="text-sm text-white/70">
+                  Our support team is here to help with technical questions, integration challenges, or custom use cases.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center rounded-lg bg-cyan-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-cyan-400"
+                >
+                  Contact Support
+                </Link>
+                <a
+                  href="https://github.com/yourusername/contentSellify/issues"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center rounded-lg border border-white/20 px-5 py-2.5 text-sm font-medium text-white/90 hover:border-white/40 hover:bg-white/5"
+                >
+                  Report Issue
+                </a>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* HELPFUL RESOURCES */}
         <section className="mt-14 border-t border-white/10 pt-10">
@@ -404,10 +621,8 @@ function DocCard({
   href: string;
 }) {
   return (
-    <a
+    <Link
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
       className="group block rounded-xl border border-white/10 bg-white/5 p-5 transition-all hover:border-cyan-400/40 hover:bg-white/10"
     >
       <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-500/10 text-xl group-hover:bg-cyan-500/20">
@@ -417,7 +632,7 @@ function DocCard({
         {title}
       </h3>
       <p className="text-sm text-white/60 group-hover:text-white/70">{description}</p>
-    </a>
+    </Link>
   );
 }
 

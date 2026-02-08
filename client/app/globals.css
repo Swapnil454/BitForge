@@ -1,14 +1,37 @@
 @import "tailwindcss";
 
-/* Hide scrollbar (Chrome, Safari, Edge) */
+/* Default: Hide scrollbar for most pages */
 ::-webkit-scrollbar {
   width: 0px;
   height: 0px;
 }
 
-/* Hide scrollbar (Firefox) */
 html {
   scrollbar-width: none;
+}
+
+/* Custom scrollbar for documentation sections */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.scrollbar-thin:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 
 /* Smooth scrolling */
