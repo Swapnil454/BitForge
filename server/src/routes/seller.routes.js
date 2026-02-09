@@ -7,6 +7,7 @@ import {
   getSellerDashboardStats,
   getSellerEarnings,
   requestWithdrawal,
+  cancelPayoutRequest,
   getSellerTransactions,
   getAllSales,
   getGrowthAnalytics,
@@ -22,5 +23,6 @@ router.get("/transactions", getSellerTransactions);
 router.get("/sales", getAllSales);
 router.get("/growth-analytics", getGrowthAnalytics);
 router.post("/withdraw", requestWithdrawal);
+router.delete("/withdraw/:payoutId", cancelPayoutRequest);
 
 export default router;

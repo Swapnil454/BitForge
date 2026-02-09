@@ -162,8 +162,8 @@ export const adminAPI = {
         return response.data;
     },
     
-    approvePayout: async (id: string) => {
-        const response = await api.post(`/admin/payouts/${id}/approve`);
+    approvePayout: async (id: string, paymentData: { paymentReference: string; paymentNotes: string; paymentMethod?: string }) => {
+        const response = await api.post(`/admin/payouts/${id}/approve`, paymentData);
         return response.data;
     },
     
@@ -257,6 +257,11 @@ export const sellerAPI = {
     
     requestWithdrawal: async (amount: number) => {
         const response = await api.post('/seller/withdraw', { amount });
+        return response.data;
+    },
+    
+    cancelPayoutRequest: async (payoutId: string) => {
+        const response = await api.delete(`/seller/withdraw/${payoutId}`);
         return response.data;
     },
     

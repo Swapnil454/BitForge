@@ -471,17 +471,19 @@ export const getPendingPayouts = async (req, res) => {
       .sort({ createdAt: -1 });
 
     // Format the response with detailed breakdown
-    const formattedPayouts = payouts.map(payout => {
-      const seller = payout.sellerId;
-      const primaryAccount = seller.bankAccounts?.find(acc => acc.isPrimary);
+    const formattedPayouts = payouts
+      .filter(payout => payout.sellerId) // Filter out payouts with deleted sellers
+      .map(payout => {
+        const seller = payout.sellerId;
+        const primaryAccount = seller?.bankAccounts?.find(acc => acc.isPrimary);
 
-      return {
-        _id: payout._id,
-        seller: {
-          id: seller._id,
-          name: seller.name,
-          email: seller.email,
-        },
+        return {
+          _id: payout._id,
+          sellerId: {
+            id: seller._id,
+            name: seller.name || 'Unknown Seller',
+            email: seller.email || 'N/A',
+          },
         primaryBankAccount: primaryAccount ? {
           accountHolderName: primaryAccount.accountHolderName,
           accountNumber: primaryAccount.accountNumber,
@@ -496,6 +498,7 @@ export const getPendingPayouts = async (req, res) => {
           totalDeductions: payout.totalDeductions,
           netPayableAmount: payout.netPayableAmount,
         },
+        amount: payout.amount,
         status: payout.status,
         createdAt: payout.createdAt,
       };

@@ -116,6 +116,12 @@ export const getSellerEarnings = async (req, res) => {
     withdrawn,
     pendingWithdrawals: pendingAmount,
     availableBalance: totalEarnings - withdrawn - pendingAmount,
+    pendingPayouts: pendingPayouts.map(p => ({
+      _id: p._id,
+      amount: p.amount,
+      requestedAt: p.createdAt,
+      status: p.status
+    }))
   });
 };
 
@@ -150,36 +156,72 @@ export const requestWithdrawal = async (req, res) => {
     return res.status(400).json({ message: "Insufficient balance" });
   }
 
-  // Calculate financial breakdown for transparency
-  const PLATFORM_COMMISSION_RATE = 0.10; // 10%
+  // Calculate GST on withdrawal (platform commission already deducted during sale)
   const GST_RATE = 0.18; // 18%
   
-  const platformCommission = amount * PLATFORM_COMMISSION_RATE;
-  const gstOnCommission = platformCommission * GST_RATE;
-  const totalDeductions = platformCommission + gstOnCommission;
-  const netPayableAmount = amount - totalDeductions;
+  const gstAmount = amount * GST_RATE;
+  const netPayableAmount = amount - gstAmount;
 
   await Payout.create({
     sellerId,
     amount,
     totalEarnings: amount,
-    platformCommission,
-    gstOnCommission,
-    totalDeductions,
+    platformCommission: 0, // Already deducted during product sale
+    gstOnCommission: gstAmount,
+    totalDeductions: gstAmount,
     netPayableAmount,
     paymentMethod: "manual",
   });
+
+  console.log(`==> Seller ${sellerId} requested withdrawal: ₹${amount}`);
 
   res.json({ 
     message: "Withdrawal request submitted",
     breakdown: {
       requestedAmount: amount,
-      platformCommission,
-      gstOnCommission,
-      totalDeductions,
+      gstAmount,
       netPayableAmount,
     }
   });
+};
+
+// Cancel a pending payout request
+export const cancelPayoutRequest = async (req, res) => {
+  try {
+    const { payoutId } = req.params;
+    const sellerId = req.user.id;
+
+    const payout = await Payout.findById(payoutId);
+
+    if (!payout) {
+      return res.status(404).json({ message: "Payout request not found" });
+    }
+
+    // Verify ownership
+    if (payout.sellerId.toString() !== sellerId) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    // Can only cancel pending payouts
+    if (payout.status !== "pending") {
+      return res.status(400).json({ 
+        message: `Cannot cancel payout with status: ${payout.status}` 
+      });
+    }
+
+    // Delete the payout request
+    await Payout.findByIdAndDelete(payoutId);
+
+    console.log(`==> Seller ${sellerId} cancelled payout request ${payoutId}`);
+
+    res.json({ 
+      message: "Payout request cancelled successfully",
+      refundedAmount: payout.amount 
+    });
+  } catch (error) {
+    console.error("Error cancelling payout:", error);
+    res.status(500).json({ message: "Failed to cancel payout request" });
+  }
 };
 
 // Get seller's all transactions

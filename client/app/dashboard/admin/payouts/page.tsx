@@ -167,10 +167,23 @@ import { getStoredUser } from "@/lib/cookies";
 
 interface Payout {
   _id: string;
-  sellerId: { name: string; email: string };
+  sellerId?: { id: string; name: string; email: string };
   amount: number;
   status: string;
   createdAt: string;
+  primaryBankAccount?: {
+    accountHolderName: string;
+    accountNumber: string;
+    ifscCode: string;
+    bankName: string;
+    branchName: string;
+  };
+  financialBreakdown?: {
+    requestedAmount: number;
+    gstOnCommission: number;
+    totalDeductions: number;
+    netPayableAmount: number;
+  };
 }
 
 type Tab = "pending" | "history";
@@ -196,6 +209,12 @@ export default function AdminPayoutsPage() {
 
   /* Infinite scroll */
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  /* Payment modal */
+  const [selectedPayout, setSelectedPayout] = useState<Payout | null>(null);
+  const [paymentReference, setPaymentReference] = useState("");
+  const [paymentNotes, setPaymentNotes] = useState("");
+  const [processing, setProcessing] = useState(false);
 
   /* ---------- AUTH ---------- */
   useEffect(() => {
@@ -280,6 +299,48 @@ export default function AdminPayoutsPage() {
       setVisibleCount(PAGE_SIZE);
       setSearching(false);
     }, 300);
+  };
+
+  /* ---------- PAYOUT ACTIONS ---------- */
+  const handleApprovePayout = async () => {
+    if (!selectedPayout || !paymentReference.trim()) {
+      toast.error("Payment reference is required");
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      await adminAPI.approvePayout(selectedPayout._id, {
+        paymentReference,
+        paymentNotes,
+        paymentMethod: "manual"
+      });
+      toast.success("Payout approved successfully");
+      setSelectedPayout(null);
+      setPaymentReference("");
+      setPaymentNotes("");
+      fetchData();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to approve payout");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleRejectPayout = async (payoutId: string) => {
+    const reason = prompt("Enter rejection reason:");
+    if (!reason?.trim()) return;
+
+    setProcessing(true);
+    try {
+      await adminAPI.rejectPayout(payoutId, reason);
+      toast.success("Payout rejected");
+      fetchData();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to reject payout");
+    } finally {
+      setProcessing(false);
+    }
   };
 
   /* ---------- FILTER ---------- */
@@ -413,27 +474,177 @@ export default function AdminPayoutsPage() {
             {visiblePayouts.map((p) => (
               <div
                 key={p._id}
-                className="bg-white/5 border border-white/10 rounded-xl p-5 flex justify-between gap-4"
+                className="bg-white/5 border border-white/10 rounded-xl p-5"
               >
-                <div>
-                  <p className="font-semibold">{p.sellerId.name}</p>
-                  <p className="text-sm text-white/60">{p.sellerId.email}</p>
-                  <p className="text-xs text-white/40">
-                    {new Date(p.createdAt).toLocaleString()}
-                  </p>
+                <div className="flex justify-between gap-4 mb-4">
+                  <div>
+                    <p className="font-semibold text-lg">{p.sellerId?.name || "Deleted Seller"}</p>
+                    <p className="text-sm text-white/60">{p.sellerId?.email || "N/A"}</p>
+                    <p className="text-xs text-white/40">
+                      {new Date(p.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-green-400">
+                      ₹{p.amount.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-white/50 uppercase">{p.status}</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-xl font-bold text-green-400">
-                    ₹{p.amount.toLocaleString()}
-                  </p>
-                  <p className="text-xs text-white/50">{p.status}</p>
-                </div>
+
+                {/* Bank Details */}
+                {p.primaryBankAccount && (
+                  <div className="bg-white/5 rounded-lg p-4 mb-4 text-sm">
+                    <p className="text-white/60 text-xs mb-2">Bank Account Details</p>
+                    <p className="font-mono">{p.primaryBankAccount.accountHolderName}</p>
+                    <p className="font-mono text-white/80">{p.primaryBankAccount.accountNumber}</p>
+                    <p className="font-mono text-white/80">{p.primaryBankAccount.ifscCode} - {p.primaryBankAccount.bankName}</p>
+                  </div>
+                )}
+
+                {/* Financial Breakdown */}
+                {p.financialBreakdown && (
+                  <div className="bg-white/5 rounded-lg p-4 mb-4 text-sm space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-white/60">Requested Amount:</span>
+                      <span className="font-semibold">₹{p.financialBreakdown.requestedAmount.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/60">GST (18%):</span>
+                      <span className="text-red-400">-₹{p.financialBreakdown.gstOnCommission.toLocaleString()}</span>
+                    </div>
+                    <div className="border-t border-white/10 pt-2 mt-2 flex justify-between font-semibold">
+                      <span>Net Payable:</span>
+                      <span className="text-green-400">₹{p.financialBreakdown.netPayableAmount.toLocaleString()}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                {tab === "pending" && p.status === "pending" && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setSelectedPayout(p)}
+                      disabled={processing}
+                      className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-semibold disabled:opacity-50"
+                    >
+                      ✓ Mark as Paid
+                    </button>
+                    <button
+                      onClick={() => handleRejectPayout(p._id)}
+                      disabled={processing}
+                      className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold disabled:opacity-50"
+                    >
+                      ✗ Reject
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
             <div ref={loaderRef} />
           </div>
         )}
       </div>
+
+      {/* Payment Modal */}
+      {selectedPayout && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1a1a2e] border border-white/20 rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-2xl font-bold mb-4">Confirm Payment</h2>
+            
+            {/* Payout Details */}
+            <div className="bg-white/5 rounded-lg p-4 mb-6 space-y-2">
+              <div className="flex justify-between">
+                <span className="text-white/60">Seller:</span>
+                <span className="font-semibold">{selectedPayout.sellerId?.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/60">Email:</span>
+                <span>{selectedPayout.sellerId?.email}</span>
+              </div>
+              {selectedPayout.primaryBankAccount && (
+                <>
+                  <div className="border-t border-white/10 pt-2 mt-2"></div>
+                  <div className="flex justify-between">
+                    <span className="text-white/60">Account Holder:</span>
+                    <span className="font-mono">{selectedPayout.primaryBankAccount.accountHolderName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/60">Account Number:</span>
+                    <span className="font-mono">{selectedPayout.primaryBankAccount.accountNumber}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/60">IFSC:</span>
+                    <span className="font-mono">{selectedPayout.primaryBankAccount.ifscCode}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/60">Bank:</span>
+                    <span>{selectedPayout.primaryBankAccount.bankName}</span>
+                  </div>
+                </>
+              )}
+              <div className="border-t border-white/10 pt-2 mt-2"></div>
+              <div className="flex justify-between text-lg">
+                <span className="text-white/60">Amount to Transfer:</span>
+                <span className="font-bold text-green-400">
+                  ₹{(selectedPayout.financialBreakdown?.netPayableAmount || selectedPayout.amount).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            {/* Payment Form */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-2">
+                  Payment Reference / UTR Number *
+                </label>
+                <input
+                  type="text"
+                  value={paymentReference}
+                  onChange={(e) => setPaymentReference(e.target.value)}
+                  placeholder="Enter UTR or transaction reference"
+                  className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg focus:border-cyan-400 focus:outline-none"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-2">
+                  Payment Notes (Optional)
+                </label>
+                <textarea
+                  value={paymentNotes}
+                  onChange={(e) => setPaymentNotes(e.target.value)}
+                  placeholder="Add any notes about this payment..."
+                  rows={3}
+                  className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg focus:border-cyan-400 focus:outline-none resize-none"
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={handleApprovePayout}
+                disabled={processing || !paymentReference.trim()}
+                className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {processing ? "Processing..." : "Confirm Payment"}
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedPayout(null);
+                  setPaymentReference("");
+                  setPaymentNotes("");
+                }}
+                disabled={processing}
+                className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-lg font-semibold"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

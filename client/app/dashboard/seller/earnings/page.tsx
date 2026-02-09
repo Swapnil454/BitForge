@@ -14,6 +14,12 @@ interface EarningsData {
   withdrawn: number;
   availableBalance: number;
   pendingWithdrawals: number;
+  pendingPayouts: Array<{
+    _id: string;
+    amount: number;
+    requestedAt: string;
+    status: string;
+  }>;
 }
 
 export default function SellerEarningsPage() {
@@ -21,6 +27,7 @@ export default function SellerEarningsPage() {
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(true);
   const [withdrawing, setWithdrawing] = useState(false);
+  const [cancelling, setCancelling] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -72,6 +79,23 @@ export default function SellerEarningsPage() {
       toast.error(error.response?.data?.message || "Failed to request withdrawal");
     } finally {
       setWithdrawing(false);
+    }
+  };
+
+  const handleCancelPayout = async (payoutId: string) => {
+    if (!confirm("Are you sure you want to cancel this withdrawal request?")) {
+      return;
+    }
+
+    setCancelling(payoutId);
+    try {
+      await sellerAPI.cancelPayoutRequest(payoutId);
+      toast.success("Withdrawal request cancelled successfully");
+      fetchEarnings();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to cancel withdrawal");
+    } finally {
+      setCancelling(null);
     }
   };
 
@@ -149,12 +173,42 @@ export default function SellerEarningsPage() {
 
           {data?.pendingWithdrawals ? (
             <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-800">
+              <p className="text-sm text-yellow-800 mb-2">
                 You have ₹{data.pendingWithdrawals.toLocaleString()} in pending withdrawals
               </p>
             </div>
           ) : null}
         </div>
+
+        {data?.pendingPayouts && data.pendingPayouts.length > 0 && (
+          <div className="bg-white rounded-lg shadow p-6 mt-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Pending Withdrawal Requests</h2>
+            <div className="space-y-4">
+              {data.pendingPayouts.map((payout) => (
+                <div
+                  key={payout._id}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
+                >
+                  <div>
+                    <p className="text-lg font-semibold text-gray-900">
+                      ₹{payout.amount.toLocaleString()}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Requested on {new Date(payout.requestedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleCancelPayout(payout._id)}
+                    disabled={cancelling === payout._id}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {cancelling === payout._id ? "Cancelling..." : "Cancel"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
