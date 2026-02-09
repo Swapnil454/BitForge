@@ -60,7 +60,16 @@ export default function PurchasesPage() {
     try {
       const res = await api.get(`/download/${orderId}`);
       if (res.data.downloadUrl) {
-        window.location.href = res.data.downloadUrl;
+        // Create a temporary anchor element to force download
+        const link = document.createElement('a');
+        link.href = res.data.downloadUrl;
+        link.download = res.data.filename || res.data.productTitle || 'download.pdf';
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
         toast.success("Download started");
       }
     } catch (error: any) {

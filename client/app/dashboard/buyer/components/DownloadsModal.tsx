@@ -35,7 +35,16 @@ export default function DownloadsModal({ onClose }: { onClose: () => void }) {
       const details = await buyerAPI.getPurchaseDetails(download._id);
       
       if (details.downloadUrl) {
-        window.open(details.downloadUrl, "_blank");
+        // Create a temporary anchor element to force download
+        const link = document.createElement('a');
+        link.href = details.downloadUrl;
+        link.download = details.filename || `${download.productName}.pdf`;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
         toast.success(`Downloading ${download.productName}...`);
       } else {
         toast.error("Download URL not available");

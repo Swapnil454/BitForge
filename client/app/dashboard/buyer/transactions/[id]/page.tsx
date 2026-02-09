@@ -215,13 +215,21 @@ export default function TransactionDetailsPage() {
               Thank you! Your payment has been successfully processed. You can now download your product.
             </p>
             {transaction.downloadUrl && (
-              <a
-                href={transaction.downloadUrl}
-                download
-                className="inline-block mt-4 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition"
+              <button
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = transaction.downloadUrl;
+                  link.download = transaction.productName ? `${transaction.productName.replace(/[^a-z0-9]/gi, '_')}.pdf` : 'download.pdf';
+                  link.target = '_blank';
+                  link.rel = 'noopener noreferrer';
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+                className="inline-block mt-4 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition cursor-pointer"
               >
                 Download Product
-              </a>
+              </button>
             )}
           </div>
         )}

@@ -50,7 +50,16 @@ export default function PurchaseDetailsPage() {
 
   const handleDownload = () => {
     if (purchase?.downloadUrl) {
-      window.open(purchase.downloadUrl, "_blank");
+      // Create a temporary anchor element to force download
+      const link = document.createElement('a');
+      link.href = purchase.downloadUrl;
+      link.download = purchase.productName ? `${purchase.productName.replace(/[^a-z0-9]/gi, '_')}.pdf` : 'download.pdf';
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
       toast.success("Download started!");
     } else {
       toast.error("Download URL not available");

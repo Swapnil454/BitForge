@@ -29,11 +29,14 @@ export const downloadProduct = async (req, res) => {
     return res.status(404).json({ message: "Product not found" });
   }
 
-  // 5️⃣ Generate signed URL
-  const signedUrl = generateSignedUrl(product.fileKey);
+  // 5️⃣ Generate signed URL with proper download parameters
+  const filename = product.title ? `${product.title.replace(/[^a-z0-9]/gi, '_')}.pdf` : 'download.pdf';
+  const signedUrl = generateSignedUrl(product.fileKey, filename);
 
   res.json({
     downloadUrl: signedUrl,
+    filename: filename,
+    productTitle: product.title,
     expiresIn: "5 minutes",
   });
 };

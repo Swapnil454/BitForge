@@ -206,14 +206,21 @@ export default function ProductDetailsPage() {
                 <h3 className="text-lg font-bold text-purple-900 mb-3 flex items-center gap-2">
                   <span>📁</span> Product File
                 </h3>
-                <a
-                  href={product.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium"
+                <button
+                  onClick={() => {
+                    const link = document.createElement('a');
+                    link.href = product.fileUrl;
+                    link.download = product.title ? `${product.title.replace(/[^a-z0-9]/gi, '_')}.pdf` : 'product_file.pdf';
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium cursor-pointer"
                 >
                   <span>⬇️</span> View/Download File
-                </a>
+                </button>
               </div>
             )}
 
