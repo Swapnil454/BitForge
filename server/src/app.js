@@ -23,6 +23,7 @@ import userRoutes from "./routes/user.routes.js";
 import cartRoutes from "./routes/cart.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
 import careerRoutes from "./routes/career.routes.js";
+import orderFixRoutes from "./routes/orderFix.routes.js";
 
 const app = express();
 
@@ -94,6 +95,7 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/careers", careerRoutes);
+app.use("/api/order-fix", orderFixRoutes);
 
 
 export default app;
