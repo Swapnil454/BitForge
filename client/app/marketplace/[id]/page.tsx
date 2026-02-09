@@ -173,9 +173,18 @@ export default function ProductDetailsPage() {
           name: "BitForge",
           description: product.title,
           order_id: res.data.razorpayOrderId,
-          handler: function () {
-            toast.success("Payment successful! Verifying...");
+          handler: function (response: any) {
+            toast.success("Payment successful for " + product.title);
+            // Give webhook a moment to process, then redirect
+            setTimeout(() => {
+              router.push("/dashboard/buyer");
+            }, 1500);
           },
+          modal: {
+            ondismiss: function () {
+              toast.error("Payment cancelled");
+            }
+          }
         } as any;
 
         if (!(window as any).Razorpay) {
