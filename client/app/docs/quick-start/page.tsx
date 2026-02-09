@@ -82,8 +82,9 @@ export default function QuickStartPage() {
           </p>
           <CodeBlock
             language="bash"
-            code={`git clone https://github.com/yourusername/contentSellify.git
-cd contentSellify`}
+            code={`git clone https://github.com/Swapnil454/BitForge.git
+              cd BitForge`
+            }
           />
         </section>
 

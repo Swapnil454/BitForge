@@ -1,15 +1,6 @@
 
 
-// RazorpayX configuration - Temporarily disabled for manual payouts
-// Uncomment when ready to use automated payouts
+// RazorpayX configuration - Disabled for manual payouts
+// Bank account details are stored locally for manual processing
 
-// import Razorpay from "razorpay";
-
-// const razorpayX = new Razorpay({
-//   key_id: process.env.RAZORPAYX_KEY_ID,
-//   key_secret: process.env.RAZORPAYX_KEY_SECRET,
-// });
-
-// export default razorpayX;
-
-export default null; // Disabled - using manual payouts
+export default null;

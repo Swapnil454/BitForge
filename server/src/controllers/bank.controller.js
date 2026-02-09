@@ -1,6 +1,5 @@
 
 
-import razorpayX from "../config/razorpayx.js";
 import User from "../models/User.js";
 
 // Add bank account (multiple accounts supported)
@@ -35,26 +34,7 @@ export const addBankAccount = async (req, res) => {
       });
     }
 
-    // 1️⃣ Create contact in RazorpayX
-    const contact = await razorpayX.contacts.create({
-      name: accountHolderName,
-      email: user.email,
-      type: user.role === 'admin' ? 'self' : 'vendor',
-      reference_id: `${user._id.toString()}_${Date.now()}`,
-    });
-
-    // 2️⃣ Create fund account in RazorpayX
-    const fundAccount = await razorpayX.fundAccounts.create({
-      contact_id: contact.id,
-      account_type: "bank_account",
-      bank_account: {
-        name: accountHolderName,
-        ifsc: ifscCode,
-        account_number: accountNumber,
-      },
-    });
-
-    // 3️⃣ Add bank account to user's accounts array
+    // Add bank account to user's accounts array (Manual Payout Mode)
     user.bankAccounts.push({
       accountHolderName,
       accountNumber,
@@ -64,8 +44,8 @@ export const addBankAccount = async (req, res) => {
       accountType: accountType || 'savings',
       isPrimary: shouldBePrimary,
       isVerified: true,
-      razorpayContactId: contact.id,
-      razorpayFundAccountId: fundAccount.id,
+      razorpayContactId: null,
+      razorpayFundAccountId: null,
     });
     
     await user.save();
@@ -229,36 +209,8 @@ export const updateBankAccount = async (req, res) => {
       }
     }
 
-    // If changing critical bank details, recreate RazorpayX fund account
-    const criticalFieldsChanged = 
-      (accountNumber && accountNumber !== account.accountNumber) ||
-      (ifscCode && ifscCode !== account.ifscCode) ||
-      (accountHolderName && accountHolderName !== account.accountHolderName);
-
-    if (criticalFieldsChanged) {
-      // Create new contact
-      const contact = await razorpayX.contacts.create({
-        name: accountHolderName || account.accountHolderName,
-        email: user.email,
-        type: user.role === 'admin' ? 'self' : 'vendor',
-        reference_id: `${user._id.toString()}_${Date.now()}`,
-      });
-
-      // Create new fund account
-      const fundAccount = await razorpayX.fundAccounts.create({
-        contact_id: contact.id,
-        account_type: "bank_account",
-        bank_account: {
-          name: accountHolderName || account.accountHolderName,
-          ifsc: ifscCode || account.ifscCode,
-          account_number: accountNumber || account.accountNumber,
-        },
-      });
-
-      account.razorpayContactId = contact.id;
-      account.razorpayFundAccountId = fundAccount.id;
-      account.isVerified = true;
-    }
+    // Manual Payout Mode - No RazorpayX integration
+    // Bank details are stored locally for manual processing
 
     // Update fields
     if (accountHolderName) account.accountHolderName = accountHolderName;
