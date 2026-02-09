@@ -208,6 +208,7 @@ export default function ProductDetailsPage() {
                 </h3>
                 <button
                   onClick={() => {
+                    if (!product.fileUrl) return;
                     const link = document.createElement('a');
                     link.href = product.fileUrl;
                     link.download = product.title ? `${product.title.replace(/[^a-z0-9]/gi, '_')}.pdf` : 'product_file.pdf';

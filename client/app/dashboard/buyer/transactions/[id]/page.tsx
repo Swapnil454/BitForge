@@ -217,6 +217,7 @@ export default function TransactionDetailsPage() {
             {transaction.downloadUrl && (
               <button
                 onClick={() => {
+                  if (!transaction.downloadUrl) return;
                   const link = document.createElement('a');
                   link.href = transaction.downloadUrl;
                   link.download = transaction.productName ? `${transaction.productName.replace(/[^a-z0-9]/gi, '_')}.pdf` : 'download.pdf';
