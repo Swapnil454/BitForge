@@ -48,21 +48,40 @@ export default function PurchaseDetailsPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (purchase?.downloadUrl) {
-      // Create a temporary anchor element to force download
-      const link = document.createElement('a');
-      link.href = purchase.downloadUrl;
-      link.download = purchase.productName ? `${purchase.productName.replace(/[^a-z0-9]/gi, '_')}.pdf` : 'download.pdf';
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
+  const handleDownload = async () => {
+    if (!purchase?.downloadUrl) {
+      toast.error("Download URL not available");
+      return;
+    }
+
+    try {
+      const response = await fetch(purchase.downloadUrl);
+      if (!response.ok) {
+        throw new Error("Failed to fetch file");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const baseName = purchase.productName
+        ? purchase.productName.replace(/[^a-z0-9_\-]/gi, "_")
+        : "download";
+      const filename = baseName.toLowerCase().endsWith(".pdf")
+        ? baseName
+        : `${baseName}.pdf`;
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+      window.URL.revokeObjectURL(url);
+
       toast.success("Download started!");
-    } else {
-      toast.error("Download URL not available");
+    } catch (error: any) {
+      console.error("Download error", error);
+      toast.error(error.response?.data?.message || error.message || "Failed to download");
     }
   };
 

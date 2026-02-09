@@ -186,7 +186,7 @@ export const getAllBuyerPurchases = async (req, res) => {
 
     // Fetch all paid orders for this buyer
     const orders = await Order.find({ buyerId, status: "paid" })
-      .populate("productId", "title description thumbnailUrl fileUrl category")
+      .populate("productId", "title description thumbnailUrl fileUrl fileKey category")
       .populate("sellerId", "name email")
       .sort({ createdAt: -1 });
 
@@ -219,7 +219,7 @@ export const getBuyerPurchaseDetails = async (req, res) => {
 
     // Fetch order
     const order = await Order.findById(purchaseId)
-      .populate("productId", "title description thumbnailUrl fileUrl category")
+      .populate("productId", "title description thumbnailUrl fileUrl fileKey category")
       .populate("sellerId", "name email");
 
     if (!order) {
@@ -235,6 +235,13 @@ export const getBuyerPurchaseDetails = async (req, res) => {
       return res.status(400).json({ message: "This order is not completed yet" });
     }
 
+    // Build download URL and filename (use direct Cloudinary fileUrl, which already works)
+    const filename = order.productId?.title
+      ? `${order.productId.title.replace(/[^a-z0-9]/gi, "_")}.pdf`
+      : "download.pdf";
+
+    const downloadUrl = order.productId?.fileUrl || null;
+
     // Return purchase details
     res.json({
       _id: order._id,
@@ -248,7 +255,8 @@ export const getBuyerPurchaseDetails = async (req, res) => {
       sellerEmail: order.sellerId?.email || "Unknown Email",
       amount: order.amount || 0,
       purchaseDate: order.createdAt,
-      downloadUrl: order.productId?.fileUrl || null,
+      downloadUrl,
+      filename,
       razorpayPaymentId: order.razorpayPaymentId || null,
       razorpayOrderId: order.razorpayOrderId || null,
     });

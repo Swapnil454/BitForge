@@ -59,21 +59,39 @@ export default function PurchasesPage() {
   const download = async (orderId: string) => {
     try {
       const res = await api.get(`/download/${orderId}`);
-      if (res.data.downloadUrl) {
-        // Create a temporary anchor element to force download
-        const link = document.createElement('a');
-        link.href = res.data.downloadUrl;
-        link.download = res.data.filename || res.data.productTitle || 'download.pdf';
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        toast.success("Download started");
+      if (!res.data.downloadUrl) {
+        toast.error("Download URL not available");
+        return;
       }
+
+      // Fetch the file as a Blob so we can enforce a proper .pdf filename
+      const response = await fetch(res.data.downloadUrl);
+      if (!response.ok) {
+        throw new Error("Failed to fetch file");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const baseName = (res.data.filename || res.data.productTitle || "download")
+        .toString()
+        .replace(/[^a-z0-9_\-]/gi, "_");
+      const filename = baseName.toLowerCase().endsWith(".pdf")
+        ? baseName
+        : `${baseName}.pdf`;
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Download started");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Download failed");
+      console.error("Download error", error);
+      toast.error(error.response?.data?.message || error.message || "Download failed");
     }
   };
 

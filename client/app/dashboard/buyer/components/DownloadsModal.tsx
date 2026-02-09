@@ -30,27 +30,43 @@ export default function DownloadsModal({ onClose }: { onClose: () => void }) {
   const handleDownload = async (download: any) => {
     try {
       setDownloading(download._id);
-      
+
       // Fetch full details to get download URL
       const details = await buyerAPI.getPurchaseDetails(download._id);
-      
-      if (details.downloadUrl) {
-        // Create a temporary anchor element to force download
-        const link = document.createElement('a');
-        link.href = details.downloadUrl;
-        link.download = details.filename || `${download.productName}.pdf`;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        toast.success(`Downloading ${download.productName}...`);
-      } else {
+
+      if (!details.downloadUrl) {
         toast.error("Download URL not available");
+        return;
       }
+
+      // Fetch the file as a Blob so we can control the filename
+      const response = await fetch(details.downloadUrl);
+      if (!response.ok) {
+        throw new Error("Failed to fetch file");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const safeBaseName = (details.filename || download.productName || "download")
+        .toString()
+        .replace(/[^a-z0-9_\-]/gi, "_");
+      const filename = safeBaseName.toLowerCase().endsWith(".pdf")
+        ? safeBaseName
+        : `${safeBaseName}.pdf`;
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success(`Downloading ${download.productName}...`);
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to download");
+      console.error("Download error", error);
+      toast.error(error.response?.data?.message || error.message || "Failed to download");
     } finally {
       setDownloading(null);
     }
