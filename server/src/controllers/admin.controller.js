@@ -501,7 +501,8 @@ export const getPendingPayouts = async (req, res) => {
       };
     });
 
-    res.json(formattedPayouts);
+    console.log(`==> Admin fetching pending payouts: Found ${formattedPayouts.length} payouts`);
+    res.json({ payouts: formattedPayouts });
   } catch (error) {
     console.error("Error fetching pending payouts:", error);
     res.status(500).json({ message: "Failed to fetch pending payouts" });
