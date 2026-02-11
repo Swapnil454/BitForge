@@ -37,14 +37,13 @@ export default function UploadAndProductsPage() {
   const [loading, setLoading] = useState(false);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [submitted, setSubmitted] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState("");
 
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
-  const [previewPdf, setPreviewPdf] = useState<File | null>(null);
-  const [previewPdfName, setPreviewPdfName] = useState<string | null>(null);
 
   const [price, setPrice] = useState<number>(0);
   const [discount, setDiscount] = useState<number>(0);
@@ -74,8 +73,6 @@ export default function UploadAndProductsPage() {
   const [editFileError, setEditFileError] = useState("");
   const [editThumbnail, setEditThumbnail] = useState<File | null>(null);
   const [editThumbnailPreview, setEditThumbnailPreview] = useState<string | null>(null);
-  const [editPreviewPdf, setEditPreviewPdf] = useState<File | null>(null);
-  const [editPreviewPdfName, setEditPreviewPdfName] = useState<string | null>(null);
   const [editLoading, setEditLoading] = useState(false);
 
   // Delete confirmation state
@@ -161,31 +158,14 @@ export default function UploadAndProductsPage() {
     setThumbnailPreview(null);
   };
 
-  const handlePreviewPdf = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (!selected) return;
-
-    if (selected.type !== "application/pdf") {
-      showError("Preview must be a PDF file");
-      return;
-    }
-
-    if (selected.size > 10 * 1024 * 1024) {
-      showError("Preview PDF size must be under 10MB");
-      return;
-    }
-
-    setPreviewPdf(selected);
-    setPreviewPdfName(selected.name);
-  };
-
-  const removePreviewPdf = () => {
-    setPreviewPdf(null);
-    setPreviewPdfName(null);
-  };
-
   const handleSubmit = async (e: any) => {
     e.preventDefault();
+    
+    if (!acceptedTerms) {
+      showError("Please accept the Seller Terms & Conditions to continue");
+      return;
+    }
+    
     if (!file) {
       setFileError("Please select a file");
       return;
@@ -211,9 +191,6 @@ export default function UploadAndProductsPage() {
     if (thumbnail) {
       formData.append("thumbnail", thumbnail);
     }
-    if (previewPdf) {
-      formData.append("previewPdf", previewPdf);
-    }
 
     try {
       const response = await api.post("/products/upload", formData);
@@ -228,14 +205,13 @@ export default function UploadAndProductsPage() {
       setFile(null);
       setThumbnail(null);
       setThumbnailPreview(null);
-      setPreviewPdf(null);
-      setPreviewPdfName(null);
       setPrice(0);
       setDiscount(0);
       setLanguage("English");
       setFormat("PDF");
       setIntendedAudience("All Levels");
       setPageCount(1);
+      setAcceptedTerms(false);
     } catch (error: any) {
       console.error("Upload error:", error);
       showError(error.response?.data?.message || "Upload failed");
@@ -618,50 +594,62 @@ export default function UploadAndProductsPage() {
                 )}
               </Field>
 
-              {/* PREVIEW PDF */}
-              <Field label="Preview PDF (Optional)">
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={handlePreviewPdf}
-                  className="
-                    w-full text-sm text-white/70
-                    file:mr-4 file:rounded-lg
-                    file:border-0 file:bg-indigo-500/20
-                    file:px-4 file:py-2
-                    file:text-sm file:font-medium
-                    file:text-indigo-300
-                    hover:file:bg-indigo-500/30
-                    cursor-pointer
-                  "
-                />
-                <p className="text-xs text-white/50 mt-1">
-                  Upload a sample/preview PDF that buyers can download before purchasing (max 10MB)
-                </p>
-
-                {previewPdfName && (
-                  <div className="mt-2 flex items-center gap-2 text-xs text-white/60 bg-indigo-500/10 px-3 py-2 rounded-lg border border-indigo-500/20">
-                    📄 {previewPdfName}
-                    <button
-                      type="button"
-                      onClick={removePreviewPdf}
-                      className="ml-auto text-red-400 hover:text-red-300"
-                    >
-                      ✕
-                    </button>
+              {/* PREVIEW PDF - AUTOMATIC */}
+              <div className="rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/30 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="text-2xl">✨</div>
+                  <div>
+                    <h4 className="font-semibold text-indigo-300 mb-1">Automatic Preview Generation</h4>
+                    <p className="text-xs text-white/70 leading-relaxed">
+                      <strong>No extra work needed!</strong> When you upload a PDF, our system automatically:
+                    </p>
+                    <ul className="text-xs text-white/60 mt-2 space-y-1 ml-4">
+                      <li>• Detects total page count</li>
+                      <li>• Generates watermarked preview pages based on document size</li>
+                      <li>• Adds locked placeholder pages</li>
+                    </ul>
                   </div>
-                )}
-              </Field>
+                </div>
+              </div>
+
+              {/* Terms & Conditions Checkbox */}
+              <div className="mt-6 flex items-start gap-3 bg-slate-800/40 border border-slate-700/50 rounded-xl p-4">
+                <input
+                  type="checkbox"
+                  id="termsCheckbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-1 w-4 h-4 accent-cyan-500 cursor-pointer"
+                />
+                <label htmlFor="termsCheckbox" className="text-sm text-slate-300 cursor-pointer">
+                  I have read and agree to the{" "}
+                  <a
+                    href="/seller-terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-cyan-400 hover:text-cyan-300 underline font-medium"
+                  >
+                    Seller Terms & Conditions
+                  </a>
+                  , including content security policies and preview disclosure rules.
+                </label>
+              </div>
 
               <button
-                className="
+                type="submit"
+                disabled={!acceptedTerms || loading}
+                className={`
                   mt-2 inline-flex items-center justify-center
-                  rounded-xl bg-cyan-600/20 border border-cyan-500/30
-                  px-6 py-2.5 font-semibold
-                  hover:bg-cyan-600/30 transition
-                "
+                  rounded-xl px-6 py-2.5 font-semibold
+                  transition
+                  ${
+                    acceptedTerms && !loading
+                      ? "bg-cyan-600/20 border border-cyan-500/30 hover:bg-cyan-600/30"
+                      : "bg-slate-700/20 border border-slate-600/30 cursor-not-allowed opacity-50"
+                  }
+                `}
               >
-                Upload Product
+                {loading ? "Uploading..." : "Upload Product"}
               </button>
 
               {submitted && (

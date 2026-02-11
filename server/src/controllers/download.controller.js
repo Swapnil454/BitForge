@@ -2,9 +2,10 @@
 
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
+import { generateSignedUrl } from "../utils/cloudinarySignedUrl.js";
 
-// Simple download metadata endpoint used by buyer purchases page
-// Returns the direct Cloudinary fileUrl plus a safe filename based on product title
+// Download endpoint with signed URL generation for secure access
+// Returns a time-limited signed URL for purchased products
 export const downloadProduct = async (req, res) => {
   const { orderId } = req.params;
 
@@ -30,7 +31,7 @@ export const downloadProduct = async (req, res) => {
     return res.status(404).json({ message: "Product not found" });
   }
 
-  // 5️⃣ Use stored Cloudinary secure_url and construct a safe filename
+  // 5️⃣ Construct safe filename
   const baseName = product.title
     ? product.title.replace(/[^a-z0-9_\-]/gi, "_")
     : "download";
@@ -38,15 +39,22 @@ export const downloadProduct = async (req, res) => {
     ? baseName
     : `${baseName}.pdf`;
 
-  const downloadUrl = product.fileUrl;
-
-  if (!downloadUrl) {
-    return res.status(400).json({ message: "Download URL not configured for this product" });
+  // 6️⃣ Generate signed URL (secure, time-limited access)
+  if (!product.fileKey) {
+    return res.status(400).json({ message: "Download not available for this product" });
   }
 
-  res.json({
-    downloadUrl,
-    filename,
-    productTitle: product.title,
-  });
+  try {
+    const signedUrl = generateSignedUrl(product.fileKey, filename);
+    
+    res.json({
+      downloadUrl: signedUrl,
+      filename,
+      productTitle: product.title,
+      expiresIn: "5 minutes", // URL expires after 5 minutes
+    });
+  } catch (error) {
+    console.error("Error generating signed URL:", error);
+    return res.status(500).json({ message: "Failed to generate download URL" });
+  }
 };

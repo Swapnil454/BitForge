@@ -187,33 +187,14 @@ export default function ProductDetailsPage() {
     .replace(/[^a-z0-9_\-]+/gi, "_")
     .toLowerCase()}_preview.pdf`;
 
-  const handleDownloadPreview = async () => {
+  const handleDownloadPreview = () => {
     if (!product?.previewPdfUrl) {
       toast.error("Preview not available");
       return;
     }
 
-    try {
-      const response = await fetch(product.previewPdfUrl);
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = previewFileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Failed to download preview:", error);
-      toast.error("Failed to download preview");
-    }
+    // Open preview PDF directly (Cloudinary handles format properly)
+    window.open(product.previewPdfUrl, "_blank", "noopener,noreferrer");
   };
 
     const handleBuy = async () => {

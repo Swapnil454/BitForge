@@ -5,16 +5,13 @@
  */
 
 import cloudinary from "../config/cloudinary.js";
-import { createRequire } from "module";
 import sharp from "sharp";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import { PDFDocument } from "pdf-lib";
 
-// Import CommonJS module pdf-parse
-const require = createRequire(import.meta.url);
-const pdfParse = require("pdf-parse");
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -26,11 +23,14 @@ const __dirname = dirname(__filename);
  */
 async function extractPDFData(fileBuffer) {
   try {
-    const data = await pdfParse(fileBuffer);
+    // Use pdf-lib to get page count
+    const pdfDoc = await PDFDocument.load(fileBuffer);
+    const pageCount = pdfDoc.getPageCount();
+
     return {
-      pageCount: data.numpages,
-      text: data.text,
-      info: data.info
+      pageCount,
+      text: "",
+      info: {}
     };
   } catch (error) {
     console.error("PDF parse error:", error);
@@ -41,6 +41,7 @@ async function extractPDFData(fileBuffer) {
     };
   }
 }
+
 
 /**
  * Generate watermarked preview pages from a PDF file

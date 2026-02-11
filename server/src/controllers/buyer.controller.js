@@ -171,7 +171,8 @@ export const getBuyerTransactionDetails = async (req, res) => {
       date: order.createdAt,
       razorpayPaymentId: order.razorpayPaymentId || null,
       razorpayOrderId: order.razorpayOrderId || null,
-      downloadUrl: order.productId?.fileUrl || null,
+      // 🔐 Don't expose direct URL - use /api/download/:orderId endpoint for signed URL
+      downloadAvailable: order.status === "paid" && !!order.productId?.fileKey,
     });
   } catch (error) {
     console.error("Error fetching transaction details:", error);
@@ -235,12 +236,13 @@ export const getBuyerPurchaseDetails = async (req, res) => {
       return res.status(400).json({ message: "This order is not completed yet" });
     }
 
-    // Build download URL and filename (use direct Cloudinary fileUrl, which already works)
+    // Build filename for display
     const filename = order.productId?.title
       ? `${order.productId.title.replace(/[^a-z0-9]/gi, "_")}.pdf`
       : "download.pdf";
 
-    const downloadUrl = order.productId?.fileUrl || null;
+    // 🔐 Don't expose direct URL - client should use /api/download/:orderId for signed URL
+    const downloadAvailable = !!order.productId?.fileKey;
 
     // Return purchase details
     res.json({
@@ -255,7 +257,7 @@ export const getBuyerPurchaseDetails = async (req, res) => {
       sellerEmail: order.sellerId?.email || "Unknown Email",
       amount: order.amount || 0,
       purchaseDate: order.createdAt,
-      downloadUrl,
+      downloadAvailable,
       filename,
       razorpayPaymentId: order.razorpayPaymentId || null,
       razorpayOrderId: order.razorpayOrderId || null,

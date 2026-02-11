@@ -28,7 +28,7 @@
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
-    "pdf-parse": "^2.4.5",
+    "pdf-lib": "^1.17.1",
     "pdfkit": "^0.17.2",
     "razorpay": "^2.9.6",
     "sharp": "^0.34.5",
