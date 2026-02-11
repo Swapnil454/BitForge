@@ -240,6 +240,47 @@ export const adminAPI = {
     deleteProduct: async (id: string, deleteReason: string) => {
         const response = await api.delete(`/admin/products/${id}/delete`, { data: { deleteReason } });
         return response.data;
+    },
+
+    // Trust & Security APIs
+    getMalwareFlaggedProducts: async (severity?: 'all' | 'high' | 'medium' | 'low') => {
+        const response = await api.get('/admin/security/malware/flagged', {
+            params: { severity }
+        });
+        return response.data;
+    },
+
+    getMalwareDashboardStats: async () => {
+        const response = await api.get('/admin/security/malware/stats');
+        return response.data;
+    },
+
+    getContentReviewQueue: async (severity?: 'all' | 'high' | 'medium' | 'low') => {
+        const response = await api.get('/admin/security/content-review/queue', {
+            params: { severity }
+        });
+        return response.data;
+    },
+
+    resolveContentReview: async (productId: string, action: 'approve' | 'reject', reason?: string) => {
+        const response = await api.post(`/admin/security/content-review/${productId}/resolve`, {
+            action,
+            reason
+        });
+        return response.data;
+    },
+
+    getPendingIdentityVerifications: async () => {
+        const response = await api.get('/admin/security/identity/pending');
+        return response.data;
+    },
+
+    verifySellerIdentity: async (sellerId: string, verified: boolean, notes?: string) => {
+        const response = await api.post(`/admin/security/identity/${sellerId}/verify`, {
+            verified,
+            notes
+        });
+        return response.data;
     }
 };
 
@@ -363,6 +404,11 @@ export const buyerAPI = {
 
     getPurchaseDetails: async (purchaseId: string) => {
         const response = await api.get(`/buyer/purchases/${purchaseId}`);
+        return response.data;
+    },
+
+    getMyDisputes: async () => {
+        const response = await api.get('/disputes/my');
         return response.data;
     }
 };
@@ -539,6 +585,41 @@ export const userAPI = {
 
     confirmAccountDeletion: async (otp: string, reason: string) => {
         const response = await api.post('/users/confirm-account-deletion', { otp, reason });
+        return response.data;
+    }
+};
+
+// Review API functions
+export const reviewAPI = {
+    getProductReviews: async (productId: string, page: number = 1, limit: number = 10) => {
+        const response = await api.get(`/reviews/product/${productId}`, {
+            params: { page, limit }
+        });
+        return response.data;
+    },
+
+    createReview: async (data: { productId: string; orderId: string; rating: number; comment?: string }) => {
+        const response = await api.post('/reviews', data);
+        return response.data;
+    },
+
+    updateReview: async (reviewId: string, data: { rating: number; comment?: string }) => {
+        const response = await api.patch(`/reviews/${reviewId}`, data);
+        return response.data;
+    },
+
+    deleteReview: async (reviewId: string) => {
+        const response = await api.delete(`/reviews/${reviewId}`);
+        return response.data;
+    },
+
+    canReview: async (productId: string, orderId?: string) => {
+        const response = await api.get(`/reviews/can-review/${productId}`);
+        return response.data;
+    },
+
+    addSellerResponse: async (reviewId: string, text: string) => {
+        const response = await api.post(`/reviews/${reviewId}/response`, { text });
         return response.data;
     }
 };

@@ -742,13 +742,57 @@ export const getCommissionSummary = async (req, res) => {
   }
 };
 
-
 export const getOpenDisputes = async (req, res) => {
-  const disputes = await Dispute.find({ status: "open" })
-    .populate("orderId")
-    .populate("buyerId", "email");
+  try {
+    const disputes = await Dispute.find({ status: "open" })
+      .populate({
+        path: "orderId",
+        populate: [
+          { path: "productId", select: "title" },
+          { path: "buyerId", select: "name email" },
+          { path: "sellerId", select: "name email" },
+        ],
+      })
+      .populate("buyerId", "name email");
 
-  res.json(disputes);
+    const formattedDisputes = disputes.map((dispute) => {
+      const order = dispute.orderId;
+      const orderBuyer = order && order.buyerId;
+      const orderSeller = order && order.sellerId;
+      const product = order && order.productId;
+      const fallbackBuyer = dispute.buyerId;
+
+      const buyerName =
+        (orderBuyer && (orderBuyer.name || orderBuyer.email)) ||
+        (fallbackBuyer && (fallbackBuyer.name || fallbackBuyer.email)) ||
+        "Unknown buyer";
+
+      const sellerName =
+        (orderSeller && (orderSeller.name || orderSeller.email)) ||
+        "Unknown seller";
+
+      const productName = (product && product.title) || "Product";
+
+      const amount = order && typeof order.amount === "number" ? order.amount : 0;
+
+      return {
+        _id: dispute._id,
+        orderId: order ? order._id : null,
+        buyerName,
+        sellerName,
+        productName,
+        amount,
+        reason: dispute.reason,
+        status: dispute.status,
+        createdAt: dispute.createdAt,
+      };
+    });
+
+    res.json({ disputes: formattedDisputes });
+  } catch (error) {
+    console.error("Error fetching open disputes:", error);
+    res.status(500).json({ message: "Failed to load disputes" });
+  }
 };
 
 export const getMonthlyGSTReport = async (req, res) => {
@@ -1288,5 +1332,325 @@ export const getAllTransactions = async (req, res) => {
   } catch (error) {
     console.error("Error fetching all transactions:", error);
     res.status(500).json({ message: "Failed to fetch transactions" });
+  }
+};
+
+// ==================== Trust & Security Features ====================
+
+/**
+ * Get products flagged by malware scans
+ * Returns products with malware detections from VirusTotal
+ */
+export const getMalwareFlaggedProducts = async (req, res) => {
+  try {
+    const { severity } = req.query; // 'all', 'high', 'medium', 'low'
+    
+    // Find products with malware detections
+    const query = {
+      $or: [
+        { "malwareScanDetails.detections.malicious": { $gt: 0 } },
+        { "malwareScanDetails.detections.suspicious": { $gt: 0 } }
+      ]
+    };
+    
+    const products = await Product.find(query)
+      .populate("sellerId", "name email totalSales averageRating")
+      .sort({ createdAt: -1 });
+    
+    // Calculate severity for each product
+    const flaggedProducts = products.map(product => {
+      const detections = product.malwareScanDetails?.detections || {};
+      const malicious = detections.malicious || 0;
+      const suspicious = detections.suspicious || 0;
+      
+      let severityLevel = 'low';
+      if (malicious > 5) severityLevel = 'high';
+      else if (malicious > 0 || suspicious > 10) severityLevel = 'medium';
+      
+      return {
+        ...product.toObject(),
+        severityLevel,
+        threatScore: malicious * 10 + suspicious * 2
+      };
+    });
+    
+    // Filter by severity if requested
+    const filtered = severity && severity !== 'all'
+      ? flaggedProducts.filter(p => p.severityLevel === severity)
+      : flaggedProducts;
+    
+    res.json({
+      products: filtered,
+      summary: {
+        total: filtered.length,
+        high: flaggedProducts.filter(p => p.severityLevel === 'high').length,
+        medium: flaggedProducts.filter(p => p.severityLevel === 'medium').length,
+        low: flaggedProducts.filter(p => p.severityLevel === 'low').length
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching malware flagged products:", error);
+    res.status(500).json({ message: "Failed to fetch malware flagged products" });
+  }
+};
+
+/**
+ * Get malware scan dashboard statistics
+ */
+export const getMalwareDashboardStats = async (req, res) => {
+  try {
+    // Total scans performed
+    const totalScans = await Product.countDocuments({
+      virusTotalId: { $exists: true }
+    });
+    
+    // Products with detections
+    const productsWithDetections = await Product.countDocuments({
+      $or: [
+        { "malwareScanDetails.detections.malicious": { $gt: 0 } },
+        { "malwareScanDetails.detections.suspicious": { $gt: 0 } }
+      ]
+    });
+    
+    // Clean products
+    const cleanProducts = await Product.countDocuments({
+      virusTotalId: { $exists: true },
+      "malwareScanDetails.detections.malicious": 0,
+      "malwareScanDetails.detections.suspicious": 0
+    });
+    
+    // Products with basic checks only (no VirusTotal)
+    const basicCheckOnly = await Product.countDocuments({
+      "malwareScanDetails.basicCheckOnly": true
+    });
+    
+    // Recent scans (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const recentScans = await Product.countDocuments({
+      virusTotalId: { $exists: true },
+      createdAt: { $gte: sevenDaysAgo }
+    });
+    
+    // Get products with highest threat scores
+    const highThreatProducts = await Product.find({
+      "malwareScanDetails.detections.malicious": { $gt: 0 }
+    })
+      .populate("sellerId", "name email")
+      .sort({ "malwareScanDetails.detections.malicious": -1 })
+      .limit(10)
+      .select("title virusTotalLink malwareScanDetails sellerId createdAt");
+    
+    res.json({
+      totalScans,
+      productsWithDetections,
+      cleanProducts,
+      basicCheckOnly,
+      recentScans,
+      scanRate: totalScans > 0 ? ((cleanProducts / totalScans) * 100).toFixed(1) : 0,
+      highThreatProducts
+    });
+  } catch (error) {
+    console.error("Error fetching malware dashboard stats:", error);
+    res.status(500).json({ message: "Failed to fetch malware dashboard stats" });
+  }
+};
+
+/**
+ * Get products requiring manual content review
+ * Returns products flagged by automatic content review heuristics
+ */
+export const getContentReviewQueue = async (req, res) => {
+  try {
+    const { severity } = req.query; // 'all', 'high', 'medium', 'low'
+    
+    const query = {
+      requiresManualReview: true,
+      status: { $ne: 'rejected' } // Exclude already rejected
+    };
+    
+    if (severity && severity !== 'all') {
+      query.reviewSeverity = severity;
+    }
+    
+    const products = await Product.find(query)
+      .populate("sellerId", "name email totalSales averageRating identityVerified")
+      .sort({ createdAt: -1 });
+    
+    // Group by severity
+    const grouped = {
+      high: products.filter(p => p.reviewSeverity === 'high'),
+      medium: products.filter(p => p.reviewSeverity === 'medium'),
+      low: products.filter(p => p.reviewSeverity === 'low')
+    };
+    
+    res.json({
+      products,
+      summary: {
+        total: products.length,
+        high: grouped.high.length,
+        medium: grouped.medium.length,
+        low: grouped.low.length
+      },
+      grouped
+    });
+  } catch (error) {
+    console.error("Error fetching content review queue:", error);
+    res.status(500).json({ message: "Failed to fetch content review queue" });
+  }
+};
+
+/**
+ * Resolve a content review flag (approve or keep rejected)
+ */
+export const resolveContentReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { action, reason } = req.body; // action: 'approve' or 'reject'
+    
+    if (!action || !['approve', 'reject'].includes(action)) {
+      return res.status(400).json({ message: "Invalid action. Must be 'approve' or 'reject'" });
+    }
+    
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    
+    if (action === 'approve') {
+      // Clear review flag and approve product
+      product.requiresManualReview = false;
+      product.reviewFlags = [];
+      product.reviewSeverity = null;
+      product.contentQualityScore = Math.max(product.contentQualityScore || 0, 60); // Boost score
+      product.status = 'approved';
+      product.rejectionReason = null;
+      
+      await product.save();
+      
+      // Notify seller
+      if (product.sellerId) {
+        await createNotification(
+          product.sellerId,
+          'product_approved',
+          'Content Review Passed ✅',
+          `Your product "${product.title}" has been manually reviewed and approved by our team.`,
+          product._id,
+          'Product'
+        );
+      }
+      
+      res.json({ 
+        message: "Product approved after manual review", 
+        product 
+      });
+    } else {
+      // Reject product
+      const rejectionReason = reason || 'Failed manual content review';
+      
+      product.status = 'rejected';
+      product.rejectionReason = rejectionReason;
+      
+      await product.save();
+      
+      // Notify seller
+      if (product.sellerId) {
+        await createNotification(
+          product.sellerId,
+          'product_rejected',
+          'Product Rejected After Review',
+          `Your product "${product.title}" was rejected after manual review. Reason: ${rejectionReason}`,
+          product._id,
+          'Product'
+        );
+      }
+      
+      res.json({ 
+        message: "Product rejected after manual review", 
+        product,
+        reason: rejectionReason
+      });
+    }
+  } catch (error) {
+    console.error("Error resolving content review:", error);
+    res.status(500).json({ message: "Failed to resolve content review" });
+  }
+};
+
+/**
+ * Verify seller identity
+ * Updates seller's identityVerified status and timestamp
+ */
+export const verifySellerIdentity = async (req, res) => {
+  try {
+    const { sellerId } = req.params;
+    const { verified, notes } = req.body; // verified: boolean
+    
+    const seller = await User.findById(sellerId);
+    if (!seller) {
+      return res.status(404).json({ message: "Seller not found" });
+    }
+    
+    if (seller.role !== 'seller') {
+      return res.status(400).json({ message: "User is not a seller" });
+    }
+    
+    seller.identityVerified = verified;
+    seller.identityVerifiedAt = verified ? new Date() : null;
+    seller.identityVerificationNotes = notes || '';
+    
+    await seller.save();
+    
+    // Notify seller
+    await createNotification(
+      seller._id,
+      verified ? 'identity_verified' : 'identity_rejected',
+      verified ? 'Identity Verified ✅' : 'Identity Verification Issue',
+      verified
+        ? 'Your identity has been verified! This badge will help build trust with buyers.'
+        : `There was an issue with your identity verification. ${notes || 'Please contact support for details.'}`,
+      seller._id,
+      'User'
+    );
+    
+    res.json({
+      message: verified ? "Seller identity verified" : "Seller identity verification revoked",
+      seller: {
+        _id: seller._id,
+        name: seller.name,
+        email: seller.email,
+        identityVerified: seller.identityVerified,
+        identityVerifiedAt: seller.identityVerifiedAt
+      }
+    });
+  } catch (error) {
+    console.error("Error verifying seller identity:", error);
+    res.status(500).json({ message: "Failed to verify seller identity" });
+  }
+};
+
+/**
+ * Get sellers pending identity verification
+ */
+export const getPendingIdentityVerifications = async (req, res) => {
+  try {
+    // Find sellers who haven't been verified yet but have submitted documents
+    // For now, get all sellers who are approved but not identity verified
+    const sellers = await User.find({
+      role: 'seller',
+      approvalStatus: 'approved',
+      identityVerified: { $ne: true }
+    })
+      .select('-password')
+      .sort({ createdAt: -1 });
+    
+    res.json({
+      sellers,
+      total: sellers.length
+    });
+  } catch (error) {
+    console.error("Error fetching pending identity verifications:", error);
+    res.status(500).json({ message: "Failed to fetch pending identity verifications" });
   }
 };

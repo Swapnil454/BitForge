@@ -33,7 +33,13 @@ import {
   getAllUsers,
   updateUserProfile,
   deleteUserByAdmin,
-  getAllTransactions
+  getAllTransactions,
+  getMalwareFlaggedProducts,
+  getMalwareDashboardStats,
+  getContentReviewQueue,
+  resolveContentReview,
+  verifySellerIdentity,
+  getPendingIdentityVerifications
 } from "../controllers/admin.controller.js";
 import {
   approveRefund,
@@ -98,6 +104,14 @@ router.post("/sellers/:id/deletions/reject", rejectSellerDeletion);
 router.get("/users", getAllUsers);
 router.put("/users/:id/profile", updateUserProfile);
 router.delete("/users/:id", deleteUserByAdmin);
+
+// Trust & Security Features
+router.get("/security/malware/flagged", getMalwareFlaggedProducts);
+router.get("/security/malware/stats", getMalwareDashboardStats);
+router.get("/security/content-review/queue", getContentReviewQueue);
+router.post("/security/content-review/:id/resolve", resolveContentReview);
+router.get("/security/identity/pending", getPendingIdentityVerifications);
+router.post("/security/identity/:sellerId/verify", verifySellerIdentity);
 
 
 export default router;

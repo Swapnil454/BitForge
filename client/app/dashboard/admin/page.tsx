@@ -430,6 +430,19 @@ export default function AdminDashboard() {
             hoverTextColor="text-yellow-200"
           />
 
+          <DashboardActionCard
+            title="Trust & Security"
+            description="Malware, reviews & identity"
+            icon="🛡️"
+            href="/dashboard/admin/security"
+            gradientFrom="from-red-600/20"
+            gradientTo="to-orange-600/20"
+            borderColor="border-red-500/40"
+            hoverBorderColor="border-red-400/60"
+            hoverShadow="hover:shadow-red-500/30"
+            hoverTextColor="text-red-200"
+          />
+
         </div>
         {/* Tables */}
         <div

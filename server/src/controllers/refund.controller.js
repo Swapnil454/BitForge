@@ -45,11 +45,13 @@ export const approveRefund = async (req, res) => {
 
 export const rejectDispute = async (req, res) => {
   const { disputeId } = req.params;
-  const { adminNote } = req.body;
+  const { adminNote, reason } = req.body;
+
+  const note = adminNote ?? reason ?? "";
 
   await Dispute.findByIdAndUpdate(disputeId, {
     status: "rejected",
-    adminNote,
+    adminNote: note,
   });
 
   res.json({ message: "Dispute rejected" });

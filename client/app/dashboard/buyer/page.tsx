@@ -411,7 +411,7 @@ export default function BuyerDashboard() {
             <KPI title="Total Spent" value={stats ? `₹${stats.totalSpent.toLocaleString()}` : "₹0"} />
           </button>
           <button
-            onClick={() => setShowPurchasesModal(true)}
+            onClick={() => router.push("/dashboard/buyer/purchases")}
             className="text-left"
           >
             <KPI title="Purchases" value={stats ? stats.totalPurchases : "0"} />
@@ -431,7 +431,7 @@ export default function BuyerDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
           <DashboardActionCard
             variant="buyer"
             title="My Purchases"
@@ -473,6 +473,34 @@ export default function BuyerDashboard() {
             hoverTextColor="text-emerald-200"
           />
 
+          <DashboardActionCard
+            variant="buyer"
+            title="My Disputes"
+            description="Track dispute status"
+            icon="⚖️"
+            href="/dashboard/buyer/disputes"
+            gradientFrom="from-rose-600/20"
+            gradientTo="to-orange-600/20"
+            borderColor="border-rose-500/40"
+            hoverBorderColor="border-rose-400/60"
+            hoverShadow="hover:shadow-rose-500/30"
+            hoverTextColor="text-rose-200"
+          />
+
+          {/* <DashboardActionCard
+            variant="buyer"
+            title="Write Reviews"
+            description="Rate your purchases"
+            icon="⭐"
+            href="/dashboard/buyer/purchases"
+            gradientFrom="from-yellow-600/20"
+            gradientTo="to-orange-600/20"
+            borderColor="border-yellow-500/40"
+            hoverBorderColor="border-yellow-400/60"
+            hoverShadow="hover:shadow-yellow-500/30"
+            hoverTextColor="text-yellow-200"
+          /> */}
+
         </div>
 
         {/* Orders */}
@@ -483,17 +511,33 @@ export default function BuyerDashboard() {
           <Glass title="📋 Recent Orders">
             {stats && stats.recentOrders && stats.recentOrders.length > 0 ? (
               <div className="space-y-3">
-                {stats.recentOrders.slice(0, 2).map(o => (
-                  <div key={o.id} className="flex items-center justify-between group-hover:bg-white/5 px-3 py-2.5 -mx-3 rounded-lg transition">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-white text-sm truncate">{o.product}</p>
-                      <p className="text-xs text-white/60 mt-0.5">{new Date(o.createdAt).toLocaleString()}</p>
+                {stats.recentOrders.slice(0, 2).map((o) => {
+                  const orderDate = o.date || o.createdAt || o.requestedAt;
+                  const formattedDate = orderDate
+                    ? new Date(orderDate).toLocaleString()
+                    : "Date unavailable";
+
+                  return (
+                    <div
+                      key={o.id}
+                      className="flex items-center justify-between gap-3 group-hover:bg-white/5 px-3 py-2.5 -mx-3 rounded-lg transition flex-wrap sm:flex-nowrap"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-white text-sm truncate">
+                          {o.product}
+                        </p>
+                        <p className="text-xs text-white/60 mt-0.5">
+                          {formattedDate}
+                        </p>
+                      </div>
+                      <div className="text-right ml-4 flex-shrink-0">
+                        <p className="font-bold text-lg text-green-400">
+                          ₹{o.amount.toLocaleString()}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-right ml-4">
-                      <p className="font-bold text-lg text-green-400">₹{o.amount.toLocaleString()}</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-6">

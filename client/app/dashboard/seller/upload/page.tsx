@@ -43,9 +43,17 @@ export default function UploadAndProductsPage() {
 
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [previewPdf, setPreviewPdf] = useState<File | null>(null);
+  const [previewPdfName, setPreviewPdfName] = useState<string | null>(null);
 
   const [price, setPrice] = useState<number>(0);
   const [discount, setDiscount] = useState<number>(0);
+  
+  // B. Structured validation fields
+  const [language, setLanguage] = useState<string>("English");
+  const [format, setFormat] = useState<string>("PDF");
+  const [intendedAudience, setIntendedAudience] = useState<string>("All Levels");
+  const [pageCount, setPageCount] = useState<number>(1);
 
   const [products, setProducts] = useState<Product[]>([]);
 
@@ -58,10 +66,16 @@ export default function UploadAndProductsPage() {
   const [editDescription, setEditDescription] = useState("");
   const [editPrice, setEditPrice] = useState<number>(0);
   const [editDiscount, setEditDiscount] = useState<number>(0);
+  const [editLanguage, setEditLanguage] = useState<string>("English");
+  const [editFormat, setEditFormat] = useState<string>("PDF");
+  const [editIntendedAudience, setEditIntendedAudience] = useState<string>("All Levels");
+  const [editPageCount, setEditPageCount] = useState<number>(1);
   const [editFile, setEditFile] = useState<File | null>(null);
   const [editFileError, setEditFileError] = useState("");
   const [editThumbnail, setEditThumbnail] = useState<File | null>(null);
   const [editThumbnailPreview, setEditThumbnailPreview] = useState<string | null>(null);
+  const [editPreviewPdf, setEditPreviewPdf] = useState<File | null>(null);
+  const [editPreviewPdfName, setEditPreviewPdfName] = useState<string | null>(null);
   const [editLoading, setEditLoading] = useState(false);
 
   // Delete confirmation state
@@ -147,6 +161,29 @@ export default function UploadAndProductsPage() {
     setThumbnailPreview(null);
   };
 
+  const handlePreviewPdf = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0];
+    if (!selected) return;
+
+    if (selected.type !== "application/pdf") {
+      showError("Preview must be a PDF file");
+      return;
+    }
+
+    if (selected.size > 10 * 1024 * 1024) {
+      showError("Preview PDF size must be under 10MB");
+      return;
+    }
+
+    setPreviewPdf(selected);
+    setPreviewPdfName(selected.name);
+  };
+
+  const removePreviewPdf = () => {
+    setPreviewPdf(null);
+    setPreviewPdfName(null);
+  };
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     if (!file) {
@@ -166,9 +203,16 @@ export default function UploadAndProductsPage() {
     formData.append("description", e.target.description.value);
     formData.append("price", String(price));
     formData.append("discount", String(discount || 0));
+    formData.append("language", language);
+    formData.append("format", format);
+    formData.append("intendedAudience", intendedAudience);
+    formData.append("pageCount", String(pageCount));
     formData.append("file", file);
     if (thumbnail) {
       formData.append("thumbnail", thumbnail);
+    }
+    if (previewPdf) {
+      formData.append("previewPdf", previewPdf);
     }
 
     try {
@@ -184,8 +228,14 @@ export default function UploadAndProductsPage() {
       setFile(null);
       setThumbnail(null);
       setThumbnailPreview(null);
+      setPreviewPdf(null);
+      setPreviewPdfName(null);
       setPrice(0);
       setDiscount(0);
+      setLanguage("English");
+      setFormat("PDF");
+      setIntendedAudience("All Levels");
+      setPageCount(1);
     } catch (error: any) {
       console.error("Upload error:", error);
       showError(error.response?.data?.message || "Upload failed");
@@ -200,6 +250,10 @@ export default function UploadAndProductsPage() {
     setEditDescription(product.description);
     setEditPrice(product.price);
     setEditDiscount(product.discount);
+    setEditLanguage((product as any).language || "English");
+    setEditFormat((product as any).format || "PDF");
+    setEditIntendedAudience((product as any).intendedAudience || "All Levels");
+    setEditPageCount((product as any).pageCount || 1);
     setEditFile(null);
     setEditFileError("");
     setEditThumbnail(null);
@@ -305,6 +359,10 @@ export default function UploadAndProductsPage() {
       formData.append("description", editDescription);
       formData.append("price", editPrice.toString());
       formData.append("discount", editDiscount.toString());
+      formData.append("language", editLanguage);
+      formData.append("format", editFormat);
+      formData.append("intendedAudience", editIntendedAudience);
+      formData.append("pageCount", editPageCount.toString());
       if (editFile) {
         formData.append("file", editFile);
       }
@@ -413,6 +471,76 @@ export default function UploadAndProductsPage() {
                   />
                 </Field>
               </div>
+              
+              {/* Product Validation Fields */}
+              <div className="bg-purple-500/5 border border-purple-500/20 rounded-xl p-4 space-y-4">
+                <div className="flex items-center gap-2 text-xs text-purple-300 font-semibold">
+                  <span>📋</span>
+                  <span>Product Details (Required)</span>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Language">
+                    <select
+                      value={language}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      className={inputClass}
+                      required
+                    >
+                      <option value="English">English</option>
+                      <option value="Hindi">Hindi</option>
+                      <option value="Spanish">Spanish</option>
+                      <option value="French">French</option>
+                      <option value="German">German</option>
+                      <option value="Chinese">Chinese</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </Field>
+
+                  <Field label="Format">
+                    <select
+                      value={format}
+                      onChange={(e) => setFormat(e.target.value)}
+                      className={inputClass}
+                      required
+                    >
+                      <option value="PDF">PDF</option>
+                      <option value="EPUB">EPUB</option>
+                      <option value="ZIP">ZIP</option>
+                      <option value="DOCX">DOCX</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </Field>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Page Count">
+                    <input
+                      type="number"
+                      min="1"
+                      value={pageCount}
+                      onChange={(e) => setPageCount(+e.target.value)}
+                      placeholder="e.g., 50"
+                      className={inputClass}
+                      required
+                    />
+                  </Field>
+
+                  <Field label="Intended Audience">
+                    <select
+                      value={intendedAudience}
+                      onChange={(e) => setIntendedAudience(e.target.value)}
+                      className={inputClass}
+                      required
+                    >
+                      <option value="Beginner">Beginner</option>
+                      <option value="Intermediate">Intermediate</option>
+                      <option value="Advanced">Advanced</option>
+                      <option value="All Levels">All Levels</option>
+                    </select>
+                  </Field>
+                </div>
+              </div>
 
               {/* FINAL PRICE BAR */}
               <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm">
@@ -483,6 +611,41 @@ export default function UploadAndProductsPage() {
                       type="button"
                       onClick={removeThumbnail}
                       className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+              </Field>
+
+              {/* PREVIEW PDF */}
+              <Field label="Preview PDF (Optional)">
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={handlePreviewPdf}
+                  className="
+                    w-full text-sm text-white/70
+                    file:mr-4 file:rounded-lg
+                    file:border-0 file:bg-indigo-500/20
+                    file:px-4 file:py-2
+                    file:text-sm file:font-medium
+                    file:text-indigo-300
+                    hover:file:bg-indigo-500/30
+                    cursor-pointer
+                  "
+                />
+                <p className="text-xs text-white/50 mt-1">
+                  Upload a sample/preview PDF that buyers can download before purchasing (max 10MB)
+                </p>
+
+                {previewPdfName && (
+                  <div className="mt-2 flex items-center gap-2 text-xs text-white/60 bg-indigo-500/10 px-3 py-2 rounded-lg border border-indigo-500/20">
+                    📄 {previewPdfName}
+                    <button
+                      type="button"
+                      onClick={removePreviewPdf}
+                      className="ml-auto text-red-400 hover:text-red-300"
                     >
                       ✕
                     </button>
@@ -627,6 +790,68 @@ export default function UploadAndProductsPage() {
                   className={inputClass}
                 />
               </Field>
+            </div>
+            
+            {/* Product Details */}
+            <div className="bg-purple-500/5 border border-purple-500/20 rounded-xl p-3 space-y-3">
+              <div className="text-xs text-purple-300 font-semibold">Product Details</div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Language">
+                  <select
+                    value={editLanguage}
+                    onChange={(e) => setEditLanguage(e.target.value)}
+                    className={inputClass}
+                  >
+                    <option value="English">English</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="Spanish">Spanish</option>
+                    <option value="French">French</option>
+                    <option value="German">German</option>
+                    <option value="Chinese">Chinese</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </Field>
+
+                <Field label="Format">
+                  <select
+                    value={editFormat}
+                    onChange={(e) => setEditFormat(e.target.value)}
+                    className={inputClass}
+                  >
+                    <option value="PDF">PDF</option>
+                    <option value="EPUB">EPUB</option>
+                    <option value="ZIP">ZIP</option>
+                    <option value="DOCX">DOCX</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </Field>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Page Count">
+                  <input
+                    type="number"
+                    min="1"
+                    value={editPageCount}
+                    onChange={(e) => setEditPageCount(+e.target.value)}
+                    className={inputClass}
+                  />
+                </Field>
+
+                <Field label="Audience">
+                  <select
+                    value={editIntendedAudience}
+                    onChange={(e) => setEditIntendedAudience(e.target.value)}
+                    className={inputClass}
+                  >
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                    <option value="All Levels">All Levels</option>
+                  </select>
+                </Field>
+              </div>
             </div>
 
             <Field label="Update File (Optional)">

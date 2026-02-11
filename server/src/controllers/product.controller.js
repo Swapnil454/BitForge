@@ -3,17 +3,41 @@ import cloudinary from "../config/cloudinary.js";
 import Product from "../models/Product.js";
 import User from "../models/User.js";
 import { createNotification } from "./notification.controller.js";
+import { 
+  generatePreviewPages, 
+  extractFileMetadata,
+  performBasicFileCheck
+} from "../utils/previewGenerator.js";
+import { scanFileWithVirusTotal } from "../utils/virusTotalScanner.js";
+import { autoReviewContent } from "../utils/contentReview.js";
 
 // Helper function to handle approved product updates
 const handleApprovedProductUpdate = async (product, req, res, updateData) => {
   try {
-    const { title, description, price, discount, deleteThumbnail } = updateData;
+    const { 
+      title, 
+      description, 
+      price, 
+      discount, 
+      deleteThumbnail,
+      pageCount,
+      language,
+      format,
+      intendedAudience
+    } = updateData;
     let fileKey = product.fileKey;
     let fileUrl = product.fileUrl;
+    let fileSizeBytes = product.fileSizeBytes;
 
     // Handle file upload if provided
     if (req.files && req.files.file && req.files.file[0]) {
       try {
+        const file = req.files.file[0];
+        
+        // Extract new file metadata
+        const metadata = await extractFileMetadata(file.buffer, file.mimetype);
+        fileSizeBytes = metadata.fileSizeBytes;
+        
         const uploadResult = await new Promise((resolve, reject) => {
           const result = cloudinary.uploader.upload_stream(
             {
@@ -25,7 +49,7 @@ const handleApprovedProductUpdate = async (product, req, res, updateData) => {
               else resolve(uploadResult);
             }
           );
-          result.end(req.files.file[0].buffer);
+          result.end(file.buffer);
         });
 
         fileKey = uploadResult.public_id;
@@ -70,7 +94,36 @@ const handleApprovedProductUpdate = async (product, req, res, updateData) => {
       }
     }
 
-    // Create pending change request
+    // Handle preview PDF
+    let previewPdfKey = product.previewPdfKey;
+    let previewPdfUrl = product.previewPdfUrl;
+
+    if (req.files && req.files.previewPdf && req.files.previewPdf[0]) {
+      try {
+        const previewPdfUploadResult = await new Promise((resolve, reject) => {
+          const result = cloudinary.uploader.upload_stream(
+            {
+              resource_type: "raw",
+              folder: "sellify/previews",
+              access_mode: "public",
+            },
+            (error, uploadResult) => {
+              if (error) reject(error);
+              else resolve(uploadResult);
+            }
+          );
+          result.end(req.files.previewPdf[0].buffer);
+        });
+
+        previewPdfKey = previewPdfUploadResult.public_id;
+        previewPdfUrl = previewPdfUploadResult.secure_url;
+      } catch (cloudinaryError) {
+        console.error("Preview PDF upload error:", cloudinaryError);
+        return res.status(500).json({ message: "Failed to upload new preview PDF" });
+      }
+    }
+
+    // Create pending change request with new fields
     const updatedProduct = await Product.findByIdAndUpdate(
       product._id,
       {
@@ -84,6 +137,13 @@ const handleApprovedProductUpdate = async (product, req, res, updateData) => {
           fileUrl,
           thumbnailKey,
           thumbnailUrl,
+          previewPdfKey,
+          previewPdfUrl,
+          pageCount: pageCount ? Number(pageCount) : product.pageCount,
+          fileSizeBytes: fileSizeBytes,
+          language: language || product.language,
+          format: format || product.format,
+          intendedAudience: intendedAudience || product.intendedAudience,
         },
       },
       { new: true }
@@ -127,11 +187,27 @@ export const getSellerProducts = async (req, res) => {
 
 export const uploadProduct = async (req, res) => {
   try {
-    const { title, description, price, discount } = req.body;
+    const { 
+      title, 
+      description, 
+      price, 
+      discount,
+      pageCount,
+      language,
+      format,
+      intendedAudience
+    } = req.body;
 
-    // Validation
+    // Validation - Required fields
     if (!title || !description || !price) {
       return res.status(400).json({ message: "Title, description, and price are required" });
+    }
+
+    // Validate new required fields
+    if (!language || !format || !intendedAudience) {
+      return res.status(400).json({ 
+        message: "Language, format, and intended audience are required" 
+      });
     }
 
     if (!req.files || !req.files.file || !req.files.file[0]) {
@@ -140,6 +216,23 @@ export const uploadProduct = async (req, res) => {
 
     const file = req.files.file[0];
     const thumbnail = req.files.thumbnail ? req.files.thumbnail[0] : null;
+    const previewPdf = req.files.previewPdf ? req.files.previewPdf[0] : null;
+
+    // Extract file metadata
+    const metadata = await extractFileMetadata(file.buffer, file.mimetype);
+    
+    // Perform malware scan (VirusTotal or basic checks)
+    console.log("Starting malware scan for:", file.originalname);
+    const scanResult = await scanFileWithVirusTotal(file.buffer, file.originalname);
+    console.log("Scan result:", scanResult);
+    
+    if (!scanResult.clean) {
+      return res.status(400).json({ 
+        message: "File failed security scan", 
+        reason: scanResult.reason,
+        details: scanResult.detections
+      });
+    }
 
     // Upload file to Cloudinary
     const fileUploadResult = await new Promise((resolve, reject) => {
@@ -175,7 +268,45 @@ export const uploadProduct = async (req, res) => {
       });
     }
 
-    // Create product
+    // Upload preview PDF if provided (public access)
+    let previewPdfUploadResult = null;
+    if (previewPdf) {
+      previewPdfUploadResult = await new Promise((resolve, reject) => {
+        const result = cloudinary.uploader.upload_stream(
+          {
+            resource_type: "raw",
+            folder: "sellify/previews",
+            access_mode: "public", // Make preview PDF publicly accessible
+          },
+          (error, uploadResult) => {
+            if (error) reject(error);
+            else resolve(uploadResult);
+          }
+        );
+        result.end(previewPdf.buffer);
+      });
+    }
+
+    // Generate preview pages (watermarked, blurred) - pass file buffer
+    console.log("Generating preview pages...");
+    const previewPages = await generatePreviewPages(
+      fileUploadResult.secure_url,
+      fileUploadResult.public_id,
+      file.buffer, // Pass buffer for real PDF extraction
+      3 // Max 3 preview pages
+    );
+    console.log("Generated", previewPages.length, "preview pages");
+
+    // Auto-review content based on heuristics
+    const reviewResult = autoReviewContent({
+      title: title,
+      pageCount: pageCount || metadata.pageCount,
+      fileSizeBytes: metadata.fileSizeBytes,
+      price: Number(price),
+      description: description
+    });
+
+    // Create product with all trust & validation fields
     const product = await Product.create({
       sellerId: req.user.id,
       title: title.trim(),
@@ -186,6 +317,33 @@ export const uploadProduct = async (req, res) => {
       fileUrl: fileUploadResult.secure_url,
       thumbnailKey: thumbnailUploadResult?.public_id || null,
       thumbnailUrl: thumbnailUploadResult?.secure_url || null,
+      previewPdfKey: previewPdfUploadResult?.public_id || null,
+      previewPdfUrl: previewPdfUploadResult?.secure_url || null,
+      
+      // B. Structured validation fields
+      pageCount: pageCount ? Number(pageCount) : metadata.pageCount || 1,
+      fileSizeBytes: metadata.fileSizeBytes,
+      language: language,
+      lastUpdatedAt: new Date(),
+      format: format,
+      intendedAudience: intendedAudience,
+      
+      // A. Preview pages
+      previewPages: previewPages,
+      
+      // D. Trust checklist
+      malwareScanned: scanResult.scanned,
+      malwareScanDate: scanResult.scanDate,
+      virusTotalId: scanResult.virusTotalId || null,
+      virusTotalLink: scanResult.scanLink || null,
+      malwareScanDetails: {
+        detections: scanResult.detections || {},
+        basicCheckOnly: scanResult.basicCheckOnly || false,
+      },
+      contentReviewed: reviewResult.status,
+      contentReviewDate: reviewResult.status === "auto-reviewed" ? new Date() : null,
+      refundEligible: true,
+      
       status: "pending",
     });
 
@@ -205,6 +363,8 @@ export const uploadProduct = async (req, res) => {
     res.status(201).json({
       message: "Product uploaded, waiting for approval",
       product,
+      reviewFlags: reviewResult.flags,
+      requiresManualReview: reviewResult.requiresManualReview
     });
   } catch (err) {
     console.error("Upload error:", err);
@@ -214,7 +374,17 @@ export const uploadProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
   try {
     const { productId } = req.params;
-    const { title, description, price, discount, deleteThumbnail } = req.body;
+    const { 
+      title, 
+      description, 
+      price, 
+      discount, 
+      deleteThumbnail,
+      pageCount,
+      language,
+      format,
+      intendedAudience
+    } = req.body;
 
     // Validate product exists and belongs to seller
     const product = await Product.findById(productId);
@@ -228,15 +398,32 @@ export const updateProduct = async (req, res) => {
 
     // If product is approved, create a pending change request instead
     if (product.status === "approved") {
-      return handleApprovedProductUpdate(product, req, res, { title, description, price, discount, deleteThumbnail });
+      return handleApprovedProductUpdate(product, req, res, { 
+        title, 
+        description, 
+        price, 
+        discount, 
+        deleteThumbnail,
+        pageCount,
+        language,
+        format,
+        intendedAudience
+      });
     }
 
     // Handle file upload if provided
     let fileKey = product.fileKey;
     let fileUrl = product.fileUrl;
+    let fileSizeBytes = product.fileSizeBytes;
 
     if (req.files && req.files.file && req.files.file[0]) {
       try {
+        const file = req.files.file[0];
+        
+        // Extract metadata from new file
+        const metadata = await extractFileMetadata(file.buffer, file.mimetype);
+        fileSizeBytes = metadata.fileSizeBytes;
+        
         // Delete old file from Cloudinary if exists
         if (product.fileKey) {
           try {
@@ -259,7 +446,7 @@ export const updateProduct = async (req, res) => {
               else resolve(uploadResult);
             }
           );
-          result.end(req.files.file[0].buffer);
+          result.end(file.buffer);
         });
 
         fileKey = uploadResult.public_id;
@@ -321,6 +508,46 @@ export const updateProduct = async (req, res) => {
       }
     }
 
+    // Handle preview PDF upload
+    let previewPdfKey = product.previewPdfKey;
+    let previewPdfUrl = product.previewPdfUrl;
+
+    // Upload new preview PDF if provided
+    if (req.files && req.files.previewPdf && req.files.previewPdf[0]) {
+      try {
+        // Delete old preview PDF if exists
+        if (product.previewPdfKey) {
+          try {
+            await cloudinary.uploader.destroy(product.previewPdfKey, { resource_type: "raw" });
+          } catch (cloudinaryError) {
+            console.error("Cloudinary preview PDF delete error:", cloudinaryError);
+          }
+        }
+
+        // Upload new preview PDF
+        const previewPdfUploadResult = await new Promise((resolve, reject) => {
+          const result = cloudinary.uploader.upload_stream(
+            {
+              resource_type: "raw",
+              folder: "sellify/previews",
+              access_mode: "public",
+            },
+            (error, uploadResult) => {
+              if (error) reject(error);
+              else resolve(uploadResult);
+            }
+          );
+          result.end(req.files.previewPdf[0].buffer);
+        });
+
+        previewPdfKey = previewPdfUploadResult.public_id;
+        previewPdfUrl = previewPdfUploadResult.secure_url;
+      } catch (cloudinaryError) {
+        console.error("Preview PDF upload error:", cloudinaryError);
+        return res.status(500).json({ message: "Failed to upload new preview PDF" });
+      }
+    }
+
     // Update product - explicitly handle null values for thumbnail
     const updateData = {
       title: title?.trim(),
@@ -329,6 +556,12 @@ export const updateProduct = async (req, res) => {
       discount: discount !== undefined ? Number(discount) : undefined,
       fileKey: fileKey,
       fileUrl: fileUrl,
+      fileSizeBytes: fileSizeBytes,
+      pageCount: pageCount ? Number(pageCount) : undefined,
+      language: language,
+      format: format,
+      intendedAudience: intendedAudience,
+      lastUpdatedAt: new Date(),
     };
 
     // Handle thumbnail - explicitly allow null
@@ -339,6 +572,10 @@ export const updateProduct = async (req, res) => {
       updateData.thumbnailKey = thumbnailKey;
       updateData.thumbnailUrl = thumbnailUrl;
     }
+
+    // Add preview PDF URLs if updated
+    updateData.previewPdfKey = previewPdfKey;
+    updateData.previewPdfUrl = previewPdfUrl;
 
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,

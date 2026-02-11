@@ -33,6 +33,36 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    
+    // C. Seller Credibility Signals
+    bio: {
+      type: String,
+      maxlength: 500,
+    },
+    totalSalesCount: {
+      type: Number,
+      default: 0,
+    },
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+    ratingCount: {
+      type: Number,
+      default: 0,
+    },
+    identityVerified: {
+      type: Boolean,
+      default: false,
+    },
+    identityVerifiedAt: {
+      type: Date,
+    },
+    identityVerificationNotes: {
+      type: String,
+    },
 
     emailOtp: String,
     emailOtpExpires: Date,

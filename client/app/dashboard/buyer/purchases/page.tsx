@@ -9,6 +9,7 @@ import { paymentAPI } from "@/lib/api";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
 import { getStoredUser } from "@/lib/cookies";
+import ReviewModal from "../components/ReviewModal";
 
 interface Order {
   _id: string;
@@ -28,6 +29,8 @@ interface Order {
 export default function PurchasesPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -112,6 +115,7 @@ export default function PurchasesPage() {
     switch (status.toLowerCase()) {
       case "completed":
       case "success":
+      case "paid":
         return "bg-green-500/20 text-green-300 border border-green-500/30";
       case "pending":
         return "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30";
@@ -151,12 +155,18 @@ export default function PurchasesPage() {
             
             <div>
               <h1 className="text-3xl md:text-4xl font-bold">My Purchases</h1>
-              <p className="text-white/70 mt-1">View your order history and downloads</p>
+              <p className="text-white/70 mt-1">View your order history, downloads and disputes</p>
               <button
                 onClick={() => router.push("/marketplace")}
                 className="mt-3 px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white rounded-xl font-semibold transition shadow-lg shadow-cyan-500/30"
               >
                 Browse Marketplace
+              </button>
+              <button
+                onClick={() => router.push("/dashboard/buyer/disputes")}
+                className="mt-3 ml-0 md:ml-3 px-6 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl font-semibold transition"
+              >
+                View My Disputes
               </button>
             </div>
           </div>
@@ -234,6 +244,33 @@ export default function PurchasesPage() {
                           </svg>
                           Download
                         </button>
+                        
+                        {(order.status === "completed" || order.status === "success" || order.status === "paid") && (
+                          <button
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setReviewModalOpen(true);
+                            }}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white rounded-xl font-semibold transition shadow-lg shadow-yellow-500/30"
+                          >
+                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            Write Review
+                          </button>
+                        )}
+                        
+                        <button
+                          onClick={() => router.push(`/marketplace/${order.productId._id}`)}
+                          className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl font-semibold transition"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                          </svg>
+                          View Product
+                        </button>
+                        
                         <button
                           onClick={() => raiseDispute(order._id)}
                           className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl font-semibold transition"
@@ -268,6 +305,23 @@ export default function PurchasesPage() {
           </div>
         )}
       </div>
+
+      {/* Review Modal */}
+      {selectedOrder && (
+        <ReviewModal
+          isOpen={reviewModalOpen}
+          onClose={() => {
+            setReviewModalOpen(false);
+            setSelectedOrder(null);
+          }}
+          productId={selectedOrder.productId._id}
+          productTitle={selectedOrder.productId.title}
+          orderId={selectedOrder._id}
+          onReviewSubmitted={() => {
+            toast.success("Thank you for your review!");
+          }}
+        />
+      )}
     </div>
   );
 }

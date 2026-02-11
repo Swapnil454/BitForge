@@ -22,8 +22,8 @@ router.post("/", createProduct);
 router.get("/mine", getSellerProducts);
 router.get("/:productId", getProductById);
 
-router.post("/upload", upload.fields([{ name: "file", maxCount: 1 }, { name: "thumbnail", maxCount: 1 }]), uploadProduct);
-router.patch("/:productId", upload.fields([{ name: "file", maxCount: 1 }, { name: "thumbnail", maxCount: 1 }]), updateProduct);
+router.post("/upload", upload.fields([{ name: "file", maxCount: 1 }, { name: "thumbnail", maxCount: 1 }, { name: "previewPdf", maxCount: 1 }]), uploadProduct);
+router.patch("/:productId", upload.fields([{ name: "file", maxCount: 1 }, { name: "thumbnail", maxCount: 1 }, { name: "previewPdf", maxCount: 1 }]), updateProduct);
 router.delete("/:productId", deleteProduct);
 
 export default router;
