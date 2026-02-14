@@ -19,18 +19,9 @@ export const createOrder = async (req, res) => {
     finalPrice = Math.max(product.price - (product.price * product.discount) / 100, 0);
   }
 
-  // Calculate GST and platform convenience fee (as shown to user)
-  const gstAmount = finalPrice * 0.05; // 5% GST
-  const platformConvenienceFee = finalPrice * 0.02; // 2% convenience fee for buyer
-  
-  // Total amount buyer pays = discounted price + GST + convenience fee
-  const totalBuyerAmount = finalPrice + gstAmount + platformConvenienceFee;
-  
-  // Platform commission (10% of product price goes to platform)
+  const amount = Math.round(finalPrice * 100); // paise (rounded to avoid decimals)
   const platformFee = finalPrice * 0.1;
   const sellerAmount = finalPrice - platformFee;
-
-  const amount = Math.round(totalBuyerAmount * 100); // Convert to paise (rounded to avoid decimals)
 
   const razorpayOrder = await razorpay.orders.create({
     amount,
@@ -43,7 +34,7 @@ export const createOrder = async (req, res) => {
     sellerId: product.sellerId,
     productId: product._id,
     razorpayOrderId: razorpayOrder.id,
-    amount: totalBuyerAmount, // Store total amount buyer paid
+    amount: finalPrice,
     platformFee,
     sellerAmount,
   });
