@@ -4,13 +4,15 @@
  * Seller uploads ONLY ONE FILE → System automatically:
  * 1. Detects page count
  * 2. Generates watermarked preview PDF with real first pages
- * 3. Appends locked placeholder pages
+ * 3. Appends locked placeholder pages to make exactly 5 pages total
  * 4. Uploads preview to Cloudinary
  * 
  * Preview Rules:
- * - 1 page → show 1 page
- * - ≥2 pages → show first 2 pages
- * - Add 2-3 locked pages after real content
+ * - 1-11 pages → show 1 real page + 4 locked
+ * - 12-25 pages → show 2 real pages + 3 locked
+ * - 26-50 pages → show 3 real pages + 2 locked
+ * - 51+ pages → show 4 real pages + 1 locked
+ * - ALWAYS generates exactly 5 pages total
  */
 
 import { PDFDocument, rgb, degrees, StandardFonts } from "pdf-lib";
@@ -23,66 +25,186 @@ import cloudinary from "../config/cloudinary.js";
  * @param {number} pageNumber - Page number to display
  * @returns {PDFPage} Created page
  */
-function createLockedPage(pdfDoc, font, pageNumber) {
-  // Standard A4 size in points (595 x 842)
+// function createLockedPage(pdfDoc, font, pageNumber) {
+//   // Standard A4 size in points (595 x 842)
+//   const page = pdfDoc.addPage([595, 842]);
+//   const { width, height } = page.getSize();
+  
+//   // Background - light gray
+//   page.drawRectangle({
+//     x: 0,
+//     y: 0,
+//     width: width,
+//     height: height,
+//     color: rgb(0.95, 0.95, 0.95),
+//   });
+  
+//   // Lock indicator (WinAnsi-safe text instead of emoji)
+//   const lockText = "LOCKED";
+//   const lockTextWidth = font.widthOfTextAtSize(lockText, 40);
+//   page.drawText(lockText, {
+//     x: width / 2 - lockTextWidth / 2,
+//     y: height / 2 + 60,
+//     size: 40,
+//     font: font,
+//     color: rgb(0.3, 0.3, 0.3),
+//   });
+  
+//   // Main message
+//   const mainText = "Content Locked";
+//   const mainTextWidth = font.widthOfTextAtSize(mainText, 32);
+//   page.drawText(mainText, {
+//     x: width / 2 - mainTextWidth / 2,
+//     y: height / 2 - 20,
+//     size: 32,
+//     font: font,
+//     color: rgb(0.2, 0.2, 0.2),
+//   });
+  
+//   // Sub message
+//   const subText = "Purchase to unlock full content";
+//   const subTextWidth = font.widthOfTextAtSize(subText, 18);
+//   page.drawText(subText, {
+//     x: width / 2 - subTextWidth / 2,
+//     y: height / 2 - 60,
+//     size: 18,
+//     font: font,
+//     color: rgb(0.4, 0.4, 0.4),
+//   });
+  
+//   // Page indicator
+//   const pageText = `Page ${pageNumber}`;
+//   const pageTextWidth = font.widthOfTextAtSize(pageText, 14);
+//   page.drawText(pageText, {
+//     x: width / 2 - pageTextWidth / 2,
+//     y: height / 2 - 100,
+//     size: 14,
+//     font: font,
+//     color: rgb(0.5, 0.5, 0.5),
+//   });
+  
+//   return page;
+// }
+
+function createPremiumLockedPage(pdfDoc, font, pageNumber, totalPages) {
   const page = pdfDoc.addPage([595, 842]);
   const { width, height } = page.getSize();
-  
-  // Background - light gray
+
+  /* ----------------------------
+     1️⃣ Subtle Gradient Background
+  -----------------------------*/
+  for (let i = 0; i < 25; i++) {
+    page.drawRectangle({
+      x: 0,
+      y: (height / 25) * i,
+      width: width,
+      height: height / 25,
+      color: rgb(0.98 - i * 0.01, 0.98 - i * 0.01, 1),
+    });
+  }
+
+  /* ----------------------------
+     2️⃣ Blurred Content Teaser Strip
+  -----------------------------*/
   page.drawRectangle({
-    x: 0,
-    y: 0,
-    width: width,
-    height: height,
-    color: rgb(0.95, 0.95, 0.95),
+    x: 60,
+    y: height - 240,
+    width: width - 120,
+    height: 140,
+    color: rgb(0.93, 0.93, 0.93),
   });
-  
-  // Lock indicator (WinAnsi-safe text instead of emoji)
-  const lockText = "LOCKED";
-  const lockTextWidth = font.widthOfTextAtSize(lockText, 40);
-  page.drawText(lockText, {
-    x: width / 2 - lockTextWidth / 2,
-    y: height / 2 + 60,
-    size: 40,
-    font: font,
-    color: rgb(0.3, 0.3, 0.3),
+
+  for (let i = 0; i < 7; i++) {
+    page.drawRectangle({
+      x: 90,
+      y: height - 210 + i * 18,
+      width: width - 180 - Math.random() * 80,
+      height: 10,
+      color: rgb(0.85, 0.85, 0.85),
+    });
+  }
+
+  /* ----------------------------
+     3️⃣ Premium Conversion Card
+  -----------------------------*/
+  page.drawRectangle({
+    x: 90,
+    y: height / 2 - 130,
+    width: width - 180,
+    height: 240,
+    color: rgb(1, 1, 1),
   });
-  
-  // Main message
-  const mainText = "Content Locked";
-  const mainTextWidth = font.widthOfTextAtSize(mainText, 32);
-  page.drawText(mainText, {
-    x: width / 2 - mainTextWidth / 2,
-    y: height / 2 - 20,
-    size: 32,
-    font: font,
-    color: rgb(0.2, 0.2, 0.2),
+
+  page.drawText("Continue Reading?", {
+    x: 170,
+    y: height / 2 + 70,
+    size: 28,
+    font,
+    color: rgb(0.1, 0.1, 0.1),
   });
-  
-  // Sub message
-  const subText = "Purchase to unlock full content";
-  const subTextWidth = font.widthOfTextAtSize(subText, 18);
-  page.drawText(subText, {
-    x: width / 2 - subTextWidth / 2,
-    y: height / 2 - 60,
-    size: 18,
-    font: font,
+
+  page.drawText("You're viewing a limited preview.", {
+    x: 150,
+    y: height / 2 + 35,
+    size: 16,
+    font,
     color: rgb(0.4, 0.4, 0.4),
   });
-  
-  // Page indicator
-  const pageText = `Page ${pageNumber}`;
-  const pageTextWidth = font.widthOfTextAtSize(pageText, 14);
-  page.drawText(pageText, {
-    x: width / 2 - pageTextWidth / 2,
-    y: height / 2 - 100,
+
+  page.drawText(`Unlock all ${totalPages} pages instantly.`, {
+    x: 150,
+    y: height / 2 + 5,
+    size: 16,
+    font,
+    color: rgb(0.2, 0.2, 0.2),
+  });
+
+  page.drawText("✔ Full explanations", {
+    x: 170,
+    y: height / 2 - 30,
     size: 14,
-    font: font,
+    font,
+    color: rgb(0.2, 0.2, 0.2),
+  });
+
+  page.drawText("✔ Practical examples", {
+    x: 170,
+    y: height / 2 - 50,
+    size: 14,
+    font,
+    color: rgb(0.2, 0.2, 0.2),
+  });
+
+  page.drawText("✔ Lifetime access after purchase", {
+    x: 170,
+    y: height / 2 - 70,
+    size: 14,
+    font,
+    color: rgb(0.2, 0.2, 0.2),
+  });
+
+  page.drawText("Secure Download • Instant Access", {
+    x: 150,
+    y: height / 2 - 100,
+    size: 12,
+    font,
+    color: rgb(0.6, 0.6, 0.6),
+  });
+
+  /* ----------------------------
+     4️⃣ Page Indicator
+  -----------------------------*/
+  page.drawText(`Page ${pageNumber} of 5`, {
+    x: width / 2 - 40,
+    y: 40,
+    size: 12,
+    font,
     color: rgb(0.5, 0.5, 0.5),
   });
-  
+
   return page;
 }
+
 
 /**
  * MAIN FUNCTION: Generate watermarked preview PDF automatically
@@ -115,7 +237,11 @@ export async function generateAutomaticPreviewPDF(originalPdfBuffer, productId) 
       previewPageCount = 4;
     }
 
-    console.log(`📋 Will show ${previewPageCount} preview page(s)`);
+    // ALWAYS generate exactly 5 pages total
+    const TOTAL_PREVIEW_PAGES = 5;
+    const lockedPagesCount = TOTAL_PREVIEW_PAGES - previewPageCount;
+
+    console.log(`📋 Will show ${previewPageCount} real page(s) + ${lockedPagesCount} locked page(s) = ${TOTAL_PREVIEW_PAGES} total`);
 
     // Create NEW preview PDF
     const previewPdf = await PDFDocument.create();
@@ -130,56 +256,121 @@ export async function generateAutomaticPreviewPDF(originalPdfBuffer, productId) 
     // Embed font
     const font = await previewPdf.embedFont(StandardFonts.Helvetica);
 
-    // Add watermarks to each page
+    // Add simple, clean watermarks to preview pages
     const pages = previewPdf.getPages();
     for (let i = 0; i < pages.length; i++) {
       const page = pages[i];
       const { width, height } = page.getSize();
 
-      // Diagonal watermark
-      page.drawText("PREVIEW ONLY", {
-        x: width / 4,
+      // Simple diagonal watermark
+      page.drawText("PREVIEW", {
+        x: width / 3,
         y: height / 2,
-        size: 50,
+        size: 60,
         font,
-        color: rgb(0.85, 0.85, 0.85),
+        color: rgb(0.9, 0.9, 0.9),
         rotate: degrees(45),
       });
 
-      // Bottom text
-      page.drawText("Purchase to unlock full content", {
+      // Bottom text - subtle CTA
+      page.drawText("Preview Only - Purchase to unlock full content", {
         x: 50,
-        y: 30,
-        size: 12,
+        y: 20,
+        size: 10,
         font,
-        color: rgb(0.5, 0.5, 0.5),
+        color: rgb(0.6, 0.6, 0.6),
       });
 
       console.log(`✅ Watermarked page ${i + 1}`);
     }
 
-    // Add locked pages
-    const lockedPagesCount = Math.min(3, Math.max(1, totalPages - previewPageCount));
-
+    // Add clean locked pages - focus on clarity and value
+    console.log(`🔒 Adding ${lockedPagesCount} locked pages...`);
+    
     for (let i = 0; i < lockedPagesCount; i++) {
+      const pageNumber = previewPageCount + i + 1;
       const page = previewPdf.addPage([595, 842]);
+      const { width, height } = page.getSize();
 
-      page.drawText("LOCKED", {
-        x: 230,
-        y: 500,
-        size: 40,
+      // Simple light background
+      page.drawRectangle({
+        x: 0,
+        y: 0,
+        width: width,
+        height: height,
+        color: rgb(0.97, 0.97, 0.97),
+      });
+
+      // White content card - clean and simple
+      page.drawRectangle({
+        x: 100,
+        y: height / 2 - 120,
+        width: width - 200,
+        height: 240,
+        color: rgb(1, 1, 1),
+      });
+
+      // Main message - clear and centered
+      const mainText = "Content continues...";
+      const mainWidth = font.widthOfTextAtSize(mainText, 22);
+      page.drawText(mainText, {
+        x: width / 2 - mainWidth / 2,
+        y: height / 2 + 60,
+        size: 22,
+        font,
+        color: rgb(0.2, 0.2, 0.2),
+      });
+
+      // Total pages - show value
+      const pagesText = `This document has ${totalPages} pages total`;
+      const pagesWidth = font.widthOfTextAtSize(pagesText, 14);
+      page.drawText(pagesText, {
+        x: width / 2 - pagesWidth / 2,
+        y: height / 2 + 20,
+        size: 14,
+        font,
+        color: rgb(0.4, 0.4, 0.4),
+      });
+
+      // Purchase message - subtle, not aggressive
+      const unlockText = "Purchase to access the complete content";
+      const unlockWidth = font.widthOfTextAtSize(unlockText, 13);
+      page.drawText(unlockText, {
+        x: width / 2 - unlockWidth / 2,
+        y: height / 2 - 20,
+        size: 13,
         font,
         color: rgb(0.3, 0.3, 0.3),
       });
 
-      page.drawText("Purchase to unlock full content", {
-        x: 160,
-        y: 460,
-        size: 16,
-        font,
+      // Simple value props - no heavy sales pitch
+      const valueProps = [
+        "Instant download after payment",
+        "Lifetime access to content",
+        "Secure transaction"
+      ];
+
+      valueProps.forEach((prop, idx) => {
+        const propWidth = font.widthOfTextAtSize(prop, 11);
+        page.drawText(prop, {
+          x: width / 2 - propWidth / 2,
+          y: height / 2 - 60 - (idx * 20),
+          size: 11,
+          font,
+          color: rgb(0.5, 0.5, 0.5),
+        });
       });
 
-      console.log(`✅ Added locked page ${i + 1}`);
+      // Page number - subtle
+      page.drawText(`Page ${pageNumber} of ${TOTAL_PREVIEW_PAGES}`, {
+        x: width / 2 - 40,
+        y: 40,
+        size: 10,
+        font,
+        color: rgb(0.6, 0.6, 0.6),
+      });
+
+      console.log(`✅ Added locked page ${pageNumber}`);
     }
 
     // Save with compatibility options
@@ -196,7 +387,12 @@ export async function generateAutomaticPreviewPDF(originalPdfBuffer, productId) 
     // Validate the generated PDF
     try {
       const testPdf = await PDFDocument.load(previewBuffer);
-      console.log(`✅ Preview PDF validation successful (${testPdf.getPageCount()} pages)`);
+      const generatedPageCount = testPdf.getPageCount();
+      console.log(`✅ Preview PDF validation successful - Generated ${generatedPageCount} pages (${previewPageCount} real + ${lockedPagesCount} locked)`);
+      
+      if (generatedPageCount !== TOTAL_PREVIEW_PAGES) {
+        console.warn(`⚠️ Expected ${TOTAL_PREVIEW_PAGES} pages but got ${generatedPageCount}`);
+      }
     } catch (validationError) {
       console.error("❌ Generated PDF is invalid:", validationError.message);
       throw new Error("Generated preview PDF is corrupted");
@@ -212,6 +408,8 @@ export async function generateAutomaticPreviewPDF(originalPdfBuffer, productId) 
       success: true,
       totalPages,
       previewPages: previewPageCount,
+      lockedPages: lockedPagesCount,
+      totalPreviewPages: TOTAL_PREVIEW_PAGES,
       previewPdfUrl: uploadResult.secure_url,
       previewPdfKey: uploadResult.public_id,
     };
