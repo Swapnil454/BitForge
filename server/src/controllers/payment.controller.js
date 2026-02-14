@@ -13,9 +13,15 @@ export const createOrder = async (req, res) => {
     return res.status(404).json({ message: "Product not found" });
   }
 
-  const amount = product.price * 100; // paise
-  const platformFee = product.price * 0.1;
-  const sellerAmount = product.price - platformFee;
+  // Calculate final price with discount
+  let finalPrice = product.price;
+  if (product.discount && product.discount > 0) {
+    finalPrice = Math.max(product.price - (product.price * product.discount) / 100, 0);
+  }
+
+  const amount = Math.round(finalPrice * 100); // paise (rounded to avoid decimals)
+  const platformFee = finalPrice * 0.1;
+  const sellerAmount = finalPrice - platformFee;
 
   const razorpayOrder = await razorpay.orders.create({
     amount,
@@ -28,7 +34,7 @@ export const createOrder = async (req, res) => {
     sellerId: product.sellerId,
     productId: product._id,
     razorpayOrderId: razorpayOrder.id,
-    amount: product.price,
+    amount: finalPrice,
     platformFee,
     sellerAmount,
   });
