@@ -60,39 +60,51 @@ export default function PurchasesPage() {
   };
 
   const download = async (orderId: string) => {
+    const loadingToast = toast.loading("Preparing download...");
+    
     try {
-      const res = await api.get(`/download/${orderId}`);
-      if (!res.data.downloadUrl) {
-        toast.error("Download URL not available");
-        return;
-      }
+      // Download directly from our server (it proxies from Cloudinary)
+      const response = await api.get(`/download/${orderId}`, {
+        responseType: 'blob', // Important: get binary data
+      });
 
-      // Fetch the file as a Blob so we can enforce a proper .pdf filename
-      const response = await fetch(res.data.downloadUrl);
-      if (!response.ok) {
-        throw new Error("Failed to fetch file");
-      }
-
-      const blob = await response.blob();
+      // Create blob URL from response
+      const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
 
-      const baseName = (res.data.filename || res.data.productTitle || "download")
-        .toString()
-        .replace(/[^a-z0-9_\-]/gi, "_");
-      const filename = baseName.toLowerCase().endsWith(".pdf")
-        ? baseName
-        : `${baseName}.pdf`;
+      // Extract filename from Content-Disposition header
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = 'download.pdf';
+      
+      console.log('Content-Disposition header:', contentDisposition);
+      console.log('All headers:', response.headers);
+      
+      if (contentDisposition) {
+        // Parse filename from Content-Disposition header
+        const filenameMatch = contentDisposition.match(/filename="(.+?)"|filename=([^;\s]+)/);
+        if (filenameMatch) {
+          filename = filenameMatch[1] || filenameMatch[2];
+          console.log('✅ Extracted filename:', filename);
+        }
+      } else {
+        console.log('⚠️ No Content-Disposition header found');
+      }
 
+      // Trigger download
       const link = document.createElement("a");
       link.href = url;
       link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      // Clean up
       window.URL.revokeObjectURL(url);
 
-      toast.success("Download started");
+      toast.dismiss(loadingToast);
+      toast.success("Download started successfully!");
     } catch (error: any) {
+      toast.dismiss(loadingToast);
       console.error("Download error", error);
       toast.error(error.response?.data?.message || error.message || "Download failed");
     }
