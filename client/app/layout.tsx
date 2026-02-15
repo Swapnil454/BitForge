@@ -2,10 +2,15 @@ import type { Metadata } from "next";
 import { Toaster } from 'react-hot-toast';
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "BitForge",
-  description: "BitForge EM1 Digital product marketplace",
+export const metadata = {
+  title: "BitForge | India's Trusted Digital Marketplace",
+  description:
+    "Buy and sell digital products securely on BitForge. Instant downloads, verified sellers, and secure payments — all in one powerful marketplace.",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
+
 
 export default function RootLayout({
   children,
