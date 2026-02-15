@@ -2,12 +2,20 @@ import type { Metadata } from "next";
 import { Toaster } from 'react-hot-toast';
 import "./globals.css";
 
-export const metadata = {
+export const metadata: Metadata = {
+  metadataBase: new URL("https://bittforge.in"),
   title: "BitForge | India's Trusted Digital Marketplace",
   description:
     "Buy and sell digital products securely on BitForge. Instant downloads, verified sellers, and secure payments — all in one powerful marketplace.",
+  alternates: {
+    canonical: "/",
+  },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png", sizes: "48x48" },
+    ],
+    apple: "/apple-icon.png",
   },
 };
 
