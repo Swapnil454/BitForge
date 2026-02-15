@@ -30,6 +30,43 @@ export default function RootLayout({
       <body
       >
         {children}
+        {/*Organization Schema */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "BitForge",
+              url: "https://bittforge.in",
+              logo: "https://bittforge.in/icon.png",
+              sameAs: [
+                "https://instagram.com/bitforge.in",
+                "https://github.com/Swapnil454",
+                "https://www.linkedin.com/in/swapnil-shelke-178096366"
+              ]
+            }),
+          }}
+        />
+
+        {/* Website Schema */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "BitForge",
+              url: "https://bittforge.in",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: "https://bittforge.in/marketplace?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            }),
+          }}
+        />
+
         <Toaster 
           position="top-center"
           toastOptions={{

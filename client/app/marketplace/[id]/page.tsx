@@ -247,6 +247,43 @@ export default function ProductDetailsPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-950">
+      { /* product data flow schema  */}
+      {product && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Product",
+              name: product.title,
+              description: product.description,
+              image: product.thumbnailUrl,
+              sku: product._id,
+              brand: {
+                "@type": "Brand",
+                name: "BitForge",
+              },
+              offers: {
+                "@type": "Offer",
+                url: `https://bittforge.in/marketplace/${product._id}`,
+                priceCurrency: "INR",
+                price: finalPrice,
+                availability: "https://schema.org/InStock",
+              },
+
+              // Add aggregateRating here
+              ...(product.sellerStats?.ratingCount > 0 && {
+                aggregateRating: {
+                  "@type": "AggregateRating",
+                  ratingValue: product.sellerStats.averageRating,
+                  reviewCount: product.sellerStats.ratingCount,
+                },
+              }),
+            }),
+          }}
+        />
+      )}
+
       {/* Header with Back Button */}
       <div className="sticky top-0 z-50 bg-linear-to-r from-purple-600/20 via-indigo-600/20 to-cyan-600/20 backdrop-blur-md border-b border-white/10 text-white py-5">
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
