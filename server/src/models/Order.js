@@ -16,6 +16,13 @@ const orderSchema = new mongoose.Schema({
     ref: "Product",
   },
   productName: String, // Denormalized for display when product is deleted
+  
+  // Link to cart order (for cart-based checkout)
+  cartOrderId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "CartOrder",
+  },
+  
   razorpayOrderId: String,
   razorpayPaymentId: String,
   amount: Number, // total
@@ -34,8 +41,23 @@ const orderSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-refundId: String,
+  refundId: String,
 
+  // Download tracking
+  downloadCount: {
+    type: Number,
+    default: 0,
+  },
+  downloadLimit: {
+    type: Number,
+    default: 5, // Max downloads allowed
+  },
+  lastDownloadAt: Date,
+  downloadHistory: [{
+    downloadedAt: { type: Date, default: Date.now },
+    ipAddress: String,
+    userAgent: String,
+  }],
 
 }, { timestamps: true });
 

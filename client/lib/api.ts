@@ -364,6 +364,11 @@ export const paymentAPI = {
         return response.data;
     },
     
+    cartCheckout: async () => {
+        const response = await api.post('/payments/cart-checkout');
+        return response.data;
+    },
+    
     getMyOrders: async () => {
         const response = await api.get('/payments/my-orders');
         return response.data;
@@ -415,6 +420,11 @@ export const buyerAPI = {
 
     getMyDisputes: async () => {
         const response = await api.get('/disputes/my');
+        return response.data;
+    },
+
+    getDownloadInfo: async (orderId: string) => {
+        const response = await api.get(`/download/${orderId}/info`);
         return response.data;
     }
 };

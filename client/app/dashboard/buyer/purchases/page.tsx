@@ -1,11 +1,10 @@
 
 
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { paymentAPI } from "@/lib/api";
+import { paymentAPI, buyerAPI } from "@/lib/api";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
 import { getStoredUser } from "@/lib/cookies";
@@ -24,6 +23,8 @@ interface Order {
   status: string;
   razorpayOrderId: string;
   createdAt: string;
+  downloadCount?: number;
+  downloadLimit?: number;
 }
 
 export default function PurchasesPage() {
@@ -60,16 +61,17 @@ export default function PurchasesPage() {
   };
 
   const download = async (orderId: string) => {
-    const loadingToast = toast.loading("Preparing download...");
+    const loadingToast = toast.loading("Preparing secure download...");
     
     try {
-      // Download directly from our server (it proxies from Cloudinary)
+      // Download directly from our server (it proxies from Cloudinary with watermark)
       const response = await api.get(`/download/${orderId}`, {
-        responseType: 'blob', // Important: get binary data
+        responseType: 'blob',
       });
 
       // Create blob URL from response
-      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const contentType = response.headers['content-type'] || 'application/pdf';
+      const blob = new Blob([response.data], { type: contentType });
       const url = window.URL.createObjectURL(blob);
 
       // Extract filename from Content-Disposition header
@@ -80,15 +82,16 @@ export default function PurchasesPage() {
       console.log('All headers:', response.headers);
       
       if (contentDisposition) {
-        // Parse filename from Content-Disposition header
         const filenameMatch = contentDisposition.match(/filename="(.+?)"|filename=([^;\s]+)/);
         if (filenameMatch) {
           filename = filenameMatch[1] || filenameMatch[2];
           console.log('✅ Extracted filename:', filename);
         }
-      } else {
-        console.log('⚠️ No Content-Disposition header found');
       }
+
+      // Get download count info from headers
+      const downloadCount = response.headers['x-download-count'];
+      const downloadLimit = response.headers['x-download-limit'];
 
       // Trigger download
       const link = document.createElement("a");
@@ -102,11 +105,26 @@ export default function PurchasesPage() {
       window.URL.revokeObjectURL(url);
 
       toast.dismiss(loadingToast);
-      toast.success("Download started successfully!");
+      
+      if (downloadCount && downloadLimit) {
+        const remaining = parseInt(downloadLimit) - parseInt(downloadCount);
+        toast.success(`Download started! ${remaining} downloads remaining.`);
+      } else {
+        toast.success("Download started successfully!");
+      }
+
+      // Refresh orders to update download count
+      fetchOrders();
     } catch (error: any) {
       toast.dismiss(loadingToast);
       console.error("Download error", error);
-      toast.error(error.response?.data?.message || error.message || "Download failed");
+      
+      // Handle download limit exceeded
+      if (error.response?.status === 403 && error.response?.data?.downloadLimit) {
+        toast.error(`Download limit reached (${error.response.data.downloadLimit}). Contact support for assistance.`);
+      } else {
+        toast.error(error.response?.data?.message || error.message || "Download failed");
+      }
     }
   };
 
@@ -245,17 +263,48 @@ export default function PurchasesPage() {
                       </div>
                       
                       <div className="flex flex-wrap gap-3">
-                        <button
-                          onClick={() => download(order._id)}
-                          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white rounded-xl font-semibold transition shadow-lg shadow-cyan-500/30"
-                        >
-                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                          </svg>
-                          Download
-                        </button>
+                        {/* Download Button with remaining count */}
+                        {(() => {
+                          const downloadCount = order.downloadCount || 0;
+                          const downloadLimit = order.downloadLimit || 5;
+                          const remaining = downloadLimit - downloadCount;
+                          const isLimitReached = remaining <= 0;
+                          
+                          return (
+                            <div className="relative group">
+                              <button
+                                onClick={() => !isLimitReached && download(order._id)}
+                                disabled={isLimitReached}
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold transition shadow-lg ${
+                                  isLimitReached 
+                                    ? 'bg-gray-500/50 text-gray-400 cursor-not-allowed'
+                                    : 'bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white shadow-cyan-500/30'
+                                }`}
+                              >
+                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                  <polyline points="7 10 12 15 17 10"></polyline>
+                                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Download
+                                <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                                  isLimitReached 
+                                    ? 'bg-red-500/30 text-red-300' 
+                                    : remaining <= 2 
+                                      ? 'bg-yellow-500/30 text-yellow-300' 
+                                      : 'bg-white/20 text-white/80'
+                                }`}>
+                                  {remaining}/{downloadLimit}
+                                </span>
+                              </button>
+                              {isLimitReached && (
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-red-500/90 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+                                  Download limit reached. Contact support.
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                         
                         {(order.status === "completed" || order.status === "success" || order.status === "paid") && (
                           <button

@@ -13,6 +13,7 @@
   "type": "module",
   "dependencies": {
     "@sendgrid/mail": "^8.1.6",
+    "archiver": "^7.0.1",
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
     "canvas": "^3.2.1",
@@ -33,6 +34,7 @@
     "razorpay": "^2.9.6",
     "sharp": "^0.34.5",
     "socket.io": "^4.8.3",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "unzipper": "^0.12.3"
   }
 }

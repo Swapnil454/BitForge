@@ -1,5 +1,7 @@
 import crypto from "crypto";
 import Order from "../models/Order.js";
+import CartOrder from "../models/CartOrder.js";
+import Cart from "../models/Cart.js";
 import Product from "../models/Product.js";
 import User from "../models/User.js";
 import { createNotification } from "./notification.controller.js";
@@ -8,6 +10,117 @@ import Invoice from "../models/Invoice.js";
 // Tax rates aligned with Invoice model
 const GST_RATE = 0.05; // 5% GST
 const PLATFORM_FEE_RATE = 0.02; // 2% platform fee
+
+// Process cart order payment
+const processCartOrder = async (cartOrder, payment) => {
+  console.log("==> 🛒 Processing CART order with", cartOrder.items.length, "items");
+  
+  const buyer = await User.findById(cartOrder.buyerId);
+  const createdOrders = [];
+  
+  // Create individual Order records for each item
+  for (const item of cartOrder.items) {
+    const product = await Product.findById(item.productId);
+    const seller = await User.findById(item.sellerId);
+    
+    // Create Order for this product
+    const order = await Order.create({
+      buyerId: cartOrder.buyerId,
+      sellerId: item.sellerId,
+      productId: item.productId,
+      productName: item.productName,
+      cartOrderId: cartOrder._id,
+      razorpayOrderId: cartOrder.razorpayOrderId,
+      razorpayPaymentId: payment.id,
+      amount: item.itemTotal,
+      platformFee: item.platformFee,
+      sellerAmount: item.sellerAmount,
+      status: "paid",
+    });
+    
+    // Update cart order item with order reference
+    item.orderId = order._id;
+    
+    createdOrders.push({ order, product, seller });
+    
+    console.log(`   ✅ Order created for: ${item.productName} (₹${item.itemTotal.toFixed(2)})`);
+    
+    // Create invoice for this item
+    const invoiceNumber = await Invoice.generateInvoiceNumber();
+    
+    await Invoice.create({
+      orderId: order._id,
+      invoiceNumber,
+      invoiceDate: new Date(),
+      buyerId: cartOrder.buyerId,
+      buyerName: buyer?.name || 'Valued Customer',
+      buyerEmail: payment.email || buyer?.email || "buyer@example.com",
+      sellerId: item.sellerId,
+      sellerName: seller?.name || 'BitForge Seller',
+      productId: item.productId,
+      productName: item.productName,
+      productDescription: product?.description?.substring(0, 100) || 'Digital download',
+      originalPrice: item.originalPrice,
+      discountPercent: item.discountPercent,
+      discountAmount: item.originalPrice * (item.discountPercent / 100),
+      priceAfterDiscount: item.finalPrice,
+      gstRate: GST_RATE,
+      gstAmount: item.gst,
+      platformFeeRate: PLATFORM_FEE_RATE,
+      platformFee: item.platformFee,
+      totalAmount: item.itemTotal,
+      productPrice: item.originalPrice,
+      totalPlatformAmount: item.platformFee + item.gst,
+      razorpayOrderId: cartOrder.razorpayOrderId,
+      razorpayPaymentId: payment.id,
+      paymentMethod: payment.method || 'Razorpay',
+    });
+    
+    console.log(`   ✅ Invoice created: ${invoiceNumber}`);
+    
+    // Notify seller
+    try {
+      await createNotification(
+        item.sellerId,
+        "payment_received",
+        "New order paid",
+        `${buyer?.email || payment.email || "A buyer"} bought "${item.productName}" for ₹${item.itemTotal.toFixed(2)}`,
+        order._id,
+        "Order"
+      );
+    } catch (err) {
+      console.log(`   ⚠️ Failed to notify seller: ${err.message}`);
+    }
+  }
+  
+  // Save updated cart order with order references
+  await cartOrder.save();
+  
+  // Clear user's cart
+  await Cart.findOneAndUpdate(
+    { userId: cartOrder.buyerId },
+    { $set: { items: [], updatedAt: new Date() } }
+  );
+  console.log("==> 🗑️ Cart cleared for user");
+  
+  // Notify buyer (single notification for entire purchase)
+  try {
+    const productNames = cartOrder.items.map(i => i.productName).join(", ");
+    await createNotification(
+      cartOrder.buyerId,
+      "order_completed",
+      "Purchase successful",
+      `You purchased ${cartOrder.items.length} item(s): ${productNames} for ₹${cartOrder.totalAmount.toFixed(2)}`,
+      cartOrder._id,
+      "CartOrder"
+    );
+    console.log("==> ✅ Buyer notified");
+  } catch (err) {
+    console.log(`==> ⚠️ Failed to notify buyer: ${err.message}`);
+  }
+  
+  return createdOrders;
+};
 
 export const razorpayWebhook = async (req, res) => {
   try {
@@ -47,7 +160,28 @@ export const razorpayWebhook = async (req, res) => {
       console.log("==> Order ID:", payment.order_id);
       console.log("==> Amount:", payment.amount / 100, "INR");
 
-      // 1️⃣ Update order
+      // Check if this is a CART order
+      const cartOrder = await CartOrder.findOne({ razorpayOrderId: payment.order_id });
+      
+      if (cartOrder) {
+        // Process cart order
+        if (cartOrder.status === "paid") {
+          console.log("==> ℹ️ Cart order already processed, skipping");
+          return res.json({ status: "ok" });
+        }
+        
+        cartOrder.razorpayPaymentId = payment.id;
+        cartOrder.status = "paid";
+        cartOrder.paidAt = new Date();
+        
+        await processCartOrder(cartOrder, payment);
+        
+        console.log("==> ✅ Cart order processed successfully");
+        console.log("==> ///////////////////////////////////////////////////////////");
+        return res.json({ status: "ok" });
+      }
+
+      // Fall back to single-product order (backward compatibility)
       const order = await Order.findOneAndUpdate(
         { razorpayOrderId: payment.order_id },
         {
@@ -68,17 +202,15 @@ export const razorpayWebhook = async (req, res) => {
       console.log("==> Platform Fee: ₹", order.platformFee);
       console.log("==> Seller Amount: ₹", order.sellerAmount);
 
-      // 2️⃣ Safety check (webhooks can retry)
+      // Safety check (webhooks can retry)
       const existingInvoice = await Invoice.findOne({ orderId: order?._id });
 
-      // 3️⃣ Create invoice (only once)
+      // Create invoice (only once)
       if (!existingInvoice && order) {
-        // Fetch full product and buyer details
         const product = await Product.findById(order.productId);
         const buyer = await User.findById(order.buyerId);
         const seller = await User.findById(order.sellerId);
 
-        // Calculate pricing
         const originalPrice = order.amount;
         const discountPercent = product?.discount || 0;
         const discountAmount = originalPrice * (discountPercent / 100);
@@ -87,29 +219,20 @@ export const razorpayWebhook = async (req, res) => {
         const platformFee = priceAfterDiscount * PLATFORM_FEE_RATE;
         const totalAmount = priceAfterDiscount + gstAmount + platformFee;
 
-        // Generate invoice number using model static method
         const invoiceNumber = await Invoice.generateInvoiceNumber();
 
         const invoice = await Invoice.create({
           orderId: order._id,
           invoiceNumber,
           invoiceDate: new Date(),
-          
-          // Buyer details
           buyerId: order.buyerId,
           buyerName: buyer?.name || 'Valued Customer',
           buyerEmail: payment.email || buyer?.email || order.buyerId?.email || "buyer@example.com",
-          
-          // Seller details
           sellerId: order.sellerId,
           sellerName: seller?.name || 'BitForge Seller',
-          
-          // Product details
           productId: order.productId,
           productName: product?.title || order.productName || 'Digital Product',
           productDescription: product?.description?.substring(0, 100) || 'Digital download',
-          
-          // Pricing breakdown
           originalPrice,
           discountPercent,
           discountAmount,
@@ -119,12 +242,8 @@ export const razorpayWebhook = async (req, res) => {
           platformFeeRate: PLATFORM_FEE_RATE,
           platformFee,
           totalAmount,
-          
-          // Legacy field (for backward compatibility)
           productPrice: originalPrice,
           totalPlatformAmount: platformFee + gstAmount,
-          
-          // Payment details  
           razorpayOrderId: payment.order_id,
           razorpayPaymentId: payment.id,
           paymentMethod: payment.method || 'Razorpay',
@@ -133,7 +252,6 @@ export const razorpayWebhook = async (req, res) => {
         console.log("==> ✅ Invoice created:", invoice.invoiceNumber);
         console.log("==> Total Amount: ₹", totalAmount.toFixed(2));
 
-        // 4️⃣ Notify buyer and seller about the purchase
         try {
           if (order?.buyerId) {
             await createNotification(

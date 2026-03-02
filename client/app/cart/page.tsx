@@ -138,76 +138,62 @@ export default function CartPage() {
     try {
       setCheckingOut(true);
 
-      // Create payment orders for all cart items
-      const orderPromises = cart.items.map(async (item) => {
-        try {
-          const res = await api.post('/payments/create-order', {
-            productId: item.productId._id,
-          });
-          return {
-            ...res.data,
-            productTitle: item.productId.title,
-            productId: item.productId._id,
-          };
-        } catch (error) {
-          console.error('Error creating order for product:', item.productId.title, error);
-          throw error;
+      // Create ONE cart checkout order for all items
+      const res = await api.post('/payments/cart-checkout');
+      const { razorpayOrderId, key, amount, cartOrderId, itemCount, items } = res.data;
+
+      console.log('🛒 Cart checkout:', { cartOrderId, itemCount, amount: amount / 100 });
+
+      // Open single Razorpay payment modal
+      await new Promise<void>((resolve, reject) => {
+        const options = {
+          key,
+          amount,
+          currency: 'INR',
+          name: 'BitForge',
+          description: `${itemCount} item${itemCount > 1 ? 's' : ''} - ${items.map((i: any) => i.productName).join(', ')}`,
+          order_id: razorpayOrderId,
+          handler: async function (response: any) {
+            try {
+              console.log('✅ Payment successful:', response);
+              toast.success(`Payment successful! ${itemCount} item(s) purchased.`);
+              
+              // Cart will be cleared by webhook, but refresh UI
+              await fetchCart();
+              router.push('/dashboard/buyer/purchases');
+              resolve();
+            } catch (err) {
+              console.error('Error after payment:', err);
+              resolve();
+            }
+          },
+          modal: {
+            ondismiss: function () {
+              toast.error('Payment cancelled');
+              reject(new Error('Payment cancelled'));
+            },
+          },
+          prefill: {
+            name: '',
+            email: '',
+          },
+          theme: {
+            color: '#6366f1',
+          },
+        } as any;
+
+        if (!(window as any).Razorpay) {
+          toast.error('Payment gateway not loaded. Please refresh.');
+          reject(new Error('Razorpay not loaded'));
+          return;
         }
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+      }).catch(() => {
+        // Payment was cancelled
       });
 
-      const orders = await Promise.all(orderPromises);
-
-      // Process payments sequentially
-      let successfulPayments = 0;
-      
-      for (const order of orders) {
-        await new Promise<void>((resolve, reject) => {
-          const options = {
-            key: order.key,
-            amount: order.amount,
-            currency: 'INR',
-            name: 'BitForge',
-            description: order.productTitle,
-            order_id: order.razorpayOrderId,
-            handler: async function (response: any) {
-              try {
-                toast.success(`Payment successful for ${order.productTitle}`);
-                // Remove item from cart after successful payment
-                await cartAPI.removeFromCart(order.productId);
-                successfulPayments++;
-                resolve();
-              } catch (err) {
-                console.error('Error removing from cart:', err);
-                resolve(); // Continue even if removal fails
-              }
-            },
-            modal: {
-              ondismiss: function () {
-                toast.error(`Payment cancelled for ${order.productTitle}`);
-                reject(new Error('Payment cancelled'));
-              },
-            },
-          } as any;
-
-          if (!(window as any).Razorpay) {
-            toast.error('Payment gateway not loaded. Please refresh.');
-            reject(new Error('Razorpay not loaded'));
-            return;
-          }
-
-          const rzp = new (window as any).Razorpay(options);
-          rzp.open();
-        }).catch(() => {
-          // Payment was cancelled, continue to next item
-        });
-      }
-
-      if (successfulPayments > 0) {
-        toast.success(`Successfully purchased ${successfulPayments} item(s)!`);
-        // Refresh cart
-        await fetchCart();
-        router.push('/dashboard/buyer');
-      }
     } catch (error: any) {
       console.error('Error during checkout:', error);
       toast.error(error.response?.data?.message || 'Failed to process checkout');
