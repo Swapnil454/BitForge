@@ -8,6 +8,7 @@ import {
   getBuyerTransactionDetails,
   getAllBuyerPurchases,
   getBuyerPurchaseDetails,
+  getPurchasedProductDetails,
 } from "../controllers/buyer.controller.js";
 
 const router = express.Router();
@@ -35,5 +36,8 @@ router.get("/purchases", getAllBuyerPurchases);
 
 // Get single purchase details
 router.get("/purchases/:purchaseId", getBuyerPurchaseDetails);
+
+// View purchased product details (works for soft-deleted products)
+router.get("/purchased-product/:productId", getPurchasedProductDetails);
 
 export default router;

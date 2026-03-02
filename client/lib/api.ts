@@ -407,6 +407,12 @@ export const buyerAPI = {
         return response.data;
     },
 
+    // Get purchased product details (works for soft-deleted products)
+    getPurchasedProduct: async (productId: string) => {
+        const response = await api.get(`/buyer/purchased-product/${productId}`);
+        return response.data;
+    },
+
     getMyDisputes: async () => {
         const response = await api.get('/disputes/my');
         return response.data;
@@ -462,6 +468,11 @@ export const buyerAPI = {
 
         markAllAsRead: async () => {
             const response = await api.post('/chat/mark-read', {});
+            return response.data;
+        },
+
+        adminMarkThreadAsRead: async (userId: string) => {
+            const response = await api.post(`/chat/thread/${userId}/mark-read`, {});
             return response.data;
         },
     };

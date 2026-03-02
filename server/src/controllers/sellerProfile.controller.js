@@ -27,7 +27,8 @@ export const getSellerProfile = async (req, res) => {
     const products = await Product.find({
       sellerId: sellerId,
       status: "approved",
-      changeRequest: "none"
+      changeRequest: "none",
+      isDeleted: { $ne: true }  // Exclude soft-deleted products
     })
       .select("title description price discount thumbnailUrl createdAt pageCount format")
       .sort({ createdAt: -1 })
@@ -81,7 +82,8 @@ export const getSellerProducts = async (req, res) => {
     const products = await Product.find({
       sellerId: sellerId,
       status: "approved",
-      changeRequest: "none"
+      changeRequest: "none",
+      isDeleted: { $ne: true }  // Exclude soft-deleted products
     })
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -90,7 +92,8 @@ export const getSellerProducts = async (req, res) => {
     const total = await Product.countDocuments({
       sellerId: sellerId,
       status: "approved",
-      changeRequest: "none"
+      changeRequest: "none",
+      isDeleted: { $ne: true }  // Exclude soft-deleted products
     });
 
     res.json({

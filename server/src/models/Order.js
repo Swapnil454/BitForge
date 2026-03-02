@@ -15,6 +15,7 @@ const orderSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Product",
   },
+  productName: String, // Denormalized for display when product is deleted
   razorpayOrderId: String,
   razorpayPaymentId: String,
   amount: Number, // total

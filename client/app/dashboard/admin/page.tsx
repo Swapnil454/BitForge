@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { clearAuthStorage, getStoredUser, setCookie, getCookie } from "@/lib/cookies";
 import { notificationAPI, userAPI, adminAPI, chatAPI } from "@/lib/api";
+import { useAdminDashboard, useInvalidateAdminCache, adminQueryKeys } from "@/lib/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { KPI, Glass, MenuItem } from "../components/Cards";
 import DashboardActionCard from "../components/DashboardActionCard";
@@ -51,15 +53,15 @@ export default function AdminDashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
-  const [chatUnreadCount, setChatUnreadCount] = useState(0);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [loadingStats, setLoadingStats] = useState(true);
   const socketRef = useRef<Socket | null>(null);
+
+  // React Query hooks for cached data
+  const { stats, notifications, unreadCount, chatUnread: chatUnreadCount, isInitialLoading, queries } = useAdminDashboard();
+  const cacheInvalidator = useInvalidateAdminCache();
+  const queryClient = useQueryClient();
 
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -79,9 +81,7 @@ export default function AdminDashboard() {
     }
 
     setUser(stored);
-    fetchNotifications();
-    fetchDashboardStats();
-    fetchChatUnread();
+    // React Query handles data fetching automatically
 
     const syncProfile = async () => {
       try {
@@ -160,7 +160,8 @@ export default function AdminDashboard() {
 
     socket.on("chat:new-message", (msg: any) => {
       if (msg?.to?._id === user.id) {
-        setChatUnreadCount((prev) => prev + 1);
+        // Invalidate chat unread cache to trigger refetch
+        cacheInvalidator.invalidateChatUnread();
       }
     });
 
@@ -171,14 +172,13 @@ export default function AdminDashboard() {
     return () => {
       socket.disconnect();
     };
-  }, [user?.id]);
+  }, [user?.id, cacheInvalidator]);
 
   const fetchNotifications = async () => {
     try {
       setLoadingNotifs(true);
-      const response = await notificationAPI.getNotifications(5, 0);
-      setNotifications(response.notifications || []);
-      setUnreadCount(response.unreadCount || 0);
+      // Trigger refetch via React Query
+      await queries.notifications.refetch();
     } catch (error: any) {
       console.error("Failed to fetch notifications:", error);
     } finally {
@@ -186,47 +186,40 @@ export default function AdminDashboard() {
     }
   };
 
-  const fetchDashboardStats = async () => {
-    try {
-      setLoadingStats(true);
-      const data = await adminAPI.getDashboardStats();
-      setStats(data);
-    } catch (error: any) {
-      console.error("Failed to fetch dashboard stats:", error);
-      toast.error("Failed to load dashboard statistics");
-    } finally {
-      setLoadingStats(false);
-    }
-  };
-
-  const fetchChatUnread = async () => {
-    try {
-      const data = await chatAPI.getUnreadCount();
-      setChatUnreadCount(data.count || 0);
-    } catch (error) {
-      console.error("Failed to fetch chat unread count", error);
-    }
-  };
-
   const handleMarkAsRead = async (notificationId: string) => {
     try {
-      await notificationAPI.markAsRead(notificationId);
-      
-      setNotifications((prev) =>
-        prev.map((n) =>
-          n._id === notificationId ? { ...n, isRead: true } : n
-        )
+      // Optimistic update - immediately update UI
+      queryClient.setQueryData(
+        [...adminQueryKeys.notifications(), 5],
+        (oldData: any) => {
+          if (!oldData) return oldData;
+          const notification = oldData.notifications.find((n: any) => n._id === notificationId);
+          // Only decrement if notification exists and was unread
+          const shouldDecrement = notification && !notification.isRead;
+          return {
+            ...oldData,
+            notifications: oldData.notifications.map((n: any) =>
+              n._id === notificationId ? { ...n, isRead: true } : n
+            ),
+            unreadCount: shouldDecrement 
+              ? Math.max(0, (oldData.unreadCount || 0) - 1) 
+              : oldData.unreadCount,
+          };
+        }
       );
       
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+      await notificationAPI.markAsRead(notificationId);
+      // Don't invalidate immediately - let optimistic update stand
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
+      // Revert optimistic update on error
+      cacheInvalidator.invalidateNotifications();
     }
   };
 
   if (!user) return null;
 
-  if (loadingStats || !stats) {
+  if (isInitialLoading || !stats) {
     return <AdminDashboardSkeleton />;
   }
 
@@ -297,7 +290,8 @@ export default function AdminDashboard() {
                       icon="❓"
                       badge={chatUnreadCount > 0 ? chatUnreadCount : undefined}
                       onClick={() => {
-                        setChatUnreadCount(0);
+                        // Invalidate to reset unread count after viewing
+                        cacheInvalidator.invalidateChatUnread();
                         router.push("/dashboard/admin/help-center");
                         setProfileOpen(false);
                       }} 

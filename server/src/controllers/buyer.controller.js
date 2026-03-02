@@ -60,27 +60,30 @@ export const getBuyerSpendingOverTime = async (req, res) => {
 
     // Group by month
     const monthlyData = {};
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
     
-    // Initialize months
-    for (let i = 0; i < 6; i++) {
+    // Initialize last 6 months dynamically
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthsToShow = [];
+    
+    for (let i = 5; i >= 0; i--) {
       const date = new Date();
-      date.setMonth(date.getMonth() - (5 - i));
-      const monthKey = `${months[date.getMonth()]}`;
-      monthlyData[monthKey] = { spent: 0, purchases: 0 };
+      date.setMonth(date.getMonth() - i);
+      const monthKey = monthNames[date.getMonth()];
+      monthsToShow.push(monthKey);
+      monthlyData[monthKey] = { amount: 0, purchases: 0 };
     }
 
     // Aggregate data
     orders.forEach(order => {
       const date = new Date(order.createdAt);
-      const month = months[date.getMonth()];
+      const month = monthNames[date.getMonth()];
       if (monthlyData[month]) {
-        monthlyData[month].spent += order.amount || 0;
+        monthlyData[month].amount += order.amount || 0;
         monthlyData[month].purchases += 1;
       }
     });
 
-    const data = months.map(month => ({
+    const data = monthsToShow.map(month => ({
       month,
       ...monthlyData[month],
     }));
@@ -118,7 +121,7 @@ export const getAllBuyerTransactions = async (req, res) => {
     const transactions = orders.map(order => ({
       _id: order._id,
       orderId: order.razorpayOrderId || order._id.toString(),
-      productName: order.productId?.title || "Unknown Product",
+      productName: order.productName || order.productId?.title || "Unknown Product",
       productId: order.productId?._id || null,
       sellerName: order.sellerId?.name || "Unknown Seller",
       sellerEmail: order.sellerId?.email || "Unknown Email",
@@ -162,7 +165,7 @@ export const getBuyerTransactionDetails = async (req, res) => {
     res.json({
       _id: order._id,
       orderId: order.razorpayOrderId || order._id.toString(),
-      productName: order.productId?.title || "Unknown Product",
+      productName: order.productName || order.productId?.title || "Unknown Product",
       productId: order.productId?._id || null,
       sellerName: order.sellerId?.name || "Unknown Seller",
       sellerEmail: order.sellerId?.email || "Unknown Email",
@@ -195,7 +198,7 @@ export const getAllBuyerPurchases = async (req, res) => {
     const purchases = orders.map(order => ({
       _id: order._id,
       orderId: order.razorpayOrderId || order._id.toString(),
-      productName: order.productId?.title || "Unknown Product",
+      productName: order.productName || order.productId?.title || "Unknown Product",
       productId: order.productId?._id || null,
       thumbnailUrl: order.productId?.thumbnailUrl || null,
       sellerName: order.sellerId?.name || "Unknown Seller",
@@ -220,7 +223,7 @@ export const getBuyerPurchaseDetails = async (req, res) => {
 
     // Fetch order
     const order = await Order.findById(purchaseId)
-      .populate("productId", "title description thumbnailUrl fileUrl fileKey category")
+      .populate("productId", "title description thumbnailUrl fileUrl fileKey category isDeleted")
       .populate("sellerId", "name email");
 
     if (!order) {
@@ -244,11 +247,14 @@ export const getBuyerPurchaseDetails = async (req, res) => {
     // 🔐 Don't expose direct URL - client should use /api/download/:orderId for signed URL
     const downloadAvailable = !!order.productId?.fileKey;
 
+    // Check if product is soft-deleted (archived)
+    const isProductDeleted = order.productId?.isDeleted === true;
+
     // Return purchase details
     res.json({
       _id: order._id,
       orderId: order.razorpayOrderId || order._id.toString(),
-      productName: order.productId?.title || "Unknown Product",
+      productName: order.productName || order.productId?.title || "Unknown Product",
       productDescription: order.productId?.description || "",
       productId: order.productId?._id || null,
       thumbnailUrl: order.productId?.thumbnailUrl || null,
@@ -261,9 +267,82 @@ export const getBuyerPurchaseDetails = async (req, res) => {
       filename,
       razorpayPaymentId: order.razorpayPaymentId || null,
       razorpayOrderId: order.razorpayOrderId || null,
+      isProductDeleted, // Flag for frontend to show "Product no longer available" message
     });
   } catch (error) {
     console.error("Error fetching purchase details:", error);
     res.status(500).json({ message: "Failed to fetch purchase details" });
+  }
+};
+
+// View purchased product details (works even for soft-deleted products)
+export const getPurchasedProductDetails = async (req, res) => {
+  try {
+    const buyerId = req.user.id;
+    const { productId } = req.params;
+
+    // Check if buyer has purchased this product
+    const order = await Order.findOne({
+      buyerId,
+      productId,
+      status: "paid"
+    });
+
+    if (!order) {
+      return res.status(403).json({ 
+        message: "You haven't purchased this product",
+        hasPurchased: false
+      });
+    }
+
+    // Get product details (including soft-deleted)
+    const product = await Product.findById(productId)
+      .populate("sellerId", "name email isVerified profilePictureUrl bio");
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Build the response with isDeleted flag
+    res.json({
+      hasPurchased: true,
+      isDeleted: product.isDeleted === true,
+      deletedMessage: product.isDeleted 
+        ? "This product has been removed from the marketplace. You can still access your purchased files." 
+        : null,
+      product: {
+        _id: product._id,
+        title: product.title,
+        description: product.description,
+        price: product.price,
+        discount: product.discount,
+        thumbnailUrl: product.thumbnailUrl,
+        category: product.category,
+        pageCount: product.pageCount,
+        language: product.language,
+        format: product.format,
+        intendedAudience: product.intendedAudience,
+        lastUpdatedAt: product.lastUpdatedAt,
+        createdAt: product.createdAt,
+        seller: {
+          _id: product.sellerId?._id,
+          name: product.sellerId?.name,
+          email: product.sellerId?.email,
+          isVerified: product.sellerId?.isVerified,
+          profilePictureUrl: product.sellerId?.profilePictureUrl,
+          bio: product.sellerId?.bio
+        }
+      },
+      purchase: {
+        orderId: order._id,
+        razorpayOrderId: order.razorpayOrderId,
+        amount: order.amount,
+        purchaseDate: order.createdAt,
+        downloadAvailable: !!product.fileKey
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching purchased product:", error);
+    res.status(500).json({ message: "Failed to fetch product details" });
   }
 };

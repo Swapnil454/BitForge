@@ -14,15 +14,16 @@ import User from "../models/User.js";
  */
 export async function getSellerStats(sellerId) {
   try {
-    // Count approved products by this seller
+    // Count approved products by this seller (exclude soft-deleted for display)
     const productCount = await Product.countDocuments({
       sellerId: sellerId,
       status: "approved",
-      changeRequest: "none"
+      changeRequest: "none",
+      isDeleted: { $ne: true }  // Exclude soft-deleted products from count
     });
 
     // Count total completed orders for this seller's products
-    // First get all approved product IDs for this seller
+    // Include ALL products (even soft-deleted) because those orders still count
     const sellerProducts = await Product.find({
       sellerId: sellerId,
       status: "approved"
@@ -30,14 +31,14 @@ export async function getSellerStats(sellerId) {
     
     const productIds = sellerProducts.map(p => p._id);
 
-    // Count orders where status is "completed" or "delivered"
+    // Count orders where status is paid/completed/delivered
     const totalSales = await Order.countDocuments({
       productId: { $in: productIds },
-      status: { $in: ["completed", "delivered"] }
+      status: { $in: ["completed", "delivered", "paid"] }
     });
 
-    // Get seller from User model to get rating info
-    const seller = await User.findById(sellerId).select("averageRating ratingCount isVerified identityVerifiedAt");
+    // Get seller from User model to get rating info and member since date
+    const seller = await User.findById(sellerId).select("averageRating ratingCount isVerified identityVerifiedAt createdAt");
 
     return {
       totalSales: totalSales,
@@ -46,6 +47,7 @@ export async function getSellerStats(sellerId) {
       ratingCount: seller?.ratingCount || 0,
       isVerified: seller?.isVerified || false,
       identityVerifiedAt: seller?.identityVerifiedAt || null,
+      memberSince: seller?.createdAt || null,
       isNewSeller: productCount === 0 && totalSales === 0
     };
   } catch (error) {
@@ -57,6 +59,7 @@ export async function getSellerStats(sellerId) {
       ratingCount: 0,
       isVerified: false,
       identityVerifiedAt: null,
+      memberSince: null,
       isNewSeller: true
     };
   }

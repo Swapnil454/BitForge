@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -18,7 +16,9 @@ import {
   Tooltip,
 } from "recharts";
 import { clearAuthStorage, getStoredUser, setCookie, getCookie } from "@/lib/cookies";
-import { buyerAPI, notificationAPI, userAPI, cartAPI, chatAPI } from "@/lib/api";
+import { notificationAPI, userAPI } from "@/lib/api";
+import { useBuyerDashboard, useInvalidateBuyerCache, buyerQueryKeys } from "@/lib/hooks/useBuyerDashboard";
+import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 import ProfileModal from "../components/ProfileModal";
@@ -54,12 +54,7 @@ interface BuyerStats {
 
 export default function BuyerDashboard() {
   const [user, setUser] = useState<User | null>(null);
-  const [stats, setStats] = useState<BuyerStats | null>(null);
-  const [spendingData, setSpendingData] = useState<any[]>([]);
   const [wishlistCount, setWishlistCount] = useState(0);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [notifOpen, setNotifOpen] = useState(false);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -69,14 +64,28 @@ export default function BuyerDashboard() {
   const [showPurchasesModal, setShowPurchasesModal] = useState(false);
   const [showDownloadsModal, setShowDownloadsModal] = useState(false);
   const [showRecentOrdersModal, setShowRecentOrdersModal] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
-  const [chatUnreadCount, setChatUnreadCount] = useState(0);
 
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
 
   const router = useRouter();
+  
+  // React Query hook for dashboard data with caching
+  const {
+    stats,
+    spending: spendingData,
+    notifications,
+    unreadCount,
+    cartCount,
+    chatUnread: chatUnreadCount,
+    isInitialLoading,
+    isFetching,
+    queries,
+  } = useBuyerDashboard();
+  
+  const cacheInvalidator = useInvalidateBuyerCache();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const stored = getStoredUser<User>();
@@ -176,7 +185,8 @@ export default function BuyerDashboard() {
 
     socket.on("chat:new-message", (msg: any) => {
       if (msg?.to?._id === user.id) {
-        setChatUnreadCount((prev) => prev + 1);
+        // Invalidate chat unread cache to trigger refetch
+        cacheInvalidator.invalidateChatUnread();
       }
     });
 
@@ -192,9 +202,8 @@ export default function BuyerDashboard() {
   const fetchNotifications = async () => {
     try {
       setLoadingNotifs(true);
-      const data = await notificationAPI.getNotifications(10, 0);
-      setNotifications(data.notifications);
-      setUnreadCount(data.unreadCount);
+      // Trigger refetch via React Query
+      await queries.notifications.refetch();
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
     } finally {
@@ -204,67 +213,48 @@ export default function BuyerDashboard() {
 
   const handleMarkAsRead = async (notifId: string) => {
     try {
-      await notificationAPI.markAsRead(notifId);
-      setNotifications((prev) =>
-        prev.map((n) => (n._id === notifId ? { ...n, isRead: true } : n))
+      // Optimistic update - immediately update UI
+      queryClient.setQueryData(
+        [...buyerQueryKeys.notifications(), 5],
+        (oldData: any) => {
+          if (!oldData) return oldData;
+          const notification = oldData.notifications.find((n: any) => n._id === notifId);
+          // Only decrement if notification exists and was unread
+          const shouldDecrement = notification && !notification.isRead;
+          return {
+            ...oldData,
+            notifications: oldData.notifications.map((n: any) =>
+              n._id === notifId ? { ...n, isRead: true } : n
+            ),
+            unreadCount: shouldDecrement 
+              ? Math.max(0, (oldData.unreadCount || 0) - 1) 
+              : oldData.unreadCount,
+          };
+        }
       );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+      
+      await notificationAPI.markAsRead(notifId);
+      // Don't invalidate immediately - let optimistic update stand
+      // The data will sync on next fetch
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
+      // Revert optimistic update on error
+      cacheInvalidator.invalidateNotifications();
     }
   };
 
-  const fetchCartCount = async () => {
-    try {
-      const data = await cartAPI.getCartCount();
-      setCartCount(data.count || 0);
-    } catch (error) {
-      console.error("Failed to fetch cart count:", error);
-    }
-  };
-
-  // Fetch buyer stats and spending data
+  // Load wishlist count from localStorage
   useEffect(() => {
-    if (!user) return;
-
-    const fetchData = async () => {
+    const saved = localStorage.getItem("wishlist");
+    if (saved) {
       try {
-        setLoading(true);
-        const [statsData, spendingData, notificationsData, cartData, chatUnread] = await Promise.all([
-          buyerAPI.getStats(),
-          buyerAPI.getSpendingOverTime(),
-          notificationAPI.getNotifications(5, 0),
-          cartAPI.getCartCount(),
-          chatAPI.getUnreadCount(),
-        ]);
-
-        setStats(statsData);
-        setSpendingData(spendingData);
-        setNotifications(notificationsData.notifications);
-        setUnreadCount(notificationsData.unreadCount);
-        setCartCount(cartData.count || 0);
-        setChatUnreadCount(chatUnread.count || 0);
-
-        // Get wishlist count from localStorage
-        const saved = localStorage.getItem("wishlist");
-        if (saved) {
-          try {
-            const wishlist = JSON.parse(saved);
-            setWishlistCount(wishlist.length);
-          } catch (e) {
-            console.error("Failed to parse wishlist", e);
-          }
-        }
-      } catch (error: any) {
-        console.error("Error fetching buyer data:", error);
-        toast.error("Failed to load dashboard data");
-      } finally {
-        setLoading(false);
+        const wishlist = JSON.parse(saved);
+        setWishlistCount(wishlist.length);
+      } catch (e) {
+        console.error("Failed to parse wishlist", e);
       }
-    };
-
-    fetchData();
-  }, [user]);
+    }
+  }, []);
 
   const logout = () => {
     clearAuthStorage();
@@ -273,7 +263,7 @@ export default function BuyerDashboard() {
 
   if (!user) return null;
 
-  if (loading) {
+  if (isInitialLoading) {
     return <BuyerDashboardSkeleton />;
   }
 
@@ -530,7 +520,7 @@ export default function BuyerDashboard() {
                           {formattedDate}
                         </p>
                       </div>
-                      <div className="text-right ml-4 flex-shrink-0">
+                      <div className="text-right ml-4 shrink-0">
                         <p className="font-bold text-lg text-green-400">
                           ₹{o.amount.toLocaleString()}
                         </p>
@@ -562,7 +552,7 @@ export default function BuyerDashboard() {
           <Glass title="📈 Purchases Per Month">
             <BarMetricChart
               data={spendingData}
-              dataKey="purchases"
+              dataKey="amount"
               emptyText="No purchases yet"
             />
           </Glass>
@@ -570,7 +560,7 @@ export default function BuyerDashboard() {
           <Glass title="💰 Spending Over Time" >
             <AreaMetricChart
               data={spendingData}
-              dataKey="spent"
+              dataKey="amount"
               emptyText="No spending yet"
             />
           </Glass>
@@ -636,7 +626,7 @@ function BuyerDashboardSkeleton() {
       <header className="sticky top-0 z-40 bg-linear-to-r from-purple-900/80 via-indigo-900/80 to-cyan-900/80 backdrop-blur-xl border-b border-purple-500/40">
         <div className="max-w-7xl mx-auto h-16 px-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-6 w-28 rounded-full bg-gradient-to-r from-cyan-400/70 via-purple-400/70 to-indigo-400/70 animate-pulse" />
+            <div className="h-6 w-28 rounded-full bg-linear-to-r from-cyan-400/70 via-purple-400/70 to-indigo-400/70 animate-pulse" />
             <div className="hidden md:block h-6 w-32 bg-slate-700/80 rounded-full animate-pulse" />
           </div>
           <div className="flex items-center gap-3">

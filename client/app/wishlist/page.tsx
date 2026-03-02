@@ -24,10 +24,25 @@ export default function WishlistPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
   const router = useRouter();
 
-  // Load wishlist from localStorage
+  // Check authentication on mount
   useEffect(() => {
+    const token = getCookie("token");
+    if (!token) {
+      // Redirect to login with return URL
+      const returnUrl = encodeURIComponent("/wishlist");
+      router.replace(`/login?next=${returnUrl}`);
+      return;
+    }
+    setAuthChecked(true);
+  }, [router]);
+
+  // Load wishlist from localStorage (only after auth check)
+  useEffect(() => {
+    if (!authChecked) return;
+    
     const saved = localStorage.getItem("wishlist");
     if (saved) {
       try {
@@ -37,7 +52,7 @@ export default function WishlistPage() {
       }
     }
     setLoading(false);
-  }, []);
+  }, [authChecked]);
 
   // Fetch all products
   useEffect(() => {
@@ -69,14 +84,6 @@ export default function WishlistPage() {
   };
 
   const moveToCart = async (product: Product) => {
-    const token = getCookie("token");
-    if (!token) {
-      toast.error("Please login to add to cart");
-      const next = encodeURIComponent(`/marketplace/${product._id}`);
-      router.push(`/login?next=${next}`);
-      return;
-    }
-
     try {
       await cartAPI.addToCart(product._id, 1);
 
@@ -94,10 +101,13 @@ export default function WishlistPage() {
     }
   };
 
-  if (loading) {
+  if (loading || !authChecked) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+          <p className="text-white/60">Loading wishlist...</p>
+        </div>
       </div>
     );
   }

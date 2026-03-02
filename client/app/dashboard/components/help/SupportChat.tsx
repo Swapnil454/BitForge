@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
+import { useQueryClient } from "@tanstack/react-query";
 import { chatAPI } from "@/lib/api";
 import { getCookie } from "@/lib/cookies";
 import toast from "react-hot-toast";
@@ -34,6 +35,7 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const socketRef = useRef<Socket | null>(null);
+  const queryClient = useQueryClient();
 
   const scrollToBottom = () => {
     if (bottomRef.current) {
@@ -48,6 +50,8 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
       // Mark all messages in this thread as read for the current user
       try {
         await chatAPI.markAllAsRead();
+        // Update cache to 0 - the query caches just the count number
+        queryClient.setQueryData(["chat", "unread"], 0);
       } catch (err) {
         console.error("Failed to mark chat messages as read", err);
       }

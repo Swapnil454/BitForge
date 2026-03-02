@@ -117,12 +117,21 @@ export const adminListConversations = async (req, res) => {
               "$to",
             ],
           },
+          // Check if this message is unread by admin (sent by non-admin to admin)
+          isUnreadByAdmin: {
+            $and: [
+              { $ne: ["$fromRole", "admin"] },
+              { $eq: ["$toRole", "admin"] },
+              { $not: { $in: [admin._id, { $ifNull: ["$readBy", []] }] } },
+            ],
+          },
         },
       },
       {
         $group: {
           _id: "$userId",
           lastMessageAt: { $max: "$createdAt" },
+          unreadCount: { $sum: { $cond: ["$isUnreadByAdmin", 1, 0] } },
         },
       },
       { $sort: { lastMessageAt: -1 } },
@@ -143,6 +152,7 @@ export const adminListConversations = async (req, res) => {
         role: user?.role || "buyer",
         email: user?.email || "",
         lastMessageAt: r.lastMessageAt,
+        unreadCount: r.unreadCount || 0,
       };
     });
 
@@ -270,6 +280,33 @@ export const markAllAsRead = async (req, res) => {
   } catch (err) {
     console.error("markAllAsRead error", err);
     return res.status(500).json({ message: "Failed to mark messages as read" });
+  }
+};
+
+// Admin: mark a specific user's thread as read
+export const adminMarkThreadAsRead = async (req, res) => {
+  try {
+    const admin = req.user;
+    const { userId } = req.params;
+
+    if (!admin || admin.role !== "admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    // Mark all messages FROM this user TO admin as read by admin
+    await ChatMessage.updateMany(
+      {
+        from: userId,
+        toRole: "admin",
+        readBy: { $ne: admin._id },
+      },
+      { $addToSet: { readBy: admin._id } }
+    );
+
+    return res.json({ message: "Thread marked as read" });
+  } catch (err) {
+    console.error("adminMarkThreadAsRead error", err);
+    return res.status(500).json({ message: "Failed to mark thread as read" });
   }
 };
 

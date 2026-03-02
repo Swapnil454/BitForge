@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, useRef  } from "react";
@@ -7,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { clearAuthStorage, getStoredUser, setCookie, getCookie } from "@/lib/cookies";
-import { sellerAPI, notificationAPI, userAPI, chatAPI } from "@/lib/api";
+import { notificationAPI, userAPI } from "@/lib/api";
+import { useSellerDashboard, useInvalidateSellerCache, sellerQueryKeys } from "@/lib/hooks/useSellerDashboard";
+import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 import SettingsModal from "../components/SettingModal";
@@ -67,22 +68,31 @@ export default function Dashboard() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
-  const [chatUnreadCount, setChatUnreadCount] = useState(0);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [monthly, setMonthly] = useState<MonthlyPoint[]>([]);
-  const [recentSales, setRecentSales] = useState<RecentSale[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showRecentSalesModal, setShowRecentSalesModal] = useState(false);
   const router = useRouter();
 
   const notifRef = useRef<HTMLDivElement | null>(null);
   const profileRef = useRef<HTMLDivElement | null>(null);
   const socketRef = useRef<Socket | null>(null);
+
+  // React Query hook for dashboard data with caching
+  const {
+    stats,
+    monthly,
+    recentSales,
+    notifications,
+    unreadCount,
+    chatUnread: chatUnreadCount,
+    isInitialLoading,
+    isFetching,
+    queries,
+  } = useSellerDashboard();
+  
+  const cacheInvalidator = useInvalidateSellerCache();
+  const queryClient = useQueryClient();
 
 
   useEffect(() => {
@@ -141,9 +151,8 @@ export default function Dashboard() {
       }
     };
     syncProfile();
-    // preload notifications & chat unread so badges are accurate
+    // preload notifications - chat unread is handled by React Query
     fetchNotifications();
-    fetchChatUnread();
 
     const closeOnOutside = (e: MouseEvent) => {
       if (
@@ -216,7 +225,8 @@ export default function Dashboard() {
 
     socket.on("chat:new-message", (msg: any) => {
       if (msg?.to?._id === user.id) {
-        setChatUnreadCount((prev) => prev + 1);
+        // Invalidate chat unread cache to trigger refetch
+        cacheInvalidator.invalidateChatUnread();
       }
     });
 
@@ -227,40 +237,13 @@ export default function Dashboard() {
     return () => {
       socket.disconnect();
     };
-  }, [user?.id]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchStats = async () => {
-      try {
-        setLoading(true);
-        const data = await sellerAPI.getDashboardStats();
-        setStats({
-          totalRevenue: data.totalRevenue,
-          thisMonthRevenue: data.thisMonthRevenue,
-          totalSales: data.totalSales,
-          revenueGrowth: data.revenueGrowth,
-          conversion: data.conversion,
-        });
-        setMonthly(data.monthly || []);
-        setRecentSales(data.recentSales || []);
-      } catch (error) {
-        console.error("Failed to load seller stats", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, [user]);
+  }, [user?.id, cacheInvalidator]);
 
   const fetchNotifications = async () => {
     try {
       setLoadingNotifs(true);
-      const response = await notificationAPI.getNotifications(5, 0);
-      setNotifications(response.notifications || []);
-      setUnreadCount(response.unreadCount || 0);
+      // Trigger refetch via React Query
+      await queries.notifications.refetch();
     } catch (error) {
       console.error("Failed to load notifications", error);
     } finally {
@@ -268,28 +251,40 @@ export default function Dashboard() {
     }
   };
 
-  const fetchChatUnread = async () => {
-    try {
-      const data = await chatAPI.getUnreadCount();
-      setChatUnreadCount(data.count || 0);
-    } catch (error) {
-      console.error("Failed to load chat unread count", error);
-    }
-  };
-
   const handleMarkAsRead = async (id: string) => {
     try {
+      // Optimistic update - immediately update UI
+      queryClient.setQueryData(
+        [...sellerQueryKeys.notifications(), 5],
+        (oldData: any) => {
+          if (!oldData) return oldData;
+          const notification = oldData.notifications.find((n: any) => n._id === id);
+          // Only decrement if notification exists and was unread
+          const shouldDecrement = notification && !notification.isRead;
+          return {
+            ...oldData,
+            notifications: oldData.notifications.map((n: any) =>
+              n._id === id ? { ...n, isRead: true } : n
+            ),
+            unreadCount: shouldDecrement 
+              ? Math.max(0, (oldData.unreadCount || 0) - 1) 
+              : oldData.unreadCount,
+          };
+        }
+      );
+      
       await notificationAPI.markAsRead(id);
-      setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      // Don't invalidate immediately - let optimistic update stand
     } catch (error) {
       console.error("Failed to mark notification as read", error);
+      // Revert optimistic update on error
+      cacheInvalidator.invalidateNotifications();
     }
   };
 
   if (!user) return null;
 
-  if (loading) {
+  if (isInitialLoading) {
     return <SellerDashboardSkeleton />;
   }
 
@@ -363,7 +358,8 @@ export default function Dashboard() {
                       icon="❓"
                       badge={chatUnreadCount > 0 ? chatUnreadCount : undefined}
                       onClick={() => {
-                        setChatUnreadCount(0);
+                        // Invalidate to reset unread count after viewing
+                        cacheInvalidator.invalidateChatUnread();
                         router.push("/dashboard/seller/help-center");
                         setProfileOpen(false);
                       }} 

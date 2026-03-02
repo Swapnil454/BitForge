@@ -186,25 +186,38 @@ export const deleteProductByAdmin = async (req, res) => {
     const sellerId = product.sellerId;
     const productTitle = product.title;
     
-    // Delete files from Cloudinary
-    if (product.fileKey) {
-      try {
-        await cloudinary.uploader.destroy(product.fileKey, { resource_type: "raw" });
-      } catch (err) {
-        console.error("Cloudinary delete error:", err);
-      }
-    }
-
-    if (product.thumbnailKey) {
-      try {
-        await cloudinary.uploader.destroy(product.thumbnailKey, { resource_type: "image" });
-      } catch (err) {
-        console.error("Cloudinary thumbnail delete error:", err);
-      }
-    }
+    // Check if product has any purchases - if so, soft delete to preserve buyer access
+    const hasPurchases = await Order.exists({ productId: id, status: "paid" });
     
-    // Delete product from database
-    await Product.findByIdAndDelete(id);
+    if (hasPurchases) {
+      // Soft delete - keep files for buyers who purchased
+      await Product.findByIdAndUpdate(id, {
+        isDeleted: true,
+        deletedAt: new Date(),
+        deletedBy: req.user.id,
+        status: "rejected", // Hide from marketplace
+        rejectionReason: `Deleted by admin: ${String(deleteReason).trim()}`
+      });
+    } else {
+      // No purchases - safe to hard delete and remove files
+      if (product.fileKey) {
+        try {
+          await cloudinary.uploader.destroy(product.fileKey, { resource_type: "raw" });
+        } catch (err) {
+          console.error("Cloudinary delete error:", err);
+        }
+      }
+
+      if (product.thumbnailKey) {
+        try {
+          await cloudinary.uploader.destroy(product.thumbnailKey, { resource_type: "image" });
+        } catch (err) {
+          console.error("Cloudinary thumbnail delete error:", err);
+        }
+      }
+      
+      await Product.findByIdAndDelete(id);
+    }
     
     // Notify seller about product deletion
     if (sellerId) {
@@ -219,11 +232,12 @@ export const deleteProductByAdmin = async (req, res) => {
     }
 
     res.json({ 
-      message: "Product deleted successfully",
+      message: hasPurchases ? "Product archived (buyers retain access)" : "Product deleted successfully",
       deletedProduct: {
         id,
         title: productTitle,
-        reason: String(deleteReason).trim()
+        reason: String(deleteReason).trim(),
+        softDeleted: !!hasPurchases
       }
     });
   } catch (error) {
@@ -380,36 +394,57 @@ export const approveProductChange = async (req, res) => {
         product: updatedProduct 
       });
     } else if (product.changeRequest === "pending_deletion") {
-      // Delete the product
-      // First delete files from Cloudinary
-      if (product.fileKey) {
-        try {
-          await cloudinary.uploader.destroy(product.fileKey, { resource_type: "raw" });
-        } catch (err) {
-          console.error("Cloudinary delete error:", err);
+      // Check if product has any purchases - if so, soft delete to preserve buyer access
+      const hasPurchases = await Order.exists({ productId: id, status: "paid" });
+      
+      if (hasPurchases) {
+        // Soft delete - keep files for buyers who purchased
+        await Product.findByIdAndUpdate(id, {
+          isDeleted: true,
+          deletedAt: new Date(),
+          deletedBy: req.user.id,
+          changeRequest: "none",
+          status: "rejected", // Hide from marketplace
+          rejectionReason: "Deleted by seller request (archived for buyers)"
+        });
+      } else {
+        // No purchases - safe to hard delete and remove files
+        if (product.fileKey) {
+          try {
+            await cloudinary.uploader.destroy(product.fileKey, { resource_type: "raw" });
+          } catch (err) {
+            console.error("Cloudinary delete error:", err);
+          }
         }
-      }
-      if (product.thumbnailKey) {
-        try {
-          await cloudinary.uploader.destroy(product.thumbnailKey, { resource_type: "image" });
-        } catch (err) {
-          console.error("Cloudinary thumbnail delete error:", err);
+        if (product.thumbnailKey) {
+          try {
+            await cloudinary.uploader.destroy(product.thumbnailKey, { resource_type: "image" });
+          } catch (err) {
+            console.error("Cloudinary thumbnail delete error:", err);
+          }
         }
-      }
 
-      await Product.findByIdAndDelete(id);
+        await Product.findByIdAndDelete(id);
+      }
 
       // Notify seller about deletion approval
       await createNotification(
         product.sellerId,
         "product_change_approved",
         "Product Deletion Approved ✅",
-        `Your product "${product.title}" has been deleted as requested`,
+        hasPurchases 
+          ? `Your product "${product.title}" has been archived. Existing buyers retain access.`
+          : `Your product "${product.title}" has been deleted as requested`,
         product._id,
         "Product"
       );
 
-      return res.json({ message: "Product deletion approved and product removed" });
+      return res.json({ 
+        message: hasPurchases 
+          ? "Product archived (buyers retain access)" 
+          : "Product deletion approved and product removed",
+        softDeleted: !!hasPurchases
+      });
     }
 
     res.status(400).json({ message: "No pending changes to approve" });
@@ -961,23 +996,26 @@ export const getDashboardStats = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(5);
     
-    // Get total products (approved products)
-    const totalProducts = await Product.countDocuments({ status: "approved" });
+    // Get total products (approved products, excluding soft-deleted)
+    const totalProducts = await Product.countDocuments({ 
+      status: "approved",
+      isDeleted: { $ne: true }
+    });
 
     // Get recent transactions (last 10)
     const recentTransactions = await Order.find({ status: "paid" })
       .populate("buyerId", "name email")
-      .populate("productId", "name")
+      .populate("productId", "title")
       .sort({ createdAt: -1 })
       .limit(10);
 
-    // Format transactions
+    // Format transactions (use stored productName, fallback to populated title)
     const formattedTransactions = recentTransactions.map(order => ({
       id: order._id,
       orderId: order.razorpayOrderId || order._id,
       user: order.buyerId?.name || "Unknown",
       userEmail: order.buyerId?.email,
-      productName: order.productId?.name || "Unknown Product",
+      productName: order.productName || order.productId?.title || "Unknown Product",
       amount: `₹${order.amount?.toLocaleString()}`,
       rawAmount: order.amount,
       date: order.createdAt,
@@ -1288,7 +1326,7 @@ export const getAllTransactions = async (req, res) => {
       orderId: order.razorpayOrderId || order._id.toString(),
       buyerName: order.buyerId?.name || "Unknown",
       buyerEmail: order.buyerId?.email || "Unknown",
-      productName: order.productId?.title || "Unknown Product",
+      productName: order.productName || order.productId?.title || "Unknown Product",
       amount: order.amount || 0,
       status: order.status === "paid" ? "success" : order.status === "failed" ? "failed" : "pending",
       date: order.createdAt,

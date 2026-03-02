@@ -51,6 +51,7 @@ export const createOrder = async (req, res) => {
     buyerId: req.user.id,
     sellerId: product.sellerId,
     productId: product._id,
+    productName: product.title, // Store product name for historical records
     razorpayOrderId: razorpayOrder.id,
     amount: totalAmount, // Store exact total amount
     platformFee,

@@ -1,11 +1,11 @@
-
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { marketplaceAPI, cartAPI } from "@/lib/api";
 import { getStoredUser } from "@/lib/cookies";
+import { useAuth } from "@/lib/useAuth";
+import AuthModal from "@/app/components/AuthModal";
 import toast from "react-hot-toast";
 
 type Product = {
@@ -32,6 +32,17 @@ export default function MarketplacePage() {
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
   const router = useRouter();
   const user = getStoredUser<{ role?: string }>();
+  
+  // Auth hook for gating actions
+  const { 
+    isAuthenticated, 
+    requireAuth, 
+    showAuthModal, 
+    pendingAction, 
+    closeAuthModal, 
+    goToLogin, 
+    goToRegister 
+  } = useAuth();
 
   // Load wishlist from localStorage on mount
   useEffect(() => {
@@ -47,8 +58,11 @@ export default function MarketplacePage() {
 
   useEffect(() => {
     fetchProducts();
-    fetchCart();
-  }, []);
+    // Only fetch cart if authenticated
+    if (isAuthenticated) {
+      fetchCart();
+    }
+  }, [isAuthenticated]);
 
   const fetchProducts = async () => {
     try {
@@ -91,51 +105,57 @@ export default function MarketplacePage() {
     e.stopPropagation();
     e.preventDefault();
     
-    const isAlreadyInWishlist = wishlist.includes(productId);
-    const updated = isAlreadyInWishlist
-      ? wishlist.filter(id => id !== productId)
-      : [...wishlist, productId];
-    
-    // Update state
-    setWishlist(updated);
-    
-    // Update localStorage
-    localStorage.setItem("wishlist", JSON.stringify(updated));
-    
-    // Show toast notification
-    if (isAlreadyInWishlist) {
-      toast.success("Removed from wishlist");
-    } else {
-      toast.success("Added to wishlist");
-    }
+    // Require auth for wishlist action
+    requireAuth("add to wishlist", () => {
+      const isAlreadyInWishlist = wishlist.includes(productId);
+      const updated = isAlreadyInWishlist
+        ? wishlist.filter(id => id !== productId)
+        : [...wishlist, productId];
+      
+      // Update state
+      setWishlist(updated);
+      
+      // Update localStorage
+      localStorage.setItem("wishlist", JSON.stringify(updated));
+      
+      // Show toast notification
+      if (isAlreadyInWishlist) {
+        toast.success("Removed from wishlist");
+      } else {
+        toast.success("Added to wishlist");
+      }
+    });
   };
 
   const handleAddToCart = async (e: React.MouseEvent, productId: string) => {
     e.stopPropagation();
     e.preventDefault();
     
-    const isInCart = cartItems.includes(productId);
-    
-    try {
-      setAddingToCart(productId);
+    // Require auth for cart action
+    requireAuth("add to cart", async () => {
+      const isInCart = cartItems.includes(productId);
       
-      if (isInCart) {
-        // Remove from cart
-        await cartAPI.removeFromCart(productId);
-        setCartItems(prev => prev.filter(id => id !== productId));
-        toast.success('Removed from cart');
-      } else {
-        // Add to cart
-        await cartAPI.addToCart(productId, 1);
-        setCartItems(prev => [...prev, productId]);
-        toast.success('Added to cart! 🛒');
+      try {
+        setAddingToCart(productId);
+        
+        if (isInCart) {
+          // Remove from cart
+          await cartAPI.removeFromCart(productId);
+          setCartItems(prev => prev.filter(id => id !== productId));
+          toast.success('Removed from cart');
+        } else {
+          // Add to cart
+          await cartAPI.addToCart(productId, 1);
+          setCartItems(prev => [...prev, productId]);
+          toast.success('Added to cart! 🛒');
+        }
+      } catch (error: any) {
+        console.error('Error with cart:', error);
+        toast.error(error.response?.data?.message || 'Failed to update cart');
+      } finally {
+        setAddingToCart(null);
       }
-    } catch (error: any) {
-      console.error('Error with cart:', error);
-      toast.error(error.response?.data?.message || 'Failed to update cart');
-    } finally {
-      setAddingToCart(null);
-    }
+    });
   };
 
   const isInWishlist = (productId: string) => wishlist.includes(productId);
@@ -172,7 +192,7 @@ export default function MarketplacePage() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => router.push("/cart")}
+              onClick={() => requireAuth("view cart", () => router.push("/cart"))}
               className="relative h-10 w-10 md:h-11 md:w-11 rounded-xl bg-linear-to-br from-white/10 to-white/5 border border-white/20 hover:border-cyan-500/50 hover:from-cyan-500/20 hover:to-indigo-600/20 grid place-items-center transition-all duration-300 group hover:scale-105 shadow-lg hover:shadow-cyan-500/50"
               title="Cart"
             >
@@ -181,9 +201,14 @@ export default function MarketplacePage() {
                 <circle cx="20" cy="21" r="1" />
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
               </svg>
+              {isAuthenticated && cartItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-linear-to-r from-cyan-500 to-indigo-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg shadow-cyan-500/50">
+                  {cartItems.length > 9 ? '9+' : cartItems.length}
+                </span>
+              )}
             </button>
             <button
-              onClick={() => router.push("/wishlist")}
+              onClick={() => requireAuth("view wishlist", () => router.push("/wishlist"))}
               className="relative h-10 w-10 md:h-11 md:w-11 rounded-xl bg-linear-to-br from-white/10 to-white/5 border border-white/20 hover:border-pink-500/50 hover:from-pink-500/20 hover:to-pink-600/20 grid place-items-center transition-all duration-300 group hover:scale-105 shadow-lg hover:shadow-pink-500/50"
               title="Wishlist"
             >
@@ -330,7 +355,7 @@ export default function MarketplacePage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          router.push(`/marketplace/${product._id}`);
+                          requireAuth("buy", () => router.push(`/marketplace/${product._id}`));
                         }}
                         className="px-4 py-2.5 bg-white/10 border border-white/20 hover:bg-white/20 text-white rounded-xl font-semibold transition text-sm"
                       >
@@ -344,6 +369,15 @@ export default function MarketplacePage() {
           </div>
         )}
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={closeAuthModal}
+        onLogin={goToLogin}
+        onRegister={goToRegister}
+        action={pendingAction}
+      />
     </div>
   );
 }

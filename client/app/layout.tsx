@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Toaster } from 'react-hot-toast';
+import AppProviders from "./providers/AppProviders";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -29,7 +30,9 @@ export default function RootLayout({
     <html lang="en" data-scroll-behavior="smooth">
       <body
       >
-        {children}
+        <AppProviders>
+          {children}
+        </AppProviders>
         {/*Organization Schema */}
         <script
           type="application/ld+json"

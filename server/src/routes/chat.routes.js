@@ -9,6 +9,7 @@ import {
   adminSendMessage,
   getUnreadCount,
   markAllAsRead,
+  adminMarkThreadAsRead,
   adminDeleteMessages,
   adminClearThread,
   adminClearAllChats,
@@ -31,6 +32,7 @@ router.post("/mark-read", requireRole(["buyer", "seller", "admin"]), markAllAsRe
 router.get("/conversations", requireRole(["admin"]), adminListConversations);
 router.get("/thread/:userId", requireRole(["admin"]), adminGetThread);
 router.post("/thread/:userId", requireRole(["admin"]), adminSendMessage);
+router.post("/thread/:userId/mark-read", requireRole(["admin"]), adminMarkThreadAsRead);
 router.delete("/admin/messages", requireRole(["admin"]), adminDeleteMessages);
 router.delete("/admin/thread/:userId", requireRole(["admin"]), adminClearThread);
 router.delete("/admin/all", requireRole(["admin"]), adminClearAllChats);

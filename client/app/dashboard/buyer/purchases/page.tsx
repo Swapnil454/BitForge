@@ -295,8 +295,7 @@ export default function PurchasesPage() {
                           Raise Dispute
                         </button>
                         <a
-                          href={`${process.env.NEXT_PUBLIC_API_URL}/invoices/${order._id}`}
-                          target="_blank"
+                          href={`/dashboard/buyer/invoice/${order._id}`}
                           className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl font-semibold transition"
                         >
                           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

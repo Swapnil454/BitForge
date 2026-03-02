@@ -483,7 +483,7 @@ export default function LandingPage() {
         </p>
 
         <MagneticButton className="mt-8 rounded-xl bg-linear-to-r from-cyan-400 to-indigo-500 px-9 py-4 text-lg font-bold text-black shadow-[0_0_60px_rgba(56,189,248,0.6)]">
-          <Link href={"/register"} >Enter Marketplace</Link>
+          <Link href={"/marketplace"} >Enter Marketplace</Link>
         </MagneticButton>
       </section>
 
@@ -591,13 +591,9 @@ export default function LandingPage() {
                 </h4>
                 <ul className="space-y-3 text-white/60">
                   <li>
-                    <button
-                      type="button"
-                      onClick={handleFooterMarketplaceClick}
-                      className="text-left text-white/60 hover:text-white hover:underline underline-offset-2 transition"
-                    >
+                    <Link href="/marketplace" className="hover:text-white hover:underline underline-offset-2 transition">
                       Marketplace
-                    </button>
+                    </Link>
                   </li>
                   <li>
                     <Link href="/register" className="hover:text-white hover:underline underline-offset-2 transition">

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
+import { useQueryClient } from "@tanstack/react-query";
 import { adminAPI, chatAPI } from "@/lib/api";
 import { getCookie } from "@/lib/cookies";
 import toast from "react-hot-toast";
@@ -12,6 +13,7 @@ interface ConversationSummary {
   role: "buyer" | "seller";
   email?: string;
   lastMessageAt: string;
+  unreadCount?: number;
 }
 
 interface ChatMessage {
@@ -52,6 +54,8 @@ export default function AdminChatCenter() {
   const [unreadByUser, setUnreadByUser] = useState<Record<string, number>>({});
   const [isMobileThreadView, setIsMobileThreadView] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
+  const queryClient = useQueryClient();
+  
   const loadConversations = async () => {
     try {
       const [convData, usersData] = await Promise.all([
@@ -66,12 +70,14 @@ export default function AdminChatCenter() {
         )
       );
 
-      // Mark all messages addressed to this admin as read when Help Center opens
-      try {
-        await chatAPI.markAllAsRead();
-      } catch (err) {
-        console.error("Failed to mark admin chat messages as read", err);
-      }
+      // Initialize unreadByUser from server data
+      const serverUnread: Record<string, number> = {};
+      (convData.conversations || []).forEach((c: any) => {
+        if (c.unreadCount > 0) {
+          serverUnread[c.userId] = c.unreadCount;
+        }
+      });
+      setUnreadByUser(serverUnread);
 
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to load chats");
@@ -86,6 +92,30 @@ export default function AdminChatCenter() {
       const data = await chatAPI.adminGetThread(userId);
       setMessages(data.messages || []);
       setSelectedMessageIds([]);
+      
+      // Mark this thread as read
+      try {
+        await chatAPI.adminMarkThreadAsRead(userId);
+        // Clear local unread count for this user
+        setUnreadByUser((prev) => {
+          const updated = { ...prev };
+          delete updated[userId];
+          return updated;
+        });
+        // Update conversation list to reflect read status
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.userId === userId ? { ...c, unreadCount: 0 } : c
+          )
+        );
+        // Get current count and decrement by the messages we just read
+        const currentCount = queryClient.getQueryData<number>(["chat", "unread"]) || 0;
+        const threadUnread = conversations.find(c => c.userId === userId)?.unreadCount || 0;
+        const newCount = Math.max(0, currentCount - threadUnread);
+        queryClient.setQueryData(["chat", "unread"], newCount);
+      } catch (err) {
+        console.error("Failed to mark thread as read", err);
+      }
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to load thread");
     } finally {
@@ -278,19 +308,36 @@ export default function AdminChatCenter() {
 
         {/* Role filter tabs */}
         <div className="flex text-[11px] border-b border-white/10">
-          {["seller", "buyer"].map((role) => (
-            <button
-              key={role}
-              onClick={() => setRoleFilter(role as "seller" | "buyer")}
-              className={`flex-1 py-2 border-r last:border-r-0 border-white/10 uppercase tracking-wide font-semibold transition text-center ${
-                roleFilter === role
-                  ? "bg-white/15 text-white"
-                  : "bg-black/40 text-white/60 hover:text-white"
-              }`}
-            >
-              {role === "seller" ? "Sellers" : "Buyers"}
-            </button>
-          ))}
+          {["seller", "buyer"].map((role) => {
+            // Count total unread for this role
+            const unreadForRole = allUsers
+              .filter((u) => u.role === role)
+              .reduce((sum, u) => {
+                const conv = conversations.find((c) => c.userId === u._id);
+                const serverUnread = conv?.unreadCount || 0;
+                const localUnread = unreadByUser[u._id] || 0;
+                return sum + Math.max(serverUnread, localUnread);
+              }, 0);
+            
+            return (
+              <button
+                key={role}
+                onClick={() => setRoleFilter(role as "seller" | "buyer")}
+                className={`flex-1 py-2 border-r last:border-r-0 border-white/10 uppercase tracking-wide font-semibold transition text-center relative ${
+                  roleFilter === role
+                    ? "bg-white/15 text-white"
+                    : "bg-black/40 text-white/60 hover:text-white"
+                }`}
+              >
+                {role === "seller" ? "Sellers" : "Buyers"}
+                {unreadForRole > 0 && (
+                  <span className="ml-1 px-1.5 py-0.5 text-[9px] bg-red-500 text-white rounded-full font-bold">
+                    {unreadForRole}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
         <div className="flex-1 overflow-y-auto">
           {loadingConvos ? (
@@ -301,12 +348,16 @@ export default function AdminChatCenter() {
               .filter((u) => u.role === roleFilter)
               .map((u) => {
                 const conv = conversations.find((c) => c.userId === u._id);
+                // Use server unreadCount if available, otherwise check local tracking
+                const serverUnread = conv?.unreadCount || 0;
+                const localUnread = unreadByUser[u._id] || 0;
                 return {
                   userId: u._id,
                   name: u.name,
                   role: u.role as "buyer" | "seller",
                   email: u.email,
                   lastMessageAt: conv?.lastMessageAt || u.createdAt,
+                  unreadCount: Math.max(serverUnread, localUnread),
                 };
               })
               .sort((a, b) =>
@@ -338,16 +389,16 @@ export default function AdminChatCenter() {
                   <span className="text-[10px] px-1.5 py-0.5 rounded-full border border-white/20 text-white/70">
                     {c.role}
                   </span>
-                  {unreadByUser[c.userId] ? (
+                  {c.unreadCount > 0 && (
                     <span className="ml-auto flex items-center gap-1">
                       <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-400 text-black font-semibold uppercase tracking-wide">
                         New
                       </span>
                       <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-red-500/90 text-white font-semibold">
-                        {unreadByUser[c.userId]}
+                        {c.unreadCount}
                       </span>
                     </span>
-                  ) : null}
+                  )}
                 </span>
                 {c.email && (
                   <span className="text-[10px] text-white/50 truncate">{c.email}</span>

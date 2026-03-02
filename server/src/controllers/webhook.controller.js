@@ -1,11 +1,13 @@
 import crypto from "crypto";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
+import User from "../models/User.js";
 import { createNotification } from "./notification.controller.js";
 import Invoice from "../models/Invoice.js";
-import { generateInvoiceNumber } from "../utils/generateInvoiceNumber.js";
 
-const GST_RATE = 0.18;
+// Tax rates aligned with Invoice model
+const GST_RATE = 0.05; // 5% GST
+const PLATFORM_FEE_RATE = 0.02; // 2% platform fee
 
 export const razorpayWebhook = async (req, res) => {
   try {
@@ -71,25 +73,68 @@ export const razorpayWebhook = async (req, res) => {
 
       // 3️⃣ Create invoice (only once)
       if (!existingInvoice && order) {
-        const gstAmount = order.platformFee * GST_RATE;
+        // Fetch full product and buyer details
+        const product = await Product.findById(order.productId);
+        const buyer = await User.findById(order.buyerId);
+        const seller = await User.findById(order.sellerId);
+
+        // Calculate pricing
+        const originalPrice = order.amount;
+        const discountPercent = product?.discount || 0;
+        const discountAmount = originalPrice * (discountPercent / 100);
+        const priceAfterDiscount = originalPrice - discountAmount;
+        const gstAmount = priceAfterDiscount * GST_RATE;
+        const platformFee = priceAfterDiscount * PLATFORM_FEE_RATE;
+        const totalAmount = priceAfterDiscount + gstAmount + platformFee;
+
+        // Generate invoice number using model static method
+        const invoiceNumber = await Invoice.generateInvoiceNumber();
 
         const invoice = await Invoice.create({
           orderId: order._id,
-          invoiceNumber: generateInvoiceNumber(),
-          buyerEmail: payment.email || order.buyerId?.email || "buyer@example.com",
+          invoiceNumber,
+          invoiceDate: new Date(),
+          
+          // Buyer details
+          buyerId: order.buyerId,
+          buyerName: buyer?.name || 'Valued Customer',
+          buyerEmail: payment.email || buyer?.email || order.buyerId?.email || "buyer@example.com",
+          
+          // Seller details
           sellerId: order.sellerId,
-          productPrice: order.amount,
-          platformFee: order.platformFee,
+          sellerName: seller?.name || 'BitForge Seller',
+          
+          // Product details
+          productId: order.productId,
+          productName: product?.title || order.productName || 'Digital Product',
+          productDescription: product?.description?.substring(0, 100) || 'Digital download',
+          
+          // Pricing breakdown
+          originalPrice,
+          discountPercent,
+          discountAmount,
+          priceAfterDiscount,
+          gstRate: GST_RATE,
           gstAmount,
-          totalPlatformAmount: order.platformFee + gstAmount,
+          platformFeeRate: PLATFORM_FEE_RATE,
+          platformFee,
+          totalAmount,
+          
+          // Legacy field (for backward compatibility)
+          productPrice: originalPrice,
+          totalPlatformAmount: platformFee + gstAmount,
+          
+          // Payment details  
+          razorpayOrderId: payment.order_id,
+          razorpayPaymentId: payment.id,
+          paymentMethod: payment.method || 'Razorpay',
         });
 
         console.log("==> ✅ Invoice created:", invoice.invoiceNumber);
+        console.log("==> Total Amount: ₹", totalAmount.toFixed(2));
 
         // 4️⃣ Notify buyer and seller about the purchase
         try {
-          const product = await Product.findById(order.productId);
-
           if (order?.buyerId) {
             await createNotification(
               order.buyerId,
@@ -107,7 +152,7 @@ export const razorpayWebhook = async (req, res) => {
               order.sellerId,
               "payment_received",
               "New order paid",
-              `${payment.email || order.buyerId?.email || "A buyer"} bought "${product?.title || "your product"}" for ₹${order.amount}`,
+              `${buyer?.email || payment.email || "A buyer"} bought "${product?.title || "your product"}" for ₹${order.amount}`,
               order._id,
               "Order"
             );

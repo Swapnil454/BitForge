@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cartAPI } from '@/lib/api';
 import api from '@/lib/api';
+import { getCookie } from '@/lib/cookies';
 import { Loader, Plus, Minus, Trash2, ShoppingCart, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -43,9 +44,24 @@ export default function CartPage() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [removing, setRemoving] = useState<string | null>(null);
   const [checkingOut, setCheckingOut] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const router = useRouter();
 
+  // Check authentication on mount
   useEffect(() => {
+    const token = getCookie("token");
+    if (!token) {
+      // Redirect to login with return URL
+      const returnUrl = encodeURIComponent("/cart");
+      router.replace(`/login?next=${returnUrl}`);
+      return;
+    }
+    setAuthChecked(true);
+  }, [router]);
+
+  useEffect(() => {
+    if (!authChecked) return;
+    
     fetchCart();
 
     // Load Razorpay checkout script
@@ -55,7 +71,7 @@ export default function CartPage() {
       script.async = true;
       document.body.appendChild(script);
     }
-  }, []);
+  }, [authChecked]);
 
   const fetchCart = async () => {
     try {
@@ -231,7 +247,7 @@ export default function CartPage() {
     return calculatePriceAfterDiscount() + calculateGST() + calculatePlatformFee();
   };
 
-  if (loading) {
+  if (loading || !authChecked) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-black via-slate-900 to-slate-800 flex items-center justify-center">
         <div className="text-center">

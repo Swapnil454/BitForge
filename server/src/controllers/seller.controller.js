@@ -245,7 +245,7 @@ export const getSellerTransactions = async (req, res) => {
       return {
         _id: order._id,
         orderId: order.razorpayOrderId || order._id.toString(),
-        productName: order.productId?.title || "Unknown Product",
+        productName: order.productName || order.productId?.title || "Unknown Product",
         buyerName: order.buyerId?.name || "Unknown Buyer",
         buyerEmail: order.buyerId?.email || "Unknown Email",
         saleAmount: saleAmount,
@@ -294,7 +294,7 @@ export const getAllSales = async (req, res) => {
       return {
         _id: order._id,
         orderId: order.razorpayOrderId || order._id.toString(),
-        productName: order.productId?.title || "Unknown Product",
+        productName: order.productName || order.productId?.title || "Unknown Product",
         productId: order.productId?._id || null,
         buyerName: order.buyerId?.name || "Unknown Buyer",
         buyerEmail: order.buyerId?.email || "Unknown Email",

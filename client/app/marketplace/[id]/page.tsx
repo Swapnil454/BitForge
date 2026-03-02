@@ -1,11 +1,11 @@
-
-
 "use client";
 
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { useParams, useRouter } from "next/navigation";
 import { getCookie } from "@/lib/cookies";
+import { useAuth } from "@/lib/useAuth";
+import AuthModal from "@/app/components/AuthModal";
 import toast from "react-hot-toast";
 import { cartAPI } from "@/lib/api";
 import ProductReviews from "./components/ProductReviews";
@@ -35,6 +35,17 @@ export default function ProductDetailsPage() {
   const [isInCart, setIsInCart] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
   const router = useRouter();
+  
+  // Auth hook for gating actions
+  const { 
+    isAuthenticated, 
+    requireAuth, 
+    showAuthModal, 
+    pendingAction, 
+    closeAuthModal, 
+    goToLogin, 
+    goToRegister 
+  } = useAuth();
 
   // Load wishlist from localStorage
   useEffect(() => {
@@ -51,17 +62,19 @@ export default function ProductDetailsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch product
+        // Fetch product (public)
         const res = await api.get(`/marketplace/${id}`);
         setProduct(res.data);
         
-        // Check if in cart
-        try {
-          const cartData = await cartAPI.getCart();
-          const productIds = cartData.cart.items.map((item: any) => item.productId._id || item.productId);
-          setIsInCart(productIds.includes(id as string));
-        } catch (error) {
-          console.error("Failed to fetch cart:", error);
+        // Check if in cart (only if authenticated)
+        if (isAuthenticated) {
+          try {
+            const cartData = await cartAPI.getCart();
+            const productIds = cartData.cart.items.map((item: any) => item.productId._id || item.productId);
+            setIsInCart(productIds.includes(id as string));
+          } catch (error) {
+            console.error("Failed to fetch cart:", error);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch product:", error);
@@ -83,40 +96,44 @@ export default function ProductDetailsPage() {
   }, [id]);
 
   const toggleWishlist = () => {
-    const isAlreadyInWishlist = wishlist.includes(id as string);
-    const updated = isAlreadyInWishlist
-      ? wishlist.filter(pid => pid !== id)
-      : [...wishlist, id as string];
-    
-    setWishlist(updated);
-    localStorage.setItem("wishlist", JSON.stringify(updated));
-    
-    if (isAlreadyInWishlist) {
-      toast.success("Removed from wishlist");
-    } else {
-      toast.success("Added to wishlist");
-    }
+    requireAuth("add to wishlist", () => {
+      const isAlreadyInWishlist = wishlist.includes(id as string);
+      const updated = isAlreadyInWishlist
+        ? wishlist.filter(pid => pid !== id)
+        : [...wishlist, id as string];
+      
+      setWishlist(updated);
+      localStorage.setItem("wishlist", JSON.stringify(updated));
+      
+      if (isAlreadyInWishlist) {
+        toast.success("Removed from wishlist");
+      } else {
+        toast.success("Added to wishlist");
+      }
+    });
   };
 
   const handleAddToCart = async () => {
-    try {
-      setAddingToCart(true);
-      
-      if (isInCart) {
-        await cartAPI.removeFromCart(id as string);
-        setIsInCart(false);
-        toast.success('Removed from cart');
-      } else {
-        await cartAPI.addToCart(id as string, 1);
-        setIsInCart(true);
-        toast.success('Added to cart!');
+    requireAuth("add to cart", async () => {
+      try {
+        setAddingToCart(true);
+        
+        if (isInCart) {
+          await cartAPI.removeFromCart(id as string);
+          setIsInCart(false);
+          toast.success('Removed from cart');
+        } else {
+          await cartAPI.addToCart(id as string, 1);
+          setIsInCart(true);
+          toast.success('Added to cart!');
+        }
+      } catch (error: any) {
+        console.error('Error with cart:', error);
+        toast.error(error.response?.data?.message || 'Failed to update cart');
+      } finally {
+        setAddingToCart(false);
       }
-    } catch (error: any) {
-      console.error('Error with cart:', error);
-      toast.error(error.response?.data?.message || 'Failed to update cart');
-    } finally {
-      setAddingToCart(false);
-    }
+    });
   };
 
   if (loading) {
@@ -198,51 +215,45 @@ export default function ProductDetailsPage() {
   };
 
     const handleBuy = async () => {
-      // Require login before creating order
-      const token = getCookie("token");
-      if (!token) {
-        toast.error("Please login to purchase");
-        const next = encodeURIComponent(`/marketplace/${id}`);
-        router.push(`/login?next=${next}`);
-        return;
-      }
+      // Use requireAuth hook for consistent UX
+      requireAuth("buy", async () => {
+        try {
+          const res = await api.post("/payments/create-order", {
+            productId: product._id,
+          });
 
-      try {
-        const res = await api.post("/payments/create-order", {
-          productId: product._id,
-        });
-
-        const options = {
-          key: res.data.key,
-          amount: res.data.amount,
-          currency: "INR",
-          name: "BitForge",
-          description: product.title,
-          order_id: res.data.razorpayOrderId,
-          handler: function (response: any) {
-            toast.success("Payment successful for " + product.title);
-            // Give webhook a moment to process, then redirect
-            setTimeout(() => {
-              router.push("/dashboard/buyer");
-            }, 1500);
-          },
-          modal: {
-            ondismiss: function () {
-              toast.error("Payment cancelled");
+          const options = {
+            key: res.data.key,
+            amount: res.data.amount,
+            currency: "INR",
+            name: "BitForge",
+            description: product.title,
+            order_id: res.data.razorpayOrderId,
+            handler: function (response: any) {
+              toast.success("Payment successful for " + product.title);
+              // Give webhook a moment to process, then redirect
+              setTimeout(() => {
+                router.push("/dashboard/buyer");
+              }, 1500);
+            },
+            modal: {
+              ondismiss: function () {
+                toast.error("Payment cancelled");
+              }
             }
+          } as any;
+
+          if (!(window as any).Razorpay) {
+            toast.error("Payment gateway not loaded. Please try again.");
+            return;
           }
-        } as any;
 
-        if (!(window as any).Razorpay) {
-          toast.error("Payment gateway not loaded. Please try again.");
-          return;
+          const rzp = new (window as any).Razorpay(options);
+          rzp.open();
+        } catch (err: any) {
+          toast.error(err?.response?.data?.message || "Failed to initiate payment");
         }
-
-        const rzp = new (window as any).Razorpay(options);
-        rzp.open();
-      } catch (err: any) {
-        toast.error(err?.response?.data?.message || "Failed to initiate payment");
-      }
+      });
     };
 
   return (
@@ -307,7 +318,7 @@ export default function ProductDetailsPage() {
               </span>
             </button>
             <button
-              onClick={() => router.push("/cart")}
+              onClick={() => requireAuth("view cart", () => router.push("/cart"))}
               className="relative h-10 w-10 md:h-11 md:w-11 rounded-xl bg-linear-to-br from-white/10 to-white/5 border border-white/20 hover:border-cyan-500/50 hover:from-cyan-500/20 hover:to-indigo-600/20 grid place-items-center transition-all duration-300 group hover:scale-105 shadow-lg hover:shadow-cyan-500/50"
               title="Cart"
             >
@@ -322,6 +333,21 @@ export default function ProductDetailsPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {/* Archived Product Banner */}
+        {product.isDeleted && (
+          <div className="mb-6 p-4 bg-amber-500/10 border border-amber-400/30 rounded-xl">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">📦</span>
+              <div>
+                <h3 className="font-semibold text-amber-300 mb-1">This product has been archived</h3>
+                <p className="text-amber-200/70 text-sm">
+                  {product.deletedMessage || "This product is no longer available for new purchases. You can still download your purchased files."}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden">
           <div className="p-6 lg:p-8 space-y-8">
             
@@ -515,8 +541,8 @@ export default function ProductDetailsPage() {
                   <div className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-center">
                     <div className="text-white/50 text-xs mb-1">Member Since</div>
                     <div className="font-semibold text-white text-xs">
-                      {product.sellerId?.createdAt 
-                        ? new Date(product.sellerId.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                      {(product.sellerStats?.memberSince || product.sellerId?.createdAt)
+                        ? new Date(product.sellerStats?.memberSince || product.sellerId?.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
                         : '-'
                       }
                     </div>
@@ -528,6 +554,17 @@ export default function ProductDetailsPage() {
             {/* Price Section */}
             <div className="space-y-3">
               <h2 className="text-2xl font-bold text-white">Pricing</h2>
+              {product.isDeleted ? (
+                <div className="bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 p-6 rounded-xl border border-emerald-400/30">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">✅</span>
+                    <div>
+                      <p className="text-lg font-semibold text-emerald-300">Already Purchased</p>
+                      <p className="text-sm text-emerald-200/70">You own this product. Go to your purchases to download.</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
               <div className="bg-gradient-to-br from-white/5 to-white/10 p-6 rounded-xl border border-white/10">
                 <div className="space-y-3">
                   <div className="flex justify-between text-white/60">
@@ -573,26 +610,45 @@ export default function ProductDetailsPage() {
                   </div>
                 </div>
               </div>
+              )}
               
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={handleAddToCart}
-                  disabled={addingToCart}
-                  className={`flex-1 px-6 py-4 rounded-xl font-bold text-lg transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
-                    isInCart
-                      ? 'bg-white/10 hover:bg-white/20 border border-white/20 text-white'
-                      : 'bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white shadow-cyan-500/30'
-                  }`}
-                >
-                  {addingToCart ? 'Updating...' : isInCart ? 'Remove from Cart' : 'Add to Cart'}
-                </button>
-                <button
-                  className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white py-4 px-6 rounded-xl font-bold text-lg transition shadow-lg shadow-green-500/30 hover:shadow-xl hover:scale-[1.02] transform"
-                  onClick={handleBuy}
-                >
-                  Buy Now
-                </button>
+                {product.isDeleted ? (
+                  /* For archived products - show download button only */
+                  <button
+                    onClick={() => router.push(`/dashboard/buyer/purchases`)}
+                    className="flex-1 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white py-4 px-6 rounded-xl font-bold text-lg transition shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transform flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Go to My Purchases
+                  </button>
+                ) : (
+                  /* Normal product - show cart and buy buttons */
+                  <>
+                    <button
+                      onClick={handleAddToCart}
+                      disabled={addingToCart}
+                      className={`flex-1 px-6 py-4 rounded-xl font-bold text-lg transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
+                        isInCart
+                          ? 'bg-white/10 hover:bg-white/20 border border-white/20 text-white'
+                          : 'bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white shadow-cyan-500/30'
+                      }`}
+                    >
+                      {addingToCart ? 'Updating...' : isInCart ? 'Remove from Cart' : 'Add to Cart'}
+                    </button>
+                    <button
+                      className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white py-4 px-6 rounded-xl font-bold text-lg transition shadow-lg shadow-green-500/30 hover:shadow-xl hover:scale-[1.02] transform"
+                      onClick={handleBuy}
+                    >
+                      Buy Now
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -603,6 +659,15 @@ export default function ProductDetailsPage() {
           <ProductReviews productId={id as string} />
         </div>
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={closeAuthModal}
+        onLogin={goToLogin}
+        onRegister={goToRegister}
+        action={pendingAction}
+      />
     </div>
   );
 }
