@@ -72,6 +72,12 @@ app.get("/", (req, res) => {
     })
 })
 
+app.get("/health", (req, res) => {
+    res.send({
+        "status": "healthy",
+    })
+})
+
 // Add test endpoint
 app.post("/api/test", (req, res) => {
     res.json({ message: "Test endpoint working", body: req.body });
