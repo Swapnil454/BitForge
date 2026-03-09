@@ -3,8 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
+import { motion, useScroll, useTransform, useSpring, MotionValue } from "framer-motion";
+import { useEffect, useState, useMemo, type MouseEvent, type ReactNode } from "react";
 import { marketplaceAPI } from "@/lib/api";
 import { getStoredUser } from "@/lib/cookies";
 
@@ -18,19 +18,44 @@ type MarketplaceProduct = {
   thumbnailUrl?: string;
 };
 
+/* ================= MOBILE DETECTION HOOK ================= */
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Check for mobile via media query and touch capability
+    const checkMobile = () => {
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isSmallScreen = window.matchMedia('(max-width: 768px)').matches;
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      setIsMobile(isTouchDevice || isSmallScreen || prefersReducedMotion);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  return isMobile;
+}
+
 /* ================= MAGNETIC BUTTON ================= */
 
 function MagneticButton({
   children,
   className,
+  isMobile = false,
 }: {
   children: ReactNode;
   className: string;
+  isMobile?: boolean;
 }) {
   const x = useSpring(0, { stiffness: 300, damping: 20 });
   const y = useSpring(0, { stiffness: 300, damping: 20 });
 
   function onMove(e: MouseEvent<HTMLButtonElement>) {
+    if (isMobile) return;
     const rect = e.currentTarget.getBoundingClientRect();
     x.set((e.clientX - rect.left - rect.width / 2) * 0.25);
     y.set((e.clientY - rect.top - rect.height / 2) * 0.25);
@@ -39,6 +64,15 @@ function MagneticButton({
   function reset() {
     x.set(0);
     y.set(0);
+  }
+
+  // On mobile, render a simple button without motion
+  if (isMobile) {
+    return (
+      <button className={className}>
+        {children}
+      </button>
+    );
   }
 
   return (
@@ -61,8 +95,9 @@ export default function LandingPage() {
   const [featuredProduct, setFeaturedProduct] = useState<MarketplaceProduct | null>(null);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
   const router = useRouter();
+  const isMobile = useIsMobile();
 
-  /* header visuals */
+  /* header visuals - only compute on desktop */
   const headerBg = useTransform(
     scrollY,
     [0, 60],
@@ -74,18 +109,26 @@ export default function LandingPage() {
     ["0 0 0 rgba(0,0,0,0)", "0 10px 40px rgba(0,0,0,0.75)"]
   );
 
-  /* cursor glow */
+  /* cursor glow - disabled on mobile */
   const mouseX = useSpring(0, { stiffness: 120, damping: 30 });
   const mouseY = useSpring(0, { stiffness: 120, damping: 30 });
 
+  /* cursor glow background - computed unconditionally to satisfy hooks rules */
+  const cursorGlowBg = useTransform(
+    [mouseX, mouseY],
+    ([x, y]) =>
+      `radial-gradient(420px at ${x}px ${y}px, rgba(99,102,241,0.15), transparent 70%)`
+  );
+
   useEffect(() => {
+    if (isMobile) return; // Skip mouse tracking on mobile
     const move = (e: MouseEvent) => {
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
     };
     window.addEventListener("mousemove", move as any);
     return () => window.removeEventListener("mousemove", move as any);
-  }, [mouseX, mouseY]);
+  }, [mouseX, mouseY, isMobile]);
 
   useEffect(() => {
     const loadFeatured = async () => {
@@ -157,70 +200,136 @@ export default function LandingPage() {
 
   return (
     <main className="relative min-h-screen bg-[#05050a] text-white overflow-x-hidden">
-      {/* CURSOR GLOW */}
-      <motion.div
-        className="pointer-events-none fixed inset-0 z-0"
-        style={{
-          background: useTransform(
-            [mouseX, mouseY],
-            ([x, y]) =>
-              `radial-gradient(420px at ${x}px ${y}px, rgba(99,102,241,0.15), transparent 70%)`
-          ),
-        }}
-      />
+      {/* CURSOR GLOW - Only on desktop */}
+      {!isMobile && (
+        <motion.div
+          className="pointer-events-none fixed inset-0 z-0"
+          style={{ background: cursorGlowBg }}
+        />
+      )}
 
-      <ParallaxBackground scrollY={scrollY} />
+      <ParallaxBackground scrollY={scrollY} isMobile={isMobile} />
 
       {/* ================= HEADER (TRUE STICKY) ================= */}
-      <motion.header
-        style={{ background: headerBg, boxShadow: headerShadow }}
-        className="
-          fixed top-0 left-0 right-0 z-100
-          h-16 sm:h-20
-          backdrop-blur-xl
-          border-b border-white/10
-        "
-      >
-        <nav className="max-w-7xl mx-auto px-5 md:px-6 h-full flex items-center justify-between">
-          <div className="flex items-center">
-            <Image
-              src="/bitforge_logo1.png"
-              alt="BitForge logo"
-              width={256}
-              height={256}
-              className="
-                h-10 sm:h-20
-                w-auto
-                object-contain
-                drop-shadow-[0_0_20px_rgba(56,189,248,0.45)]
-              "
-              priority
-            />
+      {isMobile ? (
+        <header
+          className="
+            fixed top-0 left-0 right-0 z-100
+            h-16 sm:h-20
+            backdrop-blur-xl
+            border-b border-white/10
+            bg-[rgba(5,5,10,0.95)]
+            shadow-[0_10px_40px_rgba(0,0,0,0.75)]
+          "
+        >
+          <nav className="max-w-7xl mx-auto px-5 md:px-6 h-full flex items-center justify-between">
+            <div className="flex items-center">
+              <Image
+                src="/bitforge_logo1.png"
+                alt="BitForge logo"
+                width={256}
+                height={256}
+                className="
+                  h-10 sm:h-20
+                  w-auto
+                  object-contain
+                  drop-shadow-[0_0_20px_rgba(56,189,248,0.45)]
+                "
+                priority
+              />
 
-            <span
-              className="
-                -ml-3 sm:-ml-6
-                text-lg sm:text-3xl
-                font-bold
-                tracking-tight
-                bg-linear-to-r from-cyan-400 to-indigo-400
-                bg-clip-text text-transparent
-                leading-tight
-                translate-y-px
-                pb-0.5
-              "
-            >
-              BitForge
-            </span>
-          </div>
+              <span
+                className="
+                  -ml-3 sm:-ml-6
+                  text-lg sm:text-3xl
+                  font-bold
+                  tracking-tight
+                  bg-linear-to-r from-cyan-400 to-indigo-400
+                  bg-clip-text text-transparent
+                  leading-tight
+                  translate-y-px
+                  pb-0.5
+                "
+              >
+                BitForge
+              </span>
+            </div>
 
-          <div className="flex items-center gap-4">
-            <Link
-              href="/login"
-              className=" text-sm text-white/70 hover:text-white"
-            >
-              Login
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/login"
+                className=" text-sm text-white/70 hover:text-white"
+              >
+                Login
+              </Link>
+
+              <Link
+                href="/register"
+                className="
+                  rounded-lg
+                  bg-linear-to-r from-cyan-400 to-indigo-500
+                  px-3 sm:px-4
+                  py-2
+                  text-sm font-bold
+                  text-black
+                  shadow-[0_0_30px_rgba(56,189,248,0.6)]
+                "
+              >
+                Join BitForge
+              </Link>
+            </div>
+          </nav>
+        </header>
+      ) : (
+        <motion.header
+          style={{ background: headerBg, boxShadow: headerShadow }}
+          className="
+            fixed top-0 left-0 right-0 z-100
+            h-16 sm:h-20
+            backdrop-blur-xl
+            border-b border-white/10
+          "
+        >
+          <nav className="max-w-7xl mx-auto px-5 md:px-6 h-full flex items-center justify-between">
+            <div className="flex items-center">
+              <Image
+                src="/bitforge_logo1.png"
+                alt="BitForge logo"
+                width={256}
+                height={256}
+                className="
+                  h-10 sm:h-20
+                  w-auto
+                  object-contain
+                  drop-shadow-[0_0_20px_rgba(56,189,248,0.45)]
+                "
+                priority
+              />
+
+              <span
+                className="
+                  -ml-3 sm:-ml-6
+                  text-lg sm:text-3xl
+                  font-bold
+                  tracking-tight
+                  bg-linear-to-r from-cyan-400 to-indigo-400
+                  bg-clip-text text-transparent
+                  leading-tight
+                  translate-y-px
+                  pb-0.5
+                "
+              >
+                BitForge
+              </span>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <Link
+                href="/login"
+                className=" text-sm text-white/70 hover:text-white"
+              >
+                Login
+              </Link>
 
             <Link
               href="/register"
@@ -239,6 +348,7 @@ export default function LandingPage() {
           </div>
         </nav>
       </motion.header>
+      )}
 
       <section className="relative z-10 mt-4 max-w-7xl mx-auto px-5 md:px-6 pt-20 md:pt-28 pb-20 md:pb-28 grid grid-cols-1 md:grid-cols-2 gap-14 md:gap-20 items-center">
         <div>
@@ -255,60 +365,149 @@ export default function LandingPage() {
           </p>
         </div>
 
-        {/* FEATURE CARD */}
-        <motion.div
-          whileHover={{ y: -8 }}
-          transition={{ type: "spring", stiffness: 180, damping: 18 }}
-          className="rounded-3xl bg-linear-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 shadow-[0_30px_100px_rgba(56,189,248,0.35)] p-6"
-        >
-          <div className="h-1 w-16 rounded-full bg-linear-to-r from-cyan-400 to-indigo-400 mb-3" />
-          <p className="text-sm text-white/60">Featured Product</p>
+        {/* FEATURE CARD - Static on mobile, animated on desktop */}
+        {isMobile ? (
+          <div className="rounded-3xl bg-linear-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 shadow-[0_30px_100px_rgba(56,189,248,0.35)] p-6 transition-transform duration-300 hover:-translate-y-2">
+            <div className="h-1 w-16 rounded-full bg-linear-to-r from-cyan-400 to-indigo-400 mb-3" />
+            <p className="text-sm text-white/60">Featured Product</p>
 
-          {loadingFeatured && !featuredProduct && (
-            <div className="mt-4 h-24 rounded-2xl bg-white/10 animate-pulse" />
-          )}
+            {loadingFeatured && !featuredProduct && (
+              <div className="mt-4 h-24 rounded-2xl bg-white/10 animate-pulse" />
+            )}
 
-          {!loadingFeatured && !featuredProduct && (
-            <>
-              <h3 className="mt-3 text-xl font-semibold">
-                No products available yet
-              </h3>
-              <p className="mt-2 text-white/70 text-sm">
-                Once creators start publishing, we'll feature a live product here.
-              </p>
-              <div className="mt-5 flex justify-end">
-                <button
-                  onClick={() => router.push("/marketplace")}
-                  className="bg-indigo-500 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-600 transition"
-                >
-                  Browse Marketplace
-                </button>
-              </div>
-            </>
-          )}
-
-          {featuredProduct && (
-            <>
-              {featuredProduct.thumbnailUrl && (
-                <div className="w-full h-40 mt-4 mb-3 bg-black/20 rounded-2xl overflow-hidden flex items-center justify-center">
-                  <img
-                    src={featuredProduct.thumbnailUrl}
-                    alt={featuredProduct.title}
-                    className="w-full h-full object-contain"
-                  />
+            {!loadingFeatured && !featuredProduct && (
+              <>
+                <h3 className="mt-3 text-xl font-semibold">
+                  Discover Amazing Products
+                </h3>
+                <p className="mt-2 text-white/70 text-sm">
+                  New creators are joining every day. Explore the marketplace to find trending and newly launched products.
+                </p>
+                <div className="mt-5 flex justify-end">
+                  <button
+                    onClick={() => router.push("/marketplace")}
+                    className="bg-indigo-500 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-600 transition"
+                  >
+                    Explore Marketplace
+                  </button>
                 </div>
-              )}
+              </>
+            )}
 
-              <h3 className="mt-1 text-xl font-semibold line-clamp-1">
-                {featuredProduct.title}
-              </h3>
-              <p className="mt-2 text-white/70 text-sm line-clamp-3">
-                {featuredProduct.description}
-              </p>
+            {featuredProduct && (
+              <>
+                {featuredProduct.thumbnailUrl && (
+                  <div className="w-full h-40 mt-4 mb-3 bg-black/20 rounded-2xl overflow-hidden flex items-center justify-center">
+                    <img
+                      src={featuredProduct.thumbnailUrl}
+                      alt={featuredProduct.title}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                )}
 
-              <div className="mt-5 mb-1">
-                {featuredProduct.discount > 0 ? (
-                  <div className="space-y-1">
+                <h3 className="mt-1 text-xl font-semibold line-clamp-1">
+                  {featuredProduct.title}
+                </h3>
+                <p className="mt-2 text-white/70 text-sm line-clamp-3">
+                  {featuredProduct.description}
+                </p>
+
+                <div className="mt-5 mb-1">
+                  {featuredProduct.discount > 0 ? (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-white/40 line-through">
+                          ₹{featuredProduct.price.toLocaleString()}
+                        </span>
+                        <span className="text-xs bg-linear-to-r from-red-500 to-rose-500 text-white px-2 py-0.5 rounded-full font-semibold shadow-lg shadow-red-500/30">
+                          -{featuredProduct.discount}% OFF
+                        </span>
+                      </div>
+                      <div className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-cyan-300 to-indigo-300">
+                        ₹{(() => {
+                          const price = featuredProduct.price || 0;
+                          const discount = featuredProduct.discount || 0;
+                          const final =
+                            discount > 0
+                              ? Math.max(price - (price * discount) / 100, 0)
+                              : price;
+                          return final.toLocaleString();
+                        })()}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-cyan-300 to-indigo-300">
+                      ₹{featuredProduct.price.toLocaleString()}
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-2 flex justify-end items-center">
+                  <button
+                    onClick={handleFeaturedBuy}
+                    className="bg-indigo-500 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-600 transition"
+                  >
+                    Buy Now
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+          <motion.div
+            whileHover={{ y: -8 }}
+            transition={{ type: "spring", stiffness: 180, damping: 18 }}
+            className="rounded-3xl bg-linear-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 shadow-[0_30px_100px_rgba(56,189,248,0.35)] p-6"
+          >
+            <div className="h-1 w-16 rounded-full bg-linear-to-r from-cyan-400 to-indigo-400 mb-3" />
+            <p className="text-sm text-white/60">Featured Product</p>
+
+            {loadingFeatured && !featuredProduct && (
+              <div className="mt-4 h-24 rounded-2xl bg-white/10 animate-pulse" />
+            )}
+
+            {!loadingFeatured && !featuredProduct && (
+              <>
+                <h3 className="mt-3 text-xl font-semibold">
+                  Discover Amazing Products
+                </h3>
+                <p className="mt-2 text-white/70 text-sm">
+                  New creators are joining every day. Explore the marketplace to find trending and newly launched products.
+                </p>
+                <div className="mt-5 flex justify-end">
+                  <button
+                    onClick={() => router.push("/marketplace")}
+                    className="bg-indigo-500 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-600 transition"
+                  >
+                    Explore Marketplace
+                  </button>
+                </div>
+              </>
+            )}
+
+            {featuredProduct && (
+              <>
+                {featuredProduct.thumbnailUrl && (
+                  <div className="w-full h-40 mt-4 mb-3 bg-black/20 rounded-2xl overflow-hidden flex items-center justify-center">
+                    <img
+                      src={featuredProduct.thumbnailUrl}
+                      alt={featuredProduct.title}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                )}
+
+                <h3 className="mt-1 text-xl font-semibold line-clamp-1">
+                  {featuredProduct.title}
+                </h3>
+                <p className="mt-2 text-white/70 text-sm line-clamp-3">
+                  {featuredProduct.description}
+                </p>
+
+                <div className="mt-5 mb-1">
+                  {featuredProduct.discount > 0 ? (
+                    <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-white/40 line-through">
                         ₹{featuredProduct.price.toLocaleString()}
@@ -347,6 +546,7 @@ export default function LandingPage() {
             </>
           )}
         </motion.div>
+        )}
       </section>
 
       <section className="relative z-10 py-16 sm:py-20 -mt-24 sm:-mt-32">
@@ -355,99 +555,197 @@ export default function LandingPage() {
         </h2>
 
         <div className="max-w-5xl mx-auto px-5 md:px-6 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-          {/* BUYER CARD */}
-          <motion.div
-            whileHover={{ y: -6 }}
-            className="
-              rounded-2xl
-              p-6 sm:p-8
-              border border-white/10
-              bg-white/5 backdrop-blur-xl
-              hover:border-cyan-400
-              transition-all duration-300
-            "
-          >
-            <h3 className="text-xl sm:text-2xl font-bold mb-2">
-              For Buyers
-            </h3>
-
-            <p className="text-sm sm:text-base text-white/60 mb-5 sm:mb-6">
-              Discover and access digital products with zero friction.
-            </p>
-
-            <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-white/80">
-              <li>✔ No extra fees for buyers</li>
-              <li>✔ Secure payments & instant downloads</li>
-              <li>✔ Live help when you need it</li>
-            </ul>
-
-            <div className=" flex items-center justify-center">
-              <MagneticButton
-                className="
-                  mt-6 sm:mt-8
-                  w-50
-                  rounded-xl
-                  bg-linear-to-r from-cyan-400 to-indigo-500
-                  px-6 py-3
-                  text-sm sm:text-base
-                  font-bold
-                  text-black
-                  shadow-[0_0_40px_rgba(56,189,248,0.6)]
-                "
-              >
-                <Link href="register">
-                  Browse Products
-                </Link>
-              </MagneticButton>
-            </div>
-          </motion.div>
-
-          {/* SELLER CARD */}
-          <motion.div
-            whileHover={{ y: -6 }}
-            className="
-              rounded-2xl
-              p-6 sm:p-8
-              border border-white/10
-              bg-white/5 backdrop-blur-xl
-              hover:border-indigo-400
-              transition-all duration-300
-            "
-          >
-            <h3 className="text-xl sm:text-2xl font-bold mb-2">
-              For Sellers
-            </h3>
-
-            <p className="text-sm sm:text-base text-white/60 mb-5 sm:mb-6">
-              Launch, sell, and scale your digital products with ease.
-            </p>
-
-            <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-white/80">
-              <li>✔ Low, transparent platform fees</li>
-              <li>✔ Instant withdrawals & automated payouts</li>
-              <li>✔ Live help when you need it</li>
-            </ul>
-
-            <div className=" flex items-center justify-center">
-              <MagneticButton
+          {/* BUYER CARD - Static on mobile, animated on desktop */}
+          {isMobile ? (
+            <div
               className="
-                mt-6 sm:mt-8
-                w-50
-                rounded-xl
-                bg-linear-to-r from-cyan-400 to-indigo-500
-                px-6 py-3
-                text-sm sm:text-base
-                font-bold
-                text-black
-                shadow-[0_0_40px_rgba(56,189,248,0.6)]
+                rounded-2xl
+                p-6 sm:p-8
+                border border-white/10
+                bg-white/5 backdrop-blur-xl
+                hover:border-cyan-400
+                transition-all duration-300
+                hover:-translate-y-1.5
               "
             >
-              <Link href="/register?role=seller">
-                Start Selling
-              </Link>
-            </MagneticButton>
+              <h3 className="text-xl sm:text-2xl font-bold mb-2">
+                For Buyers
+              </h3>
+
+              <p className="text-sm sm:text-base text-white/60 mb-5 sm:mb-6">
+                Discover and access digital products with zero friction.
+              </p>
+
+              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-white/80">
+                <li>✔ No extra fees for buyers</li>
+                <li>✔ Secure payments & instant downloads</li>
+                <li>✔ Live help when you need it</li>
+              </ul>
+
+              <div className=" flex items-center justify-center">
+                <MagneticButton
+                  isMobile={isMobile}
+                  className="
+                    mt-6 sm:mt-8
+                    w-50
+                    rounded-xl
+                    bg-linear-to-r from-cyan-400 to-indigo-500
+                    px-6 py-3
+                    text-sm sm:text-base
+                    font-bold
+                    text-black
+                    shadow-[0_0_40px_rgba(56,189,248,0.6)]
+                  "
+                >
+                  <Link href="register">
+                    Browse Products
+                  </Link>
+                </MagneticButton>
+              </div>
             </div>
-          </motion.div>
+          ) : (
+            <motion.div
+              whileHover={{ y: -6 }}
+              className="
+                rounded-2xl
+                p-6 sm:p-8
+                border border-white/10
+                bg-white/5 backdrop-blur-xl
+                hover:border-cyan-400
+                transition-all duration-300
+              "
+            >
+              <h3 className="text-xl sm:text-2xl font-bold mb-2">
+                For Buyers
+              </h3>
+
+              <p className="text-sm sm:text-base text-white/60 mb-5 sm:mb-6">
+                Discover and access digital products with zero friction.
+              </p>
+
+              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-white/80">
+                <li>✔ No extra fees for buyers</li>
+                <li>✔ Secure payments & instant downloads</li>
+                <li>✔ Live help when you need it</li>
+              </ul>
+
+              <div className=" flex items-center justify-center">
+                <MagneticButton
+                  className="
+                    mt-6 sm:mt-8
+                    w-50
+                    rounded-xl
+                    bg-linear-to-r from-cyan-400 to-indigo-500
+                    px-6 py-3
+                    text-sm sm:text-base
+                    font-bold
+                    text-black
+                    shadow-[0_0_40px_rgba(56,189,248,0.6)]
+                  "
+                >
+                  <Link href="register">
+                    Browse Products
+                  </Link>
+                </MagneticButton>
+              </div>
+            </motion.div>
+          )}
+
+          {/* SELLER CARD - Static on mobile, animated on desktop */}
+          {isMobile ? (
+            <div
+              className="
+                rounded-2xl
+                p-6 sm:p-8
+                border border-white/10
+                bg-white/5 backdrop-blur-xl
+                hover:border-indigo-400
+                transition-all duration-300
+                hover:-translate-y-1.5
+              "
+            >
+              <h3 className="text-xl sm:text-2xl font-bold mb-2">
+                For Sellers
+              </h3>
+
+              <p className="text-sm sm:text-base text-white/60 mb-5 sm:mb-6">
+                Launch, sell, and scale your digital products with ease.
+              </p>
+
+              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-white/80">
+                <li>✔ Low, transparent platform fees</li>
+                <li>✔ Instant withdrawals & automated payouts</li>
+                <li>✔ Live help when you need it</li>
+              </ul>
+
+              <div className=" flex items-center justify-center">
+                <MagneticButton
+                  isMobile={isMobile}
+                  className="
+                    mt-6 sm:mt-8
+                    w-50
+                    rounded-xl
+                    bg-linear-to-r from-cyan-400 to-indigo-500
+                    px-6 py-3
+                    text-sm sm:text-base
+                    font-bold
+                    text-black
+                    shadow-[0_0_40px_rgba(56,189,248,0.6)]
+                  "
+                >
+                  <Link href="/register?role=seller">
+                    Start Selling
+                  </Link>
+                </MagneticButton>
+              </div>
+            </div>
+          ) : (
+            <motion.div
+              whileHover={{ y: -6 }}
+              className="
+                rounded-2xl
+                p-6 sm:p-8
+                border border-white/10
+                bg-white/5 backdrop-blur-xl
+                hover:border-indigo-400
+                transition-all duration-300
+              "
+            >
+              <h3 className="text-xl sm:text-2xl font-bold mb-2">
+                For Sellers
+              </h3>
+
+              <p className="text-sm sm:text-base text-white/60 mb-5 sm:mb-6">
+                Launch, sell, and scale your digital products with ease.
+              </p>
+
+              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-white/80">
+                <li>✔ Low, transparent platform fees</li>
+                <li>✔ Instant withdrawals & automated payouts</li>
+                <li>✔ Live help when you need it</li>
+              </ul>
+
+              <div className=" flex items-center justify-center">
+                <MagneticButton
+                  className="
+                    mt-6 sm:mt-8
+                    w-50
+                    rounded-xl
+                    bg-linear-to-r from-cyan-400 to-indigo-500
+                    px-6 py-3
+                    text-sm sm:text-base
+                    font-bold
+                    text-black
+                    shadow-[0_0_40px_rgba(56,189,248,0.6)]
+                  "
+                >
+                  <Link href="/register?role=seller">
+                    Start Selling
+                  </Link>
+                </MagneticButton>
+              </div>
+            </motion.div>
+          )}
         </div>
       </section>
 
@@ -457,20 +755,32 @@ export default function LandingPage() {
         </h2>
 
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 px-5 md:px-6">
-          {testimonials.map((t, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="rounded-2xl bg-white/5 border border-white/10 p-6 backdrop-blur-xl"
-            >
-              <p className="text-white/70">“{t.quote}”</p>
-              <p className="mt-4 font-semibold">{t.name}</p>
-              <p className="text-sm text-white/50">{t.role}</p>
-            </motion.div>
-          ))}
+          {testimonials.map((t, i) =>
+            isMobile ? (
+              <div
+                key={i}
+                className="rounded-2xl bg-white/5 border border-white/10 p-6 backdrop-blur-xl animate-fade-in-up"
+                style={{ animationDelay: `${i * 100}ms` }}
+              >
+                <p className="text-white/70">“{t.quote}”</p>
+                <p className="mt-4 font-semibold">{t.name}</p>
+                <p className="text-sm text-white/50">{t.role}</p>
+              </div>
+            ) : (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="rounded-2xl bg-white/5 border border-white/10 p-6 backdrop-blur-xl"
+              >
+                <p className="text-white/70">“{t.quote}”</p>
+                <p className="mt-4 font-semibold">{t.name}</p>
+                <p className="text-sm text-white/50">{t.role}</p>
+              </motion.div>
+            )
+          )}
         </div>
       </section>
 
@@ -482,7 +792,7 @@ export default function LandingPage() {
           Join creators building the future of digital commerce.
         </p>
 
-        <MagneticButton className="mt-8 rounded-xl bg-linear-to-r from-cyan-400 to-indigo-500 px-9 py-4 text-lg font-bold text-black shadow-[0_0_60px_rgba(56,189,248,0.6)]">
+        <MagneticButton isMobile={isMobile} className="mt-8 rounded-xl bg-linear-to-r from-cyan-400 to-indigo-500 px-9 py-4 text-lg font-bold text-black shadow-[0_0_60px_rgba(56,189,248,0.6)]">
           <Link href={"/marketplace"} >Enter Marketplace</Link>
         </MagneticButton>
       </section>
@@ -776,9 +1086,19 @@ export default function LandingPage() {
   );
 }
 
-function ParallaxBackground({ scrollY }: { scrollY: any }) {
+function ParallaxBackground({ scrollY, isMobile }: { scrollY: any; isMobile: boolean }) {
   const y1 = useTransform(scrollY, [0, 600], [0, 160]);
   const y2 = useTransform(scrollY, [0, 600], [0, -160]);
+
+  // On mobile, render static elements without parallax animation
+  if (isMobile) {
+    return (
+      <>
+        <div className="absolute -top-40 -left-40 w-125 h-125 rounded-full bg-indigo-600/25 blur-[160px] z-0" />
+        <div className="absolute top-1/3 -right-40 w-145 h-145 rounded-full bg-cyan-500/20 blur-[180px] z-0" />
+      </>
+    );
+  }
 
   return (
     <>

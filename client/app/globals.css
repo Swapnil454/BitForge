@@ -99,3 +99,82 @@ html, body {
   box-shadow: 0 20px 40px -12px rgba(167, 139, 250, 0.25);
 }
 
+/* ==================== MOBILE PERFORMANCE OPTIMIZATIONS ==================== */
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-fade-in-up,
+  .animate-pulse-slow,
+  .animate-float {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Mobile-specific performance optimizations */
+@media (max-width: 768px) {
+  /* Disable complex blur effects on mobile for better performance */
+  .blur-\[160px\],
+  .blur-\[180px\] {
+    filter: blur(80px);
+  }
+  
+  /* Reduce backdrop blur intensity on mobile */
+  .backdrop-blur-xl {
+    backdrop-filter: blur(12px);
+  }
+  
+  /* Optimize box shadows on mobile */
+  .shadow-\[0_30px_100px_rgba\(56\,189\,248\,0\.35\)\] {
+    box-shadow: 0 15px 50px rgba(56, 189, 248, 0.25);
+  }
+  
+  .shadow-\[0_0_60px_rgba\(56\,189\,248\,0\.6\)\] {
+    box-shadow: 0 0 30px rgba(56, 189, 248, 0.4);
+  }
+  
+  .shadow-\[0_0_40px_rgba\(56\,189\,248\,0\.6\)\] {
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+  }
+  
+  .shadow-\[0_0_30px_rgba\(56\,189\,248\,0\.6\)\] {
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+  }
+  
+  /* Simpler fade-in animation for mobile */
+  .animate-fade-in-up {
+    animation-duration: 0.4s;
+  }
+  
+  /* Disable pulse animation on mobile to save battery */
+  .animate-pulse-slow {
+    animation: none;
+    opacity: 0.4;
+  }
+  
+  /* Disable float animation on mobile */
+  .animate-float {
+    animation: none;
+  }
+  
+  /* Use GPU acceleration hints for smoother scrolling */
+  main {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Optimize will-change on mobile */
+  .will-change-transform {
+    will-change: auto;
+  }
+}
+
