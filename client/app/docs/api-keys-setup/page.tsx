@@ -197,25 +197,25 @@ GITHUB_REDIRECT_URI=http://localhost:5000/auth/github/callback`}
           />
         </section>
 
-        {/* SendGrid (Optional) */}
+        {/* Resend Email */}
         <section>
-          <h2 className="mb-4 text-2xl font-semibold text-white">SendGrid Email (Optional)</h2>
+          <h2 className="mb-4 text-2xl font-semibold text-white">Resend Email (Optional)</h2>
           <p className="mb-4 text-white/70">
-            Configure SendGrid for transactional emails like purchase confirmations and payout notifications.
+            Configure Resend for transactional emails like OTP verification, password reset, and notifications.
           </p>
 
           <h3 className="mb-3 text-lg font-semibold text-white">Setup Steps</h3>
           <ol className="space-y-3 text-white/70">
-            <li>1. Sign up at <a href="https://sendgrid.com" target="_blank" rel="noopener noreferrer" className="text-cyan-300 hover:text-cyan-200 underline">sendgrid.com</a></li>
-            <li>2. Verify your sender email</li>
-            <li>3. Go to <strong>Settings → API Keys</strong></li>
-            <li>4. Create API key with <strong>Full Access</strong></li>
+            <li>1. Sign up at <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-cyan-300 hover:text-cyan-200 underline">resend.com</a></li>
+            <li>2. Verify your domain or use Resend's test domain</li>
+            <li>3. Go to <strong>API Keys</strong> section</li>
+            <li>4. Create a new API key</li>
           </ol>
 
           <CodeBlock
-            code={`# SendGrid (Optional)
-SENDGRID_API_KEY=SG.your_sendgrid_api_key
-SENDGRID_FROM_EMAIL='BitForge <no-reply@bittforge.in>'`}
+            code={`# Resend Email
+RESEND_API_KEY=re_your_resend_api_key
+RESEND_FROM_EMAIL='BitForge <no-reply@bittforge.in>'`}
           />
         </section>
 

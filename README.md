@@ -28,7 +28,7 @@ A full-stack digital marketplace platform for buying and selling digital content
 - **Database**: MongoDB with Mongoose
 - **Authentication**: JWT, Passport.js (OAuth)
 - **File Storage**: Cloudinary
-- **Email**: SendGrid
+- **Email**: Resend
 - **Real-time**: Socket.io
 
 ## Project Structure
@@ -84,9 +84,9 @@ CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 
-# SendGrid
-SENDGRID_API_KEY=your_sendgrid_api_key
-SENDGRID_FROM_EMAIL=your_verified_sender_email
+# Resend
+RESEND_API_KEY=your_resend_api_key
+RESEND_FROM_EMAIL=your_verified_sender_email
 
 # Frontend URL
 CLIENT_URL=http://localhost:3000

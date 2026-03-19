@@ -162,9 +162,9 @@ GITHUB_REDIRECT_URI=http://localhost:5000/auth/github/callback
 # Client URL
 CLIENT_URL=http://localhost:3000
 
-# SendGrid (Optional for emails)
-SENDGRID_API_KEY=your_sendgrid_api_key
-SENDGRID_FROM_EMAIL='BitForge <no-reply@bittforge.in>'`}
+# Resend (Optional for emails)
+RESEND_API_KEY=your_resend_api_key
+RESEND_FROM_EMAIL='BitForge <no-reply@bittforge.in>'`}
           />
 
           <h3 className="mb-3 mt-8 text-lg font-semibold text-white">Client Environment (.env.local)</h3>

@@ -1,48 +1,40 @@
+import { Resend } from "resend";
 
+// Initialize Resend client lazily
+let resendClient = null;
 
-import sgMail from "@sendgrid/mail";
-
-// Initialize SendGrid API key when the module is used, not when imported
-const initializeSendGrid = () => {
-  if (!sgMail.apiKey) {
-    if (!process.env.SENDGRID_API_KEY) {
-      throw new Error('SENDGRID_API_KEY environment variable is not set');
+const getResendClient = () => {
+  if (!resendClient) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY environment variable is not set');
     }
-    
-    if (!process.env.SENDGRID_API_KEY.startsWith('SG.')) {
-      throw new Error('SENDGRID_API_KEY must start with "SG."');
-    }
-    
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    resendClient = new Resend(process.env.RESEND_API_KEY);
   }
+  return resendClient;
 };
 
 export const sendOtpEmail = async (email, otp, type = 'Email Verification') => {
-  // Initialize SendGrid when actually needed
-  initializeSendGrid();
-  
+  const resend = getResendClient();
+
   // Validate required environment variables
-  if (!process.env.SENDGRID_FROM_EMAIL) {
-    throw new Error('SENDGRID_FROM_EMAIL environment variable is not set');
+  if (!process.env.RESEND_FROM_EMAIL) {
+    throw new Error('RESEND_FROM_EMAIL environment variable is not set');
   }
-  
+
   if (!email) {
     throw new Error('Email address is required');
   }
-  
+
   const isPasswordReset = type === 'Password Reset';
   const isAccountDeletion = type === 'Account Deletion';
 
-  const msg = {
-  to: email,
-  from: process.env.SENDGRID_FROM_EMAIL,
-  subject: isPasswordReset
+  const subject = isPasswordReset
     ? "Reset your BitForge password"
     : isAccountDeletion
     ? "Account deletion confirmation"
-    : "Verify your BitForge email",
+    : "Verify your BitForge email";
 
-  html: `
+  const html = `
   <div style="background:#0b0f1a;padding:40px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
     <div style="max-width:600px;margin:0 auto;">
 
@@ -164,9 +156,12 @@ export const sendOtpEmail = async (email, otp, type = 'Email Verification') => {
 
     </div>
   </div>
-  `,
-};
+  `;
 
-
-  await sgMail.send(msg);
+  await resend.emails.send({
+    from: process.env.RESEND_FROM_EMAIL,
+    to: email,
+    subject,
+    html,
+  });
 };
