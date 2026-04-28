@@ -119,8 +119,9 @@ export default function PurchasesPage() {
       toast.dismiss(loadingToast);
       console.error("Download error", error);
       
-      // Handle download limit exceeded
-      if (error.response?.status === 403 && error.response?.data?.downloadLimit) {
+      if (error.response?.status === 404) {
+        toast.error("This file is no longer available. Please contact admin for assistance.");
+      } else if (error.response?.status === 403 && error.response?.data?.downloadLimit) {
         toast.error(`Download limit reached (${error.response.data.downloadLimit}). Contact support for assistance.`);
       } else {
         toast.error(error.response?.data?.message || error.message || "Download failed");

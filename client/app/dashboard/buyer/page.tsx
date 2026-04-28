@@ -23,8 +23,6 @@ import toast from "react-hot-toast";
 
 import ProfileModal from "../components/ProfileModal";
 import SettingsModal from "../components/SettingModal";
-import RecentOrdersModal from "./components/RecentOrderModal";
-import SpendingHistoryModal from "./components/SpendingHistoryModal";
 import PurchasesModal from "./components/PurchasesModal";
 import DownloadsModal from "./components/DownloadsModal";
 import { KPI, Glass, MenuItem } from "../components/Cards";
@@ -60,10 +58,8 @@ export default function BuyerDashboard() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [showSpendingHistoryModal, setShowSpendingHistoryModal] = useState(false);
   const [showPurchasesModal, setShowPurchasesModal] = useState(false);
   const [showDownloadsModal, setShowDownloadsModal] = useState(false);
-  const [showRecentOrdersModal, setShowRecentOrdersModal] = useState(false);
 
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -395,7 +391,7 @@ export default function BuyerDashboard() {
         {/* KPIs */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           <button
-            onClick={() => setShowSpendingHistoryModal(true)}
+            onClick={() => router.push("/dashboard/buyer/transactions")}
             className="text-left"
           >
             <KPI title="Total Spent" value={stats ? `₹${stats.totalSpent.toLocaleString()}` : "₹0"} />
@@ -495,7 +491,7 @@ export default function BuyerDashboard() {
 
         {/* Orders */}
         <div
-          onClick={() => setShowRecentOrdersModal(true)}
+          onClick={() => router.push("/dashboard/buyer/orders")}
           className="w-full text-left group cursor-pointer"
         >
           <Glass title="📋 Recent Orders">
@@ -582,13 +578,6 @@ export default function BuyerDashboard() {
         )}
       </AnimatePresence>
 
-      {/* Spending History Modal */}
-      <AnimatePresence>
-        {showSpendingHistoryModal && (
-          <SpendingHistoryModal onClose={() => setShowSpendingHistoryModal(false)} />
-        )}
-      </AnimatePresence>
-
       {/* Purchases Modal */}
       <AnimatePresence>
         {showPurchasesModal && (
@@ -600,20 +589,6 @@ export default function BuyerDashboard() {
       <AnimatePresence>
         {showDownloadsModal && (
           <DownloadsModal onClose={() => setShowDownloadsModal(false)} />
-        )}
-      </AnimatePresence>
-
-      {/* Recent Orders Modal */}
-      <AnimatePresence>
-        {showRecentOrdersModal && (
-          <RecentOrdersModal 
-            orders={stats?.recentOrders || []} 
-            onClose={() => setShowRecentOrdersModal(false)}
-            onViewAll={() => {
-              setShowRecentOrdersModal(false);
-              router.push("/dashboard/buyer/orders");
-            }}
-          />
         )}
       </AnimatePresence>
     </main>

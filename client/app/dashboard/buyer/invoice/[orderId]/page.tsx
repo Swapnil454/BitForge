@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
+import toast from "react-hot-toast";
 
 interface Invoice {
   _id: string;
@@ -14,7 +15,6 @@ interface Invoice {
   sellerName: string;
   productName: string;
   productDescription: string;
-  // New fields
   originalPrice: number;
   discountPercent: number;
   discountAmount: number;
@@ -24,10 +24,8 @@ interface Invoice {
   platformFeeRate: number;
   platformFee: number;
   totalAmount: number;
-  // Old/legacy fields for backward compatibility
   productPrice?: number;
   totalPlatformAmount?: number;
-  // Payment
   razorpayOrderId: string;
   razorpayPaymentId: string;
   paymentMethod: string;
@@ -40,7 +38,7 @@ export default function InvoicePage() {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const printRef = useRef<HTMLDivElement>(null);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     const fetchInvoice = async () => {
@@ -68,33 +66,98 @@ export default function InvoicePage() {
     });
   };
 
-  const formatCurrency = (amount: number) => {
-    if (!amount && amount !== 0) return "0.00";
-    return parseFloat(amount.toString())
-      .toFixed(2)
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const formatMoney = (amount: number) => {
+    const value = Number.isFinite(Number(amount)) ? Number(amount) : 0;
+    return `Rs. ${value.toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
   };
 
   const handlePrint = () => {
     window.print();
   };
 
+  const handleDownloadPdf = async () => {
+    if (!orderId) return;
+
+    try {
+      setDownloading(true);
+      const response = await api.get(`/invoices/${orderId}`, {
+        responseType: "blob",
+      });
+
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"] || "application/pdf",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const contentDisposition = response.headers["content-disposition"];
+      let filename = `${(invoice?.productName || "invoice").replace(/[^a-z0-9]+/gi, "_").toLowerCase()}_invoice.pdf`;
+
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="(.+?)"|filename=([^;\s]+)/);
+        if (match) {
+          filename = match[1] || match[2];
+        }
+      }
+
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("Invoice downloaded.");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to download invoice");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const totals = useMemo(() => {
+    if (!invoice) return null;
+
+    const originalPrice = Number(invoice.originalPrice || invoice.productPrice || invoice.priceAfterDiscount || 0);
+    const subtotal = Number(invoice.priceAfterDiscount || invoice.productPrice || originalPrice || 0);
+    const discountAmount = Number(invoice.discountAmount || 0);
+    const discountPercent = Number(invoice.discountPercent || 0);
+    const gstAmount = Number(invoice.gstAmount || 0);
+    const platformFee = Number(invoice.platformFee || 0);
+    const totalPaid = Number(invoice.totalAmount || subtotal + gstAmount + platformFee);
+    const gstPercent = Math.round(Number(invoice.gstRate || 0.05) * 100);
+    const platformPercent = Math.round(Number(invoice.platformFeeRate || 0.02) * 100);
+
+    return {
+      originalPrice,
+      subtotal,
+      discountAmount,
+      discountPercent,
+      gstAmount,
+      platformFee,
+      totalPaid,
+      gstPercent,
+      platformPercent,
+    };
+  }, [invoice]);
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
+      <div className="flex min-h-screen items-center justify-center bg-[#06070b]">
+        <div className="h-12 w-12 animate-spin rounded-full border-2 border-white/10 border-t-cyan-400" />
       </div>
     );
   }
 
-  if (error || !invoice) {
+  if (error || !invoice || !totals) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="bg-slate-800/50 border border-white/10 rounded-2xl p-8 text-center">
-          <p className="text-red-400 mb-4">{error || "Invoice not found"}</p>
+      <div className="flex min-h-screen items-center justify-center bg-[#06070b] px-4">
+        <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-slate-900/75 p-8 text-center text-white shadow-2xl">
+          <p className="mb-4 text-red-400">{error || "Invoice not found"}</p>
           <button
             onClick={() => router.back()}
-            className="px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg"
+            className="rounded-full bg-white/10 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-white/15"
           >
             Go Back
           </button>
@@ -102,21 +165,6 @@ export default function InvoicePage() {
       </div>
     );
   }
-
-  const gstPercent = Math.round((invoice.gstRate || 0.05) * 100);
-  const platformPercent = Math.round((invoice.platformFeeRate || 0.02) * 100);
-
-  // Compute values with fallbacks for old invoices
-  // Old invoices: productPrice = amount paid, totalPlatformAmount = platformFee + gstAmount
-  // New invoices: originalPrice, priceAfterDiscount, totalAmount (includes taxes)
-  const productPrice = invoice.originalPrice || invoice.productPrice || invoice.priceAfterDiscount || 0;
-  const subtotal = invoice.priceAfterDiscount || invoice.productPrice || productPrice;
-  const discountAmt = invoice.discountAmount || 0;
-  const discountPct = invoice.discountPercent || 0;
-  const gstAmt = invoice.gstAmount || 0;
-  const platformFeeAmt = invoice.platformFee || 0;
-  // For old invoices: buyer paid productPrice, for new: totalAmount
-  const totalPaid = invoice.totalAmount || invoice.productPrice || subtotal || productPrice;
 
   return (
     <>
@@ -126,169 +174,212 @@ export default function InvoicePage() {
             size: A4;
             margin: 10mm;
           }
+
+          body {
+            background: #ffffff !important;
+          }
+
           body * {
             visibility: hidden;
           }
+
           .print-area,
           .print-area * {
             visibility: visible;
           }
+
           .print-area {
             position: absolute;
-            left: 0;
-            top: 0;
+            inset: 0;
             width: 100%;
-            background: white !important;
-            font-size: 11px;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
           }
+
           .no-print {
             display: none !important;
           }
         }
       `}</style>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-6 px-4">
-        {/* Action Buttons - Hidden on Print */}
-        <div className="no-print max-w-3xl mx-auto mb-4 flex gap-3">
-          <button
-            onClick={() => router.back()}
-            className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-lg font-medium transition flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back
-          </button>
-          <button
-            onClick={handlePrint}
-            className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white rounded-lg font-semibold transition shadow-lg flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <polyline points="6 9 6 2 18 2 18 9"></polyline>
-              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-              <rect x="6" y="14" width="12" height="8"></rect>
-            </svg>
-            Print Invoice
-          </button>
-        </div>
-
-        {/* Invoice Card - Compact for single page */}
-        <div ref={printRef} className="print-area max-w-3xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
-          {/* Header - Compact */}
-          <div className="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
+      <main className="min-h-screen bg-[#06070b] px-4 py-5 text-white sm:px-6 sm:py-8">
+        <div className="mx-auto max-w-4xl">
+          <div className="no-print mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold">BitForge</h1>
-              <p className="text-slate-400 text-xs">India&apos;s Trusted Digital Marketplace</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-300/80">Buyer Invoice</p>
+              <h1 className="mt-1 text-2xl font-semibold text-white">Clean Invoice View</h1>
+              <p className="mt-1 text-sm text-slate-400">A simpler invoice layout with actual platform fee and GST values.</p>
             </div>
-            <span className="text-xl font-bold text-indigo-400">INVOICE</span>
-          </div>
 
-          {/* Company & Invoice Info - Combined Row */}
-          <div className="px-6 py-4 border-b border-gray-200 flex justify-between text-sm">
-            <div>
-              <p className="font-semibold text-gray-800">BitForge Technologies</p>
-              <p className="text-xs text-gray-500">Lonavala, Maharashtra, India | support@bitforge.in</p>
-            </div>
-            <div className="text-right text-xs space-y-0.5">
-              <p><span className="text-gray-500">Invoice:</span> <span className="font-semibold">{invoice.invoiceNumber}</span></p>
-              <p><span className="text-gray-500">Date:</span> <span className="font-semibold">{formatDate(invoice.invoiceDate || invoice.createdAt)}</span></p>
-              <p><span className="text-gray-500">Order:</span> <span className="font-semibold">{invoice.razorpayOrderId || invoice.orderId?.slice(-8)?.toUpperCase()}</span></p>
-            </div>
-          </div>
-
-          {/* Billing Section - Compact */}
-          <div className="px-6 py-3 flex gap-4">
-            <div className="flex-1 border border-gray-200 rounded-lg p-3">
-              <p className="text-xs font-semibold text-indigo-500 mb-1">BILLED TO</p>
-              <p className="font-semibold text-gray-800 text-sm">{invoice.buyerName || "Valued Customer"}</p>
-              <p className="text-xs text-gray-500">{invoice.buyerEmail || "N/A"}</p>
-            </div>
-            <div className="flex-1 border border-gray-200 rounded-lg p-3">
-              <p className="text-xs font-semibold text-indigo-500 mb-1">SELLER</p>
-              <p className="font-semibold text-gray-800 text-sm">{invoice.sellerName || "BitForge Seller"}</p>
-              <p className="text-xs text-gray-500">Via BitForge Platform</p>
+            <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-row">
+              <button
+                onClick={() => router.back()}
+                className="w-full rounded-full border border-white/12 bg-white/[0.04] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-white/[0.08] sm:w-auto"
+              >
+                Back
+              </button>
+              <button
+                onClick={handlePrint}
+                className="w-full rounded-full border border-cyan-400/20 bg-cyan-400/10 px-5 py-2.5 text-sm font-medium text-cyan-100 transition hover:bg-cyan-400/15 sm:w-auto"
+              >
+                Print
+              </button>
+              <button
+                onClick={handleDownloadPdf}
+                disabled={downloading}
+                className="w-full rounded-full bg-cyan-400 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              >
+                {downloading ? "Downloading..." : "Download PDF"}
+              </button>
             </div>
           </div>
 
-          {/* Products Table - Compact */}
-          <div className="px-6 py-3">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="text-left px-3 py-2 text-xs font-semibold text-gray-600">DESCRIPTION</th>
-                  <th className="text-center px-3 py-2 text-xs font-semibold text-gray-600 w-16">QTY</th>
-                  <th className="text-right px-3 py-2 text-xs font-semibold text-gray-600 w-24">PRICE</th>
-                  <th className="text-right px-3 py-2 text-xs font-semibold text-gray-600 w-24">TOTAL</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b border-gray-200">
-                  <td className="px-3 py-3">
-                    <p className="font-semibold text-gray-800">{invoice.productName || "Digital Product"}</p>
-                    <p className="text-xs text-gray-500">{invoice.productDescription?.substring(0, 60) || "Digital download"}</p>
-                  </td>
-                  <td className="text-center px-3 py-3 text-gray-600">1</td>
-                  <td className="text-right px-3 py-3 text-gray-600">₹{formatCurrency(productPrice)}</td>
-                  <td className="text-right px-3 py-3 font-semibold text-gray-800">₹{formatCurrency(subtotal)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          {/* Summary - Compact Side by Side */}
-          <div className="px-6 py-3 flex justify-between items-start gap-4">
-            <div className="flex flex-col gap-2">
-              <div className="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-lg font-bold flex items-center gap-2 text-sm">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                PAID
-              </div>
-              <p className="text-xs text-gray-500">Transaction: {invoice.razorpayPaymentId || "N/A"}</p>
-            </div>
-            <div className="border border-gray-200 rounded-lg p-3 min-w-[220px] text-sm">
-              <div className="flex justify-between py-1">
-                <span className="text-gray-500">Subtotal:</span>
-                <span className="text-gray-800">₹{formatCurrency(subtotal)}</span>
-              </div>
-              {discountAmt > 0 && (
-                <div className="flex justify-between py-1 text-emerald-600">
-                  <span>Discount ({discountPct}%):</span>
-                  <span>-₹{formatCurrency(discountAmt)}</span>
+          <section className="print-area overflow-hidden rounded-[30px] border border-slate-200 bg-white text-slate-900 shadow-[0_28px_80px_rgba(15,23,42,0.32)]">
+            <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#0f172a,#1e293b)] px-5 py-6 text-white sm:px-8">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-3xl font-bold tracking-tight">BitForge</p>
+                  <p className="mt-1 text-sm text-slate-300">India&apos;s Trusted Digital Marketplace</p>
+                  <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">Tax Invoice</p>
                 </div>
-              )}
-              <div className="flex justify-between py-1">
-                <span className="text-gray-500">GST ({gstPercent}%):</span>
-                <span className="text-gray-800">₹{formatCurrency(gstAmt)}</span>
-              </div>
-              <div className="flex justify-between py-1">
-                <span className="text-gray-500">Platform Fee ({platformPercent}%):</span>
-                <span className="text-gray-800">₹{formatCurrency(platformFeeAmt)}</span>
-              </div>
-              <div className="flex justify-between py-2 border-t border-gray-200 mt-1 font-bold text-indigo-600">
-                <span>TOTAL:</span>
-                <span>₹{formatCurrency(totalPaid)}</span>
+
+                <div className="grid gap-3 text-sm sm:text-right">
+                  <div>
+                    <p className="text-slate-400">Invoice Number</p>
+                    <p className="font-semibold text-white">{invoice.invoiceNumber}</p>
+                  </div>
+                  <div>
+                    <p className="text-slate-400">Invoice Date</p>
+                    <p className="font-medium text-white">{formatDate(invoice.invoiceDate || invoice.createdAt)}</p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Footer - Compact */}
-          <div className="bg-gray-50 px-6 py-3 text-center border-t border-gray-200">
-            <p className="font-semibold text-gray-800">Thank you for your purchase!</p>
-            <p className="text-xs text-gray-500">Your digital product is ready for download in your dashboard.</p>
-          </div>
+            <div className="grid gap-4 border-b border-slate-200 px-5 py-5 sm:grid-cols-2 sm:px-8">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Billed To</p>
+                <p className="mt-3 text-base font-semibold text-slate-950">{invoice.buyerName || "Valued Customer"}</p>
+                <p className="mt-1 break-all text-sm text-slate-600">{invoice.buyerEmail || "N/A"}</p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Seller</p>
+                <p className="mt-3 text-base font-semibold text-slate-950">{invoice.sellerName || "BitForge Seller"}</p>
+                <p className="mt-1 text-sm text-slate-600">Sold via BitForge platform</p>
+              </div>
+            </div>
 
-          {/* Notes - Compact Single Line */}
-          <div className="px-6 py-2 border-t border-gray-100 text-xs text-gray-500">
-            <p>• Digitally generated invoice - no signature required • Refunds: support@bitforge.in (within 7 days) • Products are non-transferable</p>
-          </div>
+            <div className="grid gap-4 border-b border-slate-200 px-5 py-5 text-sm sm:grid-cols-3 sm:px-8">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Order ID</p>
+                <p className="mt-2 break-all font-medium text-slate-950">{invoice.razorpayOrderId || invoice.orderId}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Payment ID</p>
+                <p className="mt-2 break-all font-medium text-slate-950">{invoice.razorpayPaymentId || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Payment Method</p>
+                <p className="mt-2 font-medium text-slate-950">{invoice.paymentMethod || "Razorpay"}</p>
+              </div>
+            </div>
 
-          {/* Copyright */}
-          <div className="text-center py-2 text-xs text-gray-400 border-t border-gray-100">
-            © {new Date().getFullYear()} BitForge Technologies. All rights reserved.
-          </div>
+            <div className="px-5 py-5 sm:px-8">
+              <div className="hidden rounded-2xl border border-slate-200 sm:block">
+                <div className="grid grid-cols-[minmax(0,1fr)_56px_104px_104px] gap-3 border-b border-slate-200 bg-slate-100 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600">
+                  <span>Description</span>
+                  <span className="text-center">Qty</span>
+                  <span className="text-right">Price</span>
+                  <span className="text-right">Amount</span>
+                </div>
+                <div className="grid grid-cols-[minmax(0,1fr)_56px_104px_104px] gap-3 px-4 py-4 text-sm">
+                  <div>
+                    <p className="font-semibold text-slate-950">{invoice.productName || "Digital Product"}</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">{invoice.productDescription?.substring(0, 140) || "Digital download"}</p>
+                  </div>
+                  <div className="text-center text-slate-700">1</div>
+                  <div className="text-right text-slate-700">{formatMoney(totals.originalPrice)}</div>
+                  <div className="text-right font-semibold text-slate-950">{formatMoney(totals.subtotal)}</div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:hidden">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Line Item</p>
+                <div className="mt-3 border-b border-slate-200 pb-3">
+                  <p className="text-base font-semibold text-slate-950">{invoice.productName || "Digital Product"}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{invoice.productDescription?.substring(0, 200) || "Digital download"}</p>
+                </div>
+                <div className="mt-4 grid gap-3">
+                  <MobileStat label="Quantity" value="1" />
+                  <MobileStat label="Price" value={formatMoney(totals.originalPrice)} />
+                  <MobileStat label="Amount" value={formatMoney(totals.subtotal)} strong />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-5 border-b border-slate-200 px-5 py-5 sm:px-8 lg:grid-cols-[1fr_320px] lg:items-start">
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Payment Status</p>
+                <p className="mt-2 text-lg font-semibold text-emerald-800">Paid</p>
+                <p className="mt-1 text-sm text-emerald-700">This invoice is based on the actual values stored for this order.</p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="flex justify-between gap-4 py-2 text-sm">
+                  <span className="text-slate-600">Subtotal</span>
+                  <span className="font-medium text-slate-950">{formatMoney(totals.subtotal)}</span>
+                </div>
+                {totals.discountAmount > 0 && (
+                  <div className="flex justify-between gap-4 py-2 text-sm text-emerald-700">
+                    <span>Discount ({totals.discountPercent}%)</span>
+                    <span>-{formatMoney(totals.discountAmount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between gap-4 py-2 text-sm">
+                  <span className="text-slate-600">GST ({totals.gstPercent}%)</span>
+                  <span className="font-medium text-slate-950">{formatMoney(totals.gstAmount)}</span>
+                </div>
+                <div className="flex justify-between gap-4 py-2 text-sm">
+                  <span className="text-slate-600">Platform Fee ({totals.platformPercent}%)</span>
+                  <span className="font-medium text-slate-950">{formatMoney(totals.platformFee)}</span>
+                </div>
+                <div className="mt-2 flex justify-between gap-4 border-t border-slate-200 pt-3 text-base font-semibold text-slate-950">
+                  <span>Total Paid</span>
+                  <span>{formatMoney(totals.totalPaid)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-b border-slate-200 px-5 py-5 sm:px-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Notes</p>
+              <p className="mt-3 text-sm leading-6 text-slate-600">This is a digitally generated invoice. No physical signature is required. For invoice support, contact support@bitforge.in.</p>
+            </div>
+
+            <div className="bg-slate-50 px-5 py-4 text-center text-sm text-slate-600 sm:px-8">
+              <p className="font-medium text-slate-900">Thank you for your purchase.</p>
+              <p className="mt-1">Your digital product is available from your buyer dashboard.</p>
+            </div>
+          </section>
         </div>
-      </div>
+      </main>
     </>
+  );
+}
+
+function MobileStat({
+  label,
+  value,
+  strong,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm">
+      <span className="text-slate-500">{label}</span>
+      <span className={strong ? "font-semibold text-slate-950" : "font-medium text-slate-800"}>{value}</span>
+    </div>
   );
 }

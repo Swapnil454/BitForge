@@ -204,6 +204,8 @@ export const getAllBuyerPurchases = async (req, res) => {
       sellerName: order.sellerId?.name || "Unknown Seller",
       amount: order.amount || 0,
       purchaseDate: order.createdAt,
+      downloadCount: order.downloadCount || 0,
+      downloadLimit: order.downloadLimit || 5,
     }));
 
     res.json({
@@ -263,6 +265,8 @@ export const getBuyerPurchaseDetails = async (req, res) => {
       sellerEmail: order.sellerId?.email || "Unknown Email",
       amount: order.amount || 0,
       purchaseDate: order.createdAt,
+      downloadCount: order.downloadCount || 0,
+      downloadLimit: order.downloadLimit || 5,
       downloadAvailable,
       filename,
       razorpayPaymentId: order.razorpayPaymentId || null,
@@ -338,6 +342,8 @@ export const getPurchasedProductDetails = async (req, res) => {
         razorpayOrderId: order.razorpayOrderId,
         amount: order.amount,
         purchaseDate: order.createdAt,
+      downloadCount: order.downloadCount || 0,
+      downloadLimit: order.downloadLimit || 5,
         downloadAvailable: !!product.fileKey
       }
     });
@@ -346,3 +352,5 @@ export const getPurchasedProductDetails = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch product details" });
   }
 };
+
+
