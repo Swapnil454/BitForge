@@ -7,7 +7,8 @@ import { ChevronLeft } from "lucide-react";
 type PageHeaderProps = {
   title: string;
   subtitle?: string;
-  backHref: string;
+  backHref?: string;
+  onBack?: () => void;
   backLabel?: string;
   rightSlot?: ReactNode;
 };
@@ -16,6 +17,7 @@ export default function PageHeader({
   title,
   subtitle,
   backHref,
+  onBack,
   backLabel = "Back",
   rightSlot,
 }: PageHeaderProps) {
@@ -26,7 +28,11 @@ export default function PageHeader({
       <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
         <div className="relative flex min-h-[58px] items-center justify-center">
           <button
-            onClick={() => router.push(backHref)}
+            onClick={() => {
+              if (onBack) onBack();
+              else if (backHref) router.push(backHref);
+              else router.back();
+            }}
             className="absolute left-0 inline-flex items-center gap-1 text-white/80 hover:text-white transition"
             aria-label={backLabel}
           >

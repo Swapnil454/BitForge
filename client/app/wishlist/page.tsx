@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { marketplaceAPI, cartAPI } from "@/lib/api";
 import { getCookie } from "@/lib/cookies";
 import toast from "react-hot-toast";
+import PageHeader from "../dashboard/buyer/transactions/components/PageHeader";
+import { ShoppingCart, HeartCrack, Trash2, Package, Tag } from "lucide-react";
 
 type Product = {
   _id: string;
@@ -103,73 +105,49 @@ export default function WishlistPage() {
 
   if (loading || !authChecked) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
-          <p className="text-white/60">Loading wishlist...</p>
+      <div className="min-h-screen bg-[#05050a] text-white flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-indigo-500" />
+          <p className="text-slate-400 text-sm font-medium tracking-wide">Loading wishlist...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-gradient-to-r from-pink-600/20 via-rose-600/20 to-red-600/20 backdrop-blur-md border-b border-white/10 text-white py-4">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.push("/dashboard/buyer")}
-                className="h-10 w-10 md:h-11 md:w-11 rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 hover:border-pink-500/50 hover:from-pink-500/20 hover:to-pink-600/20 grid place-items-center transition-all duration-300 group hover:scale-105 shadow-lg hover:shadow-pink-500/50"
-                title="Back to Dashboard"
-              >
-                <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 12H5M12 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <div className="flex items-center gap-3">
-                <span className="text-4xl">❤️</span>
-                <div>
-                  <h1 className="text-2xl font-bold">My Wishlist</h1>
-                  <p className="text-white/70 text-sm">
-                    {wishlist.length} item{wishlist.length !== 1 ? "s" : ""} saved
-                  </p>
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={() => router.push("/cart")}
-              className="h-10 w-10 md:h-11 md:w-11 rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 hover:border-rose-400/60 hover:from-rose-500/20 hover:to-pink-500/20 grid place-items-center transition-all duration-300 group hover:scale-105 shadow-lg hover:shadow-rose-500/40"
-              title="Go to Cart"
-            >
-              <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="9" cy="21" r="1" />
-                <circle cx="20" cy="21" r="1" />
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-[#05050a] text-white pb-20">
+      <PageHeader
+        backHref="/dashboard/buyer"
+        backLabel="Dashboard"
+        title="My Wishlist"
+        subtitle={`${wishlist.length} item${wishlist.length !== 1 ? "s" : ""} saved`}
+        rightSlot={
+          <button
+            onClick={() => router.push("/cart")}
+            className="flex items-center justify-center w-10 h-10 sm:w-auto sm:h-auto sm:px-4 sm:py-2.5 rounded-xl sm:rounded-lg bg-white hover:bg-slate-200 text-slate-950 text-xs sm:text-sm font-bold shadow-lg shadow-white/5 transition"
+            title="Go to Cart"
+          >
+            <ShoppingCart className="w-5 h-5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline sm:ml-2">Cart</span>
+          </button>
+        }
+      />
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8">
         {products.length === 0 ? (
-          <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-12 text-center">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center text-5xl mx-auto mb-6">
-              💔
-            </div>
-            <p className="text-white text-xl font-semibold mb-2">Your wishlist is empty</p>
-            <p className="text-white/60 text-sm mb-6">Start adding products you love</p>
+          <div className="bg-[#08111d] border border-white/5 rounded-3xl p-10 sm:p-12 text-center max-w-lg mx-auto shadow-2xl mt-12 sm:mt-24">
+            <HeartCrack className="w-16 h-16 text-slate-700 mx-auto mb-6" />
+            <p className="text-white text-xl font-bold tracking-tight mb-2">Your wishlist is empty</p>
+            <p className="text-slate-400 text-sm mb-8">Start adding products you love</p>
             <button
               onClick={() => router.push("/marketplace")}
-              className="inline-block bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white px-6 py-3 rounded-xl shadow-lg shadow-pink-500/30 transition"
+              className="w-full bg-white hover:bg-slate-200 text-slate-950 px-6 py-3.5 rounded-xl font-bold transition shadow-lg flex items-center justify-center gap-2"
             >
               Explore Marketplace
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex flex-col gap-3 sm:gap-4 max-w-4xl mx-auto">
             {products.map((product) => {
               const finalPrice = product.discount > 0
                 ? Math.max(product.price - (product.price * product.discount) / 100, 0)
@@ -178,80 +156,81 @@ export default function WishlistPage() {
               return (
                 <div
                   key={product._id}
-                  className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl overflow-hidden hover:border-pink-500/30 hover:shadow-2xl hover:shadow-pink-500/20 transition-all duration-300"
+                  className="bg-[#08111d] border border-white/5 rounded-2xl shadow-xl hover:border-indigo-500/20 transition-all p-3 sm:p-5 flex flex-row gap-3 sm:gap-5 group"
                 >
-                  {product.thumbnailUrl ? (
-                    <img
-                      src={product.thumbnailUrl}
-                      alt={product.title}
-                      className="w-full h-56 object-cover cursor-pointer hover:opacity-80 transition"
-                      onClick={() => router.push(`/marketplace/${product._id}`)}
-                    />
-                  ) : (
-                    <div className="w-full h-56 bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center">
-                      <span className="text-4xl">📦</span>
+                  {/* Thumbnail */}
+                  <div 
+                    className="w-24 h-24 sm:w-48 sm:h-auto sm:aspect-[16/9] shrink-0 bg-[#05050a] rounded-xl border border-white/5 overflow-hidden relative cursor-pointer flex items-center justify-center" 
+                    onClick={() => router.push(`/marketplace/${product._id}`)}
+                  >
+                    {product.thumbnailUrl ? (
+                      <img
+                        src={product.thumbnailUrl}
+                        alt={product.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                      />
+                    ) : (
+                      <Package className="w-8 h-8 sm:w-12 sm:h-12 text-slate-700" />
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start gap-2">
+                        <h2 
+                          className="font-bold text-sm sm:text-lg text-white line-clamp-1 hover:text-indigo-400 cursor-pointer tracking-tight"
+                          onClick={() => router.push(`/marketplace/${product._id}`)}
+                        >
+                          {product.title}
+                        </h2>
+                        <button
+                          onClick={() => removeFromWishlist(product._id)}
+                          className="shrink-0 text-slate-500 hover:text-rose-400 p-1 -mr-1 -mt-1 transition"
+                          title="Remove from wishlist"
+                        >
+                          <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </button>
+                      </div>
+                      <p className="text-slate-400 text-xs sm:text-sm line-clamp-1 sm:line-clamp-2 mt-0.5 sm:mt-1 leading-relaxed">
+                        {product.description}
+                      </p>
                     </div>
-                  )}
 
-                  <div className="p-5">
-                    <h2 className="font-bold text-lg text-white mb-2 line-clamp-1 hover:text-pink-400 transition cursor-pointer"
-                      onClick={() => router.push(`/marketplace/${product._id}`)}
-                    >
-                      {product.title}
-                    </h2>
-                    <p className="text-white/70 text-sm mb-4 line-clamp-2">
-                      {product.description}
-                    </p>
-
-                    {/* Price Section */}
-                    <div className="mb-4">
-                      {product.discount > 0 ? (
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-white/40 line-through">
+                    <div className="mt-2 pt-2 sm:pt-0 sm:border-t-0 border-t border-white/5 flex flex-row items-end justify-between gap-3">
+                      {/* Price Block */}
+                      <div>
+                        {product.discount > 0 ? (
+                          <div className="flex items-center gap-1.5 sm:gap-2">
+                            <span className="text-sm sm:text-xl font-bold text-white tracking-tight">
+                              ₹{finalPrice.toLocaleString()}
+                            </span>
+                            <span className="text-[10px] sm:text-xs text-slate-500 line-through font-mono">
                               ₹{product.price.toLocaleString()}
                             </span>
-                            <span className="text-xs bg-gradient-to-r from-red-500 to-rose-500 text-white px-2 py-0.5 rounded-full font-semibold shadow-lg shadow-red-500/30">
-                              -{product.discount}% OFF
+                            <span className="px-1.5 py-0.5 bg-rose-500/10 text-rose-400 rounded text-[9px] sm:text-[10px] font-bold border border-rose-500/20 tracking-wider">
+                              -{product.discount}%
                             </span>
                           </div>
-                          <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-rose-400">
-                            ₹{finalPrice.toLocaleString()}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-rose-400">
-                          ₹{product.price.toLocaleString()}
-                        </div>
-                      )}
-                    </div>
+                        ) : (
+                          <span className="text-sm sm:text-xl font-bold text-white tracking-tight">
+                            ₹{product.price.toLocaleString()}
+                          </span>
+                        )}
+                        {product.sellerId?.name && (
+                          <p className="text-[9px] sm:text-xs text-slate-500 uppercase tracking-wider mt-0.5 sm:mt-1 truncate max-w-[120px] sm:max-w-[200px]">
+                            By {product.sellerId.name}
+                          </p>
+                        )}
+                      </div>
 
-                    {/* Seller Info */}
-                    {product.sellerId?.name && (
-                      <p className="text-xs text-white/50 mb-4">
-                        by {product.sellerId.name}
-                      </p>
-                    )}
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-2">
+                      {/* Action Button */}
                       <button
                         onClick={() => moveToCart(product)}
-                        className="flex-1 bg-gradient-to-r from-rose-500/50 to-red-500/50 hover:from-rose-500/60 hover:to-red-500/60 text-white py-2.5 rounded-xl font-semibold transition shadow-lg shadow-rose-500/25 flex items-center justify-center gap-2"
+                        className="bg-indigo-100/10 hover:bg-white/10 border border-white/10 text-white px-5 sm:px-6 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0"
                       >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="9" cy="21" r="1" />
-                          <circle cx="20" cy="21" r="1" />
-                          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                        </svg>
-                        Move to Cart
-                      </button>
-                      <button
-                        onClick={() => removeFromWishlist(product._id)}
-                        className="px-4 bg-red-500/20 hover:bg-red-500/30 border border-red-400/30 text-red-300 py-2.5 rounded-xl transition"
-                        title="Remove from wishlist"
-                      >
-                        💔
+                        <ShoppingCart className="w-3.5 h-3.5" />
+                        <span>Move to Cart</span>
                       </button>
                     </div>
                   </div>
@@ -260,7 +239,7 @@ export default function WishlistPage() {
             })}
           </div>
         )}
-      </div>
+      </main>
 
       {/* Ensure Razorpay script is loaded */}
       {typeof window !== "undefined" && !(window as any).Razorpay && (

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { MoreVertical, ShoppingBag } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import { buyerAPI } from "@/lib/api";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
@@ -11,10 +11,13 @@ import { getStoredUser } from "@/lib/cookies";
 import ReviewModal from "../components/ReviewModal";
 import PageHeader from "../transactions/components/PageHeader";
 import PurchaseCard from "./components/PurchaseCard";
+import PurchaseCardSkeleton from "./components/PurchaseCardSkeleton";
+import PurchasesEmptyState from "./components/PurchasesEmptyState";
 import PurchasesPagination from "./components/PurchasesPagination";
+import RaiseDisputeModal from "./components/RaiseDisputeModal";
 import { Purchase, PurchasePagination } from "./types";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 7;
 
 const defaultPagination: PurchasePagination = {
   page: 1,
@@ -33,6 +36,8 @@ export default function PurchasesPage() {
   const [pagination, setPagination] = useState<PurchasePagination>(defaultPagination);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Purchase | null>(null);
+  const [disputeModalOpen, setDisputeModalOpen] = useState(false);
+  const [selectedDisputePurchase, setSelectedDisputePurchase] = useState<Purchase | null>(null);
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
   const [downloadingOrderId, setDownloadingOrderId] = useState<string | null>(null);
   const router = useRouter();
@@ -157,29 +162,12 @@ export default function PurchasesPage() {
     }
   };
 
-  const raiseDispute = async (orderId: string) => {
-    const reason = prompt("Enter reason for dispute:");
-    if (!reason) return;
-
-    try {
-      await api.post("/disputes", { orderId, reason });
-      toast.success("Dispute raised successfully");
-      await fetchPurchases(page, true);
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to raise dispute");
-    }
+  const openDisputeModal = (purchase: Purchase) => {
+    setSelectedDisputePurchase(purchase);
+    setDisputeModalOpen(true);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#05050a] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-400 mx-auto mb-3"></div>
-          <p className="text-white/70">Loading purchases...</p>
-        </div>
-      </div>
-    );
-  }
+  // Removed the full screen loading block in favor of skeletons
 
   return (
     <div className="min-h-screen bg-[#05050a] text-white">
@@ -235,21 +223,10 @@ export default function PurchasesPage() {
       />
 
       <main className="max-w-5xl mx-auto px-4 pt-4 pb-8 space-y-4">
-        {purchases.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-12 text-center">
-            <div className="mx-auto mb-4 h-14 w-14 rounded-xl border border-white/10 bg-white/[0.04] inline-flex items-center justify-center">
-              <ShoppingBag className="h-7 w-7 text-cyan-300" />
-            </div>
-            <h2 className="text-xl font-semibold mb-2">No purchases yet</h2>
-            <p className="text-white/60 mb-6">Start exploring the marketplace and make your first purchase.</p>
-            <button
-              type="button"
-              onClick={() => router.push("/marketplace")}
-              className="h-10 rounded-lg px-6 text-sm font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition"
-            >
-              Browse Marketplace
-            </button>
-          </div>
+        {loading ? (
+          Array.from({ length: 7 }).map((_, i) => <PurchaseCardSkeleton key={i} />)
+        ) : purchases.length === 0 ? (
+          <PurchasesEmptyState />
         ) : (
           <>
             {purchases.map((purchase) => (
@@ -266,7 +243,10 @@ export default function PurchasesPage() {
                   if (!productId) return;
                   router.push(`/marketplace/${productId}`);
                 }}
-                onRaiseDispute={raiseDispute}
+                onRaiseDispute={(orderId) => {
+                  const p = purchases.find((x) => x._id === orderId);
+                  if (p) openDisputeModal(p);
+                }}
               />
             ))}
 
@@ -291,6 +271,23 @@ export default function PurchasesPage() {
           orderId={selectedOrder._id}
           onReviewSubmitted={() => {
             toast.success("Thank you for your review!");
+          }}
+        />
+      )}
+
+      {selectedDisputePurchase && (
+        <RaiseDisputeModal
+          isOpen={disputeModalOpen}
+          onClose={() => {
+            setDisputeModalOpen(false);
+            setSelectedDisputePurchase(null);
+          }}
+          orderId={selectedDisputePurchase._id}
+          orderNumber={selectedDisputePurchase.orderId.slice(-8).toUpperCase()}
+          productName={selectedDisputePurchase.productName}
+          onSuccess={() => {
+            toast.success("Dispute submitted successfully!");
+            void fetchPurchases(page, true);
           }}
         />
       )}

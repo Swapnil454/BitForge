@@ -12,18 +12,18 @@ type PurchaseCardProps = {
   onRaiseDispute: (orderId: string) => void;
 };
 
-const getStatusColor = (status: string) => {
+const getStatusConfig = (status: string) => {
   switch (status.toLowerCase()) {
     case "completed":
     case "success":
     case "paid":
-      return "bg-emerald-500/12 text-emerald-300 border border-emerald-500/25";
+      return { bg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", stripe: "bg-emerald-500" };
     case "pending":
-      return "bg-amber-500/12 text-amber-300 border border-amber-500/25";
+      return { bg: "bg-amber-500/10 text-amber-400 border-amber-500/20", stripe: "bg-amber-500" };
     case "failed":
-      return "bg-red-500/12 text-red-300 border border-red-500/25";
+      return { bg: "bg-rose-500/10 text-rose-400 border-rose-500/20", stripe: "bg-rose-500" };
     default:
-      return "bg-white/10 text-white/70 border border-white/20";
+      return { bg: "bg-transparent text-slate-300 border-white/20", stripe: "bg-slate-500" };
   }
 };
 
@@ -42,105 +42,117 @@ export default function PurchaseCard({
   const downloadLimit = purchase.downloadLimit || 5;
   const remaining = Math.max(downloadLimit - downloadCount, 0);
   const isLimitReached = remaining <= 0;
+  
+  const statusConfig = getStatusConfig(purchase.status);
 
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 hover:border-white/20 transition-all shadow-[0_8px_24px_rgba(0,0,0,0.3)]">
-      <div className="flex gap-4">
-        {purchase.thumbnailUrl ? (
-          <img
-            src={purchase.thumbnailUrl}
-            alt={purchase.productName}
-            className="h-24 w-24 shrink-0 rounded-xl object-cover border border-white/10"
-          />
-        ) : (
-          <div className="h-24 w-24 shrink-0 rounded-xl border border-white/10 bg-white/[0.03] inline-flex items-center justify-center">
-            <Package className="h-8 w-8 text-white/45" />
-          </div>
-        )}
-
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-3 mb-2">
-            <div className="min-w-0">
-              <h3 className="truncate text-lg font-semibold text-white">{purchase.productName}</h3>
-              <div className="mt-2 flex items-center gap-3">
-                <span className="font-semibold text-cyan-300">₹{purchase.amount.toLocaleString()}</span>
-                <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${getStatusColor(purchase.status)}`}>
-                  {purchase.status}
-                </span>
-              </div>
+    <article className="bg-[#08111d] border border-white/5 rounded-xl p-3 sm:p-4 flex flex-col group hover:border-white/10 transition-all shadow-xl">
+      <div className="flex gap-3 sm:gap-4">
+        {/* Thumbnail - Fixed Left */}
+        <div className="w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] shrink-0 rounded-lg overflow-hidden bg-white/5 border border-white/5 relative">
+          {purchase.thumbnailUrl ? (
+            <img
+              src={purchase.thumbnailUrl}
+              alt={purchase.productName}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center">
+              <Package className="h-6 w-6 sm:h-8 sm:w-8 text-white/20" />
             </div>
-            <div className="shrink-0 text-right">
-              <div className="text-[10px] text-white/45 font-medium">Order</div>
-              <div className="text-xs font-semibold text-white/70">#{purchase.orderId.slice(-8).toUpperCase()}</div>
+          )}
+        </div>
+
+        {/* Content - Right */}
+        <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+          <div>
+            <div className="flex justify-between items-start gap-2 mb-1">
+              <h3 className="text-sm sm:text-base font-bold text-white truncate tracking-tight leading-tight">
+                {purchase.productName}
+              </h3>
+              {/* Price Top Right */}
+              <p className="text-sm sm:text-base font-bold text-cyan-400 tracking-tight shrink-0">
+                ₹{purchase.amount.toLocaleString()}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5 mb-1">
+              <span className={`px-1.5 py-0.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider rounded bg-transparent border ${statusConfig.bg}`}>
+                {purchase.status}
+              </span>
+              <span className="text-[9px] sm:text-[10px] text-slate-500 font-mono">
+                {new Date(purchase.purchaseDate).toLocaleDateString()}
+              </span>
+            </div>
+            
+            <div className="text-[9px] sm:text-[10px] text-slate-400 font-mono truncate">
+              Order #{purchase.orderId.slice(-8).toUpperCase()}
             </div>
           </div>
 
-          <p className="inline-flex items-center gap-2 text-xs text-white/50 mb-4">
-            <Clock3 className="h-3.5 w-3.5" />
-            {new Date(purchase.purchaseDate).toLocaleString()}
-          </p>
-
-          <div className="grid grid-cols-2 gap-2">
+          {/* Primary Action */}
+          <div className="flex justify-end mt-2">
             <button
               type="button"
               onClick={() => !isLimitReached && onDownload(purchase._id)}
               disabled={isLimitReached || downloading}
-              className={`h-9 rounded-lg px-3 text-sm font-semibold transition inline-flex items-center justify-center gap-2 whitespace-nowrap ${
+              className={`h-8 sm:h-9 px-4 sm:px-5 rounded-lg text-[11px] sm:text-xs font-bold transition-all inline-flex items-center justify-center gap-2 whitespace-nowrap shadow-lg shadow-white/5 ${
                 isLimitReached
-                  ? "cursor-not-allowed bg-white/10 text-white/35 border border-white/10"
-                  : "bg-cyan-500 hover:bg-cyan-400 text-slate-950 border border-cyan-500/50"
+                  ? "cursor-not-allowed bg-white/5 text-white/30 border border-white/5 shadow-none"
+                  : "bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 hover:border-cyan-500/30"
               }`}
             >
-              <Download className="h-4 w-4 shrink-0" />
-              <span>{downloading ? "..." : "Download"}</span>
-              <span className="rounded-full bg-black/25 px-1.5 py-0.5 text-[10px] font-medium shrink-0">
-                {remaining}/{downloadLimit}
-              </span>
-            </button>
-
-            {canReviewOrder(purchase.status) && purchase.productId ? (
-              <button
-                type="button"
-                onClick={() => onReview(purchase)}
-                className="h-9 rounded-lg px-3 text-sm font-semibold transition inline-flex items-center justify-center gap-2 border border-amber-400/50 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20"
-              >
-                <Star className="h-4 w-4 shrink-0" />
-                <span>Review</span>
-              </button>
-            ) : (
-              <div />
-            )}
-
-            <button
-              type="button"
-              onClick={() => onViewProduct(purchase.productId)}
-              disabled={!purchase.productId}
-              className={`h-9 rounded-lg px-3 text-sm font-medium transition inline-flex items-center justify-center gap-2 border border-white/20 bg-white/5 hover:bg-white/10 ${
-                !purchase.productId ? "opacity-40 cursor-not-allowed" : "text-white/85"
-              }`}
-            >
-              <Eye className="h-4 w-4 shrink-0" />
-              <span>Product</span>
-            </button>
-
-            <a
-              href={`/dashboard/buyer/invoice/${purchase._id}`}
-              className="h-9 rounded-lg px-3 text-sm font-medium transition inline-flex items-center justify-center gap-2 border border-white/20 bg-white/5 hover:bg-white/10 text-white/85"
-            >
-              <FileText className="h-4 w-4 shrink-0" />
-              <span>Invoice</span>
-            </a>
-
-            <button
-              type="button"
-              onClick={() => onRaiseDispute(purchase._id)}
-              className="h-9 rounded-lg px-3 text-sm font-medium transition inline-flex items-center justify-center gap-2 col-span-2 border border-red-400/40 bg-red-500/8 text-red-300 hover:bg-red-500/15"
-            >
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>Raise Dispute</span>
+              <Download className="h-3.5 w-3.5 shrink-0" />
+              <span>{downloading ? "Wait..." : "Download"}</span>
+              {!isLimitReached && (
+                <span className="rounded bg-cyan-500/20 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-cyan-300 ml-1">
+                  {remaining}/{downloadLimit}
+                </span>
+              )}
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Secondary Actions Row */}
+      <div className="mt-3 sm:mt-4 pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {canReviewOrder(purchase.status) && purchase.productId && (
+            <button
+              type="button"
+              onClick={() => onReview(purchase)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-[10px] sm:text-[11px] font-medium transition-colors border border-transparent hover:border-white/10"
+            >
+              <Star className="w-3.5 h-3.5" /> Review
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => onViewProduct(purchase.productId)}
+            disabled={!purchase.productId}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-transparent text-[10px] sm:text-[11px] font-medium transition-colors ${
+              !purchase.productId ? "opacity-40 cursor-not-allowed text-white/40" : "bg-white/5 hover:bg-white/10 text-white/70 hover:text-white hover:border-white/10"
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5" /> Product
+          </button>
+
+          <a
+            href={`/dashboard/buyer/invoice/${purchase._id}`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-[10px] sm:text-[11px] font-medium transition-colors border border-transparent hover:border-white/10"
+          >
+            <FileText className="w-3.5 h-3.5" /> Invoice
+          </a>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onRaiseDispute(purchase._id)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/5 hover:bg-rose-500/10 text-rose-400/80 hover:text-rose-400 text-[10px] sm:text-[11px] font-medium transition-colors border border-transparent hover:border-rose-500/10 shrink-0"
+        >
+          <AlertCircle className="w-3.5 h-3.5" /> Dispute
+        </button>
       </div>
     </article>
   );

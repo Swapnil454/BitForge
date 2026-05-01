@@ -290,10 +290,6 @@ export const getBuyerTransactionDetails = async (req, res) => {
 export const getAllBuyerPurchases = async (req, res) => {
   try {
     const buyerId = req.user.id;
-    const hasQueryControls = ["page", "limit", "sortBy", "search"].some(
-      (key) => req.query[key] !== undefined
-    );
-
     const mapPurchase = (order) => ({
       _id: order._id,
       orderId: order.razorpayOrderId || order._id.toString(),
@@ -308,27 +304,9 @@ export const getAllBuyerPurchases = async (req, res) => {
       downloadLimit: order.downloadLimit || 5,
     });
 
-    if (!hasQueryControls) {
-      const orders = await Order.find({ buyerId, status: "paid" })
-        .populate("productId", "title description thumbnailUrl fileUrl fileKey category")
-        .populate("sellerId", "name email")
-        .sort({ createdAt: -1 });
-
-      return res.json({
-        purchases: orders.map(mapPurchase),
-        pagination: {
-          page: 1,
-          limit: orders.length || 1,
-          totalRecords: orders.length,
-          totalPages: 1,
-          hasPrevPage: false,
-          hasNextPage: false,
-        },
-      });
-    }
-
+    // Default to page 1, limit 7 if no pagination params are provided
     const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
-    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 7, 1), 50);
     const sortBy = req.query.sortBy === "oldest" ? "oldest" : "newest";
     const search = (req.query.search || "").trim();
     const skip = (page - 1) * limit;

@@ -237,7 +237,7 @@ export default function TransactionsPage() {
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className="bg-linear-to-br from-[#0a1728] via-[#071a2f] to-[#10122b] border border-cyan-500/15 rounded-2xl p-5 animate-pulse"
+                  className="rounded-2xl border border-white/5 bg-[#12141c] p-4 sm:p-5 shadow-lg overflow-hidden animate-pulse"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 space-y-3">
@@ -257,7 +257,7 @@ export default function TransactionsPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-linear-to-br from-slate-900/85 to-slate-800/45 border border-white/10 rounded-2xl p-10 text-center"
+              className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center shadow-lg"
             >
               <h3 className="text-lg sm:text-xl font-bold text-white mb-2">No Transactions Found</h3>
               <p className="text-white/60 mb-5 text-sm sm:text-base">
@@ -287,9 +287,8 @@ export default function TransactionsPage() {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ delay: index * 0.02 }}
                     onClick={() => router.push(`/dashboard/buyer/transactions/${transaction._id}`)}
-                    className="relative overflow-hidden cursor-pointer rounded-2xl border border-cyan-400/15 bg-linear-to-br from-[#08203a]/95 via-[#04213d]/95 to-[#1a153a]/90 p-4 sm:p-5 text-left transition-all duration-300 hover:border-violet-400/35 hover:shadow-xl hover:shadow-indigo-500/15 hover:-translate-y-0.5 group"
+                    className="relative overflow-hidden cursor-pointer rounded-2xl border border-white/5 bg-[#12141c] p-4 sm:p-5 text-left transition-all duration-300 hover:bg-[#181a25] hover:border-white/10 hover:shadow-xl hover:shadow-black/50 group"
                   >
-                    <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-cyan-300/45 to-transparent" />
 
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex-1 min-w-0">

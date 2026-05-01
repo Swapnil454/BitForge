@@ -70,7 +70,7 @@ export const generateInvoicePDF = (invoice, res) => {
      .text('Website: www.bitforge.in', 50, infoY + 41);
 
   // Right Column - Invoice Details
-  const invoiceInfoX = 380;
+  const invoiceInfoX = 340;
   doc.font('Helvetica')
      .fontSize(9)
      .fillColor(textMuted);
@@ -78,28 +78,28 @@ export const generateInvoicePDF = (invoice, res) => {
   doc.text('Invoice Number:', invoiceInfoX, infoY);
   doc.font('Helvetica-Bold')
      .fillColor(textDark)
-     .text(invoice.invoiceNumber, invoiceInfoX + 90, infoY);
+     .text(invoice.invoiceNumber, invoiceInfoX + 85, infoY);
   
   doc.font('Helvetica')
      .fillColor(textMuted)
      .text('Invoice Date:', invoiceInfoX, infoY + 15);
   doc.font('Helvetica-Bold')
      .fillColor(textDark)
-     .text(formatDate(invoice.invoiceDate || invoice.createdAt), invoiceInfoX + 90, infoY + 15);
+     .text(formatDate(invoice.invoiceDate || invoice.createdAt), invoiceInfoX + 85, infoY + 15);
   
   doc.font('Helvetica')
      .fillColor(textMuted)
      .text('Order ID:', invoiceInfoX, infoY + 30);
   doc.font('Helvetica-Bold')
      .fillColor(textDark)
-     .text(invoice.razorpayOrderId || invoice.orderId?.toString()?.slice(-8)?.toUpperCase() || 'N/A', invoiceInfoX + 90, infoY + 30);
+     .text(invoice.razorpayOrderId || invoice.orderId?.toString()?.slice(-8)?.toUpperCase() || 'N/A', invoiceInfoX + 85, infoY + 30);
   
   doc.font('Helvetica')
      .fillColor(textMuted)
      .text('Payment Method:', invoiceInfoX, infoY + 45);
   doc.font('Helvetica-Bold')
      .fillColor(textDark)
-     .text(invoice.paymentMethod || 'Razorpay', invoiceInfoX + 90, infoY + 45);
+     .text(invoice.paymentMethod || 'Razorpay', invoiceInfoX + 85, infoY + 45);
 
   // ========== BILLING INFO ==========
   const billingY = 200;
@@ -176,8 +176,8 @@ export const generateInvoicePDF = (invoice, res) => {
      .fontSize(10)
      .fillColor(textDark)
      .text('1', 350, rowY + 5)
-     .text(`₹${formatCurrency(invoice.originalPrice || invoice.priceAfterDiscount)}`, 400, rowY + 5)
-     .text(`₹${formatCurrency(invoice.priceAfterDiscount || invoice.originalPrice)}`, 490, rowY + 5);
+     .text(`Rs. ${formatCurrency(invoice.originalPrice || invoice.priceAfterDiscount)}`, 400, rowY + 5)
+     .text(`Rs. ${formatCurrency(invoice.priceAfterDiscount || invoice.originalPrice)}`, 490, rowY + 5);
 
   // Table Border
   doc.rect(50, tableY, 512, 60)
@@ -203,7 +203,7 @@ export const generateInvoicePDF = (invoice, res) => {
      .text('Subtotal:', summaryX + 15, currentY);
   doc.font('Helvetica')
      .fillColor(textDark)
-     .text(`₹${formatCurrency(invoice.priceAfterDiscount || invoice.originalPrice)}`, summaryX + summaryWidth - 75, currentY);
+     .text(`Rs. ${formatCurrency(invoice.priceAfterDiscount || invoice.originalPrice)}`, summaryX + 80, currentY, { align: 'right', width: summaryWidth - 95 });
   
   currentY += 18;
 
@@ -211,7 +211,7 @@ export const generateInvoicePDF = (invoice, res) => {
   if (invoice.discountAmount && invoice.discountAmount > 0) {
     doc.fillColor('#10B981')
        .text(`Discount (${invoice.discountPercent}%):`, summaryX + 15, currentY);
-    doc.text(`-₹${formatCurrency(invoice.discountAmount)}`, summaryX + summaryWidth - 75, currentY);
+    doc.text(`-Rs. ${formatCurrency(invoice.discountAmount)}`, summaryX + 80, currentY, { align: 'right', width: summaryWidth - 95 });
     currentY += 18;
   }
 
@@ -220,7 +220,7 @@ export const generateInvoicePDF = (invoice, res) => {
   doc.fillColor(textMuted)
      .text(`GST (${gstPercent}%):`, summaryX + 15, currentY);
   doc.fillColor(textDark)
-     .text(`₹${formatCurrency(invoice.gstAmount || 0)}`, summaryX + summaryWidth - 75, currentY);
+     .text(`Rs. ${formatCurrency(invoice.gstAmount || 0)}`, summaryX + 80, currentY, { align: 'right', width: summaryWidth - 95 });
   
   currentY += 18;
 
@@ -229,7 +229,7 @@ export const generateInvoicePDF = (invoice, res) => {
   doc.fillColor(textMuted)
      .text(`Platform Fee (${platformPercent}%):`, summaryX + 15, currentY);
   doc.fillColor(textDark)
-     .text(`₹${formatCurrency(invoice.platformFee || 0)}`, summaryX + summaryWidth - 75, currentY);
+     .text(`Rs. ${formatCurrency(invoice.platformFee || 0)}`, summaryX + 80, currentY, { align: 'right', width: summaryWidth - 95 });
   
   currentY += 20;
 
@@ -245,7 +245,7 @@ export const generateInvoicePDF = (invoice, res) => {
      .fontSize(11)
      .fillColor(primaryColor)
      .text('TOTAL PAID:', summaryX + 15, currentY);
-  doc.text(`₹${formatCurrency(invoice.totalAmount || 0)}`, summaryX + summaryWidth - 75, currentY);
+  doc.text(`Rs. ${formatCurrency(invoice.totalAmount || 0)}`, summaryX + 80, currentY, { align: 'right', width: summaryWidth - 95 });
 
   // ========== PAYMENT STATUS BADGE ==========
   doc.rect(50, summaryY, 120, 35)
@@ -254,7 +254,7 @@ export const generateInvoicePDF = (invoice, res) => {
   doc.font('Helvetica-Bold')
      .fontSize(12)
      .fillColor('#059669')
-     .text('✓ PAID', 75, summaryY + 12);
+     .text('PAID', 90, summaryY + 12);
 
   // Transaction ID
   doc.font('Helvetica')
