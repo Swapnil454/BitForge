@@ -22,6 +22,7 @@ interface MonthlyPoint {
 type KPIProps = {
   title: string,
   value: string | number,
+  compact?: boolean,
 }
 
 type GlassProps = {
@@ -37,12 +38,24 @@ type MenuItemProps = {
   badge?: number ,
 }
 
-export function KPI({ title, value }: KPIProps) {
+export function KPI({ title, value, compact = false }: KPIProps) {
   return (
-    <div className="group bg-linear-to-br from-white/10 via-white/5 to-transparent border border-white/20 hover:border-white/30 rounded-2xl p-5 shadow-lg hover:shadow-xl hover:shadow-purple-500/20 transition-all duration-300 hover:scale-105 hover:-translate-y-1">
-      <p className="text-sm font-semibold text-white/70 group-hover:text-white/90 transition-colors">{title}</p>
-      <p className="text-3xl font-black mt-2 bg-linear-to-r from-white to-white/80 bg-clip-text text-transparent group-hover:from-purple-300 group-hover:to-blue-300 transition-all">{value}</p>
-      <div className="mt-3 h-1 w-0 group-hover:w-full bg-linear-to-r from-purple-500 to-blue-500 rounded-full transition-all duration-300"></div>
+    <div
+      className={`group bg-linear-to-br from-white/10 via-white/5 to-transparent border border-white/20 hover:border-white/30 rounded-2xl shadow-lg hover:shadow-xl hover:shadow-purple-500/20 transition-all duration-300 hover:scale-105 hover:-translate-y-1 ${
+        compact ? "p-3 md:p-3" : "p-5"
+      }`}
+    >
+      <p className={`${compact ? "text-[13px]" : "text-sm"} font-semibold text-white/70 group-hover:text-white/90 transition-colors`}>{title}</p>
+      <p
+        className={`font-black bg-linear-to-r from-white to-white/80 bg-clip-text text-transparent group-hover:from-purple-300 group-hover:to-blue-300 transition-all ${
+          compact ? "text-[1.95rem] leading-none mt-1" : "text-3xl mt-2"
+        }`}
+      >
+        {value}
+      </p>
+      {!compact && (
+        <div className="mt-3 h-1 w-0 group-hover:w-full bg-linear-to-r from-purple-500 to-blue-500 rounded-full transition-all duration-300"></div>
+      )}
     </div>
   );
 };

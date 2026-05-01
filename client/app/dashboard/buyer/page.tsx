@@ -374,13 +374,13 @@ export default function BuyerDashboard() {
       </header>
 
       {/* ================= CONTENT ================= */}
-      <section className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+      <section className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Browse Marketplace - Top Banner */}
         <motion.button
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           onClick={() => router.push("/marketplace")}
-          className="w-full group relative overflow-hidden bg-linear-to-r from-purple-600/30 via-blue-600/30 to-indigo-600/30 hover:from-purple-600/40 hover:via-blue-600/40 hover:to-indigo-600/40 border-2 border-purple-500/50 hover:border-purple-400/70 rounded-2xl p-6 md:p-8 transition-all duration-300 hover:scale-[1.02] shadow-lg hover:shadow-2xl hover:shadow-purple-500/30"
+          className="w-full group relative overflow-hidden bg-linear-to-r from-purple-600/30 via-blue-600/30 to-indigo-600/30 hover:from-purple-600/40 hover:via-blue-600/40 hover:to-indigo-600/40 border-2 border-purple-500/50 hover:border-purple-400/70 rounded-2xl p-5 md:p-6 transition-all duration-300 hover:scale-[1.02] shadow-lg hover:shadow-2xl hover:shadow-purple-500/30"
         >
           <div className="absolute inset-0 bg-linear-to-r from-purple-500/0 via-purple-500/10 to-purple-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative flex items-center justify-between">
@@ -401,35 +401,35 @@ export default function BuyerDashboard() {
         </motion.button>
 
         {/* KPIs */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <button
             onClick={() => router.push("/dashboard/buyer/transactions")}
             className="text-left"
           >
-            <KPI title="Total Spent" value={stats ? `₹${stats.totalSpent.toLocaleString()}` : "₹0"} />
+            <KPI compact title="Total Spent" value={stats ? `₹${stats.totalSpent.toLocaleString()}` : "₹0"} />
           </button>
           <button
             onClick={() => router.push("/dashboard/buyer/purchases")}
             className="text-left"
           >
-            <KPI title="Purchases" value={stats ? stats.totalPurchases : "0"} />
+            <KPI compact title="Purchases" value={stats ? stats.totalPurchases : "0"} />
           </button>
           <button
             onClick={() => router.push("/dashboard/buyer/downloads")}
             className="text-left"
           >
-            <KPI title="Downloads" value={stats ? stats.downloads : "0"} />
+            <KPI compact title="Downloads" value={stats ? stats.downloads : "0"} />
           </button>
           <button
             onClick={() => router.push("/wishlist")}
             className="text-left"
           >
-            <KPI title="Wishlist" value={wishlistCount} />
+            <KPI compact title="Wishlist" value={wishlistCount} />
           </button>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <DashboardActionCard
             variant="buyer"
             title="My Purchases"
@@ -485,19 +485,19 @@ export default function BuyerDashboard() {
             hoverTextColor="text-rose-200"
           />
 
-          {/* <DashboardActionCard
+          <DashboardActionCard
             variant="buyer"
-            title="Write Reviews"
-            description="Rate your purchases"
-            icon="⭐"
-            href="/dashboard/buyer/purchases"
-            gradientFrom="from-yellow-600/20"
-            gradientTo="to-orange-600/20"
-            borderColor="border-yellow-500/40"
-            hoverBorderColor="border-yellow-400/60"
-            hoverShadow="hover:shadow-yellow-500/30"
-            hoverTextColor="text-yellow-200"
-          /> */}
+            title="Wishlist"
+            description={`${wishlistCount} item${wishlistCount !== 1 ? "s" : ""} saved`}
+            icon={<Heart className="h-8 w-8 md:h-9 md:w-9 text-fuchsia-200" strokeWidth={2} />}
+            href="/wishlist"
+            gradientFrom="from-fuchsia-600/20"
+            gradientTo="to-pink-600/20"
+            borderColor="border-fuchsia-500/40"
+            hoverBorderColor="border-fuchsia-400/60"
+            hoverShadow="hover:shadow-fuchsia-500/30"
+            hoverTextColor="text-fuchsia-200"
+          />
 
         </div>
 
