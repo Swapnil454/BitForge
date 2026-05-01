@@ -392,8 +392,14 @@ export const buyerAPI = {
         return response.data;
     },
 
-    getAllTransactions: async () => {
-        const response = await api.get('/buyer/transactions');
+    getAllTransactions: async (params?: {
+        page?: number;
+        limit?: number;
+        status?: "all" | "paid" | "created" | "failed";
+        sortBy?: "newest" | "oldest";
+        search?: string;
+    }) => {
+        const response = await api.get('/buyer/transactions', { params });
         return response.data;
     },
 
@@ -402,8 +408,13 @@ export const buyerAPI = {
         return response.data;
     },
 
-    getAllPurchases: async () => {
-        const response = await api.get('/buyer/purchases');
+    getAllPurchases: async (params?: {
+        page?: number;
+        limit?: number;
+        sortBy?: "newest" | "oldest";
+        search?: string;
+    }) => {
+        const response = await api.get('/buyer/purchases', { params });
         return response.data;
     },
 
