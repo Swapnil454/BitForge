@@ -15,6 +15,20 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
+import {
+  BarChart3,
+  CircleHelp,
+  ClipboardList,
+  Heart,
+  LogOut,
+  Package,
+  Scale,
+  Settings,
+  ShoppingCart,
+  TrendingUp,
+  UserRound,
+  Wallet,
+} from "lucide-react";
 import { clearAuthStorage, getStoredUser, setCookie, getCookie } from "@/lib/cookies";
 import { notificationAPI, userAPI } from "@/lib/api";
 import { useBuyerDashboard, useInvalidateBuyerCache, buyerQueryKeys } from "@/lib/hooks/useBuyerDashboard";
@@ -24,7 +38,6 @@ import toast from "react-hot-toast";
 import ProfileModal from "../components/ProfileModal";
 import SettingsModal from "../components/SettingModal";
 import PurchasesModal from "./components/PurchasesModal";
-import DownloadsModal from "./components/DownloadsModal";
 import { KPI, Glass, MenuItem } from "../components/Cards";
 import DashboardActionCard from "../components/DashboardActionCard";
 import NotificationDropdown from "../components/notifications/NotificationDropdown";
@@ -59,7 +72,6 @@ export default function BuyerDashboard() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showPurchasesModal, setShowPurchasesModal] = useState(false);
-  const [showDownloadsModal, setShowDownloadsModal] = useState(false);
 
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -278,7 +290,7 @@ export default function BuyerDashboard() {
               className="relative h-10 w-10 md:h-11 md:w-11 rounded-xl bg-linear-to-br from-white/10 to-white/5 border border-white/20 hover:border-purple-500/50 hover:from-purple-500/20 hover:to-purple-600/20 grid place-items-center transition-all duration-300 group hover:scale-105 shadow-lg hover:shadow-purple-500/50"
               title="View cart"
             >
-              <span className="text-lg group-hover:scale-110 transition-transform">🛒</span>
+              <ShoppingCart className="h-5 w-5 text-white group-hover:scale-110 group-hover:text-purple-200 transition-all" />
               {cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-linear-to-r from-purple-500 to-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg shadow-purple-500/50 animate-pulse">
                   {cartCount > 9 ? '9+' : cartCount}
@@ -328,12 +340,12 @@ export default function BuyerDashboard() {
                     </div>
                     <MenuItem 
                       label="Profile" 
-                      icon="👤"
+                      icon={<UserRound className="h-4 w-4" />}
                       onClick={() => { setShowProfileModal(true); setProfileOpen(false); }} 
                     />
                     <MenuItem 
                       label="Wishlist" 
-                      icon="❤️"
+                      icon={<Heart className="h-4 w-4" />}
                       badge={wishlistCount > 0 ? wishlistCount : undefined}
                       onClick={() => { 
                         router.push("/wishlist"); 
@@ -342,17 +354,17 @@ export default function BuyerDashboard() {
                     />
                     <MenuItem 
                       label="Settings" 
-                      icon="⚙️"
+                      icon={<Settings className="h-4 w-4" />}
                       onClick={() => { setShowSettingsModal(true); setProfileOpen(false); }} 
                     />
                     <MenuItem 
                       label="Help Center" 
-                      icon="❓"
+                      icon={<CircleHelp className="h-4 w-4" />}
                       badge={chatUnreadCount > 0 ? chatUnreadCount : undefined}
                       onClick={() => { router.push("/dashboard/buyer/help-center"); setProfileOpen(false); }} 
                     />
                     <div className="h-px bg-linear-to-r from-transparent via-indigo-500/20 to-transparent" />
-                    <MenuItem label="Logout" icon="🚪" danger onClick={logout} />
+                    <MenuItem label="Logout" icon={<LogOut className="h-4 w-4" />} danger onClick={logout} />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -403,7 +415,7 @@ export default function BuyerDashboard() {
             <KPI title="Purchases" value={stats ? stats.totalPurchases : "0"} />
           </button>
           <button
-            onClick={() => setShowDownloadsModal(true)}
+            onClick={() => router.push("/dashboard/buyer/downloads")}
             className="text-left"
           >
             <KPI title="Downloads" value={stats ? stats.downloads : "0"} />
@@ -422,7 +434,7 @@ export default function BuyerDashboard() {
             variant="buyer"
             title="My Purchases"
             description="View order history"
-            icon="📦"
+            icon={<Package className="h-8 w-8 md:h-9 md:w-9 text-blue-200" strokeWidth={2} />}
             href="/dashboard/buyer/purchases"
             gradientFrom="from-blue-600/20"
             gradientTo="to-cyan-600/20"
@@ -443,7 +455,7 @@ export default function BuyerDashboard() {
             href="/cart"
             icon={
               <div className="flex items-center gap-1 md:gap-2">
-                🛒
+                <ShoppingCart className="h-8 w-8 md:h-9 md:w-9 text-emerald-200" strokeWidth={2} />
                 {cartCount > 0 && (
                   <span className="text-xs bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold shadow-lg">
                     {cartCount}
@@ -463,7 +475,7 @@ export default function BuyerDashboard() {
             variant="buyer"
             title="My Disputes"
             description="Track dispute status"
-            icon="⚖️"
+            icon={<Scale className="h-8 w-8 md:h-9 md:w-9 text-rose-200" strokeWidth={2} />}
             href="/dashboard/buyer/disputes"
             gradientFrom="from-rose-600/20"
             gradientTo="to-orange-600/20"
@@ -494,7 +506,7 @@ export default function BuyerDashboard() {
           onClick={() => router.push("/dashboard/buyer/orders")}
           className="w-full text-left group cursor-pointer"
         >
-          <Glass title="📋 Recent Orders">
+          <Glass title={<span className="inline-flex items-center gap-2"><ClipboardList className="h-4 w-4 text-cyan-300" /> Recent Orders</span>}>
             {stats && stats.recentOrders && stats.recentOrders.length > 0 ? (
               <div className="space-y-3">
                 {stats.recentOrders.slice(0, 2).map((o) => {
@@ -527,7 +539,9 @@ export default function BuyerDashboard() {
               </div>
             ) : (
               <div className="text-center py-6">
-                <div className="text-4xl mb-2">📋</div>
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-white/15 bg-white/5 mb-2">
+                  <ClipboardList className="h-6 w-6 text-cyan-300" />
+                </div>
                 <p className="text-white/60 text-sm mb-3">No orders yet</p>
                 <button
                   onClick={(e) => {
@@ -545,7 +559,7 @@ export default function BuyerDashboard() {
 
         {/* Charts - Moved to Bottom with Reordered Sequence */}
         <div className="grid md:grid-cols-2 gap-6">
-          <Glass title="📈 Purchases Per Month">
+          <Glass title={<span className="inline-flex items-center gap-2"><BarChart3 className="h-4 w-4 text-indigo-300" /> Purchases Per Month</span>}>
             <BarMetricChart
               data={spendingData}
               dataKey="amount"
@@ -553,7 +567,7 @@ export default function BuyerDashboard() {
             />
           </Glass>
 
-          <Glass title="💰 Spending Over Time" >
+          <Glass title={<span className="inline-flex items-center gap-2"><Wallet className="h-4 w-4 text-emerald-300" /> Spending Over Time</span>} >
             <AreaMetricChart
               data={spendingData}
               dataKey="amount"
@@ -585,12 +599,6 @@ export default function BuyerDashboard() {
         )}
       </AnimatePresence>
 
-      {/* Downloads Modal */}
-      <AnimatePresence>
-        {showDownloadsModal && (
-          <DownloadsModal onClose={() => setShowDownloadsModal(false)} />
-        )}
-      </AnimatePresence>
     </main>
   );
 }
@@ -647,7 +655,9 @@ function ChartArea({ data, keyName }: any) {
   if (!hasData) {
     return (
       <div style={{ height: "180px" }} className="flex flex-col items-center justify-center rounded-lg bg-linear-to-br from-cyan-500/5 to-blue-500/5 border border-cyan-500/10">
-        <div className="text-4xl mb-2">📊</div>
+        <div className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-cyan-400/20 bg-cyan-400/10 mb-2">
+          <BarChart3 className="h-5 w-5 text-cyan-300" />
+        </div>
         <p className="text-white/60 text-center text-sm">
           <span className="block font-semibold text-white mb-1">No spending yet</span>
           <span className="text-xs">Start exploring the marketplace</span>
@@ -694,7 +704,9 @@ function ChartBar({ data, keyName }: any) {
   if (!hasData) {
     return (
       <div style={{ height: "180px" }} className="flex flex-col items-center justify-center rounded-lg bg-linear-to-br from-indigo-500/5 to-purple-500/5 border border-indigo-500/10">
-        <div className="text-4xl mb-2">📈</div>
+        <div className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-indigo-400/20 bg-indigo-400/10 mb-2">
+          <TrendingUp className="h-5 w-5 text-indigo-300" />
+        </div>
         <p className="text-white/60 text-center text-sm">
           <span className="block font-semibold text-white mb-1">No purchases yet</span>
           <span className="text-xs">Your purchase history will appear here</span>

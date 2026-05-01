@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { buyerAPI } from "@/lib/api";
 import toast from "react-hot-toast";
+import { CheckCircle2, Package, ShoppingBag } from "lucide-react";
 
 export default function PurchasesModal({ onClose }: { onClose: () => void }) {
   const [purchases, setPurchases] = useState<any[]>([]);
@@ -48,7 +49,10 @@ export default function PurchasesModal({ onClose }: { onClose: () => void }) {
         className="bg-linear-to-br from-slate-900 to-slate-800 rounded-lg max-w-6xl w-full max-h-[80vh] overflow-y-auto shadow-xl border border-white/10 p-8"
       >
         <h2 className="text-3xl font-bold text-white mb-2 flex items-center gap-2">
-          <span>🛍️</span> My Purchases
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/15 bg-white/5">
+            <ShoppingBag className="h-4 w-4 text-cyan-300" />
+          </span>
+          My Purchases
         </h2>
         <p className="text-white/60 mb-6">All your purchased products</p>
 
@@ -84,7 +88,9 @@ export default function PurchasesModal({ onClose }: { onClose: () => void }) {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span className="text-6xl">📦</span>
+                    <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
+                      <Package className="h-8 w-8 text-blue-300" />
+                    </span>
                   )}
                 </div>
                 <div className="p-4">
@@ -98,7 +104,10 @@ export default function PurchasesModal({ onClose }: { onClose: () => void }) {
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-green-400 font-bold text-xl">₹{purchase.amount.toLocaleString()}</span>
                     <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-semibold border border-green-500/30">
-                      ✅ Paid
+                      <span className="inline-flex items-center gap-1">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        Paid
+                      </span>
                     </span>
                   </div>
                   <button

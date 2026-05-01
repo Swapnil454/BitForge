@@ -11,6 +11,7 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
+import { BarChart3, TrendingDown } from "lucide-react";
 
 interface MonthlyPoint {
   month: string;
@@ -64,7 +65,11 @@ export function MenuItem({ label, danger, onClick, icon, badge }: MenuItemProps)
     >
       <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       <div className="relative flex items-center gap-3">
-        {icon && <span className="text-lg group-hover:scale-110 transition-transform duration-200">{icon}</span>}
+        {icon && (
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/90 group-hover:scale-110 group-hover:border-white/20 group-hover:bg-white/10 transition-all duration-200">
+            {icon}
+          </span>
+        )}
         <span className="font-medium group-hover:font-semibold transition-all">{label}</span>
       </div>
       {badge !== undefined && badge > 0 && (
@@ -98,7 +103,9 @@ export function ChartArea({ data }: { data: MonthlyPoint[] }) {
         </ResponsiveContainer>
       ) : (
         <div className="text-center w-full text-cyan-300/70 text-xs md:text-sm select-none">
-          <span className="text-2xl block mb-1">📉</span>
+          <span className="mx-auto mb-1 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-cyan-300/30 bg-cyan-400/10">
+            <TrendingDown className="h-4 w-4 text-cyan-300" />
+          </span>
           No revenue data to display
         </div>
       )}
@@ -128,7 +135,9 @@ export function ChartBar({ data }: { data: MonthlyPoint[] }) {
         </ResponsiveContainer>
       ) : (
         <div className="text-center w-full text-indigo-300/70 text-xs md:text-sm select-none">
-          <span className="text-2xl block mb-1">📊</span>
+          <span className="mx-auto mb-1 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-300/30 bg-indigo-400/10">
+            <BarChart3 className="h-4 w-4 text-indigo-300" />
+          </span>
           No sales data to display
         </div>
       )}

@@ -2,6 +2,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { ClipboardList } from "lucide-react";
 
 export default function RecentOrdersModal({ 
   orders, 
@@ -28,7 +29,10 @@ export default function RecentOrdersModal({
         className="bg-linear-to-br from-slate-900 to-slate-800 rounded-lg max-w-2xl w-full shadow-xl border border-white/10 p-8"
       >
         <h2 className="text-3xl font-bold text-white mb-2 flex items-center gap-2">
-          <span>📋</span> Recent Orders
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/15 bg-white/5">
+            <ClipboardList className="h-4 w-4 text-cyan-300" />
+          </span>
+          Recent Orders
         </h2>
         <p className="text-white/60 mb-6">Your latest order activity</p>
 
