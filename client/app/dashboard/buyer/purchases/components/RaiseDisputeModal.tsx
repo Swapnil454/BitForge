@@ -343,7 +343,7 @@ type ContentProps = {
   files: UploadedFile[]; addFiles: (f: FileList | File[]) => void; removeFile: (i: number) => void;
   errors: { category?: string; description?: string; files?: string };
   dragging: boolean; setDragging: (v: boolean) => void;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   orderNumber: string; productName: string;
   handleClose: () => void; handleSubmit: () => void;
 };
