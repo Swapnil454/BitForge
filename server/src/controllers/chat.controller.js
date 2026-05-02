@@ -16,13 +16,14 @@ export const getSupportThread = async (req, res) => {
       return res.status(403).json({ message: "Unsupported role" });
     }
 
-    const messages = await ChatMessage.find({
-      $or: [
-        { from: user._id, toRole: "admin" },
-        { to: user._id, fromRole: "admin" },
-      ],
-      deletedFor: { $ne: user._id }
-    })
+      const messages = await ChatMessage.find({
+        $or: [
+          { from: user._id, toRole: "admin" },
+          { to: user._id, fromRole: "admin" },
+        ],
+        deletedFor: { $ne: user._id },
+        status: { $ne: "placeholderDeleted" },
+      })
       .sort("createdAt")
       .populate("from", "name role")
       .populate("to", "name role");
@@ -176,13 +177,14 @@ export const adminGetThread = async (req, res) => {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    const messages = await ChatMessage.find({
-      $or: [
-        { from: userId, toRole: "admin" },
-        { to: userId, fromRole: "admin" },
-      ],
-      deletedFor: { $ne: admin._id }
-    })
+      const messages = await ChatMessage.find({
+        $or: [
+          { from: userId, toRole: "admin" },
+          { to: userId, fromRole: "admin" },
+        ],
+        deletedFor: { $ne: admin._id },
+        status: { $ne: "placeholderDeleted" },
+      })
       .sort("createdAt")
       .populate("from", "name role")
       .populate("to", "name role");
@@ -328,11 +330,81 @@ export const adminDeleteMessages = async (req, res) => {
       return res.status(400).json({ message: "messageIds array is required" });
     }
 
-    await ChatMessage.deleteMany({
+    const messages = await ChatMessage.find({
       _id: { $in: messageIds },
-    });
+    }).select("_id from to status isDeleted");
 
-    return res.json({ message: "Messages deleted" });
+    const getCurrentStatus = (message) => {
+      if (message.status) return message.status;
+      return message.isDeleted ? "deleted" : "active";
+    };
+
+    const deletedIds = messages
+      .filter((message) => getCurrentStatus(message) === "active")
+      .map((message) => String(message._id));
+    const placeholderDeletedIds = messages
+      .filter((message) => getCurrentStatus(message) === "deleted")
+      .map((message) => String(message._id));
+
+    if (deletedIds.length > 0) {
+      await ChatMessage.updateMany(
+        { _id: { $in: deletedIds } },
+        {
+          $set: {
+            status: "deleted",
+            isDeleted: true,
+          },
+        }
+      );
+    }
+
+    if (placeholderDeletedIds.length > 0) {
+      await ChatMessage.updateMany(
+        { _id: { $in: placeholderDeletedIds } },
+        {
+          $set: {
+            status: "placeholderDeleted",
+            isDeleted: true,
+          },
+        }
+      );
+    }
+
+    try {
+      const io = getIO();
+      if (messages.length > 0) {
+        const participantIds = new Set();
+        messages.forEach((message) => {
+          participantIds.add(String(message.from));
+          participantIds.add(String(message.to));
+        });
+
+        let room = io;
+        participantIds.forEach((participantId) => {
+          room = room.to(participantId);
+        });
+        room.emit("chat:messages-status-updated", [
+          ...deletedIds.map((_id) => ({ _id, status: "deleted" })),
+          ...placeholderDeletedIds.map((_id) => ({
+            _id,
+            status: "placeholderDeleted",
+          })),
+        ]);
+      }
+    } catch (err) {
+      console.error("adminDeleteMessages socket emit error", err);
+    }
+
+    return res.json({
+      message: "Messages deleted",
+      updates: [
+        ...deletedIds.map((_id) => ({ _id, status: "deleted" })),
+        ...placeholderDeletedIds.map((_id) => ({
+          _id,
+          status: "placeholderDeleted",
+        })),
+      ],
+    });
   } catch (err) {
     console.error("adminDeleteMessages error", err);
     return res.status(500).json({ message: "Failed to delete messages" });
@@ -425,28 +497,81 @@ export const deleteMessages = async (req, res) => {
       return res.status(400).json({ message: "messageIds array is required" });
     }
 
-    // Soft delete: "Delete for me". Add user to deletedFor array.
-    await ChatMessage.updateMany(
-      { _id: { $in: messageIds } },
-      { $addToSet: { deletedFor: user._id } }
-    );
+    const messages = await ChatMessage.find({
+      _id: { $in: messageIds },
+    }).select("_id from to status isDeleted");
 
-    // Broadcast delete event
+    const getCurrentStatus = (message) => {
+      if (message.status) return message.status;
+      return message.isDeleted ? "deleted" : "active";
+    };
+
+    const deletedIds = messages
+      .filter((message) => getCurrentStatus(message) === "active")
+      .map((message) => String(message._id));
+    const placeholderDeletedIds = messages
+      .filter((message) => getCurrentStatus(message) === "deleted")
+      .map((message) => String(message._id));
+
+    if (deletedIds.length > 0) {
+      await ChatMessage.updateMany(
+        { _id: { $in: deletedIds } },
+        {
+          $set: {
+            status: "deleted",
+            isDeleted: true,
+          },
+        }
+      );
+    }
+
+    if (placeholderDeletedIds.length > 0) {
+      await ChatMessage.updateMany(
+        { _id: { $in: placeholderDeletedIds } },
+        {
+          $set: {
+            status: "placeholderDeleted",
+            isDeleted: true,
+          },
+        }
+      );
+    }
+
     try {
       const io = getIO();
-      const messages = await ChatMessage.find({ _id: { $in: messageIds } });
       if (messages.length > 0) {
-        // Send to participants
-        const fromId = String(messages[0].from);
-        const toId = String(messages[0].to);
-        // We emit the standard delete event. Frontend will filter these IDs.
-        io.to(fromId).to(toId).emit("chat:messages-deleted", messageIds);
+        const participantIds = new Set();
+        messages.forEach((message) => {
+          participantIds.add(String(message.from));
+          participantIds.add(String(message.to));
+        });
+
+        let room = io;
+        participantIds.forEach((participantId) => {
+          room = room.to(participantId);
+        });
+        room.emit("chat:messages-status-updated", [
+          ...deletedIds.map((_id) => ({ _id, status: "deleted" })),
+          ...placeholderDeletedIds.map((_id) => ({
+            _id,
+            status: "placeholderDeleted",
+          })),
+        ]);
       }
     } catch (err) {
       console.error("deleteMessages socket emit error", err);
     }
 
-    return res.json({ message: "Messages deleted" });
+    return res.json({
+      message: "Messages deleted",
+      updates: [
+        ...deletedIds.map((_id) => ({ _id, status: "deleted" })),
+        ...placeholderDeletedIds.map((_id) => ({
+          _id,
+          status: "placeholderDeleted",
+        })),
+      ],
+    });
   } catch (err) {
     console.error("deleteMessages error", err);
     return res.status(500).json({ message: "Failed to delete messages" });

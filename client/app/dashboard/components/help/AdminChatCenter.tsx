@@ -43,6 +43,7 @@ interface ChatMessage {
   message: string;
   createdAt: string;
   isDeleted?: boolean;
+  status?: "active" | "deleted" | "placeholderDeleted";
   attachments?: ChatAttachment[];
   from: {
     _id: string;
@@ -54,6 +55,13 @@ interface ChatMessage {
     name: string;
     role: "buyer" | "seller" | "admin";
   };
+}
+
+interface DeleteMessagesResponse {
+  updates?: Array<{
+    _id: string;
+    status: "deleted" | "placeholderDeleted";
+  }>;
 }
 
 const handleDownload = async (url: string, filename: string, e?: React.MouseEvent) => {
@@ -159,6 +167,26 @@ export default function AdminChatCenter() {
 
   const handleMessagesScroll = () => {
     shouldAutoScrollRef.current = isNearBottom();
+  };
+
+  const applyStatusUpdates = (
+    updates: Array<{ _id: string; status: "deleted" | "placeholderDeleted" }> = []
+  ) => {
+    const updatesMap = new Map(updates.map((update) => [update._id, update.status]));
+    setMessages((prev) =>
+      prev
+        .filter((m) => updatesMap.get(m._id) !== "placeholderDeleted")
+        .map((m) =>
+          updatesMap.has(m._id)
+            ? { ...m, isDeleted: true, status: updatesMap.get(m._id) }
+            : m
+        )
+    );
+  };
+
+  const getMessageStatus = (message: ChatMessage) => {
+    if (message.status) return message.status;
+    return message.isDeleted ? "deleted" : "active";
   };
 
   const handleAttachmentLoad = () => {
@@ -315,10 +343,8 @@ export default function AdminChatCenter() {
       }
     });
 
-    socket.on("chat:messages-deleted", (deletedIds: string[]) => {
-      setMessages((prev) => 
-        prev.filter(m => !deletedIds.includes(m._id))
-      );
+    socket.on("chat:messages-status-updated", (updates: DeleteMessagesResponse["updates"]) => {
+      applyStatusUpdates(updates || []);
     });
 
     socket.on("connect_error", (err) => {
@@ -417,9 +443,10 @@ export default function AdminChatCenter() {
 
   const handleDeleteSelected = async () => {
     if (!selectedUserId || selectedMessageIds.length === 0) return;
+
     try {
-      await chatAPI.deleteMessages(selectedMessageIds);
-      setMessages((prev) => prev.filter((m) => !selectedMessageIds.includes(m._id)));
+      const data = (await chatAPI.adminDeleteMessages(selectedMessageIds)) as DeleteMessagesResponse;
+      applyStatusUpdates(data.updates || []);
       setSelectedMessageIds([]);
       toast.success("Selected messages deleted");
       loadConversations();
@@ -738,6 +765,7 @@ export default function AdminChatCenter() {
                 messages.map((m) => {
                   const isFromAdmin = m.from.role === "admin";
                   const isSelected = selectedMessageIds.includes(m._id);
+                  const messageStatus = getMessageStatus(m);
                   
                   return (
                     <div 
@@ -771,7 +799,7 @@ export default function AdminChatCenter() {
                           </p>
                         )}
 
-                        {m.isDeleted ? (
+                        {messageStatus === "deleted" ? (
                           <p className="text-sm italic text-white/50 flex items-center gap-1">
                             🚫 This message was deleted
                           </p>

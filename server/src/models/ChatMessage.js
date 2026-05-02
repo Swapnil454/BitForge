@@ -34,6 +34,11 @@ const chatMessageSchema = new mongoose.Schema(
         name: { type: String, required: true },
       }
     ],
+    status: {
+      type: String,
+      enum: ["active", "deleted", "placeholderDeleted"],
+      default: "active",
+    },
     isDeleted: {
       type: Boolean,
       default: false

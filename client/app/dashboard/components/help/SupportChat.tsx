@@ -35,6 +35,7 @@ interface ChatMessage {
   message: string;
   createdAt: string;
   isDeleted?: boolean;
+  status?: "active" | "deleted" | "placeholderDeleted";
   attachments?: ChatAttachment[];
   from: {
     _id: string;
@@ -46,6 +47,13 @@ interface ChatMessage {
     name: string;
     role: "buyer" | "seller" | "admin";
   };
+}
+
+interface DeleteMessagesResponse {
+  updates?: Array<{
+    _id: string;
+    status: "deleted" | "placeholderDeleted";
+  }>;
 }
 
 interface SupportChatProps {
@@ -148,6 +156,26 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
     shouldAutoScrollRef.current = isNearBottom();
   };
 
+  const applyStatusUpdates = (
+    updates: Array<{ _id: string; status: "deleted" | "placeholderDeleted" }> = []
+  ) => {
+    const updatesMap = new Map(updates.map((update) => [update._id, update.status]));
+    setMessages((prev) =>
+      prev
+        .filter((m) => updatesMap.get(m._id) !== "placeholderDeleted")
+        .map((m) =>
+          updatesMap.has(m._id)
+            ? { ...m, isDeleted: true, status: updatesMap.get(m._id) }
+            : m
+        )
+    );
+  };
+
+  const getMessageStatus = (message: ChatMessage) => {
+    if (message.status) return message.status;
+    return message.isDeleted ? "deleted" : "active";
+  };
+
   const handleAttachmentLoad = () => {
     if (!shouldAutoScrollRef.current) return;
     settleScrollToBottom("auto");
@@ -217,10 +245,8 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
       }
     });
 
-    socket.on("chat:messages-deleted", (deletedIds: string[]) => {
-      setMessages((prev) => 
-        prev.filter(m => !deletedIds.includes(m._id))
-      );
+    socket.on("chat:messages-status-updated", (updates: DeleteMessagesResponse["updates"]) => {
+      applyStatusUpdates(updates || []);
     });
 
     socket.on("connect_error", (err) => {
@@ -304,9 +330,10 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
 
   const handleDeleteSelected = async () => {
     if (selectedMessages.length === 0) return;
+
     try {
-      await chatAPI.deleteMessages(selectedMessages);
-      setMessages(prev => prev.filter(m => !selectedMessages.includes(m._id)));
+      const data = (await chatAPI.deleteMessages(selectedMessages)) as DeleteMessagesResponse;
+      applyStatusUpdates(data.updates || []);
       setSelectedMessages([]);
       toast.success("Messages deleted");
     } catch {
@@ -456,6 +483,7 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
           messages.map((m) => {
             const isMine = m.from.role !== "admin";
             const isSelected = selectedMessages.includes(m._id);
+            const messageStatus = getMessageStatus(m);
             
             return (
               <div 
@@ -490,7 +518,7 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
                     </p>
                   )}
 
-                  {m.isDeleted ? (
+                  {messageStatus === "deleted" ? (
                     <p className="text-sm italic text-white/50 flex items-center gap-1">
                       🚫 This message was deleted
                     </p>
