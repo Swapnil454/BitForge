@@ -4,20 +4,55 @@ import Notification from "../models/Notification.js";
 export const getUserNotifications = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { limit = 10, skip = 0 } = req.query;
+    const DEFAULT_LIMIT = 20;
+    const MAX_LIMIT = 100;
+
+    const parsedLimit = Number.parseInt(req.query.limit, 10);
+    const limit = Number.isFinite(parsedLimit) && parsedLimit > 0
+      ? Math.min(parsedLimit, MAX_LIMIT)
+      : DEFAULT_LIMIT;
+
+    const hasPageParam = req.query.page !== undefined;
+    const parsedPage = Number.parseInt(req.query.page, 10);
+    let page = hasPageParam && Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+
+    const parsedSkip = Number.parseInt(req.query.skip, 10);
+    let skip = Number.isFinite(parsedSkip) && parsedSkip >= 0
+      ? parsedSkip
+      : (page - 1) * limit;
+
+    if (!hasPageParam) {
+      page = Math.floor(skip / limit) + 1;
+    }
+
+    const [total, unreadCount] = await Promise.all([
+      Notification.countDocuments({ userId }),
+      Notification.countDocuments({ userId, isRead: false }),
+    ]);
+
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    if (hasPageParam && page > totalPages) {
+      page = totalPages;
+      skip = (page - 1) * limit;
+    }
 
     const notifications = await Notification.find({ userId })
       .sort({ createdAt: -1 })
-      .limit(parseInt(limit))
-      .skip(parseInt(skip));
-
-    const total = await Notification.countDocuments({ userId });
-    const unreadCount = await Notification.countDocuments({ userId, isRead: false });
+      .limit(limit)
+      .skip(skip);
 
     res.json({
       notifications,
       total,
       unreadCount,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
     });
   } catch (error) {
     console.error("Error fetching notifications:", error);

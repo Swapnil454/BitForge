@@ -306,13 +306,23 @@ export const sellerAPI = {
         return response.data;
     },
     
-    getTransactions: async () => {
-        const response = await api.get('/seller/transactions');
+    getTransactions: async (params?: {
+        page?: number;
+        limit?: number;
+        status?: "all" | "completed" | "pending" | "cancelled";
+        search?: string;
+    }) => {
+        const response = await api.get('/seller/transactions', { params });
         return response.data;
     },
 
-    getAllSales: async () => {
-        const response = await api.get('/seller/sales');
+    getAllSales: async (params?: {
+        page?: number;
+        limit?: number;
+        status?: "all" | "paid" | "failed" | "created";
+        search?: string;
+    }) => {
+        const response = await api.get('/seller/sales', { params });
         return response.data;
     },
 
@@ -546,9 +556,23 @@ export const cartAPI = {
 };
 
 // Notification API functions
+type NotificationQueryOptions = {
+    limit?: number;
+    skip?: number;
+    page?: number;
+};
+
 export const notificationAPI = {
-    getNotifications: async (limit = 10, skip = 0) => {
-        const response = await api.get(`/notifications?limit=${limit}&skip=${skip}`);
+    getNotifications: async (
+        limitOrOptions: number | NotificationQueryOptions = 10,
+        skip = 0
+    ) => {
+        const params =
+            typeof limitOrOptions === "number"
+                ? { limit: limitOrOptions, skip }
+                : limitOrOptions;
+
+        const response = await api.get('/notifications', { params });
         return response.data;
     },
     

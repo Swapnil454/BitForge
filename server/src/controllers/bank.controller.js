@@ -58,7 +58,7 @@ export const addBankAccount = async (req, res) => {
       bankAccount: {
         id: newAccount._id,
         accountHolderName: newAccount.accountHolderName,
-        accountNumber: '****' + newAccount.accountNumber.slice(-4),
+        accountNumber: newAccount.accountNumber,
         ifscCode: newAccount.ifscCode,
         bankName: newAccount.bankName,
         branchName: newAccount.branchName,
@@ -90,7 +90,7 @@ export const getBankAccounts = async (req, res) => {
     const accounts = user.bankAccounts.map(acc => ({
       id: acc._id,
       accountHolderName: acc.accountHolderName,
-      accountNumber: '****' + acc.accountNumber.slice(-4),
+      accountNumber: acc.accountNumber,
       ifscCode: acc.ifscCode,
       bankName: acc.bankName,
       branchName: acc.branchName,
@@ -125,7 +125,7 @@ export const getPrimaryBankAccount = async (req, res) => {
     res.json({
       id: primaryAccount._id,
       accountHolderName: primaryAccount.accountHolderName,
-      accountNumber: '****' + primaryAccount.accountNumber.slice(-4),
+      accountNumber: primaryAccount.accountNumber,
       ifscCode: primaryAccount.ifscCode,
       bankName: primaryAccount.bankName,
       branchName: primaryAccount.branchName,
@@ -171,7 +171,7 @@ export const setPrimaryAccount = async (req, res) => {
       bankAccount: {
         id: account._id,
         accountHolderName: account.accountHolderName,
-        accountNumber: '****' + account.accountNumber.slice(-4),
+        accountNumber: account.accountNumber,
         isPrimary: account.isPrimary,
       }
     });
@@ -227,7 +227,7 @@ export const updateBankAccount = async (req, res) => {
       bankAccount: {
         id: account._id,
         accountHolderName: account.accountHolderName,
-        accountNumber: '****' + account.accountNumber.slice(-4),
+        accountNumber: account.accountNumber,
         ifscCode: account.ifscCode,
         bankName: account.bankName,
         branchName: account.branchName,

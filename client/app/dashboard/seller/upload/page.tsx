@@ -6,8 +6,16 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
+import {
+  Upload, Package, FileText, Image as ImageIcon, Tag,
+  Globe, FileType, Users, Hash, Pencil, Trash2,
+  CheckCircle, Clock, XCircle, ChevronLeft, Sparkles,
+  ScrollText, IndianRupee, Percent, MoreVertical
+} from "lucide-react";
+import PageHeader from "../../buyer/transactions/components/PageHeader";
 
 /* ================= CONSTANTS ================= */
 
@@ -29,6 +37,11 @@ interface Product {
   thumbnailKey?: string;
   thumbnailUrl?: string;
   createdAt: string;
+  language?: string;
+  format?: string;
+  intendedAudience?: string;
+  pageCount?: number;
+  category?: string;
 }
 
 /* ================= PAGE ================= */
@@ -53,6 +66,7 @@ export default function UploadAndProductsPage() {
   const [format, setFormat] = useState<string>("PDF");
   const [intendedAudience, setIntendedAudience] = useState<string>("All Levels");
   const [pageCount, setPageCount] = useState<number>(1);
+  const [category, setCategory] = useState<string>("eBook");
 
   const [products, setProducts] = useState<Product[]>([]);
 
@@ -67,6 +81,7 @@ export default function UploadAndProductsPage() {
   const [editDiscount, setEditDiscount] = useState<number>(0);
   const [editLanguage, setEditLanguage] = useState<string>("English");
   const [editFormat, setEditFormat] = useState<string>("PDF");
+  const [editCategory, setEditCategory] = useState<string>("eBook");
   const [editIntendedAudience, setEditIntendedAudience] = useState<string>("All Levels");
   const [editPageCount, setEditPageCount] = useState<number>(1);
   const [editFile, setEditFile] = useState<File | null>(null);
@@ -187,6 +202,7 @@ export default function UploadAndProductsPage() {
     formData.append("format", format);
     formData.append("intendedAudience", intendedAudience);
     formData.append("pageCount", String(pageCount));
+    formData.append("category", category);
     formData.append("file", file);
     if (thumbnail) {
       formData.append("thumbnail", thumbnail);
@@ -211,6 +227,7 @@ export default function UploadAndProductsPage() {
       setFormat("PDF");
       setIntendedAudience("All Levels");
       setPageCount(1);
+      setCategory("eBook");
       setAcceptedTerms(false);
     } catch (error: any) {
       console.error("Upload error:", error);
@@ -228,6 +245,7 @@ export default function UploadAndProductsPage() {
     setEditDiscount(product.discount);
     setEditLanguage((product as any).language || "English");
     setEditFormat((product as any).format || "PDF");
+    setEditCategory((product as any).category || "eBook");
     setEditIntendedAudience((product as any).intendedAudience || "All Levels");
     setEditPageCount((product as any).pageCount || 1);
     setEditFile(null);
@@ -337,6 +355,7 @@ export default function UploadAndProductsPage() {
       formData.append("discount", editDiscount.toString());
       formData.append("language", editLanguage);
       formData.append("format", editFormat);
+      formData.append("category", editCategory);
       formData.append("intendedAudience", editIntendedAudience);
       formData.append("pageCount", editPageCount.toString());
       if (editFile) {
@@ -388,25 +407,26 @@ export default function UploadAndProductsPage() {
   /* ================= UI CLASSES ================= */
 
   const inputClass =
-    "w-full rounded-xl bg-[#0b0b14] border border-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 transition";
+    "w-full rounded-xl bg-[#18181b] border border-[#27272a] px-4 py-3 text-sm text-white placeholder:text-zinc-500 hover:border-zinc-600 focus:bg-[#1f1f22] focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 transition-all shadow-sm";
 
   /* ================= RENDER ================= */
 
   return (
     <main className="min-h-screen bg-[#05050a] text-white">
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-12">
+      <PageHeader
+        backHref="/dashboard/seller"
+        backLabel="Dashboard"
+        title="Upload Product"
+        subtitle="Add new digital content for sale"
+      />
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 py-6 space-y-8">
 
-        {/* ================= UPLOAD ================= */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-          <h1 className="text-xl font-black">Upload Product</h1>
-          <p className="text-sm text-white/60 mb-6">
-            Add new digital content for sale
-          </p>
-
+        {/* ================= UPLOAD FORM ================= */}
+        <div className="w-full">
           {loading ? (
             <UploadSkeleton />
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <Field label="Title">
                 <input
                   name="title"
@@ -448,82 +468,54 @@ export default function UploadAndProductsPage() {
                 </Field>
               </div>
               
-              {/* Product Validation Fields */}
-              <div className="bg-purple-500/5 border border-purple-500/20 rounded-xl p-4 space-y-4">
-                <div className="flex items-center gap-2 text-xs text-purple-300 font-semibold">
-                  <span>📋</span>
-                  <span>Product Details (Required)</span>
-                </div>
-                
+              {/* Metadata Fields */}
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="Language">
-                    <select
-                      value={language}
-                      onChange={(e) => setLanguage(e.target.value)}
-                      className={inputClass}
-                      required
-                    >
-                      <option value="English">English</option>
-                      <option value="Hindi">Hindi</option>
-                      <option value="Spanish">Spanish</option>
-                      <option value="French">French</option>
-                      <option value="German">German</option>
-                      <option value="Chinese">Chinese</option>
-                      <option value="Other">Other</option>
-                    </select>
+                    <CustomSelect 
+                      value={language} 
+                      onChange={setLanguage} 
+                      options={["English", "Hindi", "Spanish", "French", "German", "Chinese", "Other"]} 
+                    />
                   </Field>
-
                   <Field label="Format">
-                    <select
-                      value={format}
-                      onChange={(e) => setFormat(e.target.value)}
-                      className={inputClass}
-                      required
-                    >
-                      <option value="PDF">PDF</option>
-                      <option value="EPUB">EPUB</option>
-                      <option value="ZIP">ZIP</option>
-                      <option value="DOCX">DOCX</option>
-                      <option value="Other">Other</option>
-                    </select>
+                    <CustomSelect 
+                      value={format} 
+                      onChange={setFormat} 
+                      options={["PDF", "EPUB", "ZIP", "DOCX", "Other"]} 
+                    />
+                  </Field>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Category">
+                    <CustomSelect 
+                      value={category} 
+                      onChange={setCategory} 
+                      options={["eBook", "Course", "Template", "Software", "Design Asset", "Other"]} 
+                    />
+                  </Field>
+                  <Field label="Intended Audience">
+                    <CustomSelect 
+                      value={intendedAudience} 
+                      onChange={setIntendedAudience} 
+                      options={["Beginner", "Intermediate", "Advanced", "All Levels"]} 
+                    />
                   </Field>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <Field label="Page Count">
-                    <input
-                      type="number"
-                      min="1"
-                      value={pageCount}
-                      onChange={(e) => setPageCount(+e.target.value)}
-                      placeholder="e.g., 50"
-                      className={inputClass}
-                      required
-                    />
-                  </Field>
-
-                  <Field label="Intended Audience">
-                    <select
-                      value={intendedAudience}
-                      onChange={(e) => setIntendedAudience(e.target.value)}
-                      className={inputClass}
-                      required
-                    >
-                      <option value="Beginner">Beginner</option>
-                      <option value="Intermediate">Intermediate</option>
-                      <option value="Advanced">Advanced</option>
-                      <option value="All Levels">All Levels</option>
-                    </select>
+                    <input type="number" min="1" value={pageCount} onChange={(e) => setPageCount(+e.target.value)}
+                      placeholder="e.g. 50" className={inputClass} required />
                   </Field>
                 </div>
-              </div>
 
               {/* FINAL PRICE BAR */}
-              <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm">
-                <span className="text-white/60">
+              <div className="flex items-center justify-between bg-[#18181b] border border-[#27272a] rounded-xl px-5 py-4 text-sm mt-2 shadow-sm">
+                <span className="text-zinc-400 font-medium">
                   Final price (after discount)
                 </span>
-                <span className="font-semibold text-cyan-400">
+                <span className="font-semibold text-white">
                   ₹{finalPrice || 0}
                 </span>
               </div>
@@ -537,19 +529,18 @@ export default function UploadAndProductsPage() {
                   className="
                     w-full text-sm text-white/70
                     file:mr-4 file:rounded-lg
-                    file:border-0 file:bg-cyan-500/20
-                    file:px-4 file:py-2
+                    file:border-0 file:bg-white/10
+                    file:px-4 file:py-2.5
                     file:text-sm file:font-medium
-                    file:text-cyan-300
-                    hover:file:bg-cyan-500/30
-                    cursor-pointer
+                    file:text-white
+                    hover:file:bg-white/20
+                    cursor-pointer transition-all
                   "
                 />
 
                 {file && (
-                  <div className="mt-2 text-xs text-white/60">
-                    📄 {file.name} •{" "}
-                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                  <div className="mt-2 text-xs text-white/60 flex items-center gap-2">
+                    <FileText className="w-3.5 h-3.5 text-cyan-400" /> {file.name} • {(file.size / 1024 / 1024).toFixed(2)} MB
                   </div>
                 )}
 
@@ -567,12 +558,12 @@ export default function UploadAndProductsPage() {
                   className="
                     w-full text-sm text-white/70
                     file:mr-4 file:rounded-lg
-                    file:border-0 file:bg-purple-500/20
-                    file:px-4 file:py-2
+                    file:border-0 file:bg-white/10
+                    file:px-4 file:py-2.5
                     file:text-sm file:font-medium
-                    file:text-purple-300
-                    hover:file:bg-purple-500/30
-                    cursor-pointer
+                    file:text-white
+                    hover:file:bg-white/20
+                    cursor-pointer transition-all
                   "
                 />
 
@@ -586,28 +577,24 @@ export default function UploadAndProductsPage() {
                     <button
                       type="button"
                       onClick={removeThumbnail}
-                      className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                      className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center"
                     >
-                      ✕
+                      <XCircle className="w-3 h-3" />
                     </button>
                   </div>
                 )}
               </Field>
 
-              {/* PREVIEW PDF - AUTOMATIC */}
-              <div className="rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/30 p-4">
+              <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-4">
                 <div className="flex items-start gap-3">
-                  <div className="text-2xl">✨</div>
+                  <div className="p-1.5 rounded-lg bg-indigo-500/15 text-indigo-300 shrink-0 mt-0.5">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
                   <div>
-                    <h4 className="font-semibold text-indigo-300 mb-1">Automatic Preview Generation</h4>
-                    <p className="text-xs text-white/70 leading-relaxed">
-                      <strong>No extra work needed!</strong> When you upload a PDF, our system automatically:
+                    <h4 className="font-semibold text-indigo-300 mb-1 text-sm">Automatic Preview Generation</h4>
+                    <p className="text-xs text-white/60 leading-relaxed">
+                      When you upload a PDF, our system automatically detects page count, generates watermarked previews, and adds locked placeholder pages.
                     </p>
-                    <ul className="text-xs text-white/60 mt-2 space-y-1 ml-4">
-                      <li>• Detects total page count</li>
-                      <li>• Generates watermarked preview pages based on document size</li>
-                      <li>• Adds locked placeholder pages</li>
-                    </ul>
                   </div>
                 </div>
               </div>
@@ -653,49 +640,36 @@ export default function UploadAndProductsPage() {
               </button>
 
               {submitted && (
-                <div className="text-xs text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 px-3 py-2 rounded-lg">
-                  ⏳ Pending admin approval
+                <div className="flex items-center gap-2 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-lg">
+                  <Clock className="w-3.5 h-3.5" /> Pending admin approval
                 </div>
               )}
             </form>
           )}
         </div>
 
-        {/* ================= PRODUCTS ================= */}
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-            <h2 className="text-lg font-black">My Products</h2>
-
-            {!loadingProducts && products.length > 0 && (
-              <div className="flex gap-2">
-                <input
-                  placeholder="Search products..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className={inputClass + " w-48"}
-                />
-
-                <select
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value as any)}
-                  className={inputClass}
-                >
-                  <option value="all">All</option>
-                  <option value="approved">Approved</option>
-                  <option value="pending">Pending</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-              </div>
-            )}
+        {/* ================= RECENT PRODUCTS ================= */}
+        <div className="pt-6">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-xl font-bold tracking-tight">Recent Products</h2>
           </div>
 
           {loadingProducts ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-5 animate-pulse">
-                  <div className="h-4 bg-white/10 rounded w-3/4 mb-2" />
-                  <div className="h-3 bg-white/10 rounded w-1/2 mb-4" />
-                  <div className="h-8 bg-white/10 rounded w-1/3" />
+                <div key={i} className="flex flex-col bg-[#0b0b14] border border-white/5 rounded-2xl overflow-hidden animate-pulse">
+                  <div className="w-full aspect-video bg-white/5" />
+                  <div className="p-5 flex flex-col flex-1 gap-3">
+                    <div className="h-4 bg-white/10 rounded-md w-3/4" />
+                    <div className="space-y-2 mt-1">
+                      <div className="h-2.5 bg-white/10 rounded-md w-full" />
+                      <div className="h-2.5 bg-white/10 rounded-md w-4/5" />
+                    </div>
+                    <div className="mt-auto pt-4 border-t border-white/5 flex items-end justify-between">
+                      <div className="h-6 bg-white/10 rounded-md w-1/3" />
+                      <div className="h-3 bg-white/10 rounded-md w-1/4" />
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -707,7 +681,7 @@ export default function UploadAndProductsPage() {
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <AnimatePresence>
-                {filteredProducts.map((p) => (
+                {filteredProducts.slice(0, 5).map((p) => (
                   <motion.div
                     key={p._id}
                     initial={{ opacity: 0, y: 20 }}
@@ -780,43 +754,42 @@ export default function UploadAndProductsPage() {
               </Field>
             </div>
             
-            {/* Product Details */}
-            <div className="bg-purple-500/5 border border-purple-500/20 rounded-xl p-3 space-y-3">
-              <div className="text-xs text-purple-300 font-semibold">Product Details</div>
-              
-              <div className="grid grid-cols-2 gap-3">
+            {/* Metadata Fields */}
+              <div className="grid grid-cols-2 gap-4">
                 <Field label="Language">
-                  <select
-                    value={editLanguage}
-                    onChange={(e) => setEditLanguage(e.target.value)}
-                    className={inputClass}
-                  >
-                    <option value="English">English</option>
-                    <option value="Hindi">Hindi</option>
-                    <option value="Spanish">Spanish</option>
-                    <option value="French">French</option>
-                    <option value="German">German</option>
-                    <option value="Chinese">Chinese</option>
-                    <option value="Other">Other</option>
-                  </select>
+                  <CustomSelect 
+                    value={editLanguage} 
+                    onChange={setEditLanguage} 
+                    options={["English", "Hindi", "Spanish", "French", "German", "Chinese", "Other"]} 
+                  />
                 </Field>
-
                 <Field label="Format">
-                  <select
-                    value={editFormat}
-                    onChange={(e) => setEditFormat(e.target.value)}
-                    className={inputClass}
-                  >
-                    <option value="PDF">PDF</option>
-                    <option value="EPUB">EPUB</option>
-                    <option value="ZIP">ZIP</option>
-                    <option value="DOCX">DOCX</option>
-                    <option value="Other">Other</option>
-                  </select>
+                  <CustomSelect 
+                    value={editFormat} 
+                    onChange={setEditFormat} 
+                    options={["PDF", "EPUB", "ZIP", "DOCX", "Other"]} 
+                  />
                 </Field>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="Category">
+                  <CustomSelect 
+                    value={editCategory} 
+                    onChange={setEditCategory} 
+                    options={["eBook", "Course", "Template", "Software", "Design Asset", "Other"]} 
+                  />
+                </Field>
+                <Field label="Intended Audience">
+                  <CustomSelect 
+                    value={editIntendedAudience} 
+                    onChange={setEditIntendedAudience} 
+                    options={["Beginner", "Intermediate", "Advanced", "All Levels"]} 
+                  />
+                </Field>
+              </div>
+
+              <div className="w-1/2 pr-2">
                 <Field label="Page Count">
                   <input
                     type="number"
@@ -826,41 +799,27 @@ export default function UploadAndProductsPage() {
                     className={inputClass}
                   />
                 </Field>
-
-                <Field label="Audience">
-                  <select
-                    value={editIntendedAudience}
-                    onChange={(e) => setEditIntendedAudience(e.target.value)}
-                    className={inputClass}
-                  >
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
-                    <option value="All Levels">All Levels</option>
-                  </select>
-                </Field>
               </div>
-            </div>
 
             <Field label="Update File (Optional)">
               <input
                 type="file"
                 onChange={handleEditFile}
                 className="
-                  w-full text-sm text-white/70
+                  w-full text-sm text-zinc-400
                   file:mr-4 file:rounded-lg
-                  file:border-0 file:bg-cyan-500/20
-                  file:px-4 file:py-2
+                  file:border-0 file:bg-[#27272a]
+                  file:px-4 file:py-2.5
                   file:text-sm file:font-medium
-                  file:text-cyan-300
-                  hover:file:bg-cyan-500/30
-                  cursor-pointer
+                  file:text-white
+                  hover:file:bg-[#3f3f46]
+                  cursor-pointer transition-all
                 "
               />
 
               {editFile && (
-                <div className="mt-2 text-xs text-white/60">
-                  📄 {editFile.name} • {(editFile.size / 1024 / 1024).toFixed(2)} MB
+                <div className="mt-2 text-xs text-white/60 flex items-center gap-2">
+                  <FileText className="w-3.5 h-3.5 text-cyan-400" /> {editFile.name} • {(editFile.size / 1024 / 1024).toFixed(2)} MB
                 </div>
               )}
 
@@ -974,93 +933,106 @@ function ProductCard({
   product, 
   onEdit,
   onDelete
-}: { 
+}: {
   product: Product;
   onEdit: (product: Product) => void;
   onDelete: (productId: string) => void;
 }) {
-  const displayPrice = product.discount 
+  const displayPrice = product.discount
     ? Math.max(product.price - (product.price * product.discount) / 100, 0)
     : product.price;
 
-  const canEdit = product.status !== "approved";
+  const statusConfig = {
+    approved: { label: "Approved", cls: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", icon: CheckCircle },
+    pending:  { label: "Pending",  cls: "bg-amber-500/10 text-amber-400 border-amber-500/20",   icon: Clock },
+    rejected: { label: "Rejected", cls: "bg-red-500/10 text-red-400 border-red-500/20",         icon: XCircle },
+  }[product.status];
+
+  const StatusIcon = statusConfig.icon;
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 transition">
-      {/* Thumbnail */}
+    <div className="rounded-xl border border-white/8 bg-[#0e1018] hover:bg-[#12141c] hover:border-white/15 transition-all overflow-hidden group">
       {product.thumbnailUrl && (
-        <div className="relative w-full h-40 bg-white/5">
-          <img
-            src={product.thumbnailUrl}
-            alt={product.title}
-            className="w-full h-full object-cover"
-          />
+        <div className="relative w-full h-36 bg-white/5 overflow-hidden">
+          <img src={product.thumbnailUrl} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         </div>
       )}
-      
-      <div className="p-5 space-y-3">
-        {/* Header with Status */}
-        <div className="flex justify-between items-start gap-2">
-          <div className="flex-1">
-            <h3 className="font-semibold text-white truncate">{product.title}</h3>
-            <p className="text-xs text-white/60 mt-1 line-clamp-2">{product.description}</p>
-          </div>
 
-          <span
-            className={`text-xs px-3 py-1 rounded-full border whitespace-nowrap
-              ${
-                product.status === "approved"
-                  ? "bg-green-500/10 text-green-400 border-green-500/20"
-                  : product.status === "pending"
-                  ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
-                  : "bg-red-500/10 text-red-400 border-red-500/20"
-              }`}
-          >
-            {product.status}
+      <div className="p-4 space-y-3">
+        {/* Title + Status */}
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-semibold text-white text-sm leading-tight line-clamp-2 flex-1">{product.title}</h3>
+          <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-full border whitespace-nowrap font-semibold ${statusConfig.cls}`}>
+            <StatusIcon className="w-2.5 h-2.5" /> {statusConfig.label}
           </span>
         </div>
 
-        {/* Price Info */}
-        <div className="space-y-1">
-          {product.discount > 0 ? (
-            <div className="flex items-center gap-2">
-              <p className="text-xs text-white/40 line-through">₹{product.price}</p>
-              <p className="text-sm font-semibold text-cyan-400">₹{displayPrice}</p>
-              <p className="text-xs bg-red-500/20 text-red-300 px-2 py-0.5 rounded">
-                -{product.discount}%
-              </p>
-            </div>
-          ) : (
-            <p className="text-sm font-semibold text-cyan-400">₹{product.price}</p>
+        {/* Description */}
+        <p className="text-xs text-white/45 line-clamp-2">{product.description}</p>
+
+        {/* Price row */}
+        <div className="flex items-center gap-2">
+          <span className="text-base font-bold text-cyan-300">₹{displayPrice.toLocaleString()}</span>
+          {product.discount > 0 && (
+            <>
+              <span className="text-xs text-white/35 line-through">₹{product.price}</span>
+              <span className="text-[10px] bg-red-500/15 text-red-300 px-1.5 py-0.5 rounded font-semibold">-{product.discount}%</span>
+            </>
           )}
         </div>
 
-        {/* Meta Info */}
-        <div className="text-xs text-white/50 pt-2 border-t border-white/10">
-          <p>Uploaded {new Date(product.createdAt).toLocaleDateString()}</p>
+        {/* Meta tags — inline chips */}
+        <div className="flex flex-wrap gap-1.5">
+          {product.category && (
+            <Chip icon={<Tag className="w-2.5 h-2.5" />} label={product.category} />
+          )}
+          {product.language && (
+            <Chip icon={<Globe className="w-2.5 h-2.5" />} label={product.language} />
+          )}
+          {product.format && (
+            <Chip icon={<FileType className="w-2.5 h-2.5" />} label={product.format} />
+          )}
+          {product.intendedAudience && (
+            <Chip icon={<Users className="w-2.5 h-2.5" />} label={product.intendedAudience} />
+          )}
+          {product.pageCount && product.pageCount > 1 && (
+            <Chip icon={<Hash className="w-2.5 h-2.5" />} label={`${product.pageCount} pages`} />
+          )}
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-2 pt-2">
-          {canEdit && (
+        {/* Footer: date + actions */}
+        <div className="flex items-center justify-between pt-2 border-t border-white/6">
+          <span className="text-[10px] text-white/30">{new Date(product.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+          <div className="flex gap-1.5">
+            {product.status !== "approved" && (
+              <button
+                onClick={() => onEdit(product)}
+                className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 bg-white/5 hover:bg-blue-500/20 text-white/60 hover:text-blue-300 border border-white/8 hover:border-blue-500/30 rounded-lg transition"
+              >
+                <Pencil className="w-3 h-3" /> Edit
+              </button>
+            )}
             <button
-              onClick={() => onEdit(product)}
-              className="flex-1 text-xs py-2 px-3 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 rounded-lg transition"
+              onClick={() => onDelete(product._id)}
+              className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 bg-white/5 hover:bg-red-500/20 text-white/60 hover:text-red-300 border border-white/8 hover:border-red-500/30 rounded-lg transition"
             >
-              ✏️ Edit
+              <Trash2 className="w-3 h-3" /> Delete
             </button>
-          )}
-          <button
-            onClick={() => onDelete(product._id)}
-            className="flex-1 text-xs py-2 px-3 bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 rounded-lg transition"
-          >
-            🗑️ Delete
-          </button>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
+function Chip({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 text-[10px] text-white/45 bg-white/5 border border-white/8 rounded-md px-1.5 py-0.5">
+      {icon} {label}
+    </span>
+  );
+}
+
 
 function UploadSkeleton() {
   return (
@@ -1073,6 +1045,68 @@ function UploadSkeleton() {
         <div className="h-10 bg-white/10 rounded" />
       </div>
       <div className="h-10 w-40 bg-white/10 rounded" />
+    </div>
+  );
+}
+
+function CustomSelect({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  options: string[];
+}) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = () => setOpen(false);
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [open]);
+
+  return (
+    <div className="relative" onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between rounded-xl bg-[#18181b] border border-[#27272a] px-4 py-3 text-sm text-white hover:border-zinc-600 focus:bg-[#1f1f22] focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 transition-all shadow-sm"
+      >
+        <span>{value}</span>
+        <ChevronLeft className={`w-4 h-4 text-white/40 transition-transform ${open ? 'rotate-90' : '-rotate-90'}`} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            transition={{ duration: 0.15 }}
+            className="absolute z-50 mt-2 w-full rounded-xl border border-[#27272a] bg-[#18181b] shadow-xl overflow-hidden"
+          >
+            <div className="max-h-56 overflow-y-auto p-1 custom-scrollbar">
+              {options.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => {
+                    onChange(opt);
+                    setOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                    value === opt ? "bg-[#27272a] text-white font-medium" : "text-zinc-400 hover:bg-[#27272a] hover:text-white"
+                  }`}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

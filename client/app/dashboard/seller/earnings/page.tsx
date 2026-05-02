@@ -8,6 +8,9 @@ import { useRouter } from "next/navigation";
 import { sellerAPI } from "@/lib/api";
 import toast from "react-hot-toast";
 import { getStoredUser } from "@/lib/cookies";
+import PageHeader from "../../buyer/transactions/components/PageHeader";
+import { Wallet, IndianRupee, ArrowUpRight, Clock, X, CheckCircle2 } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface EarningsData {
   totalEarnings: number;
@@ -101,115 +104,154 @@ export default function SellerEarningsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-      </div>
+      <main className="min-h-screen bg-[#05050a] text-white">
+        <PageHeader
+          backHref="/dashboard/seller"
+          backLabel="Dashboard"
+          title="Earnings & Withdrawals"
+        />
+        <section className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-28 bg-[#0b0b14] border border-white/5 rounded-2xl animate-pulse" />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="h-72 bg-[#0b0b14] border border-white/5 rounded-2xl animate-pulse" />
+            <div className="h-72 bg-[#0b0b14] border border-white/5 rounded-2xl animate-pulse" />
+          </div>
+        </section>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        <button
-          onClick={() => router.push("/dashboard/seller")}
-          className="text-purple-600 hover:text-purple-700 mb-4"
-        >
-          ← Back to Dashboard
-        </button>
+    <main className="min-h-screen bg-[#05050a] text-white">
+      <PageHeader
+        backHref="/dashboard/seller"
+        backLabel="Dashboard"
+        title="Earnings & Withdrawals"
+        subtitle="Manage your earnings and request payouts"
+      />
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Earnings & Withdrawals</h1>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-sm text-gray-600 mb-2">Total Earnings</p>
-            <p className="text-3xl font-bold text-gray-900">
-              ₹{data?.totalEarnings?.toLocaleString() || 0}
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        {/* STATS GRID */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} className="bg-[#12121a] border border-[#27272a] rounded-xl p-5 hover:border-zinc-500 transition-colors">
+            <p className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5 flex items-center gap-2">
+              <IndianRupee className="w-3.5 h-3.5 text-zinc-300" /> Total Earnings
             </p>
-          </div>
+            <p className="text-2xl font-black text-white">₹{data?.totalEarnings?.toLocaleString() || 0}</p>
+          </motion.div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-sm text-gray-600 mb-2">Withdrawn</p>
-            <p className="text-3xl font-bold text-orange-600">
-              ₹{data?.withdrawn?.toLocaleString() || 0}
+          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.1}} className="bg-[#12121a] border border-[#27272a] rounded-xl p-5 hover:border-orange-500/30 transition-colors">
+            <p className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5 flex items-center gap-2">
+              <ArrowUpRight className="w-3.5 h-3.5 text-orange-500" /> Withdrawn
             </p>
-          </div>
+            <p className="text-2xl font-black text-white">₹{data?.withdrawn?.toLocaleString() || 0}</p>
+          </motion.div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-sm text-gray-600 mb-2">Available Balance</p>
-            <p className="text-3xl font-bold text-green-600">
-              ₹{data?.availableBalance?.toLocaleString() || 0}
+          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.2}} className="bg-cyan-500/5 border border-cyan-500/20 rounded-xl p-5 hover:border-cyan-500/40 transition-colors shadow-[0_0_15px_rgba(6,182,212,0.05)]">
+            <p className="text-xs font-bold uppercase tracking-wider text-cyan-400/80 mb-1.5 flex items-center gap-2">
+              <Wallet className="w-3.5 h-3.5 text-cyan-400" /> Available Balance
             </p>
-          </div>
+            <p className="text-2xl font-black text-cyan-400">₹{data?.availableBalance?.toLocaleString() || 0}</p>
+          </motion.div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Request Withdrawal</h2>
-          
-          <div className="max-w-md">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Withdrawal Amount
-            </label>
-            <input
-              type="number"
-              placeholder="Enter amount"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              disabled={withdrawing}
-            />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* REQUEST WITHDRAWAL */}
+          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.3}} className="bg-[#0b0b14] border border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col">
+            <h2 className="text-xl font-bold text-white mb-6">Request Withdrawal</h2>
             
-            <p className="text-sm text-gray-500 mt-2">
-              Available: ₹{data?.availableBalance?.toLocaleString() || 0}
-            </p>
-
-            <button
-              onClick={handleWithdraw}
-              disabled={withdrawing}
-              className="mt-4 w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {withdrawing ? "Processing..." : "Request Withdrawal"}
-            </button>
-          </div>
-
-          {data?.pendingWithdrawals ? (
-            <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-800 mb-2">
-                You have ₹{data.pendingWithdrawals.toLocaleString()} in pending withdrawals
-              </p>
-            </div>
-          ) : null}
-        </div>
-
-        {data?.pendingPayouts && data.pendingPayouts.length > 0 && (
-          <div className="bg-white rounded-lg shadow p-6 mt-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Pending Withdrawal Requests</h2>
-            <div className="space-y-4">
-              {data.pendingPayouts.map((payout) => (
-                <div
-                  key={payout._id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
-                >
-                  <div>
-                    <p className="text-lg font-semibold text-gray-900">
-                      ₹{payout.amount.toLocaleString()}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Requested on {new Date(payout.requestedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleCancelPayout(payout._id)}
-                    disabled={cancelling === payout._id}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {cancelling === payout._id ? "Cancelling..." : "Cancel"}
-                  </button>
+            <div className="flex-1 flex flex-col justify-center">
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-zinc-400 mb-2">
+                    Withdrawal Amount (₹)
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Enter amount"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="w-full rounded-xl bg-[#18181b] border border-[#27272a] px-5 py-4 text-xl font-black text-white placeholder:text-zinc-600 placeholder:font-normal hover:border-zinc-600 focus:bg-[#1f1f22] focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all shadow-sm"
+                    disabled={withdrawing}
+                  />
                 </div>
-              ))}
+                
+                <div className="flex items-center justify-between text-sm px-1">
+                  <span className="text-zinc-500 font-medium">Available to withdraw:</span>
+                  <span className="font-bold text-cyan-400">₹{data?.availableBalance?.toLocaleString() || 0}</span>
+                </div>
+
+                <button
+                  onClick={handleWithdraw}
+                  disabled={withdrawing || !data?.availableBalance || data.availableBalance <= 0}
+                  className="w-full mt-2 flex justify-center items-center gap-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-[#05050a] px-6 py-3.5 text-base font-black transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_25px_rgba(6,182,212,0.5)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-cyan-500 disabled:hover:shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+                >
+                  <Wallet className="w-5 h-5" />
+                  {withdrawing ? "Processing..." : "Request Withdrawal"}
+                </button>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
-    </div>
+
+            {data?.pendingWithdrawals ? (
+              <div className="mt-8 flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                <Clock className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-bold tracking-wide text-amber-500">Pending Withdrawals</h4>
+                  <p className="text-sm text-amber-500/80 mt-1 leading-relaxed">
+                    You have <span className="font-bold text-amber-400">₹{data.pendingWithdrawals.toLocaleString()}</span> in pending withdrawals waiting for approval.
+                  </p>
+                </div>
+              </div>
+            ) : null}
+          </motion.div>
+
+          {/* PENDING PAYOUTS */}
+          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.4}} className="bg-[#0b0b14] border border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col">
+            <h2 className="text-xl font-bold text-white mb-6">Pending Requests</h2>
+            
+            {data?.pendingPayouts && data.pendingPayouts.length > 0 ? (
+              <div className="space-y-4 overflow-y-auto max-h-[400px] custom-scrollbar pr-2">
+                {data.pendingPayouts.map((payout) => (
+                  <div
+                    key={payout._id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-[#18181b] rounded-xl border border-[#27272a] hover:border-white/10 transition-colors group"
+                  >
+                    <div>
+                      <p className="text-2xl font-black text-white">
+                        ₹{payout.amount.toLocaleString()}
+                      </p>
+                      <p className="text-sm text-zinc-500 mt-1.5 flex items-center gap-1.5 font-medium">
+                        <Clock className="w-4 h-4 text-zinc-600" />
+                        Requested {new Date(payout.requestedAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleCancelPayout(payout._id)}
+                      disabled={cancelling === payout._id}
+                      className="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 border border-red-500/20 rounded-xl text-sm font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <X className="w-4 h-4" strokeWidth={3} />
+                      {cancelling === payout._id ? "Cancelling..." : "Cancel"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-[#27272a] rounded-2xl bg-[#18181b]/50">
+                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
+                  <CheckCircle2 className="w-8 h-8 text-zinc-500" />
+                </div>
+                <p className="text-lg text-zinc-300 font-bold">No pending requests</p>
+                <p className="text-sm text-zinc-500 mt-2 max-w-[250px]">Your withdrawal history is clear. Request a payout to see it here.</p>
+              </div>
+            )}
+          </motion.div>
+        </div>
+      </section>
+    </main>
   );
 }

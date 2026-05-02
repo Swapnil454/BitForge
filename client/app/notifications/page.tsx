@@ -6,48 +6,27 @@ import { notificationAPI } from "@/lib/api";
 import { getStoredUser } from "@/lib/cookies";
 import toast from "react-hot-toast";
 import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
-import { Bell, CheckCircle, Package, Info, AlertTriangle, Trash2, Check, CheckCheck } from "lucide-react";
+import { CheckCircle, Trash2, CheckCheck, ChevronLeft, ChevronRight, Bell, Package, Info, AlertTriangle, CircleDollarSign } from "lucide-react";
 
 interface Notification {
   _id: string;
   title: string;
   message: string;
   type: string;
-  icon: string;
   isRead: boolean;
   createdAt: string;
 }
 
 export default function NotificationsPage() {
+  const ITEMS_PER_PAGE = 20;
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalNotifications, setTotalNotifications] = useState(0);
   const router = useRouter();
-
-  const getNotificationIcon = (n: Notification, className: string) => {
-    const title = n.title?.toLowerCase() || '';
-    const type = n.type || '';
-    
-    if (title.includes('purchase') || title.includes('order') || type === 'order_completed' || type === 'payment_received') {
-      return <CheckCircle className={className + " text-emerald-400"} />;
-    }
-    if (title.includes('new product') || title.includes('live') || type === 'product_approved' || type === 'download_ready') {
-      return <Package className={className + " text-purple-400"} />;
-    }
-    if (type.includes('reject') || type.includes('delete') || title.includes('fail') || title.includes('reject')) {
-      return <AlertTriangle className={className + " text-red-400"} />;
-    }
-    if (type.includes('review') || type.includes('request') || type.includes('pending') || type.includes('edit')) {
-      return <Info className={className + " text-blue-400"} />;
-    }
-    if (type === 'price_drop' || type === 'payout_sent' || title.includes('price') || title.includes('payout')) {
-      return <CheckCircle className={className + " text-green-400"} />;
-    }
-    if (type === 'contact_message' || title.includes('message')) {
-      return <Info className={className + " text-cyan-400"} />;
-    }
-    return <Bell className={className + " text-indigo-400"} />;
-  };
 
   useEffect(() => {
     const user = getStoredUser();
@@ -56,56 +35,106 @@ export default function NotificationsPage() {
       return;
     }
 
-    fetchNotifications();
+    fetchNotifications(1);
   }, [router]);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (page = 1, showLoader = true) => {
     try {
-      setLoading(true);
-      const data = await notificationAPI.getNotifications(50, 0);
+      if (showLoader) {
+        setLoading(true);
+      }
+      const data = await notificationAPI.getNotifications({
+        page,
+        limit: ITEMS_PER_PAGE,
+      });
       setNotifications(data.notifications);
       setUnreadCount(data.unreadCount);
+      setCurrentPage(data.pagination?.page || page);
+      setTotalPages(data.pagination?.totalPages || 1);
+      setTotalNotifications(data.pagination?.total || 0);
     } catch (error: any) {
       console.error("Error fetching notifications:", error);
       toast.error("Failed to load notifications");
     } finally {
-      setLoading(false);
+      if (showLoader) {
+        setLoading(false);
+      }
     }
   };
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
+      setActionLoading(true);
       await notificationAPI.markAsRead(notificationId);
-      setNotifications(
-        notifications.map(n =>
-          n._id === notificationId ? { ...n, isRead: true } : n
-        )
-      );
-      setUnreadCount(Math.max(0, unreadCount - 1));
+      await fetchNotifications(currentPage, false);
     } catch (error: any) {
       toast.error("Failed to mark notification as read");
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const handleMarkAllAsRead = async () => {
     try {
+      setActionLoading(true);
       await notificationAPI.markAllAsRead();
-      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
-      setUnreadCount(0);
+      await fetchNotifications(currentPage, false);
       toast.success("All notifications marked as read");
     } catch (error: any) {
       toast.error("Failed to mark all as read");
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const handleDelete = async (notificationId: string) => {
     try {
+      setActionLoading(true);
       await notificationAPI.deleteNotification(notificationId);
-      setNotifications(notifications.filter(n => n._id !== notificationId));
+      const nextPage =
+        notifications.length === 1 && currentPage > 1
+          ? currentPage - 1
+          : currentPage;
+      await fetchNotifications(nextPage, false);
       toast.success("Notification deleted");
     } catch (error: any) {
       toast.error("Failed to delete notification");
+    } finally {
+      setActionLoading(false);
     }
+  };
+
+  const handlePageChange = async (nextPage: number) => {
+    if (nextPage < 1 || nextPage > totalPages || nextPage === currentPage || loading || actionLoading) {
+      return;
+    }
+    await fetchNotifications(nextPage, true);
+  };
+
+  const cleanNotificationText = (value: string) =>
+    value
+      .replace(/[\p{Extended_Pictographic}\uFE0F]/gu, "")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+
+  const getNotificationIcon = (notification: Notification) => {
+    const title = notification.title?.toLowerCase() || "";
+    const type = notification.type || "";
+    const iconClass = "h-5 w-5";
+
+    if (title.includes("purchase") || title.includes("order") || type === "order_completed") {
+      return <CircleDollarSign className={`${iconClass} text-emerald-400`} />;
+    }
+    if (title.includes("product") || type.includes("product") || type === "download_ready") {
+      return <Package className={`${iconClass} text-purple-400`} />;
+    }
+    if (type.includes("reject") || type.includes("delete") || title.includes("fail")) {
+      return <AlertTriangle className={`${iconClass} text-red-400`} />;
+    }
+    if (type.includes("review") || type.includes("request") || type.includes("pending")) {
+      return <Info className={`${iconClass} text-blue-400`} />;
+    }
+    return <Bell className={`${iconClass} text-indigo-400`} />;
   };
 
   const formatTime = (dateString: string) => {
@@ -140,10 +169,11 @@ export default function NotificationsPage() {
           <div className="mb-6 flex gap-3">
             <button
               onClick={handleMarkAllAsRead}
+              disabled={actionLoading}
               className="px-5 py-2.5 bg-linear-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white rounded-xl font-semibold transition-all hover:scale-105 shadow-lg hover:shadow-cyan-500/50 flex items-center gap-2"
             >
               <CheckCheck className="w-4 h-4" />
-              Mark all as read
+              {actionLoading ? "Updating..." : "Mark all as read"}
             </button>
           </div>
         )}
@@ -152,9 +182,8 @@ export default function NotificationsPage() {
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="rounded-2xl p-5 bg-white/5 border border-white/10 animate-pulse flex items-start justify-between gap-4">
+                <div key={i} className="rounded-2xl p-5 bg-white/5 border border-white/10 animate-pulse flex items-start justify-between gap-4">
                 <div className="flex items-start gap-4 flex-1 min-w-0">
-                  <div className="w-6 h-6 rounded-full bg-white/20 shrink-0 mt-0.5"></div>
                   <div className="flex-1 min-w-0 space-y-2">
                     <div className="flex items-center gap-2 mb-1">
                       <div className="h-5 bg-white/20 rounded w-1/3"></div>
@@ -186,29 +215,23 @@ export default function NotificationsPage() {
                 className={`group relative rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02] animate-fadeIn ${
                   notification.isRead
                     ? "bg-linear-to-br from-white/5 to-transparent border border-white/10 hover:border-white/20"
-                    : "bg-linear-to-br from-blue-500/10 to-purple-500/10 border-2 border-blue-500/30 hover:border-blue-500/50 shadow-lg shadow-blue-500/10"
+                    : "bg-linear-to-br from-blue-500/10 to-purple-500/10 border-2 border-blue-500/30 hover:border-blue-500/50 shadow-lg shadow-blue-500/10 cursor-pointer"
                 }`}
+                onClick={() => { if (!notification.isRead) handleMarkAsRead(notification._id); }}
               >
-                {/* Unread indicator */}
-                {!notification.isRead && (
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-linear-to-r from-cyan-400 to-blue-500 rounded-full shadow-lg shadow-cyan-500/50 animate-pulse"></div>
-                )}
                 
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4 flex-1 min-w-0">
-                    {/* Icon */}
-                    <div className="pt-0.5 shrink-0 transition-all group-hover:scale-110">
-                      {/* Use Lucide icon based on notification type and title */}
-                      {getNotificationIcon(notification, "w-6 h-6")}
+                    <div className="pt-1 shrink-0">
+                      {getNotificationIcon(notification)}
                     </div>
-                    
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className={`font-bold text-base ${
                           notification.isRead ? "text-white/90" : "text-white"
                         }`}>
-                          {notification.title}
+                          {cleanNotificationText(notification.title)}
                         </h3>
                         {!notification.isRead && (
                           <span className="px-2 py-0.5 bg-linear-to-r from-cyan-500 to-blue-500 text-white text-xs rounded-full font-bold">
@@ -219,7 +242,7 @@ export default function NotificationsPage() {
                       <p className={`text-sm mb-2 ${
                         notification.isRead ? "text-white/60" : "text-white/80"
                       }`}>
-                        {notification.message}
+                        {cleanNotificationText(notification.message)}
                       </p>
                       <div className="flex items-center gap-2 text-xs text-white/40">
                         <span className="flex items-center gap-1">
@@ -232,28 +255,53 @@ export default function NotificationsPage() {
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-1 shrink-0 items-start">
-                    {!notification.isRead && (
-                      <button
-                        onClick={() => handleMarkAsRead(notification._id)}
-                        className="p-2 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 rounded-full transition-all"
-                        title="Mark as read"
-                      >
-                        <Check className="w-4 h-4" />
-                      </button>
-                    )}
+                  {/* Action Buttons & Unread Dot */}
+                  <div className="flex flex-col items-end gap-2 shrink-0">
                     <button
-                      onClick={() => handleDelete(notification._id)}
-                      className="p-2 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-all"
+                      onClick={(e) => { e.stopPropagation(); handleDelete(notification._id); }}
+                      disabled={actionLoading}
+                      className="p-2 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-all sm:opacity-0 group-hover:opacity-100"
                       title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
+                    {!notification.isRead && (
+                      <div className="w-2.5 h-2.5 bg-cyan-400 rounded-full shadow-[0_0_10px_rgba(6,182,212,0.8)] animate-pulse mt-1 mr-3" title="Unread"></div>
+                    )}
                   </div>
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {!loading && totalNotifications > 0 && (
+          <div className="mt-6 flex flex-col items-center justify-center gap-3 text-center">
+            <p className="text-sm text-white/60">
+              Showing {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, totalNotifications)}-
+              {Math.min(currentPage * ITEMS_PER_PAGE, totalNotifications)} of {totalNotifications}
+            </p>
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage <= 1 || actionLoading}
+                className="inline-flex items-center gap-1 rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white/80 disabled:cursor-not-allowed disabled:opacity-40 hover:bg-white/10"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Prev
+              </button>
+              <span className="px-3 py-1.5 text-sm text-white/70">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages || actionLoading}
+                className="inline-flex items-center gap-1 rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white/80 disabled:cursor-not-allowed disabled:opacity-40 hover:bg-white/10"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>

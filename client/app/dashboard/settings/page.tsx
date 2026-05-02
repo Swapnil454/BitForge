@@ -277,9 +277,21 @@ function SettingsContent() {
   }
 
   // Determine dynamic routing for back button and page title
-  const backHref = activeTab === "main" 
-    ? `/dashboard/${user.role === 'buyer' ? 'buyer' : user.role === 'seller' ? 'seller' : 'admin'}` 
-    : `/dashboard/settings?tab=main`;
+  const dashboardHome = `/dashboard/${user.role === 'buyer' ? 'buyer' : user.role === 'seller' ? 'seller' : 'admin'}`;
+
+  const handleHeaderBack = () => {
+    if (activeTab === "main") {
+      router.push(dashboardHome);
+      return;
+    }
+
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    router.push("/dashboard/settings?tab=main");
+  };
 
   const title = activeTab === "main" 
     ? "Settings" 
@@ -294,7 +306,8 @@ function SettingsContent() {
       <PageHeader 
         title={title} 
         subtitle={subtitle} 
-        backHref={backHref} 
+        backHref={activeTab === "main" ? dashboardHome : "/dashboard/settings?tab=main"}
+        onBack={handleHeaderBack}
       />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 md:py-8">

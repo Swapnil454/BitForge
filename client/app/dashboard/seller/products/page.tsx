@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
+import PageHeader from "../../buyer/transactions/components/PageHeader";
+import { MoreVertical, Calendar, Package, Plus, Pencil, Trash2, X } from "lucide-react";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
@@ -219,14 +221,43 @@ export default function MyProductsPage() {
   };
 
   const inputClass =
-    "w-full rounded-xl bg-[#0b0b14] border border-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 transition";
+    "w-full rounded-xl bg-[#18181b] border border-[#27272a] px-4 py-3 text-sm text-white placeholder:text-zinc-500 hover:border-zinc-600 focus:bg-[#1f1f22] focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 transition-all shadow-sm";
 
   /* ================= LOADING ================= */
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#05050a] flex items-center justify-center">
-        <div className="animate-spin h-12 w-12 border-b-2 border-cyan-400 rounded-full" />
+      <main className="min-h-screen bg-[#05050a] text-white">
+        <PageHeader
+          backHref="/dashboard/seller"
+          backLabel="Dashboard"
+          title="My Products"
+        />
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div key={i} className="flex flex-col bg-[#0b0b14] border border-white/5 rounded-2xl overflow-hidden animate-pulse">
+                {/* Thumbnail Skeleton */}
+                <div className="w-full aspect-video bg-white/5" />
+                
+                {/* Content Skeleton */}
+                <div className="p-5 flex flex-col flex-1 gap-3">
+                  <div className="h-5 bg-white/10 rounded-md w-3/4" />
+                  <div className="space-y-2 mt-1">
+                    <div className="h-3 bg-white/10 rounded-md w-full" />
+                    <div className="h-3 bg-white/10 rounded-md w-4/5" />
+                  </div>
+                  
+                  {/* Price & Footer Skeleton */}
+                  <div className="mt-auto pt-4 flex items-end justify-between border-t border-white/5">
+                    <div className="h-7 bg-white/10 rounded-md w-1/3" />
+                    <div className="h-3 bg-white/10 rounded-md w-1/4" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
     );
   }
@@ -235,27 +266,25 @@ export default function MyProductsPage() {
 
   return (
     <main className="min-h-screen bg-[#05050a] text-white">
-      <section className="max-w-6xl mx-auto px-4 py-10 space-y-8">
-
-        {/* HEADER */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-black">My Products</h1>
-            <p className="text-sm text-white/60">
-              {products.length} product{products.length !== 1 && "s"}
-            </p>
-          </div>
-
+      <PageHeader
+        backHref="/dashboard/seller"
+        backLabel="Dashboard"
+        title="My Products"
+        subtitle={`${products.length} product${products.length !== 1 ? "s" : ""}`}
+        rightSlot={
           <button
             onClick={() => router.push("/dashboard/seller/upload")}
-            className="rounded-xl bg-cyan-600/20 border border-cyan-500/30 px-6 py-2.5 font-semibold hover:bg-cyan-600/30 transition"
+            className="flex items-center gap-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-[#05050a] px-5 py-2 text-sm font-bold transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_25px_rgba(6,182,212,0.5)]"
           >
-            + Upload Product
+            <Plus className="w-4 h-4" strokeWidth={3} />
+            <span className="hidden sm:inline">Upload Product</span>
           </button>
-        </div>
+        }
+      />
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
 
         {/* GRID */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.map((p) => {
             const approved = p.status === "approved";
             const finalPrice =
@@ -266,140 +295,141 @@ export default function MyProductsPage() {
             return (
               <motion.div
                 key={p._id}
-                whileHover={approved ? { scale: 1.02 } : {}}
-                className={`relative bg-white/5 border border-white/10 rounded-2xl overflow-hidden transition
-                  ${approved ? "hover:shadow-[0_0_24px_rgba(34,197,94,0.15)]" : ""}
+                whileHover={approved ? { y: -4 } : {}}
+                className={`relative flex flex-col bg-[#0b0b14] border border-white/10 rounded-2xl overflow-hidden transition-all duration-300
+                  ${approved ? "hover:border-cyan-500/30 hover:shadow-[0_8px_30px_rgba(6,182,212,0.1)]" : "opacity-90"}
                 `}
               >
-                {/* THUMBNAIL */}
-                {p.thumbnailUrl && (
-                  <div className="relative w-full h-40 bg-white/5">
+                {/* THUMBNAIL AREA */}
+                <div className="relative w-full aspect-video bg-white/5 group-hover:bg-white/10 transition-colors">
+                  {p.thumbnailUrl ? (
                     <img
                       src={p.thumbnailUrl}
                       alt={p.title}
                       className="w-full h-full object-cover"
                     />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-white/20">
+                      <Package className="w-12 h-12" />
+                    </div>
+                  )}
+
+                  {/* OVERLAY GRADIENT */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b14] via-transparent to-transparent opacity-80" />
+
+                  {/* STATUS BADGE OVERLAY */}
+                  <div className="absolute top-3 left-3">
+                    <span
+                      className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg backdrop-blur-md border
+                        ${
+                          approved
+                            ? "bg-green-500/20 text-green-300 border-green-500/30"
+                            : p.status === "rejected"
+                            ? "bg-red-500/20 text-red-300 border-red-500/30"
+                            : "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                        }`}
+                    >
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          approved ? "bg-green-400" : p.status === "rejected" ? "bg-red-400" : "bg-amber-400"
+                        }`}
+                      />
+                      {p.status}
+                    </span>
                   </div>
-                )}
+
+                  {/* CHANGE REQUEST OVERLAY */}
+                  {approved && p.changeRequest && p.changeRequest !== "none" && (
+                    <div className="absolute top-3 right-3">
+                      <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 backdrop-blur-md">
+                        <span className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-ping" />
+                        {p.changeRequest === "pending_update" ? "Update" : "Delete"}
+                      </span>
+                    </div>
+                  )}
+                </div>
                 
-                <div className="p-5">
+                <div className="p-5 flex flex-col flex-1">
                   {/* HEADER */}
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-semibold truncate">{p.title}</h3>
-                      <p className="text-xs text-white/50 line-clamp-2 mt-1">
+                  <div className="flex justify-between items-start gap-4 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-base text-white truncate">{p.title}</h3>
+                      <p className="text-xs text-zinc-400 line-clamp-2 mt-1.5 leading-relaxed">
                         {p.description}
                       </p>
                     </div>
 
-                    {/* STATUS + MENU */}
-                    <div className="flex items-center gap-2">
-                      {/* STATUS */}
-                      <div className="relative group">
-                        <span
-                          className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-full border
-                            ${
-                              approved
-                                ? "bg-green-500/10 text-green-400 border-green-500/20"
-                                : p.status === "rejected"
-                                ? "bg-red-500/10 text-red-400 border-red-500/20"
-                                : "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
-                            }`}
-                        >
-                          <span
-                            className={`h-2 w-2 rounded-full ${
-                              approved ? "bg-green-400" : p.status === "rejected" ? "bg-red-400" : "bg-yellow-400"
-                            }`}
-                          />
-                          {p.status}
-                        </span>
+                    {/* MENU */}
+                    <div className="relative shrink-0">
+                      <button
+                        onClick={() =>
+                          setOpenMenuId(openMenuId === p._id ? null : p._id)
+                        }
+                        className="h-8 w-8 grid place-items-center rounded-xl bg-white/[0.03] border border-white/10 hover:bg-white/10 text-zinc-400 hover:text-white transition-all"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
 
-                        {!approved && (
-                          <div className="absolute hidden group-hover:block top-full mt-2 left-1/2 -translate-x-1/2 text-xs bg-[#0b0b14] border border-white/10 px-3 py-1 rounded-lg">
-                            Awaiting admin review
-                          </div>
+                      <AnimatePresence>
+                        {openMenuId === p._id && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95, transformOrigin: "top right" }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute right-0 mt-2 w-40 bg-[#18181b] border border-[#27272a] rounded-xl shadow-2xl z-20 overflow-hidden"
+                          >
+                            <MenuItem
+                              label="Edit Details"
+                              icon={<Pencil className="w-3.5 h-3.5" />}
+                              disabled={p.changeRequest === "pending_update" || p.changeRequest === "pending_deletion"}
+                              onClick={() => handleEditClick(p)}
+                              tooltip={approved && p.changeRequest === "none" ? "Changes require admin approval" : undefined}
+                            />
+                            <MenuItem
+                              label="Delete Product"
+                              icon={<Trash2 className="w-3.5 h-3.5" />}
+                              danger
+                              disabled={p.changeRequest === "pending_update" || p.changeRequest === "pending_deletion"}
+                              onClick={() => handleDeleteClick(p._id)}
+                              tooltip={approved && p.changeRequest === "none" ? "Deletion requires admin approval" : undefined}
+                            />
+                          </motion.div>
                         )}
-
-                        {approved && p.changeRequest && p.changeRequest !== "none" && (
-                          <div className="absolute hidden group-hover:block top-full mt-2 left-1/2 -translate-x-1/2 text-xs bg-[#0b0b14] border border-blue-500/30 px-3 py-1 rounded-lg">
-                            {p.changeRequest === "pending_update" ? "Update pending approval" : "Deletion pending approval"}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* CHANGE REQUEST BADGE */}
-                      {approved && p.changeRequest && p.changeRequest !== "none" && (
-                        <div className="relative group">
-                          <span className="flex items-center gap-1.5 text-xs px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                            <span className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
-                            {p.changeRequest === "pending_update" ? "Update pending" : "Deletion pending"}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* MENU */}
-                      <div className="relative">
-                        <button
-                          onClick={() =>
-                            setOpenMenuId(openMenuId === p._id ? null : p._id)
-                          }
-                          className="h-8 w-8 grid place-items-center rounded-lg hover:bg-white/10"
-                        >
-                          ⋯
-                        </button>
-
-                        <AnimatePresence>
-                          {openMenuId === p._id && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 6 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0 }}
-                              className="absolute right-0 mt-2 w-36 bg-[#0b0b14] border border-white/10 rounded-xl shadow-xl z-20"
-                            >
-                              <MenuItem
-                                label="✏️ Edit"
-                                disabled={p.changeRequest === "pending_update" || p.changeRequest === "pending_deletion"}
-                                onClick={() => handleEditClick(p)}
-                                tooltip={approved && p.changeRequest === "none" ? "Changes require admin approval" : undefined}
-                              />
-                              <MenuItem
-                                label="🗑 Delete"
-                                danger
-                                disabled={p.changeRequest === "pending_update" || p.changeRequest === "pending_deletion"}
-                                onClick={() => handleDeleteClick(p._id)}
-                                tooltip={approved && p.changeRequest === "none" ? "Deletion requires admin approval" : undefined}
-                              />
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
+                      </AnimatePresence>
                     </div>
                   </div>
 
-                  {/* PRICE */}
-                  <div className="mt-4">
-                    {p.discount > 0 ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs line-through text-white/40">
-                          ₹{p.price}
-                        </span>
-                        <span className="font-semibold text-cyan-400">
-                          ₹{finalPrice}
-                        </span>
-                        <span className="text-xs bg-red-500/20 text-red-300 px-2 py-0.5 rounded">
-                          -{p.discount}%
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="font-semibold text-cyan-400">
-                        ₹{p.price}
-                      </span>
-                    )}
-                  </div>
+                  {/* PRICE & FOOTER STRETCH */}
+                  <div className="mt-auto pt-4 flex items-end justify-between border-t border-white/5">
+                    <div>
+                      {p.discount > 0 ? (
+                        <div className="flex flex-col">
+                          <span className="text-[10px] line-through text-zinc-500 font-medium tracking-wide">
+                            ₹{p.price}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-black text-lg text-cyan-400 leading-none">
+                              ₹{finalPrice}
+                            </span>
+                            <span className="text-[9px] font-bold uppercase tracking-wider bg-red-500/10 border border-red-500/20 text-red-400 px-1.5 py-0.5 rounded-md">
+                              -{p.discount}%
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col justify-end h-full pb-0.5">
+                          <span className="font-black text-lg text-white leading-none">
+                            ₹{p.price}
+                          </span>
+                        </div>
+                      )}
+                    </div>
 
-                  {/* FOOTER */}
-                  <div className="mt-4 pt-3 border-t border-white/10 text-xs text-white/50">
-                    Uploaded {new Date(p.createdAt).toLocaleDateString()}
+                    <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-medium">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(p.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -446,14 +476,14 @@ export default function MyProductsPage() {
                   type="file"
                   onChange={handleEditFile}
                   className="
-                    w-full text-sm text-white/70
+                    w-full text-sm text-zinc-400
                     file:mr-4 file:rounded-lg
-                    file:border-0 file:bg-cyan-500/20
-                    file:px-4 file:py-2
+                    file:border-0 file:bg-[#27272a]
+                    file:px-4 file:py-2.5
                     file:text-sm file:font-medium
-                    file:text-cyan-300
-                    hover:file:bg-cyan-500/30
-                    cursor-pointer
+                    file:text-white
+                    hover:file:bg-[#3f3f46]
+                    cursor-pointer transition-all
                   "
                 />
                 {editFile && (
@@ -473,14 +503,14 @@ export default function MyProductsPage() {
                   accept="image/*"
                   onChange={handleEditThumbnail}
                   className="
-                    w-full text-sm text-white/70
+                    w-full text-sm text-zinc-400
                     file:mr-4 file:rounded-lg
-                    file:border-0 file:bg-purple-500/20
-                    file:px-4 file:py-2
+                    file:border-0 file:bg-[#27272a]
+                    file:px-4 file:py-2.5
                     file:text-sm file:font-medium
-                    file:text-purple-300
-                    hover:file:bg-purple-500/30
-                    cursor-pointer
+                    file:text-white
+                    hover:file:bg-[#3f3f46]
+                    cursor-pointer transition-all
                   "
                 />
                 {editThumbnailPreview && (
@@ -493,9 +523,9 @@ export default function MyProductsPage() {
                     <button
                       type="button"
                       onClick={removeEditThumbnail}
-                      className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                      className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center transition-colors"
                     >
-                      ✕
+                      <X className="w-3.5 h-3.5" strokeWidth={3} />
                     </button>
                   </div>
                 )}
@@ -537,12 +567,14 @@ export default function MyProductsPage() {
 
 function MenuItem({
   label,
+  icon,
   onClick,
   disabled,
   danger,
   tooltip,
 }: {
   label: string;
+  icon?: React.ReactNode;
   onClick?: () => void;
   disabled?: boolean;
   danger?: boolean;
@@ -552,18 +584,19 @@ function MenuItem({
     <div className="relative group">
       <button
         onClick={disabled ? undefined : onClick}
-        className={`w-full text-left px-3 py-2 text-sm rounded-lg
+        className={`w-full flex items-center gap-2 text-left px-3 py-2.5 text-sm transition-colors
           ${disabled
             ? "opacity-40 cursor-not-allowed"
             : danger
-            ? "text-red-400 hover:bg-red-500/10"
-            : "text-white/80 hover:bg-white/5"}
+            ? "text-red-400 hover:bg-red-500/10 hover:text-red-300"
+            : "text-zinc-300 hover:bg-white/5 hover:text-white"}
         `}
       >
+        {icon}
         {label}
       </button>
       {tooltip && (
-        <div className="absolute hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-2 w-max text-xs bg-[#0b0b14] border border-cyan-500/30 text-cyan-300 px-2 py-1 rounded-lg whitespace-nowrap">
+        <div className="absolute hidden group-hover:block bottom-full right-0 mb-2 w-max text-[10px] uppercase font-bold tracking-wider bg-black border border-zinc-800 text-zinc-300 px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-xl">
           {tooltip}
         </div>
       )}

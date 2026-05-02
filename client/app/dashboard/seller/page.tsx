@@ -1,25 +1,43 @@
 "use client";
 
-import { useEffect, useState, useRef  } from "react";
+import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
-import { clearAuthStorage, getStoredUser, setCookie, getCookie } from "@/lib/cookies";
-import { notificationAPI, userAPI } from "@/lib/api";
-import { useSellerDashboard, useInvalidateSellerCache, sellerQueryKeys } from "@/lib/hooks/useSellerDashboard";
+import {
+  CircleHelp,
+  CreditCard,
+  IndianRupee,
+  Landmark,
+  LogOut,
+  Menu,
+  Package,
+  Receipt,
+  Settings,
+  ShoppingBag,
+  TrendingUp,
+  Upload,
+  UserRound,
+  X,
+} from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
-import { KPI, Glass, MenuItem, ChartArea, ChartBar} from "../components/Cards";
+import { clearAuthStorage, getStoredUser, setCookie, getCookie } from "@/lib/cookies";
+import { notificationAPI, userAPI } from "@/lib/api";
+import {
+  useSellerDashboard,
+  useInvalidateSellerCache,
+  sellerQueryKeys,
+} from "@/lib/hooks/useSellerDashboard";
+
+import { KPI, Glass, MenuItem } from "../components/Cards";
 import RecentSalesModal from "./components/RecentSalesModel";
 import DashboardActionCard from "../components/DashboardActionCard";
 import NotificationDropdown from "../components/notifications/NotificationDropdown";
 import { BarMetricChart } from "../components/charts/BarMetricChart";
-import { AreaMetricChart } from "../components/charts/AreaMetricChart";
 import BitForgeBrand from "../components/logo/BitForgeBrand";
 import LogoutModal from "../components/LogoutModal";
-/* ================= TYPES ================= */
 
 interface User {
   id: string;
@@ -31,52 +49,19 @@ interface User {
   isApproved?: boolean;
 }
 
-interface DashboardStats {
-  totalRevenue: number;
-  thisMonthRevenue: number;
-  totalSales: number;
-  revenueGrowth: number;
-  conversion: number | null;
-}
-
-interface MonthlyPoint {
-  month: string;
-  revenue: number;
-  sales: number;
-}
-
-interface RecentSale {
-  id: string;
-  productName: string;
-  amount: number;
-  createdAt: string;
-}
-
-interface NotificationItem {
-  _id: string;
-  title: string;
-  message: string;
-  type: string;
-  icon: string;
-  isRead: boolean;
-  createdAt: string;
-}
-
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
   const [showRecentSalesModal, setShowRecentSalesModal] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  const router = useRouter();
 
+  const router = useRouter();
   const notifRef = useRef<HTMLDivElement | null>(null);
   const profileRef = useRef<HTMLDivElement | null>(null);
   const socketRef = useRef<Socket | null>(null);
 
-  // React Query hook for dashboard data with caching
   const {
     stats,
     monthly,
@@ -85,13 +70,11 @@ export default function Dashboard() {
     unreadCount,
     chatUnread: chatUnreadCount,
     isInitialLoading,
-    isFetching,
     queries,
   } = useSellerDashboard();
-  
+
   const cacheInvalidator = useInvalidateSellerCache();
   const queryClient = useQueryClient();
-
 
   useEffect(() => {
     const stored = getStoredUser<User>();
@@ -100,7 +83,6 @@ export default function Dashboard() {
       return;
     }
 
-    // Check if seller is approved
     if (stored.role === "seller") {
       const isApproved = stored.approvalStatus === "approved" || stored.isApproved;
       if (!isApproved) {
@@ -111,20 +93,17 @@ export default function Dashboard() {
 
     setUser(stored);
 
-    // Sync profile on mount
     const syncProfile = async () => {
       try {
         const fresh = await userAPI.getCurrentUser();
-        
-        // Check if user account was deleted
+
         if (!fresh) {
           clearAuthStorage();
           toast.error("Your account has been deleted");
           router.push("/register");
           return;
         }
-        
-        // Check approval status from fresh data
+
         if (fresh.role === "seller") {
           const isApproved = fresh.approvalStatus === "approved" || fresh.isApproved;
           if (!isApproved) {
@@ -132,7 +111,7 @@ export default function Dashboard() {
             return;
           }
         }
-        
+
         setUser(fresh);
         setCookie("user", JSON.stringify(fresh), 7);
         if (typeof localStorage !== "undefined") {
@@ -140,7 +119,6 @@ export default function Dashboard() {
         }
       } catch (err) {
         console.error("Failed to sync user profile", err);
-        // If error getting user (likely deleted), redirect to register
         if (err instanceof Error && err.message.includes("401")) {
           clearAuthStorage();
           toast.error("Your account has been deleted");
@@ -148,22 +126,16 @@ export default function Dashboard() {
         }
       }
     };
+
     syncProfile();
-    // preload notifications - chat unread is handled by React Query
     fetchNotifications();
 
     const closeOnOutside = (e: MouseEvent) => {
-      if (
-        notifRef.current &&
-        !notifRef.current.contains(e.target as Node)
-      ) {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setNotifOpen(false);
       }
 
-      if (
-        profileRef.current &&
-        !profileRef.current.contains(e.target as Node)
-      ) {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
         setProfileOpen(false);
       }
     };
@@ -172,11 +144,9 @@ export default function Dashboard() {
       if (e.key === "Escape") {
         setNotifOpen(false);
         setProfileOpen(false);
-        setMenuOpen(false);
       }
     };
 
-    // Periodic check to see if account was deleted
     const deleteCheckInterval = setInterval(async () => {
       try {
         const fresh = await userAPI.getCurrentUser();
@@ -186,14 +156,13 @@ export default function Dashboard() {
           router.push("/register");
         }
       } catch (err) {
-        // If error getting user (likely deleted/unauthorized), redirect
         if (err instanceof Error && err.message.includes("401")) {
           clearAuthStorage();
           toast.error("Your account has been deleted");
           router.push("/register");
         }
       }
-    }, 5000); // Check every 5 seconds
+    }, 5000);
 
     document.addEventListener("mousedown", closeOnOutside);
     window.addEventListener("keydown", esc);
@@ -205,7 +174,6 @@ export default function Dashboard() {
     };
   }, [router]);
 
-  // Live unread chat updates via Socket.IO
   useEffect(() => {
     if (!user) return;
     if (typeof window === "undefined") return;
@@ -223,7 +191,6 @@ export default function Dashboard() {
 
     socket.on("chat:new-message", (msg: any) => {
       if (msg?.to?._id === user.id) {
-        // Invalidate chat unread cache to trigger refetch
         cacheInvalidator.invalidateChatUnread();
       }
     });
@@ -240,7 +207,6 @@ export default function Dashboard() {
   const fetchNotifications = async () => {
     try {
       setLoadingNotifs(true);
-      // Trigger refetch via React Query
       await queries.notifications.refetch();
     } catch (error) {
       console.error("Failed to load notifications", error);
@@ -251,33 +217,34 @@ export default function Dashboard() {
 
   const handleMarkAsRead = async (id: string) => {
     try {
-      // Optimistic update - immediately update UI
       queryClient.setQueryData(
         [...sellerQueryKeys.notifications(), 5],
         (oldData: any) => {
           if (!oldData) return oldData;
           const notification = oldData.notifications.find((n: any) => n._id === id);
-          // Only decrement if notification exists and was unread
           const shouldDecrement = notification && !notification.isRead;
           return {
             ...oldData,
             notifications: oldData.notifications.map((n: any) =>
               n._id === id ? { ...n, isRead: true } : n
             ),
-            unreadCount: shouldDecrement 
-              ? Math.max(0, (oldData.unreadCount || 0) - 1) 
+            unreadCount: shouldDecrement
+              ? Math.max(0, (oldData.unreadCount || 0) - 1)
               : oldData.unreadCount,
           };
         }
       );
-      
+
       await notificationAPI.markAsRead(id);
-      // Don't invalidate immediately - let optimistic update stand
     } catch (error) {
       console.error("Failed to mark notification as read", error);
-      // Revert optimistic update on error
       cacheInvalidator.invalidateNotifications();
     }
+  };
+
+  const logout = () => {
+    clearAuthStorage();
+    router.push("/login");
   };
 
   if (!user) return null;
@@ -286,22 +253,13 @@ export default function Dashboard() {
     return <SellerDashboardSkeleton />;
   }
 
-  const logout = () => {
-    clearAuthStorage();
-    router.push("/login");
-  };
-
   return (
     <main className="min-h-screen bg-[#05050a] text-white">
-      {/* ================= HEADER ================= */}
       <header className="sticky top-0 z-50 bg-linear-to-r from-black via-slate-900 to-black backdrop-blur-xl border-b border-white/20 shadow-lg shadow-black/50">
         <div className="max-w-7xl mx-auto h-16 px-4 flex items-center justify-between">
-          {/* Logo */}
           <BitForgeBrand role="Seller" />
 
-          {/* RIGHT */}
           <div className="flex items-center gap-2 md:gap-3">
-            {/* 🔔 NOTIFICATIONS */}
             <NotificationDropdown
               role="seller"
               notifications={notifications}
@@ -311,22 +269,27 @@ export default function Dashboard() {
               markAsRead={handleMarkAsRead}
             />
 
-            {/* Menu */}
             <div className="relative" ref={profileRef}>
               <button
                 onClick={() => {
-                  setProfileOpen(v => !v);
+                  setProfileOpen((v) => !v);
                   setNotifOpen(false);
                 }}
-                className={`relative h-10 w-10 md:h-11 md:w-11 rounded-xl bg-linear-to-br from-white/10 to-white/5 border border-white/20 hover:border-indigo-500/50 hover:from-indigo-500/20 hover:to-indigo-600/20 flex flex-col items-center justify-center gap-1.5 transition-all duration-300 group hover:scale-105 shadow-lg hover:shadow-indigo-500/50 ${profileOpen ? 'border-indigo-500 from-indigo-500/20 to-indigo-600/20 shadow-indigo-500/50' : ''}`}
+                className={`relative h-10 w-10 md:h-11 md:w-11 rounded-xl bg-linear-to-br from-white/10 to-white/5 border border-white/20 hover:border-indigo-500/50 hover:from-indigo-500/20 hover:to-indigo-600/20 grid place-items-center transition-all duration-300 group hover:scale-105 shadow-lg hover:shadow-indigo-500/50 ${
+                  profileOpen
+                    ? "border-indigo-500 from-indigo-500/20 to-indigo-600/20 shadow-indigo-500/50"
+                    : ""
+                }`}
                 title="Menu"
               >
                 {chatUnreadCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-red-500 shadow-sm shadow-red-500" />
                 )}
-                <span className={`w-4 h-0.5 bg-white group-hover:bg-indigo-300 transition-all origin-center ${profileOpen ? 'rotate-45 translate-y-2 bg-indigo-300' : ''}`}></span>
-                <span className={`w-4 h-0.5 bg-white group-hover:bg-indigo-300 transition-all ${profileOpen ? 'opacity-0' : ''}`}></span>
-                <span className={`w-4 h-0.5 bg-white group-hover:bg-indigo-300 transition-all origin-center ${profileOpen ? '-rotate-45 -translate-y-2 bg-indigo-300' : ''}`}></span>
+                {profileOpen ? (
+                  <X className="h-5 w-5 text-white group-hover:text-indigo-300 transition-colors" />
+                ) : (
+                  <Menu className="h-5 w-5 text-white group-hover:text-indigo-300 transition-colors" />
+                )}
               </button>
 
               <AnimatePresence>
@@ -341,29 +304,42 @@ export default function Dashboard() {
                     <div className="px-4 py-3 border-b border-white/10 bg-linear-to-r from-indigo-500/10 to-purple-500/10 rounded-t-2xl">
                       <p className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Menu</p>
                     </div>
-                    <MenuItem 
-                      label="Profile" 
-                      icon="👤"
-                      onClick={() => { router.push("/dashboard/settings?tab=profile"); setProfileOpen(false); }} 
+                    <MenuItem
+                      label="Profile"
+                      icon={<UserRound className="h-4 w-4" />}
+                      onClick={() => {
+                        router.push("/dashboard/settings?tab=profile");
+                        setProfileOpen(false);
+                      }}
                     />
-                    <MenuItem 
-                      label="Settings" 
-                      icon="⚙️"
-                      onClick={() => { router.push("/dashboard/settings"); setProfileOpen(false); }} 
+                    <MenuItem
+                      label="Settings"
+                      icon={<Settings className="h-4 w-4" />}
+                      onClick={() => {
+                        router.push("/dashboard/settings");
+                        setProfileOpen(false);
+                      }}
                     />
-                    <MenuItem 
-                      label="Help Center" 
-                      icon="❓"
+                    <MenuItem
+                      label="Help Center"
+                      icon={<CircleHelp className="h-4 w-4" />}
                       badge={chatUnreadCount > 0 ? chatUnreadCount : undefined}
                       onClick={() => {
-                        // Invalidate to reset unread count after viewing
                         cacheInvalidator.invalidateChatUnread();
                         router.push("/dashboard/seller/help-center");
                         setProfileOpen(false);
-                      }} 
+                      }}
                     />
                     <div className="h-px bg-linear-to-r from-transparent via-indigo-500/20 to-transparent" />
-                    <MenuItem label="Logout" icon="🚪" danger onClick={() => { setIsLogoutModalOpen(true); setProfileOpen(false); }} />
+                    <MenuItem
+                      label="Logout"
+                      icon={<LogOut className="h-4 w-4" />}
+                      danger
+                      onClick={() => {
+                        setIsLogoutModalOpen(true);
+                        setProfileOpen(false);
+                      }}
+                    />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -372,45 +348,40 @@ export default function Dashboard() {
         </div>
       </header>
 
-      
-
-      {/* ================= CONTENT ================= */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
-        {/* KPIs */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+      <section className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <button
             onClick={() => router.push("/dashboard/seller/transactions")}
             className="text-left"
           >
-            <KPI title="Total Revenue" value={`₹${stats?.totalRevenue?.toLocaleString() || 0}`} />
+            <KPI compact title="Total Revenue" value={`₹${stats?.totalRevenue?.toLocaleString() || 0}`} />
           </button>
           <button
             onClick={() => router.push("/dashboard/seller/transactions?period=month")}
             className="text-left"
           >
-            <KPI title="This Month" value={`₹${stats?.thisMonthRevenue?.toLocaleString() || 0}`} />
+            <KPI compact title="This Month" value={`₹${stats?.thisMonthRevenue?.toLocaleString() || 0}`} />
           </button>
           <button
             onClick={() => router.push("/dashboard/seller/sales")}
             className="text-left"
           >
-            <KPI title="Total Sales" value={stats?.totalSales ?? 0} />
+            <KPI compact title="Total Sales" value={stats?.totalSales ?? 0} />
           </button>
           <button
             onClick={() => router.push("/dashboard/seller/growth")}
             className="text-left"
           >
-            <KPI title="Revenue Growth" value={`${(stats?.revenueGrowth ?? 0).toFixed(1)}%`} />
+            <KPI compact title="Revenue Growth" value={`${(stats?.revenueGrowth ?? 0).toFixed(1)}%`} />
           </button>
         </div>
 
-        {/* Quick Actions - match buyer dashboard style */}
-        <div className="grid grid-cols-2 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <DashboardActionCard
             variant="seller"
             title="Upload Product"
             description="Add new content to sell"
-            icon="📤"
+            icon={<Upload className="h-8 w-8 md:h-9 md:w-9 text-cyan-200" strokeWidth={2} />}
             href="/dashboard/seller/upload"
             gradientFrom="from-cyan-600/20"
             gradientTo="to-blue-600/20"
@@ -424,7 +395,7 @@ export default function Dashboard() {
             variant="seller"
             title="My Products"
             description="Manage your listings"
-            icon="📦"
+            icon={<Package className="h-8 w-8 md:h-9 md:w-9 text-blue-200" strokeWidth={2} />}
             href="/dashboard/seller/products"
             gradientFrom="from-blue-600/20"
             gradientTo="to-purple-600/20"
@@ -438,7 +409,7 @@ export default function Dashboard() {
             variant="seller"
             title="Earnings"
             description="Withdraw your money"
-            icon="💰"
+            icon={<IndianRupee className="h-8 w-8 md:h-9 md:w-9 text-emerald-200" strokeWidth={2} />}
             href="/dashboard/seller/earnings"
             gradientFrom="from-emerald-600/20"
             gradientTo="to-green-600/20"
@@ -452,7 +423,7 @@ export default function Dashboard() {
             variant="seller"
             title="Bank Accounts"
             description="Manage withdrawal accounts"
-            icon="🏦"
+            icon={<Landmark className="h-8 w-8 md:h-9 md:w-9 text-purple-200" strokeWidth={2} />}
             href="/dashboard/seller/bank-account"
             gradientFrom="from-purple-600/20"
             gradientTo="to-indigo-600/20"
@@ -461,67 +432,66 @@ export default function Dashboard() {
             hoverShadow="hover:shadow-purple-500/30"
             hoverTextColor="text-purple-200"
           />
-
         </div>
 
-        {/* Recent Sales - moved below buttons */}
         <button
           onClick={() => setShowRecentSalesModal(true)}
           className="w-full text-left group cursor-pointer"
         >
-          <div className="bg-linear-to-br from-white/10 via-white/5 to-transparent border border-white/20 hover:border-cyan-400/40 rounded-2xl p-3 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 backdrop-blur-lg relative overflow-hidden">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl md:text-2xl bg-linear-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">💸</span>
-              <h3 className="font-bold text-sm text-white flex items-center gap-2 tracking-wide">Recent Sales</h3>
-              <span className="ml-auto text-xs text-cyan-400 group-hover:text-cyan-300 transition">View All</span>
-            </div>
+          <Glass title={<span className="inline-flex items-center gap-2"><Receipt className="h-4 w-4 text-cyan-300" /> Recent Sales</span>}>
             {recentSales.length === 0 ? (
-              <div className="text-center py-3">
-                <div className="text-2xl mb-1">🛒</div>
-                <p className="text-white/60 text-xs mb-1">No recent sales yet</p>
+              <div className="text-center py-6">
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-white/15 bg-white/5 mb-2">
+                  <ShoppingBag className="h-6 w-6 text-cyan-300" />
+                </div>
+                <p className="text-white/60 text-sm">No recent sales yet</p>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {recentSales.slice(0, 2).map((sale) => (
-                  <div key={sale.id} className="flex items-center justify-between bg-white/5 hover:bg-cyan-400/10 px-2 py-2 rounded-lg transition-all duration-200 shadow-sm group-hover:shadow-md">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-white text-xs truncate flex items-center gap-1">
-                        <span className="text-base">🛍️</span>{sale.productName}
-                      </p>
-                      <p className="text-[10px] text-white/50 mt-0.5">{new Date(sale.createdAt).toLocaleString()}</p>
+                  <div
+                    key={sale.id}
+                    className="flex items-center justify-between gap-3 group-hover:bg-white/5 px-3 py-2.5 -mx-3 rounded-lg transition flex-wrap sm:flex-nowrap"
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-400/20 bg-cyan-400/10">
+                        <CreditCard className="h-4 w-4 text-cyan-300" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-white text-sm truncate">
+                          {sale.productName}
+                        </p>
+                        <p className="text-xs text-white/60 mt-0.5">
+                          {new Date(sale.createdAt).toLocaleString()}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-right ml-2">
-                      <p className="font-bold text-base text-green-400">₹{sale.amount.toLocaleString()}</p>
+                    <div className="text-right ml-4 shrink-0">
+                      <p className="font-bold text-lg text-green-400">
+                        ₹{sale.amount.toLocaleString()}
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </div>
+          </Glass>
         </button>
 
-        {/* Charts — now in separate horizontal lines for clarity */}
         <div className="grid md:grid-cols-2 gap-6">
-          <Glass title="📈 Revenue Growth" >
-            <BarMetricChart 
-              data={monthly}
-              dataKey="revenue"
-            />
+          <Glass title={<span className="inline-flex items-center gap-2"><TrendingUp className="h-4 w-4 text-indigo-300" /> Revenue Growth</span>}>
+            <BarMetricChart data={monthly} dataKey="revenue" />
           </Glass>
-          <Glass title="📊 Sales Volume" >
-            <BarMetricChart 
-              data={monthly}
-              dataKey="sales"
-            />
+          <Glass title={<span className="inline-flex items-center gap-2"><Package className="h-4 w-4 text-emerald-300" /> Sales Volume</span>}>
+            <BarMetricChart data={monthly} dataKey="sales" />
           </Glass>
         </div>
       </section>
 
-      {/* Modals */}
       <AnimatePresence>
         {showRecentSalesModal && (
-          <RecentSalesModal 
-            sales={recentSales} 
+          <RecentSalesModal
+            sales={recentSales}
             onClose={() => setShowRecentSalesModal(false)}
             onViewAll={() => {
               setShowRecentSalesModal(false);
@@ -531,12 +501,11 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      <LogoutModal 
-        isOpen={isLogoutModalOpen} 
-        onClose={() => setIsLogoutModalOpen(false)} 
-        onConfirm={logout} 
+      <LogoutModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={logout}
       />
-
     </main>
   );
 }
@@ -554,24 +523,26 @@ function SellerDashboardSkeleton() {
         </div>
       </header>
 
-      <section className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+      <section className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="h-24 rounded-2xl bg-slate-800/90 border border-emerald-500/40 shadow-md shadow-emerald-500/25 animate-pulse"
+              className="h-20 rounded-2xl bg-slate-800/90 border border-emerald-500/40 shadow-md shadow-emerald-500/25 animate-pulse"
             />
           ))}
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-          {Array.from({ length: 3 }).map((_, i) => (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
               className="h-24 rounded-xl bg-slate-800/90 border border-indigo-500/40 shadow-md shadow-indigo-500/25 animate-pulse"
             />
           ))}
         </div>
+
+        <div className="h-44 rounded-2xl bg-slate-900/90 border border-cyan-500/40 shadow-lg shadow-cyan-500/30 animate-pulse" />
 
         <div className="grid md:grid-cols-2 gap-6">
           <div className="h-64 rounded-2xl bg-slate-900/90 border border-cyan-500/40 shadow-lg shadow-cyan-500/30 animate-pulse" />

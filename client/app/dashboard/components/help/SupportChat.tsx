@@ -675,7 +675,7 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
             </button>
           ) : (
             <button className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-white/30 cursor-not-allowed">
-              <Send className="w-4 h-4 ml-0.5" />
+              <Send className="w-4 h-4 ml-0.5 " />
             </button>
           )}
         </div>
