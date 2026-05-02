@@ -112,6 +112,8 @@ export default function AdminChatCenter() {
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const shouldAutoScrollRef = useRef(true);
   const pendingScrollBehaviorRef = useRef<ScrollBehavior | null>(null);
+  const scrollRetryTimeoutsRef = useRef<number[]>([]);
+  const settleScrollToBottomRef = useRef<(behavior?: ScrollBehavior) => void>(() => {});
 
   const isNearBottom = () => {
     const container = messagesContainerRef.current;
@@ -134,8 +136,34 @@ export default function AdminChatCenter() {
     pendingScrollBehaviorRef.current = behavior;
   };
 
+  const clearScheduledScrolls = () => {
+    scrollRetryTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    scrollRetryTimeoutsRef.current = [];
+  };
+
+  const settleScrollToBottom = (behavior: ScrollBehavior = "auto") => {
+    queueScrollToBottom(behavior);
+    clearScheduledScrolls();
+
+    if (typeof window === "undefined") return;
+
+    [0, 120, 320, 700].forEach((delay) => {
+      const timeoutId = window.setTimeout(() => {
+        scrollToBottom(behavior);
+      }, delay);
+      scrollRetryTimeoutsRef.current.push(timeoutId);
+    });
+  };
+
+  settleScrollToBottomRef.current = settleScrollToBottom;
+
   const handleMessagesScroll = () => {
     shouldAutoScrollRef.current = isNearBottom();
+  };
+
+  const handleAttachmentLoad = () => {
+    if (!shouldAutoScrollRef.current) return;
+    settleScrollToBottom("auto");
   };
   
   const loadConversations = async () => {
@@ -172,7 +200,7 @@ export default function AdminChatCenter() {
       setLoadingThread(true);
       const data = await chatAPI.adminGetThread(userId);
       shouldAutoScrollRef.current = true;
-      queueScrollToBottom("auto");
+      settleScrollToBottom("auto");
       setMessages(data.messages || []);
       setSelectedMessageIds([]);
       setAttachment(null);
@@ -205,6 +233,12 @@ export default function AdminChatCenter() {
 
   useEffect(() => {
     loadConversations();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      clearScheduledScrolls();
+    };
   }, []);
 
   useEffect(() => {
@@ -277,7 +311,7 @@ export default function AdminChatCenter() {
         });
       }
       if (isActiveThread && shouldStickToBottom) {
-        queueScrollToBottom("smooth");
+        settleScrollToBottomRef.current("smooth");
       }
     });
 
@@ -335,7 +369,7 @@ export default function AdminChatCenter() {
           return [...prev, data.chat];
         });
         shouldAutoScrollRef.current = true;
-        queueScrollToBottom("smooth");
+        settleScrollToBottom("smooth");
       } else {
         loadThread(selectedUserId);
       }
@@ -756,6 +790,7 @@ export default function AdminChatCenter() {
                                       <img 
                                         src={att.url} 
                                         alt="attachment" 
+                                        onLoad={handleAttachmentLoad}
                                         className="w-full h-auto max-h-64 object-contain rounded-md bg-black/20" 
                                       />
                                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">

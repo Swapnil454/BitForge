@@ -97,6 +97,8 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const shouldAutoScrollRef = useRef(true);
   const pendingScrollBehaviorRef = useRef<ScrollBehavior | null>(null);
+  const scrollRetryTimeoutsRef = useRef<number[]>([]);
+  const settleScrollToBottomRef = useRef<(behavior?: ScrollBehavior) => void>(() => {});
   
   const queryClient = useQueryClient();
 
@@ -121,15 +123,41 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
     pendingScrollBehaviorRef.current = behavior;
   };
 
+  const clearScheduledScrolls = () => {
+    scrollRetryTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    scrollRetryTimeoutsRef.current = [];
+  };
+
+  const settleScrollToBottom = (behavior: ScrollBehavior = "auto") => {
+    queueScrollToBottom(behavior);
+    clearScheduledScrolls();
+
+    if (typeof window === "undefined") return;
+
+    [0, 120, 320, 700].forEach((delay) => {
+      const timeoutId = window.setTimeout(() => {
+        scrollToBottom(behavior);
+      }, delay);
+      scrollRetryTimeoutsRef.current.push(timeoutId);
+    });
+  };
+
+  settleScrollToBottomRef.current = settleScrollToBottom;
+
   const handleMessagesScroll = () => {
     shouldAutoScrollRef.current = isNearBottom();
+  };
+
+  const handleAttachmentLoad = () => {
+    if (!shouldAutoScrollRef.current) return;
+    settleScrollToBottom("auto");
   };
 
   const loadMessages = async () => {
     try {
       const data = await chatAPI.getSupportThread();
       shouldAutoScrollRef.current = true;
-      queueScrollToBottom("auto");
+      settleScrollToBottom("auto");
       setMessages(data.messages || []);
       try {
         await chatAPI.markAllAsRead();
@@ -146,6 +174,12 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
 
   useEffect(() => {
     loadMessages();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      clearScheduledScrolls();
+    };
   }, []);
 
   useEffect(() => {
@@ -179,7 +213,7 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
         return [...prev, msg];
       });
       if (shouldStickToBottom) {
-        queueScrollToBottom("smooth");
+        settleScrollToBottomRef.current("smooth");
       }
     });
 
@@ -237,7 +271,7 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
           return [...prev, data.chat];
         });
         shouldAutoScrollRef.current = true;
-        queueScrollToBottom("smooth");
+        settleScrollToBottom("smooth");
       } else {
         loadMessages();
       }
@@ -476,6 +510,7 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
                                 <img 
                                   src={att.url} 
                                   alt="attachment" 
+                                  onLoad={handleAttachmentLoad}
                                   className="w-full h-auto max-h-64 object-contain rounded-md bg-black/20" 
                                 />
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
