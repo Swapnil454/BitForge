@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { adminAPI, chatAPI } from "@/lib/api";
-import { getCookie, getStoredUser } from "@/lib/cookies";
+import { getCookie } from "@/lib/cookies";
 import toast from "react-hot-toast";
 import { 
   MoreVertical, 
@@ -22,7 +22,6 @@ import {
   ZoomOut,
   RotateCcw
 } from "lucide-react";
-import Image from "next/image";
 
 interface ChatAttachment {
   url: string;
@@ -107,15 +106,36 @@ export default function AdminChatCenter() {
   const [imageZoom, setImageZoom] = useState(1);
 
   const queryClient = useQueryClient();
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const shouldAutoScrollRef = useRef(true);
+  const pendingScrollBehaviorRef = useRef<ScrollBehavior | null>(null);
 
-  const scrollToBottom = () => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+  const isNearBottom = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return true;
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
+    return distanceFromBottom <= 120;
+  };
+
+  const scrollToBottom = (behavior: ScrollBehavior = "auto") => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior,
+    });
+  };
+
+  const queueScrollToBottom = (behavior: ScrollBehavior = "auto") => {
+    pendingScrollBehaviorRef.current = behavior;
+  };
+
+  const handleMessagesScroll = () => {
+    shouldAutoScrollRef.current = isNearBottom();
   };
   
   const loadConversations = async () => {
@@ -151,6 +171,8 @@ export default function AdminChatCenter() {
     try {
       setLoadingThread(true);
       const data = await chatAPI.adminGetThread(userId);
+      shouldAutoScrollRef.current = true;
+      queueScrollToBottom("auto");
       setMessages(data.messages || []);
       setSelectedMessageIds([]);
       setAttachment(null);
@@ -174,7 +196,6 @@ export default function AdminChatCenter() {
       } catch (err) {
         console.error("Failed to mark thread as read", err);
       }
-      setTimeout(scrollToBottom, 100);
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to load thread");
     } finally {
@@ -219,9 +240,11 @@ export default function AdminChatCenter() {
       const isFromAdmin = msg.from.role === "admin";
       const otherUser = isFromAdmin ? msg.to : msg.from;
       const otherUserId = otherUser._id;
+      const isActiveThread = selectedUserId === otherUserId;
+      const shouldStickToBottom = shouldAutoScrollRef.current;
 
       setMessages((prev) => {
-        if (!selectedUserId || selectedUserId !== otherUserId) return prev;
+        if (!isActiveThread) return prev;
         if (prev.some((m) => m._id === msg._id)) return prev;
         return [...prev, msg];
       });
@@ -253,7 +276,9 @@ export default function AdminChatCenter() {
           return { ...prev, [otherUserId]: current + 1 };
         });
       }
-      setTimeout(scrollToBottom, 100);
+      if (isActiveThread && shouldStickToBottom) {
+        queueScrollToBottom("smooth");
+      }
     });
 
     socket.on("chat:messages-deleted", (deletedIds: string[]) => {
@@ -272,8 +297,13 @@ export default function AdminChatCenter() {
   }, [selectedUserId]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages.length]);
+    if (!pendingScrollBehaviorRef.current) return;
+    const behavior = pendingScrollBehaviorRef.current;
+    pendingScrollBehaviorRef.current = null;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => scrollToBottom(behavior));
+    });
+  }, [messages]);
 
   const handleSend = async () => {
     if (!selectedUserId || (!input.trim() && !attachment)) return;
@@ -304,7 +334,8 @@ export default function AdminChatCenter() {
           if (prev.some((m) => m._id === data.chat._id)) return prev;
           return [...prev, data.chat];
         });
-        setTimeout(scrollToBottom, 100);
+        shouldAutoScrollRef.current = true;
+        queueScrollToBottom("smooth");
       } else {
         loadThread(selectedUserId);
       }
@@ -576,7 +607,7 @@ export default function AdminChatCenter() {
       </div>
 
       {/* Right: thread */}
-      <div className={`flex-1 flex flex-col bg-[#0B141A] relative ${isMobileThreadView && selectedUserId ? "flex" : "hidden md:flex"}`}>
+      <div className={`flex-1 min-h-0 flex flex-col bg-[#0B141A] relative ${isMobileThreadView && selectedUserId ? "flex" : "hidden md:flex"}`}>
         {selectedUserId ? (
           <>
             {/* Thread Header */}
@@ -651,6 +682,8 @@ export default function AdminChatCenter() {
 
             {/* Messages Area */}
             <div 
+              ref={messagesContainerRef}
+              onScroll={handleMessagesScroll}
               className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-gradient-to-br from-[#05050a] via-[#0a0a14] to-[#0f1123] relative"
             >
               {loadingThread ? (
@@ -769,7 +802,6 @@ export default function AdminChatCenter() {
                   );
                 })
               )}
-              <div ref={bottomRef} />
             </div>
 
             {/* Input Area */}

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { chatAPI } from "@/lib/api";
-import { getCookie, getStoredUser } from "@/lib/cookies";
+import { getCookie } from "@/lib/cookies";
 import toast from "react-hot-toast";
 import { 
   MoreVertical, 
@@ -23,7 +23,6 @@ import {
   RotateCcw
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 
 interface ChatAttachment {
   url: string;
@@ -91,23 +90,46 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
   const [previewImage, setPreviewImage] = useState<{url: string, name: string} | null>(null);
   const [imageZoom, setImageZoom] = useState(1);
   
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const shouldAutoScrollRef = useRef(true);
+  const pendingScrollBehaviorRef = useRef<ScrollBehavior | null>(null);
   
   const queryClient = useQueryClient();
 
-  const scrollToBottom = () => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+  const isNearBottom = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return true;
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
+    return distanceFromBottom <= 120;
+  };
+
+  const scrollToBottom = (behavior: ScrollBehavior = "auto") => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior,
+    });
+  };
+
+  const queueScrollToBottom = (behavior: ScrollBehavior = "auto") => {
+    pendingScrollBehaviorRef.current = behavior;
+  };
+
+  const handleMessagesScroll = () => {
+    shouldAutoScrollRef.current = isNearBottom();
   };
 
   const loadMessages = async () => {
     try {
       const data = await chatAPI.getSupportThread();
+      shouldAutoScrollRef.current = true;
+      queueScrollToBottom("auto");
       setMessages(data.messages || []);
       try {
         await chatAPI.markAllAsRead();
@@ -151,11 +173,14 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
     socketRef.current = socket;
 
     socket.on("chat:new-message", (msg: ChatMessage) => {
+      const shouldStickToBottom = shouldAutoScrollRef.current;
       setMessages((prev) => {
         if (prev.some((m) => m._id === msg._id)) return prev;
         return [...prev, msg];
       });
-      setTimeout(scrollToBottom, 100);
+      if (shouldStickToBottom) {
+        queueScrollToBottom("smooth");
+      }
     });
 
     socket.on("chat:messages-deleted", (deletedIds: string[]) => {
@@ -174,8 +199,13 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
   }, []);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages.length]);
+    if (!pendingScrollBehaviorRef.current) return;
+    const behavior = pendingScrollBehaviorRef.current;
+    pendingScrollBehaviorRef.current = null;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => scrollToBottom(behavior));
+    });
+  }, [messages]);
 
   const handleSend = async () => {
     if (!input.trim() && !attachment) return;
@@ -206,7 +236,8 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
           if (prev.some((m) => m._id === data.chat._id)) return prev;
           return [...prev, data.chat];
         });
-        setTimeout(scrollToBottom, 100);
+        shouldAutoScrollRef.current = true;
+        queueScrollToBottom("smooth");
       } else {
         loadMessages();
       }
@@ -244,7 +275,7 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
       setMessages(prev => prev.filter(m => !selectedMessages.includes(m._id)));
       setSelectedMessages([]);
       toast.success("Messages deleted");
-    } catch (err) {
+    } catch {
       toast.error("Failed to delete messages");
     }
   };
@@ -369,6 +400,8 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
 
       {/* CHAT AREA */}
       <div 
+        ref={messagesContainerRef}
+        onScroll={handleMessagesScroll}
         className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 space-y-4 relative"
       >
         {loading ? (
@@ -491,7 +524,6 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
             );
           })
         )}
-        <div ref={bottomRef} />
       </div>
 
       {/* INPUT AREA */}
