@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { NOTIFICATION_STYLES } from "./notificationStyles";
 import { Notification, Role } from "./types";
+import { Bell, CheckCircle, Package, Info, AlertTriangle, Check } from "lucide-react";
 
 interface Props {
   role: Role;
@@ -26,6 +27,31 @@ export default function NotificationDropdown({
   const router = useRouter();
   const ref = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
+
+  const getNotificationIcon = (n: Notification, className: string) => {
+    const title = n.title?.toLowerCase() || '';
+    const type = n.type || '';
+    
+    if (title.includes('purchase') || title.includes('order') || type === 'order_completed' || type === 'payment_received') {
+      return <CheckCircle className={className + " text-emerald-400"} />;
+    }
+    if (title.includes('new product') || title.includes('live') || type === 'product_approved' || type === 'download_ready') {
+      return <Package className={className + " text-purple-400"} />;
+    }
+    if (type.includes('reject') || type.includes('delete') || title.includes('fail') || title.includes('reject')) {
+      return <AlertTriangle className={className + " text-red-400"} />;
+    }
+    if (type.includes('review') || type.includes('request') || type.includes('pending') || type.includes('edit')) {
+      return <Info className={className + " text-blue-400"} />;
+    }
+    if (type === 'price_drop' || type === 'payout_sent' || title.includes('price') || title.includes('payout')) {
+      return <CheckCircle className={className + " text-green-400"} />;
+    }
+    if (type === 'contact_message' || title.includes('message')) {
+      return <Info className={className + " text-cyan-400"} />;
+    }
+    return <Bell className={className + " text-indigo-400"} />;
+  };
 
   const ui = NOTIFICATION_STYLES[role];
 
@@ -67,8 +93,8 @@ export default function NotificationDropdown({
         }}
         className={`relative grid place-items-center transition-all duration-300 group hover:scale-105 ${ui.button}`}
       >
-        <span className="text-lg group-hover:scale-110 transition-transform">
-          🔔
+        <span className="text-lg group-hover:scale-110 transition-transform flex items-center justify-center">
+          <Bell className="w-5 h-5 text-white/90" />
         </span>
 
         {unreadCount > 0 && (
@@ -94,7 +120,7 @@ export default function NotificationDropdown({
             <div className={`px-5 py-4 border-b border-white/10 bg-linear-to-r ${ui.headerBg}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">🔔</span>
+                  <Bell className="w-5 h-5 text-white" />
                   <h3 className="font-bold text-white">Notifications</h3>
                 </div>
                 {unreadCount > 0 && (
@@ -127,8 +153,8 @@ export default function NotificationDropdown({
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-white/10 grid place-items-center">
-                        {n.icon || "🔔"}
+                      <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                        {getNotificationIcon(n, "w-5 h-5")}
                       </div>
 
                       <div className="flex-1 min-w-0">
@@ -148,7 +174,7 @@ export default function NotificationDropdown({
                           }}
                           className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 font-bold"
                         >
-                          ✓
+                          <Check className="w-4 h-4" />
                         </button>
                       )}
                     </div>

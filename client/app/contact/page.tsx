@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import DynamicHeader from "@/app/components/DynamicHeader";
 import Image from "next/image";
 import { ContactForm } from "./ContactForm";
 
@@ -18,38 +19,7 @@ export default function ContactPage() {
         <div className="absolute top-1/3 -right-40 h-[460px] w-[460px] rounded-full bg-cyan-500/20 blur-[180px]" />
       </div>
 
-      {/* Header (fixed, same as About) */}
-      <header className="fixed top-0 left-0 right-0 z-30 border-b border-white/10 bg-[rgba(5,5,10,0.9)] backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6 md:py-4">
-          <Link href="/" className="flex items-center gap-3">
-            <Image
-              src="/bitforge_logo1.png"
-              alt="BitForge logo"
-              width={256}
-              height={256}
-              className="h-9 w-auto object-contain drop-shadow-[0_0_20px_rgba(56,189,248,0.45)] sm:h-11"
-              priority
-            />
-            <span className="text-xl -ml-6 font-bold tracking-tight bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
-              BitForge
-            </span>
-            <span className="hidden mt-2 items-center rounded-full border border-white/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-white/60 sm:inline-flex">
-              Digital Marketplace
-            </span>
-          </Link>
-          <div className="flex items-center gap-3 text-xs sm:text-sm text-white/70">
-            <Link href="/login" className="hover:text-white">
-              Login
-            </Link>
-            <Link
-              href="/register"
-              className="rounded-lg bg-gradient-to-r from-cyan-400 to-indigo-500 px-3 py-1.5 text-xs font-semibold text-black shadow-[0_0_20px_rgba(56,189,248,0.6)]"
-            >
-              Join BitForge
-            </Link>
-          </div>
-        </div>
-      </header>
+      <DynamicHeader title="Contact Us" />
 
       {/* Content */}
       <div className="relative z-10 mx-auto max-w-6xl px-4 pt-24 pb-14 md:px-6 md:pt-28 md:pb-18 lg:pt-32 lg:pb-22">

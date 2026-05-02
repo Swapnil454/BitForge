@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { notificationAPI } from "@/lib/api";
 import { getStoredUser } from "@/lib/cookies";
 import toast from "react-hot-toast";
+import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
+import { Bell, CheckCircle, Package, Info, AlertTriangle, Trash2, Check, CheckCheck } from "lucide-react";
 
 interface Notification {
   _id: string;
@@ -21,6 +23,31 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const router = useRouter();
+
+  const getNotificationIcon = (n: Notification, className: string) => {
+    const title = n.title?.toLowerCase() || '';
+    const type = n.type || '';
+    
+    if (title.includes('purchase') || title.includes('order') || type === 'order_completed' || type === 'payment_received') {
+      return <CheckCircle className={className + " text-emerald-400"} />;
+    }
+    if (title.includes('new product') || title.includes('live') || type === 'product_approved' || type === 'download_ready') {
+      return <Package className={className + " text-purple-400"} />;
+    }
+    if (type.includes('reject') || type.includes('delete') || title.includes('fail') || title.includes('reject')) {
+      return <AlertTriangle className={className + " text-red-400"} />;
+    }
+    if (type.includes('review') || type.includes('request') || type.includes('pending') || type.includes('edit')) {
+      return <Info className={className + " text-blue-400"} />;
+    }
+    if (type === 'price_drop' || type === 'payout_sent' || title.includes('price') || title.includes('payout')) {
+      return <CheckCircle className={className + " text-green-400"} />;
+    }
+    if (type === 'contact_message' || title.includes('message')) {
+      return <Info className={className + " text-cyan-400"} />;
+    }
+    return <Bell className={className + " text-indigo-400"} />;
+  };
 
   useEffect(() => {
     const user = getStoredUser();
@@ -99,48 +126,13 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-black via-slate-900 to-slate-800">
+    <div className="min-h-screen bg-linear-to-br from-black via-slate-900 to-slate-800 pb-20">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-linear-to-r from-blue-600/20 via-purple-600/20 to-indigo-600/20 backdrop-blur-xl border-b border-white/20 shadow-lg">
-        <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 md:py-5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <button
-                onClick={() => router.back()}
-                className="shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-                aria-label="Go back"
-              >
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-              </button>
-              
-              <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-linear-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg shadow-blue-500/30 shrink-0">
-                <span className="text-xl md:text-2xl">🔔</span>
-              </div>
-              
-              <div className="min-w-0 flex-1">
-                <h1 className="text-xl md:text-2xl font-black text-white truncate">Notifications</h1>
-                <p className="text-xs md:text-sm text-white/70">
-                  {unreadCount > 0 ? (
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse"></span>
-                      {unreadCount} unread
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1.5">
-                      <svg className="w-3 h-3 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      All caught up
-                    </span>
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <PageHeader 
+        title="Notifications" 
+        subtitle={unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
+        backHref="/dashboard/buyer"
+      />
 
       <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Action Buttons */}
@@ -150,9 +142,7 @@ export default function NotificationsPage() {
               onClick={handleMarkAllAsRead}
               className="px-5 py-2.5 bg-linear-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white rounded-xl font-semibold transition-all hover:scale-105 shadow-lg hover:shadow-cyan-500/50 flex items-center gap-2"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+              <CheckCheck className="w-4 h-4" />
               Mark all as read
             </button>
           </div>
@@ -160,14 +150,29 @@ export default function NotificationsPage() {
 
         {/* Notifications List */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mb-4"></div>
-            <p className="text-white/60">Loading notifications...</p>
+          <div className="space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="rounded-2xl p-5 bg-white/5 border border-white/10 animate-pulse flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4 flex-1 min-w-0">
+                  <div className="w-6 h-6 rounded-full bg-white/20 shrink-0 mt-0.5"></div>
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="h-5 bg-white/20 rounded w-1/3"></div>
+                    </div>
+                    <div className="h-4 bg-white/10 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-white/5 rounded w-1/4"></div>
+                  </div>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-white/10"></div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : notifications.length === 0 ? (
           <div className="bg-linear-to-br from-white/10 via-white/5 to-transparent border-2 border-white/20 rounded-2xl p-16 text-center shadow-2xl">
-            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-linear-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-              <span className="text-6xl">🧘</span>
+            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-linear-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center border border-blue-500/30 shadow-inner">
+              <CheckCircle className="w-12 h-12 text-blue-400" />
             </div>
             <p className="text-white text-2xl font-bold mb-3">All Clear!</p>
             <p className="text-white/60 text-lg">You're all caught up. No new notifications.</p>
@@ -192,41 +197,9 @@ export default function NotificationsPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4 flex-1 min-w-0">
                     {/* Icon */}
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all group-hover:scale-110 ${
-                      notification.isRead 
-                        ? "bg-linear-to-br from-white/10 to-white/5 border border-white/10"
-                        : "bg-linear-to-br from-blue-500/20 to-purple-500/20 border border-blue-500/30"
-                    }`}>
-                      {/* Use SVG icon based on notification type or icon */}
-                      {notification.type === 'success' || notification.icon === '✅' ? (
-                        <svg className="w-6 h-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      ) : notification.type === 'celebration' || notification.icon === '🎉' ? (
-                        <svg className="w-6 h-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                        </svg>
-                      ) : notification.type === 'info' || notification.icon === 'ℹ️' ? (
-                        <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      ) : notification.type === 'warning' || notification.icon === '⚠️' ? (
-                        <svg className="w-6 h-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                      ) : notification.icon === '💰' || notification.icon === '💵' ? (
-                        <svg className="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      ) : notification.icon === '📦' || notification.icon === '🛍️' ? (
-                        <svg className="w-6 h-6 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                        </svg>
-                      ) : (
-                        <svg className="w-6 h-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                        </svg>
-                      )}
+                    <div className="pt-0.5 shrink-0 transition-all group-hover:scale-110">
+                      {/* Use Lucide icon based on notification type and title */}
+                      {getNotificationIcon(notification, "w-6 h-6")}
                     </div>
                     
                     {/* Content */}
@@ -260,28 +233,22 @@ export default function NotificationsPage() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex flex-col gap-2 shrink-0">
+                  <div className="flex gap-1 shrink-0 items-start">
                     {!notification.isRead && (
                       <button
                         onClick={() => handleMarkAsRead(notification._id)}
-                        className="px-4 py-1.5 bg-linear-to-r from-cyan-600/20 to-blue-600/20 hover:from-cyan-600/30 hover:to-blue-600/30 border border-cyan-500/30 text-cyan-400 hover:text-cyan-300 text-xs rounded-lg transition-all font-semibold whitespace-nowrap flex items-center gap-1.5"
+                        className="p-2 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 rounded-full transition-all"
                         title="Mark as read"
                       >
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        Mark read
+                        <Check className="w-4 h-4" />
                       </button>
                     )}
                     <button
                       onClick={() => handleDelete(notification._id)}
-                      className="px-4 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 hover:text-red-300 text-xs rounded-lg transition-all font-semibold flex items-center gap-1.5"
+                      className="p-2 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-all"
                       title="Delete"
                     >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      Delete
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>

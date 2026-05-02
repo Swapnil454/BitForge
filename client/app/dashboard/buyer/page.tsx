@@ -35,8 +35,6 @@ import { useBuyerDashboard, useInvalidateBuyerCache, buyerQueryKeys } from "@/li
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
-import ProfileModal from "../components/ProfileModal";
-import SettingsModal from "../components/SettingModal";
 import PurchasesModal from "./components/PurchasesModal";
 import { KPI, Glass, MenuItem } from "../components/Cards";
 import DashboardActionCard from "../components/DashboardActionCard";
@@ -44,6 +42,7 @@ import NotificationDropdown from "../components/notifications/NotificationDropdo
 import { BarMetricChart } from "../components/charts/BarMetricChart";
 import { AreaMetricChart } from "../components/charts/AreaMetricChart";
 import BitForgeBrand from "../components/logo/BitForgeBrand";
+import LogoutModal from "../components/LogoutModal";
 
 
 interface User {
@@ -69,9 +68,8 @@ export default function BuyerDashboard() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showPurchasesModal, setShowPurchasesModal] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -341,7 +339,7 @@ export default function BuyerDashboard() {
                     <MenuItem 
                       label="Profile" 
                       icon={<UserRound className="h-4 w-4" />}
-                      onClick={() => { setShowProfileModal(true); setProfileOpen(false); }} 
+                      onClick={() => { router.push("/dashboard/settings?tab=profile"); setProfileOpen(false); }} 
                     />
                     <MenuItem 
                       label="Wishlist" 
@@ -355,7 +353,7 @@ export default function BuyerDashboard() {
                     <MenuItem 
                       label="Settings" 
                       icon={<Settings className="h-4 w-4" />}
-                      onClick={() => { setShowSettingsModal(true); setProfileOpen(false); }} 
+                      onClick={() => { router.push("/dashboard/settings"); setProfileOpen(false); }} 
                     />
                     <MenuItem 
                       label="Help Center" 
@@ -364,7 +362,7 @@ export default function BuyerDashboard() {
                       onClick={() => { router.push("/dashboard/buyer/help-center"); setProfileOpen(false); }} 
                     />
                     <div className="h-px bg-linear-to-r from-transparent via-indigo-500/20 to-transparent" />
-                    <MenuItem label="Logout" icon={<LogOut className="h-4 w-4" />} danger onClick={logout} />
+                    <MenuItem label="Logout" icon={<LogOut className="h-4 w-4" />} danger onClick={() => { setIsLogoutModalOpen(true); setProfileOpen(false); }} />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -578,26 +576,18 @@ export default function BuyerDashboard() {
 
       </section>
 
-      {/* Profile Modal */}
-      <AnimatePresence>
-        {showProfileModal && (
-          <ProfileModal user={user} onClose={() => setShowProfileModal(false)} onUpdate={setUser} />
-        )}
-      </AnimatePresence>
-
-      {/* Settings Modal */}
-      <AnimatePresence>
-        {showSettingsModal && (
-          <SettingsModal user={user} onClose={() => setShowSettingsModal(false)} />
-        )}
-      </AnimatePresence>
-
       {/* Purchases Modal */}
       <AnimatePresence>
         {showPurchasesModal && (
           <PurchasesModal onClose={() => setShowPurchasesModal(false)} />
         )}
       </AnimatePresence>
+
+      <LogoutModal 
+        isOpen={isLogoutModalOpen} 
+        onClose={() => setIsLogoutModalOpen(false)} 
+        onConfirm={logout} 
+      />
 
     </main>
   );

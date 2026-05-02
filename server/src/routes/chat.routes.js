@@ -13,7 +13,10 @@ import {
   adminDeleteMessages,
   adminClearThread,
   adminClearAllChats,
+  uploadAttachment,
+  deleteMessages,
 } from "../controllers/chat.controller.js";
+import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
@@ -23,6 +26,8 @@ router.use(authMiddleware);
 // Buyer/Seller (and admin if needed) support thread
 router.get("/support-thread", requireRole(["buyer", "seller", "admin"]), getSupportThread);
 router.post("/support-thread", requireRole(["buyer", "seller", "admin"]), sendSupportMessage);
+router.post("/upload", requireRole(["buyer", "seller", "admin"]), upload.single("attachment"), uploadAttachment);
+router.delete("/messages", requireRole(["buyer", "seller", "admin"]), deleteMessages);
 
 // Unread helpers
 router.get("/unread-count", requireRole(["buyer", "seller", "admin"]), getUnreadCount);

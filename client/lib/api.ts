@@ -447,8 +447,22 @@ export const buyerAPI = {
             return response.data;
         },
 
-        sendSupportMessage: async (message: string) => {
-            const response = await api.post('/chat/support-thread', { message });
+        sendSupportMessage: async (message: string, attachments?: any[]) => {
+            const response = await api.post('/chat/support-thread', { message, attachments });
+            return response.data;
+        },
+
+        uploadAttachment: async (formData: FormData) => {
+            const response = await api.post('/chat/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            return response.data;
+        },
+
+        deleteMessages: async (messageIds: string[]) => {
+            const response = await api.delete('/chat/messages', { data: { messageIds } });
             return response.data;
         },
 
@@ -462,8 +476,8 @@ export const buyerAPI = {
             return response.data;
         },
 
-        adminSendMessage: async (userId: string, message: string) => {
-            const response = await api.post(`/chat/thread/${userId}`, { message });
+        adminSendMessage: async (userId: string, message: string, attachments?: any[]) => {
+            const response = await api.post(`/chat/thread/${userId}`, { message, attachments });
             return response.data;
         },
 

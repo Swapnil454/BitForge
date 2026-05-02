@@ -1,6 +1,7 @@
 import ChatMessage from "../models/ChatMessage.js";
 import User from "../models/User.js";
 import { getIO } from "../lib/socket.js";
+import cloudinary from "../config/cloudinary.js";
 
 // Fetch support thread for current buyer/seller with any admin
 export const getSupportThread = async (req, res) => {
@@ -20,6 +21,7 @@ export const getSupportThread = async (req, res) => {
         { from: user._id, toRole: "admin" },
         { to: user._id, fromRole: "admin" },
       ],
+      deletedFor: { $ne: user._id }
     })
       .sort("createdAt")
       .populate("from", "name role")
@@ -36,14 +38,14 @@ export const getSupportThread = async (req, res) => {
 export const sendSupportMessage = async (req, res) => {
   try {
     const user = req.user;
-    const { message } = req.body;
+    const { message, attachments } = req.body;
 
     if (!user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    if (!message || typeof message !== "string" || !message.trim()) {
-      return res.status(400).json({ message: "Message is required" });
+    if ((!message || typeof message !== "string" || !message.trim()) && (!attachments || attachments.length === 0)) {
+      return res.status(400).json({ message: "Message or attachment is required" });
     }
 
     // Find any admin to route the conversation through
@@ -62,7 +64,8 @@ export const sendSupportMessage = async (req, res) => {
       to: toUser._id,
       fromRole: user.role,
       toRole: toUser.role,
-      message: message.trim(),
+      message: message?.trim() || "",
+      attachments: attachments || [],
       readBy: [user._id],
     });
 
@@ -178,6 +181,7 @@ export const adminGetThread = async (req, res) => {
         { from: userId, toRole: "admin" },
         { to: userId, fromRole: "admin" },
       ],
+      deletedFor: { $ne: admin._id }
     })
       .sort("createdAt")
       .populate("from", "name role")
@@ -370,5 +374,81 @@ export const adminClearAllChats = async (_req, res) => {
   } catch (err) {
     console.error("adminClearAllChats error", err);
     return res.status(500).json({ message: "Failed to clear all chats" });
+  }
+};
+
+export const uploadAttachment = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file provided" });
+    }
+
+    const file = req.file;
+    const resource_type = file.mimetype.startsWith("image/") ? "image" : "raw";
+
+    const uploadResult = await new Promise((resolve, reject) => {
+      const result = cloudinary.uploader.upload_stream(
+        {
+          resource_type,
+          folder: "sellify/chat_attachments",
+        },
+        (error, uploadResult) => {
+          if (error) reject(error);
+          else resolve(uploadResult);
+        }
+      );
+      result.end(file.buffer);
+    });
+
+    return res.status(200).json({
+      url: uploadResult.secure_url,
+      type: file.mimetype,
+      name: file.originalname,
+    });
+  } catch (err) {
+    console.error("uploadAttachment error", err);
+    return res.status(500).json({ message: "Failed to upload attachment" });
+  }
+};
+
+// Soft delete messages
+export const deleteMessages = async (req, res) => {
+  try {
+    const user = req.user;
+    const { messageIds } = req.body;
+
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+    if (!Array.isArray(messageIds) || messageIds.length === 0) {
+      return res.status(400).json({ message: "messageIds array is required" });
+    }
+
+    // Soft delete: "Delete for me". Add user to deletedFor array.
+    await ChatMessage.updateMany(
+      { _id: { $in: messageIds } },
+      { $addToSet: { deletedFor: user._id } }
+    );
+
+    // Broadcast delete event
+    try {
+      const io = getIO();
+      const messages = await ChatMessage.find({ _id: { $in: messageIds } });
+      if (messages.length > 0) {
+        // Send to participants
+        const fromId = String(messages[0].from);
+        const toId = String(messages[0].to);
+        // We emit the standard delete event. Frontend will filter these IDs.
+        io.to(fromId).to(toId).emit("chat:messages-deleted", messageIds);
+      }
+    } catch (err) {
+      console.error("deleteMessages socket emit error", err);
+    }
+
+    return res.json({ message: "Messages deleted" });
+  } catch (err) {
+    console.error("deleteMessages error", err);
+    return res.status(500).json({ message: "Failed to delete messages" });
   }
 };

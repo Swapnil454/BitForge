@@ -1,4 +1,5 @@
 import Link from "next/link";
+import DynamicHeader from "@/app/components/DynamicHeader";
 import Image from "next/image";
 
 export const metadata = {
@@ -10,32 +11,7 @@ export default function PrivacyPolicyPage() {
   return (
     <main className="relative min-h-screen bg-[#05050a] text-white overflow-x-hidden">
       {/* HEADER */}
-      <header className="fixed top-0 left-0 right-0 z-40 h-16 sm:h-20 border-b border-white/10 bg-[#05050a]/80 backdrop-blur-xl">
-        <nav className="mx-auto flex h-full max-w-7xl items-center justify-between px-5 md:px-6">
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/bitforge_logo1.png"
-              alt="BitForge logo"
-              width={256}
-              height={256}
-              className="h-10 w-auto sm:h-12 drop-shadow-[0_0_20px_rgba(56,189,248,0.45)]"
-              priority
-            />
-            <span className="-ml-3 text-lg font-bold tracking-tight sm:-ml-4 sm:text-2xl bg-linear-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent leading-tight">
-              BitForge
-            </span>
-          </Link>
-
-          <div className="flex items-center gap-4 text-sm">
-            <Link
-              href="/login"
-              className="rounded-lg border border-white/20 px-3 py-1.5 text-white/80 hover:border-cyan-400 hover:text-white"
-            >
-              Sign in
-            </Link>
-          </div>
-        </nav>
-      </header>
+      <DynamicHeader title="Privacy Policy" />
 
       {/* BACKGROUND GLOW */}
       <div className="pointer-events-none fixed inset-0 z-0 opacity-60">

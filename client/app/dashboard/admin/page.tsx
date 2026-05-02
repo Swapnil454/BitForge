@@ -13,11 +13,10 @@ import toast from "react-hot-toast";
 import { KPI, Glass, MenuItem } from "../components/Cards";
 import DashboardActionCard from "../components/DashboardActionCard";
 import NotificationDropdown from "../components/notifications/NotificationDropdown";
-import ProfileModal from "../components/ProfileModal";
-import SettingsModal from "../components/SettingModal";
 import { AreaMetricChart} from "../components/charts/AreaMetricChart";
 import { BarMetricChart } from "../components/charts/BarMetricChart";
 import BitForgeBrand from "../components/logo/BitForgeBrand";
+import LogoutModal from "../components/LogoutModal";
 
 interface User {
   id: string;
@@ -54,8 +53,7 @@ export default function AdminDashboard() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const socketRef = useRef<Socket | null>(null);
 
   // React Query hooks for cached data
@@ -278,12 +276,12 @@ export default function AdminDashboard() {
                     <MenuItem 
                       label="Profile" 
                       icon="👤"
-                      onClick={() => { setShowProfileModal(true); setProfileOpen(false); }} 
+                      onClick={() => { router.push("/dashboard/settings?tab=profile"); setProfileOpen(false); }} 
                     />
                     <MenuItem 
                       label="Settings" 
                       icon="⚙️"
-                      onClick={() => { setShowSettingsModal(true); setProfileOpen(false); }} 
+                      onClick={() => { router.push("/dashboard/settings"); setProfileOpen(false); }} 
                     />
                     <MenuItem 
                       label="Help Center" 
@@ -305,7 +303,7 @@ export default function AdminDashboard() {
                       }} 
                     />
                     <div className="h-px bg-linear-to-r from-transparent via-indigo-500/20 to-transparent" />
-                    <MenuItem label="Logout" icon="🚪" danger onClick={logout} />
+                    <MenuItem label="Logout" icon="🚪" danger onClick={() => { setIsLogoutModalOpen(true); setProfileOpen(false); }} />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -510,15 +508,13 @@ export default function AdminDashboard() {
 
       </section>
 
-      {/* Modals */}
-      <AnimatePresence>
-        {showProfileModal && (
-          <ProfileModal user={user} onClose={() => setShowProfileModal(false)} onUpdate={setUser} />
-        )}
-        {showSettingsModal && (
-          <SettingsModal user={user} allowDelete={false} onClose={() => setShowSettingsModal(false)} />
-        )}
-      </AnimatePresence>
+
+      <LogoutModal 
+        isOpen={isLogoutModalOpen} 
+        onClose={() => setIsLogoutModalOpen(false)} 
+        onConfirm={logout} 
+      />
+
     </main>
   );
 }

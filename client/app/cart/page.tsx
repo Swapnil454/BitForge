@@ -9,6 +9,7 @@ import api from '@/lib/api';
 import { getCookie } from '@/lib/cookies';
 import { Loader, Plus, Minus, Trash2, ShoppingCart, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
+import PageHeader from '@/app/dashboard/buyer/transactions/components/PageHeader';
 
 interface CartItem {
   _id: string;
@@ -235,10 +236,45 @@ export default function CartPage() {
 
   if (loading || !authChecked) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-slate-900 to-slate-800 flex items-center justify-center">
-        <div className="text-center">
-          <Loader className="w-12 h-12 text-purple-500 animate-spin mx-auto mb-4" />
-          <p className="text-white/60 text-lg">Loading your cart...</p>
+      <div className="min-h-screen bg-[#05050a] text-white pb-32 md:pb-8 overflow-x-hidden">
+        <PageHeader 
+          title="Shopping Cart" 
+          backHref="/dashboard/buyer"
+        />
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div className="lg:col-span-2 space-y-3 md:space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-6 animate-pulse flex gap-3 md:gap-6">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-xl bg-white/10" />
+                  <div className="flex-1 space-y-3 py-2">
+                    <div className="h-5 bg-white/10 rounded w-3/4" />
+                    <div className="h-4 bg-white/10 rounded w-1/2" />
+                    <div className="h-4 bg-white/10 rounded w-1/3" />
+                    <div className="pt-2 flex justify-between items-center">
+                      <div className="h-6 bg-white/10 rounded w-1/4" />
+                      <div className="flex gap-2">
+                        <div className="h-8 w-24 bg-white/10 rounded" />
+                        <div className="h-8 w-10 bg-white/10 rounded" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="hidden lg:block lg:col-span-1">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-6 animate-pulse">
+                <div className="h-6 bg-white/10 rounded w-1/2 mb-6" />
+                <div className="space-y-4 mb-6">
+                  <div className="h-4 bg-white/10 rounded" />
+                  <div className="h-4 bg-white/10 rounded" />
+                  <div className="h-4 bg-white/10 rounded" />
+                  <div className="h-4 bg-white/10 rounded pt-4 border-t border-white/10" />
+                </div>
+                <div className="h-12 bg-white/10 rounded w-full" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -247,38 +283,21 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-slate-900 to-slate-800 pb-32 md:pb-8 overflow-x-hidden">
       {/* Header */}
-      <div className="sticky top-0 left-0 right-0 z-40 bg-gradient-to-b from-black via-slate-900/95 to-slate-900/80 backdrop-blur-md border-b border-white/10 w-full">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <button
-                onClick={() => router.push('/dashboard/buyer')}
-                className="p-2 md:p-2.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-all active:scale-95 flex-shrink-0"
-                aria-label="Go back"
-              >
-                <ArrowLeft className="w-5 h-5 md:w-5 md:h-5 text-white" />
-              </button>
-              <div className="min-w-0 flex-1">
-                <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-white flex items-center gap-2 md:gap-3 truncate">
-                  <ShoppingCart className="w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 flex-shrink-0" />
-                  <span className="truncate">Shopping Cart</span>
-                </h1>
-                <p className="text-white/60 text-xs md:text-sm mt-0.5 md:mt-1">
-                  {cart?.totalItems || 0} item{cart?.totalItems !== 1 ? 's' : ''}
-                </p>
-              </div>
-            </div>
-            {cart && cart.items.length > 0 && (
-              <button
-                onClick={clearCart}
-                className="px-3 md:px-4 py-2 bg-red-600/20 hover:bg-red-600/30 active:scale-95 border border-red-500/30 text-red-400 rounded-lg transition-all text-xs md:text-sm font-semibold whitespace-nowrap flex-shrink-0"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title="Shopping Cart"
+        subtitle={`${cart?.totalItems || 0} item${cart?.totalItems !== 1 ? 's' : ''}`}
+        backHref="/dashboard/buyer"
+        rightSlot={
+          cart && cart.items.length > 0 ? (
+            <button
+              onClick={clearCart}
+              className="px-3 md:px-4 py-2 bg-red-500/10 hover:bg-red-500/20 active:scale-95 border border-red-500/20 text-red-400 rounded-lg transition-all text-xs md:text-sm font-semibold whitespace-nowrap"
+            >
+              Clear
+            </button>
+          ) : undefined
+        }
+      />
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">

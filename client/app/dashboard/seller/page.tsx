@@ -11,15 +11,14 @@ import { useSellerDashboard, useInvalidateSellerCache, sellerQueryKeys } from "@
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
-import SettingsModal from "../components/SettingModal";
 import { KPI, Glass, MenuItem, ChartArea, ChartBar} from "../components/Cards";
-import ProfileModal from "../components/ProfileModal";
 import RecentSalesModal from "./components/RecentSalesModel";
 import DashboardActionCard from "../components/DashboardActionCard";
 import NotificationDropdown from "../components/notifications/NotificationDropdown";
 import { BarMetricChart } from "../components/charts/BarMetricChart";
 import { AreaMetricChart } from "../components/charts/AreaMetricChart";
 import BitForgeBrand from "../components/logo/BitForgeBrand";
+import LogoutModal from "../components/LogoutModal";
 /* ================= TYPES ================= */
 
 interface User {
@@ -69,9 +68,8 @@ export default function Dashboard() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showRecentSalesModal, setShowRecentSalesModal] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const router = useRouter();
 
   const notifRef = useRef<HTMLDivElement | null>(null);
@@ -346,12 +344,12 @@ export default function Dashboard() {
                     <MenuItem 
                       label="Profile" 
                       icon="👤"
-                      onClick={() => { setShowProfileModal(true); setProfileOpen(false); }} 
+                      onClick={() => { router.push("/dashboard/settings?tab=profile"); setProfileOpen(false); }} 
                     />
                     <MenuItem 
                       label="Settings" 
                       icon="⚙️"
-                      onClick={() => { setShowSettingsModal(true); setProfileOpen(false); }} 
+                      onClick={() => { router.push("/dashboard/settings"); setProfileOpen(false); }} 
                     />
                     <MenuItem 
                       label="Help Center" 
@@ -365,7 +363,7 @@ export default function Dashboard() {
                       }} 
                     />
                     <div className="h-px bg-linear-to-r from-transparent via-indigo-500/20 to-transparent" />
-                    <MenuItem label="Logout" icon="🚪" danger onClick={logout} />
+                    <MenuItem label="Logout" icon="🚪" danger onClick={() => { setIsLogoutModalOpen(true); setProfileOpen(false); }} />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -521,18 +519,6 @@ export default function Dashboard() {
 
       {/* Modals */}
       <AnimatePresence>
-        {showProfileModal && (
-          <ProfileModal user={user} onClose={() => setShowProfileModal(false)} onUpdate={setUser} />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showSettingsModal && (
-          <SettingsModal user={user} onClose={() => setShowSettingsModal(false)} />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
         {showRecentSalesModal && (
           <RecentSalesModal 
             sales={recentSales} 
@@ -544,6 +530,13 @@ export default function Dashboard() {
           />
         )}
       </AnimatePresence>
+
+      <LogoutModal 
+        isOpen={isLogoutModalOpen} 
+        onClose={() => setIsLogoutModalOpen(false)} 
+        onConfirm={logout} 
+      />
+
     </main>
   );
 }
