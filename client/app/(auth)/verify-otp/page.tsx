@@ -217,7 +217,7 @@ function VerifyOtpPageContent() {
       {showSuccess && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/70">
           <div className="px-10 py-8 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/10 text-center shadow-lg">
-            <div className="text-4xl mb-3">✅</div>
+            <div className="text-4xl mb-3"></div>
             <p className="text-xl font-black text-cyan-400">Email verified!</p>
             <p className="text-sm text-white/60 mt-1">Redirecting to dashboard…</p>
           </div>

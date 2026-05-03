@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { adminAPI } from "@/lib/api";
 import toast from "react-hot-toast";
 import { getStoredUser } from "@/lib/cookies";
+import { RefreshCw, Loader2 } from "lucide-react";
+import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
 
 /* ================= TYPES ================= */
 
@@ -59,6 +61,7 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [changes, setChanges] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [selected, setSelected] = useState<string[]>([]);
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -76,10 +79,12 @@ export default function AdminProductsPage() {
 
   /* ================= FETCH ================= */
 
-  const loadAll = async () => {
-    setLoading(true);
+  const loadAll = async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
     await Promise.all([fetchNew(), fetchChanges()]);
     setLoading(false);
+    setRefreshing(false);
   };
 
   const fetchNew = async () => {
@@ -207,21 +212,54 @@ export default function AdminProductsPage() {
 
   /* ================= UI ================= */
 
-  return (
-    <div className="min-h-screen bg-black text-white px-6 py-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-
-        {/* Header */}
-        <div>
-          <button
-            onClick={() => router.push("/dashboard/admin")}
-            className="text-cyan-400 text-sm mb-2"
-          >
-            ← Back to Dashboard
-          </button>
-          <h1 className="text-3xl font-bold">Product Moderation</h1>
-          <p className="text-white/60">Approve products & review changes</p>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#05050a]">
+        <div className="h-16 w-full border-b border-white/[0.05] bg-[#0a0a0f]" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6 animate-pulse">
+          <div className="flex gap-3">
+            <div className="h-10 w-36 bg-[#16161e] rounded-xl" />
+            <div className="h-10 w-40 bg-[#16161e] rounded-xl" />
+          </div>
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-[#16161e] border border-white/[0.05] rounded-2xl p-6 space-y-4">
+              <div className="flex justify-between">
+                <div className="space-y-2">
+                  <div className="h-5 w-48 bg-white/[0.04] rounded-lg" />
+                  <div className="h-3 w-64 bg-white/[0.03] rounded-md" />
+                  <div className="h-3 w-40 bg-white/[0.03] rounded-md" />
+                </div>
+                <div className="flex gap-2">
+                  <div className="h-9 w-20 bg-white/[0.04] rounded-lg" />
+                  <div className="h-9 w-20 bg-white/[0.04] rounded-lg" />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#05050a] text-white">
+      <PageHeader
+        backHref="/dashboard/admin"
+        backLabel="Back"
+        title="Product Moderation"
+        subtitle="Approve products & review changes"
+        rightSlot={
+          <button
+            onClick={() => loadAll(true)}
+            disabled={refreshing}
+            className="h-9 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3 h-3 ${refreshing ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
+        }
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
         {/* Tabs */}
         <div className="flex gap-3">

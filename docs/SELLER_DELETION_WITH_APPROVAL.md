@@ -179,10 +179,10 @@ deletionRejectionReason: String
 
 | Feature | Buyer | Seller |
 |---------|-------|--------|
-| Admin approval required | ❌ No | ✅ Yes |
+| Admin approval required |  No |  Yes |
 | Deletion timing | Immediate | After admin approval |
 | Admin notification | After deletion | Before deletion (pending) |
-| Can be rejected | ❌ No | ✅ Yes (with reason) |
+| Can be rejected |  No |  Yes (with reason) |
 | Redirect after request | To register page | Stays logged in (pending) |
 
 ## Success Messages

@@ -40,7 +40,7 @@ export default function AdminSettingsPage() {
                 <p className="text-white/60 text-sm">Enable/disable</p>
               </div>
               <div className="bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-3xl mb-2">📝</div>
+                <div className="text-3xl mb-2"></div>
                 <p className="text-white font-semibold">Policies</p>
                 <p className="text-white/60 text-sm">Terms & guidelines</p>
               </div>
@@ -60,7 +60,7 @@ export default function AdminSettingsPage() {
               <p className="text-white/60 text-sm">Percentage taken from each sale. Adjust in Admin → Settings → Fees.</p>
             </div>
             <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded">
-              <p className="text-yellow-200 text-sm">⚠️ <strong>Note:</strong> Fee changes apply to new transactions only, not retroactively.</p>
+              <p className="text-yellow-200 text-sm"> <strong>Note:</strong> Fee changes apply to new transactions only, not retroactively.</p>
             </div>
           </div>
         </section>
@@ -124,7 +124,7 @@ export default function AdminSettingsPage() {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <Link href="/docs/admin/analytics" className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3">📊</div>
+            <div className="text-3xl mb-3"></div>
             <h3 className="text-lg font-semibold text-white mb-2">Analytics</h3>
             <p className="text-white/60 text-sm">Platform metrics</p>
           </Link>

@@ -39,7 +39,9 @@ import {
   getContentReviewQueue,
   resolveContentReview,
   verifySellerIdentity,
-  getPendingIdentityVerifications
+  getPendingIdentityVerifications,
+  getProductAnalytics,
+  getProductReport
 } from "../controllers/admin.controller.js";
 import {
   approveRefund,
@@ -65,6 +67,8 @@ router.post("/sellers/:id/reject", rejectSeller);
 router.get("/products/pending", getPendingProducts);
 router.get("/products/all", getAllProducts);
 router.get("/products/:id/details", getProductDetails);
+router.get("/products/analytics", getProductAnalytics);
+router.get("/products/report", getProductReport);
 router.put("/products/:id/edit", editProductByAdmin);
 router.delete("/products/:id/delete", deleteProductByAdmin);
 router.post("/products/:id/approve", approveProduct);

@@ -27,7 +27,7 @@ export default function RecentSalesModal({ sales, onClose, onViewAll }: { sales:
         className="bg-linear-to-br from-slate-900 to-slate-800 rounded-lg max-w-2xl w-full p-8 shadow-xl border border-white/10"
       >
         <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-          <span>📊</span> Recent Transactions
+          <span></span> Recent Transactions
         </h2>
 
         {sales.length === 0 ? (

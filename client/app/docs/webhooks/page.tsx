@@ -67,7 +67,7 @@ export default function WebhooksPage() {
             {/* Order Events */}
             <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <span className="text-xl">📦</span> Order Events
+                <span className="text-xl"></span> Order Events
               </h3>
               <div className="space-y-2 text-white/70 text-sm">
                 <div className="flex items-start gap-2">
@@ -88,7 +88,7 @@ export default function WebhooksPage() {
             {/* Payout Events */}
             <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <span className="text-xl">💸</span> Payout Events
+                <span className="text-xl"></span> Payout Events
               </h3>
               <div className="space-y-2 text-white/70 text-sm">
                 <div className="flex items-start gap-2">
@@ -134,7 +134,7 @@ export default function WebhooksPage() {
           <h2 className="text-2xl font-bold text-white mb-4">Webhook Payload Structure</h2>
           <div className="bg-white/5 border border-white/10 rounded-xl p-6">
             <p className="text-white/70 mb-4">All webhook events follow this structure:</p>
-            <CodeBlock 
+            <CodeBlock
               code={`{
   "id": "evt_1234567890",
   "type": "payment.completed",
@@ -216,7 +216,7 @@ export default function WebhooksPage() {
             <p className="text-white/70 mb-4">
               Always verify webhook signatures to ensure requests come from ContentSellify:
             </p>
-            <CodeBlock 
+            <CodeBlock
               code={`const crypto = require('crypto');
 
 function verifyWebhookSignature(payload, signature, secret) {
@@ -294,7 +294,7 @@ app.post('/webhooks', (req, res) => {
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">📝</span> Log All Events
+                <span className="text-xl"></span> Log All Events
               </h3>
               <p className="text-white/60 text-sm">
                 Keep detailed logs of received webhooks for debugging and audit trails.
@@ -308,7 +308,7 @@ app.post('/webhooks', (req, res) => {
           <h2 className="text-2xl font-bold text-white mb-4">Testing Webhooks</h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">Test webhooks using our CLI or dashboard:</p>
-            <CodeBlock 
+            <CodeBlock
               code={`# Install ContentSellify CLI
 npm install -g @contentsellify/cli
 

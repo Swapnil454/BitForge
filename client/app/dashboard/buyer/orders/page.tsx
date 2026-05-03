@@ -180,19 +180,18 @@ export default function AllOrdersPage() {
                 <button
                   key={option}
                   onClick={() => setSortBy(option)}
-                  className={`px-3 sm:px-4 py-2 rounded-xl font-medium text-sm transition-all ${
-                    sortBy === option
-                      ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/25'
-                      : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
-                  }`}
+                  className={`px-3 sm:px-4 py-2 rounded-xl font-medium text-sm transition-all ${sortBy === option
+                    ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/25'
+                    : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
+                    }`}
                 >
                   {option === 'newest'
                     ? 'Newest'
                     : option === 'oldest'
-                    ? 'Oldest'
-                    : option === 'highest'
-                    ? 'Highest ₹'
-                    : 'Lowest ₹'}
+                      ? 'Oldest'
+                      : option === 'highest'
+                        ? 'Highest ₹'
+                        : 'Lowest ₹'}
                 </button>
               ))}
             </div>
@@ -229,7 +228,7 @@ export default function AllOrdersPage() {
               animate={{ opacity: 1, scale: 1 }}
               className="bg-red-500/10 border border-red-500/30 rounded-2xl p-8 text-center"
             >
-              <div className="text-5xl mb-4">⚠️</div>
+              <div className="text-5xl mb-4"></div>
               <p className="text-red-400 text-lg font-semibold mb-2">{error}</p>
               <button
                 onClick={fetchAllOrders}
@@ -244,7 +243,7 @@ export default function AllOrdersPage() {
               animate={{ opacity: 1, scale: 1 }}
               className="bg-gradient-to-br from-slate-900/80 to-slate-800/50 border border-white/10 rounded-2xl p-12 text-center"
             >
-              <div className="text-6xl mb-4">📦</div>
+              <div className="text-6xl mb-4"></div>
               <h3 className="text-xl font-bold text-white mb-2">No Orders Yet</h3>
               <p className="text-white/60 mb-6 max-w-md mx-auto">
                 Start shopping to see your orders here. Browse our marketplace for amazing digital products!

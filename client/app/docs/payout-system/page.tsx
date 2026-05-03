@@ -141,7 +141,7 @@ export default function PayoutSystemPage() {
 
           <div className="mt-6 rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
             <div className="flex items-start gap-3">
-              <span className="text-xl">⚠️</span>
+              <span className="text-xl"></span>
               <div>
                 <p className="mb-2 font-semibold text-yellow-300">Important</p>
                 <p className="text-sm text-white/70">
@@ -155,7 +155,7 @@ export default function PayoutSystemPage() {
         {/* Requesting Payouts */}
         <section>
           <h2 className="mb-4 text-2xl font-semibold text-white">Requesting a Payout</h2>
-          
+
           <h3 className="mb-3 text-lg font-semibold text-white">Payout Requirements</h3>
           <ul className="space-y-2 text-white/70">
             <li className="flex items-start gap-3">
@@ -240,15 +240,15 @@ export default function PayoutSystemPage() {
           </p>
           <ul className="space-y-2 text-white/70">
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">📊</span>
+              <span className="text-cyan-400"></span>
               <span><strong>Sales Report:</strong> View all product sales with dates and amounts</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">💸</span>
+              <span className="text-cyan-400"></span>
               <span><strong>Payout History:</strong> Track all completed and pending payouts</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">📈</span>
+              <span className="text-cyan-400"></span>
               <span><strong>Analytics:</strong> Monthly earnings breakdown and trends</span>
             </li>
             <li className="flex items-start gap-3">
@@ -261,7 +261,7 @@ export default function PayoutSystemPage() {
         {/* Troubleshooting */}
         <section>
           <h2 className="mb-4 text-2xl font-semibold text-white">Troubleshooting</h2>
-          
+
           <div className="space-y-4">
             <details className="group rounded-lg border border-white/10 bg-white/5 p-4">
               <summary className="cursor-pointer font-semibold text-white list-none flex items-center justify-between">

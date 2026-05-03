@@ -10,7 +10,7 @@
 
 ---
 
-## 📋 Dashboard Features
+##  Dashboard Features
 
 ### View Products
 - **See all products** in a card grid layout
@@ -51,11 +51,11 @@
 - **This will be sent to the seller as notification**
 
 ### What Happens After Edit
-✅ Product details updated
-✅ Seller receives notification with:
+ Product details updated
+ Seller receives notification with:
   - What was changed
   - The reason for changes
-✅ Product reflects changes immediately
+ Product reflects changes immediately
 
 ---
 
@@ -74,13 +74,13 @@
 - **This will be sent to the seller as notification**
 
 ### What Happens After Delete
-✅ Product permanently deleted from database
-✅ Product files deleted from Cloudinary cloud storage
-✅ Product removed from all marketplaces immediately
-✅ Seller receives notification with:
+ Product permanently deleted from database
+ Product files deleted from Cloudinary cloud storage
+ Product removed from all marketplaces immediately
+ Seller receives notification with:
   - Product that was deleted
   - The reason for deletion
-⚠️ **This action CANNOT be undone!**
+ **This action CANNOT be undone!**
 
 ---
 
@@ -124,7 +124,7 @@ Reason: File contains copyrighted material
 
 ---
 
-## 🔍 Search & Filter Guide
+##  Search & Filter Guide
 
 ### Status Filters
 - **All** - Shows all products regardless of status
@@ -170,7 +170,7 @@ Reason: File contains copyrighted material
 
 ---
 
-## 📝 Best Practices
+##  Best Practices
 
 ### When Editing
 1. Be clear about why you're making changes
@@ -192,7 +192,7 @@ Reason: File contains copyrighted material
 
 ---
 
-## 🚨 Common Issues
+##  Common Issues
 
 ### Issue: Product not showing in search
 **Solution:** Check if filters are too restrictive. Click "All" filter button.
@@ -211,7 +211,7 @@ Reason: File contains copyrighted material
 
 ---
 
-## 📊 Product Management Stats
+##  Product Management Stats
 
 ### Viewing Stats
 - Dashboard shows total products
@@ -226,7 +226,7 @@ Currently available through:
 
 ---
 
-## 🔐 Permissions & Security
+## Permissions & Security
 
 ### Admin Only
 - Only users with "admin" role can access this feature

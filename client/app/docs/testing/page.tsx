@@ -94,7 +94,7 @@ export default function TestingPage() {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <span className="text-xl">👤</span> Test Users
+                <span className="text-xl"></span> Test Users
               </h3>
               <div className="space-y-2 text-sm">
                 <div className="bg-white/5 p-3 rounded">
@@ -109,7 +109,7 @@ export default function TestingPage() {
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <span className="text-xl">📦</span> Sample Products
+                <span className="text-xl"></span> Sample Products
               </h3>
               <p className="text-white/70 text-sm mb-2">Test mode includes sample products:</p>
               <ul className="space-y-1 text-white/60 text-sm list-disc list-inside">
@@ -136,7 +136,7 @@ export default function TestingPage() {
               </ol>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-              <h3 className="text-white font-semibold mb-2">💸 Payout Testing</h3>
+              <h3 className="text-white font-semibold mb-2"> Payout Testing</h3>
               <ol className="space-y-1 text-white/70 text-sm list-decimal list-inside">
                 <li>Complete test purchases worth $50+</li>
                 <li>Request payout in dashboard</li>
@@ -153,19 +153,19 @@ export default function TestingPage() {
           <div className="space-y-3">
             <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-lg p-4">
               <p className="text-white/80 text-sm flex items-start gap-2">
-                <span className="text-xl">✅</span>
+                <span className="text-xl"></span>
                 <span><strong>Test both success and failure scenarios</strong> - Don't just test happy paths. Use declined cards, invalid data, and edge cases.</span>
               </p>
             </div>
             <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-lg p-4">
               <p className="text-white/80 text-sm flex items-start gap-2">
-                <span className="text-xl">✅</span>
+                <span className="text-xl"></span>
                 <span><strong>Keep test and production keys separate</strong> - Never use production keys in development or test keys in production.</span>
               </p>
             </div>
             <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-lg p-4">
               <p className="text-white/80 text-sm flex items-start gap-2">
-                <span className="text-xl">✅</span>
+                <span className="text-xl"></span>
                 <span><strong>Clean test data regularly</strong> - Reset test environment weekly to avoid clutter and ensure consistent results.</span>
               </p>
             </div>

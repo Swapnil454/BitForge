@@ -19,7 +19,7 @@ async function testRegistrationFlow() {
             password: 'password123'
         });
         
-        console.log('✅ Registration success:', registerResponse.data);
+        console.log(' Registration success:', registerResponse.data);
         
         // Step 2: Try to verify with wrong OTP first
         console.log('🔄 Testing verify with wrong OTP...');
@@ -28,9 +28,9 @@ async function testRegistrationFlow() {
                 email: 'test@example.com',
                 otp: '123456'
             });
-            console.log('✅ Verify success:', verifyResponse.data);
+            console.log(' Verify success:', verifyResponse.data);
         } catch (verifyError) {
-            console.log('❌ Verify error (expected):', verifyError.response?.status, verifyError.response?.data);
+            console.log(' Verify error (expected):', verifyError.response?.status, verifyError.response?.data);
         }
         
         // Step 3: Try to verify with empty email
@@ -40,20 +40,20 @@ async function testRegistrationFlow() {
                 email: '',
                 otp: '123456'
             });
-            console.log('✅ Verify success:', verifyResponse2.data);
+            console.log(' Verify success:', verifyResponse2.data);
         } catch (verifyError2) {
-            console.log('❌ Verify error:', verifyError2.response?.status, verifyError2.response?.data);
+            console.log(' Verify error:', verifyError2.response?.status, verifyError2.response?.data);
         }
         
     } catch (error) {
-        console.error('❌ Test error:', error.message);
-        console.error('❌ Error code:', error.code);
+        console.error(' Test error:', error.message);
+        console.error(' Error code:', error.code);
         if (error.response) {
-            console.error('❌ Response status:', error.response.status);
-            console.error('❌ Response data:', error.response.data);
+            console.error(' Response status:', error.response.status);
+            console.error(' Response data:', error.response.data);
         } else {
-            console.error('❌ No response - network error');
-            console.error('❌ Error config:', error.config?.url);
+            console.error(' No response - network error');
+            console.error(' Error config:', error.config?.url);
         }
     }
 }

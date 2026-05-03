@@ -69,7 +69,7 @@ export default function AuthenticationAPIPage() {
           <h2 className="text-2xl font-bold text-white mb-4">POST /register</h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">Register a new user with email and password.</p>
-            
+
             <h3 className="text-white font-semibold mb-3">Request Body</h3>
             <div className="overflow-x-auto mb-6">
               <table className="w-full text-sm">
@@ -111,7 +111,7 @@ export default function AuthenticationAPIPage() {
             </div>
 
             <h3 className="text-white font-semibold mb-3">Example Request</h3>
-            <CodeBlock 
+            <CodeBlock
               code={`curl -X POST http://localhost:5000/api/auth/register \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -124,7 +124,7 @@ export default function AuthenticationAPIPage() {
             />
 
             <h3 className="text-white font-semibold mb-3 mt-6">Success Response (201 Created)</h3>
-            <CodeBlock 
+            <CodeBlock
               code={`{
   "success": true,
   "message": "User registered successfully",
@@ -147,7 +147,7 @@ export default function AuthenticationAPIPage() {
             <div className="space-y-3">
               <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
                 <p className="text-red-400 font-semibold mb-2">400 Bad Request</p>
-                <CodeBlock 
+                <CodeBlock
                   code={`{
   "success": false,
   "error": "Email already registered"
@@ -157,7 +157,7 @@ export default function AuthenticationAPIPage() {
               </div>
               <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
                 <p className="text-red-400 font-semibold mb-2">422 Validation Error</p>
-                <CodeBlock 
+                <CodeBlock
                   code={`{
   "success": false,
   "error": "Validation failed",
@@ -178,7 +178,7 @@ export default function AuthenticationAPIPage() {
           <h2 className="text-2xl font-bold text-white mb-4">POST /login</h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">Login with email and password to receive a JWT token.</p>
-            
+
             <h3 className="text-white font-semibold mb-3">Request Body</h3>
             <div className="overflow-x-auto mb-6">
               <table className="w-full text-sm">
@@ -208,7 +208,7 @@ export default function AuthenticationAPIPage() {
             </div>
 
             <h3 className="text-white font-semibold mb-3">Example Request</h3>
-            <CodeBlock 
+            <CodeBlock
               code={`curl -X POST http://localhost:5000/api/auth/login \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -219,7 +219,7 @@ export default function AuthenticationAPIPage() {
             />
 
             <h3 className="text-white font-semibold mb-3 mt-6">Success Response (200 OK)</h3>
-            <CodeBlock 
+            <CodeBlock
               code={`{
   "success": true,
   "message": "Login successful",
@@ -242,7 +242,7 @@ export default function AuthenticationAPIPage() {
             <div className="space-y-3">
               <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
                 <p className="text-red-400 font-semibold mb-2">401 Unauthorized</p>
-                <CodeBlock 
+                <CodeBlock
                   code={`{
   "success": false,
   "error": "Invalid email or password"
@@ -259,19 +259,19 @@ export default function AuthenticationAPIPage() {
           <h2 className="text-2xl font-bold text-white mb-4">GET /me</h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">Get the currently authenticated user's profile.</p>
-            
+
             <h3 className="text-white font-semibold mb-3">Headers</h3>
             <CodeBlock code="Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." language="bash" />
 
             <h3 className="text-white font-semibold mb-3 mt-6">Example Request</h3>
-            <CodeBlock 
+            <CodeBlock
               code={`curl -X GET http://localhost:5000/api/auth/me \\
   -H "Authorization: Bearer YOUR_JWT_TOKEN"`}
               language="bash"
             />
 
             <h3 className="text-white font-semibold mb-3 mt-6">Success Response (200 OK)</h3>
-            <CodeBlock 
+            <CodeBlock
               code={`{
   "success": true,
   "data": {
@@ -301,7 +301,7 @@ export default function AuthenticationAPIPage() {
             <h3 className="text-white font-semibold mb-3 mt-6">Error Response</h3>
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
               <p className="text-red-400 font-semibold mb-2">401 Unauthorized</p>
-              <CodeBlock 
+              <CodeBlock
                 code={`{
   "success": false,
   "error": "Invalid or expired token"
@@ -317,7 +317,7 @@ export default function AuthenticationAPIPage() {
           <h2 className="text-2xl font-bold text-white mb-4">GET /google</h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">Initiate Google OAuth 2.0 authentication flow.</p>
-            
+
             <h3 className="text-white font-semibold mb-3">Usage</h3>
             <p className="text-white/60 text-sm mb-4">Redirect user to this endpoint to start Google login:</p>
             <CodeBlock code="window.location.href = 'http://localhost:5000/api/auth/google';" language="javascript" />
@@ -361,7 +361,7 @@ export default function AuthenticationAPIPage() {
           <h2 className="text-2xl font-bold text-white mb-4">GET /github</h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">Initiate GitHub OAuth 2.0 authentication flow.</p>
-            
+
             <h3 className="text-white font-semibold mb-3">Usage</h3>
             <p className="text-white/60 text-sm mb-4">Redirect user to this endpoint to start GitHub login:</p>
             <CodeBlock code="window.location.href = 'http://localhost:5000/api/auth/github';" language="javascript" />
@@ -377,19 +377,19 @@ export default function AuthenticationAPIPage() {
           <h2 className="text-2xl font-bold text-white mb-4">POST /logout</h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">Logout user and invalidate session/token.</p>
-            
+
             <h3 className="text-white font-semibold mb-3">Headers</h3>
             <CodeBlock code="Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." language="bash" />
 
             <h3 className="text-white font-semibold mb-3 mt-6">Example Request</h3>
-            <CodeBlock 
+            <CodeBlock
               code={`curl -X POST http://localhost:5000/api/auth/logout \\
   -H "Authorization: Bearer YOUR_JWT_TOKEN"`}
               language="bash"
             />
 
             <h3 className="text-white font-semibold mb-3 mt-6">Success Response (200 OK)</h3>
-            <CodeBlock 
+            <CodeBlock
               code={`{
   "success": true,
   "message": "Logged out successfully"
@@ -404,7 +404,7 @@ export default function AuthenticationAPIPage() {
           <h2 className="text-2xl font-bold text-white mb-4">POST /refresh</h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">Refresh an expired JWT token using a refresh token.</p>
-            
+
             <h3 className="text-white font-semibold mb-3">Request Body</h3>
             <div className="overflow-x-auto mb-6">
               <table className="w-full text-sm">
@@ -428,7 +428,7 @@ export default function AuthenticationAPIPage() {
             </div>
 
             <h3 className="text-white font-semibold mb-3">Example Request</h3>
-            <CodeBlock 
+            <CodeBlock
               code={`curl -X POST http://localhost:5000/api/auth/refresh \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -438,7 +438,7 @@ export default function AuthenticationAPIPage() {
             />
 
             <h3 className="text-white font-semibold mb-3 mt-6">Success Response (200 OK)</h3>
-            <CodeBlock 
+            <CodeBlock
               code={`{
   "success": true,
   "data": {
@@ -458,9 +458,9 @@ export default function AuthenticationAPIPage() {
           </h2>
           <div className="bg-white/5 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">JWT tokens are returned upon successful login/registration. Include them in the Authorization header for protected endpoints.</p>
-            
+
             <h3 className="text-white font-semibold mb-3">Token Payload</h3>
-            <CodeBlock 
+            <CodeBlock
               code={`{
   "userId": "507f1f77bcf86cd799439011",
   "email": "swapnil@example.com",
@@ -477,7 +477,7 @@ export default function AuthenticationAPIPage() {
 
             <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
               <p className="text-yellow-200 text-sm flex items-start gap-2">
-                <span className="text-xl">⚠️</span>
+                <span className="text-xl"></span>
                 <span>
                   <strong>Important:</strong> Tokens expire after 7 days. Use the refresh endpoint to get a new token without re-authenticating.
                 </span>
@@ -560,13 +560,13 @@ export default function AuthenticationAPIPage() {
               title="Products API"
               description="Manage digital products and listings"
               href="/docs/api/products"
-              icon="📦"
+              icon=""
             />
             <NextStepCard
               title="Payouts API"
               description="Process seller payouts and withdrawals"
               href="/docs/api/payouts"
-              icon="💸"
+              icon=""
             />
             <NextStepCard
               title="Orders API"

@@ -99,7 +99,7 @@ export default function QuickStartPage() {
           <p className="mb-4 text-white/70">
             Install dependencies for both the server and client:
           </p>
-          
+
           <h3 className="mb-3 text-lg font-semibold text-white">Server Dependencies</h3>
           <CodeBlock
             language="bash"
@@ -176,7 +176,7 @@ RESEND_FROM_EMAIL='BitForge <no-reply@bittforge.in>'`}
 
           <div className="mt-6 rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
             <div className="flex items-start gap-3">
-              <span className="text-xl">⚠️</span>
+              <span className="text-xl"></span>
               <div>
                 <p className="mb-2 font-semibold text-yellow-300">Important</p>
                 <p className="text-sm text-white/70">
@@ -224,7 +224,7 @@ sudo systemctl start mongod
             </span>
             Run the Application
           </h2>
-          
+
           <h3 className="mb-3 text-lg font-semibold text-white">Start the Server</h3>
           <CodeBlock
             language="bash"
@@ -244,7 +244,7 @@ npm run dev`}
 
           <div className="mt-6 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-4">
             <div className="flex items-start gap-3">
-              <span className="text-xl">✅</span>
+              <span className="text-xl"></span>
               <div>
                 <p className="mb-2 font-semibold text-emerald-300">Success!</p>
                 <p className="text-sm text-white/70">
@@ -277,7 +277,7 @@ node scripts/createTestUsers.js`}
           />
           <p className="mt-4 text-sm text-white/70">This creates three test accounts:</p>
           <ul className="mt-3 space-y-2 text-sm text-white/60">
-            <li>👤 <strong>Admin:</strong> admin@bitforge.com / password123</li>
+            <li> <strong>Admin:</strong> admin@bitforge.com / password123</li>
             <li>💼 <strong>Seller:</strong> seller@bitforge.com / password123</li>
             <li>🛒 <strong>Buyer:</strong> buyer@bitforge.com / password123</li>
           </ul>
@@ -334,7 +334,7 @@ node scripts/createTestUsers.js`}
               href="/docs/bank-account-setup"
             />
             <NextStepCard
-              icon="📦"
+              icon=""
               title="Product Management"
               description="Learn how to manage products as a seller"
               href="/docs/product-management"

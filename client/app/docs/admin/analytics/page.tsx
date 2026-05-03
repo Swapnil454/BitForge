@@ -40,12 +40,12 @@ export default function AdminAnalyticsPage() {
                 <p className="text-white/60 text-sm">Growth metrics</p>
               </div>
               <div className="bg-white/5 p-4 rounded-lg">
-                <div className="text-2xl mb-2">📦</div>
+                <div className="text-2xl mb-2"></div>
                 <p className="text-white font-semibold">Products</p>
                 <p className="text-white/60 text-sm">Catalog health</p>
               </div>
               <div className="bg-white/5 p-4 rounded-lg">
-                <div className="text-2xl mb-2">📊</div>
+                <div className="text-2xl mb-2"></div>
                 <p className="text-white font-semibold">Sales</p>
                 <p className="text-white/60 text-sm">Transaction volume</p>
               </div>
@@ -57,7 +57,7 @@ export default function AdminAnalyticsPage() {
           <h2 className="text-2xl font-bold text-white mb-4">Key Metrics</h2>
           <div className="space-y-4">
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-              <h3 className="text-white font-semibold mb-2">📈 Revenue Metrics</h3>
+              <h3 className="text-white font-semibold mb-2"> Revenue Metrics</h3>
               <ul className="space-y-1 text-white/70 text-sm list-disc list-inside">
                 <li>Gross Merchandise Value (GMV)</li>
                 <li>Platform fee revenue (commission)</li>
@@ -66,7 +66,7 @@ export default function AdminAnalyticsPage() {
               </ul>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-              <h3 className="text-white font-semibold mb-2">👤 User Metrics</h3>
+              <h3 className="text-white font-semibold mb-2"> User Metrics</h3>
               <ul className="space-y-1 text-white/70 text-sm list-disc list-inside">
                 <li>Total active users (buyers + sellers)</li>
                 <li>New registrations per day/week/month</li>
@@ -106,7 +106,7 @@ export default function AdminAnalyticsPage() {
             <p className="text-white/60 text-sm">Platform configuration</p>
           </Link>
           <Link href="/docs/admin/payouts" className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3">💸</div>
+            <div className="text-3xl mb-3"></div>
             <h3 className="text-lg font-semibold text-white mb-2">Payouts</h3>
             <p className="text-white/60 text-sm">Manage disbursements</p>
           </Link>

@@ -11,7 +11,7 @@ const allDocs = {
     {
       title: "Product Management",
       description: "Upload, update, and manage your digital products with approval workflows.",
-      icon: "📦",
+      icon: "",
       href: "/docs/product-management",
     },
     {
@@ -41,7 +41,7 @@ const allDocs = {
     {
       title: "Approved Changes",
       description: "Track and implement approved product modifications in your dashboard.",
-      icon: "✅",
+      icon: "",
       href: "/docs/approved-changes",
     },
   ],
@@ -61,7 +61,7 @@ const allDocs = {
     {
       title: "Payout API Reference",
       description: "Endpoints for manual payouts, balance checks, and transaction history.",
-      icon: "💸",
+      icon: "",
       href: "/docs/api/payouts",
     },
     {
@@ -105,7 +105,7 @@ const allDocs = {
     {
       title: "Analytics Dashboard",
       description: "Platform metrics, revenue reports, and growth analytics.",
-      icon: "📊",
+      icon: "",
       href: "/docs/admin/analytics",
     },
     {
@@ -272,7 +272,7 @@ export default function DocsPage() {
                     onKeyDown={handleKeyDown}
                     className="w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3 pl-11 pr-16 text-sm text-white placeholder:text-white/40 focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
                   />
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">🔍</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40"></span>
                   {searchQuery && (
                     <button
                       onClick={() => {
@@ -347,55 +347,55 @@ export default function DocsPage() {
           <section className="mb-14">
             <h2 className="mb-6 text-2xl font-semibold text-white">Get Started in Minutes</h2>
             <div className="grid gap-4 md:grid-cols-3">
-            <Link
-              href="/docs/quick-start"
-              className="group rounded-2xl border border-emerald-400/30 bg-linear-to-b from-emerald-500/10 to-cyan-500/10 p-6 transition-all hover:border-emerald-400/50 hover:shadow-lg hover:shadow-emerald-500/10"
-            >
-              <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/20 text-2xl">
-                🚀
-              </div>
-              <h3 className="mb-2 text-lg font-semibold text-white">Quick Start</h3>
-              <p className="mb-4 text-sm text-white/70">
-                Get up and running in 15 minutes with API keys, environment setup, and your first test transaction.
-              </p>
-              <span className="inline-flex items-center text-sm font-medium text-cyan-300 group-hover:text-cyan-200">
-                Read guide →
-              </span>
-            </Link>
+              <Link
+                href="/docs/quick-start"
+                className="group rounded-2xl border border-emerald-400/30 bg-linear-to-b from-emerald-500/10 to-cyan-500/10 p-6 transition-all hover:border-emerald-400/50 hover:shadow-lg hover:shadow-emerald-500/10"
+              >
+                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/20 text-2xl">
+                  🚀
+                </div>
+                <h3 className="mb-2 text-lg font-semibold text-white">Quick Start</h3>
+                <p className="mb-4 text-sm text-white/70">
+                  Get up and running in 15 minutes with API keys, environment setup, and your first test transaction.
+                </p>
+                <span className="inline-flex items-center text-sm font-medium text-cyan-300 group-hover:text-cyan-200">
+                  Read guide →
+                </span>
+              </Link>
 
-            <Link
-              href="/docs/api-keys-setup"
-              className="group rounded-2xl border border-cyan-400/30 bg-linear-to-b from-cyan-500/10 to-indigo-500/10 p-6 transition-all hover:border-cyan-400/50 hover:shadow-lg hover:shadow-cyan-500/10"
-            >
-              <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/20 text-2xl">
-                🔑
-              </div>
-              <h3 className="mb-2 text-lg font-semibold text-white">API Keys Setup</h3>
-              <p className="mb-4 text-sm text-white/70">
-                Step-by-step instructions to get Razorpay, RazorpayX, and OAuth credentials configured.
-              </p>
-              <span className="inline-flex items-center text-sm font-medium text-cyan-300 group-hover:text-cyan-200">
-                Read guide →
-              </span>
-            </Link>
+              <Link
+                href="/docs/api-keys-setup"
+                className="group rounded-2xl border border-cyan-400/30 bg-linear-to-b from-cyan-500/10 to-indigo-500/10 p-6 transition-all hover:border-cyan-400/50 hover:shadow-lg hover:shadow-cyan-500/10"
+              >
+                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/20 text-2xl">
+                  🔑
+                </div>
+                <h3 className="mb-2 text-lg font-semibold text-white">API Keys Setup</h3>
+                <p className="mb-4 text-sm text-white/70">
+                  Step-by-step instructions to get Razorpay, RazorpayX, and OAuth credentials configured.
+                </p>
+                <span className="inline-flex items-center text-sm font-medium text-cyan-300 group-hover:text-cyan-200">
+                  Read guide →
+                </span>
+              </Link>
 
-            <Link
-              href="/docs/bank-account-setup"
-              className="group rounded-2xl border border-indigo-400/30 bg-linear-to-b from-indigo-500/10 to-purple-500/10 p-6 transition-all hover:border-indigo-400/50 hover:shadow-lg hover:shadow-indigo-500/10"
-            >
-              <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/20 text-2xl">
-                🏦
-              </div>
-              <h3 className="mb-2 text-lg font-semibold text-white">Bank Account Setup</h3>
-              <p className="mb-4 text-sm text-white/70">
-                Configure payment flows, seller payouts, and commission management with RazorpayX.
-              </p>
-              <span className="inline-flex items-center text-sm font-medium text-cyan-300 group-hover:text-cyan-200">
-                Read guide →
-              </span>
-            </Link>
-          </div>
-        </section>
+              <Link
+                href="/docs/bank-account-setup"
+                className="group rounded-2xl border border-indigo-400/30 bg-linear-to-b from-indigo-500/10 to-purple-500/10 p-6 transition-all hover:border-indigo-400/50 hover:shadow-lg hover:shadow-indigo-500/10"
+              >
+                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/20 text-2xl">
+                  🏦
+                </div>
+                <h3 className="mb-2 text-lg font-semibold text-white">Bank Account Setup</h3>
+                <p className="mb-4 text-sm text-white/70">
+                  Configure payment flows, seller payouts, and commission management with RazorpayX.
+                </p>
+                <span className="inline-flex items-center text-sm font-medium text-cyan-300 group-hover:text-cyan-200">
+                  Read guide →
+                </span>
+              </Link>
+            </div>
+          </section>
         )}
 
         {/* DOCUMENTATION CATEGORIES */}
@@ -485,7 +485,7 @@ export default function DocsPage() {
             filteredDocs.admins.length === 0 &&
             filteredDocs.platform.length === 0 && (
               <div className="rounded-2xl border border-white/10 bg-white/5 p-12 text-center">
-                <div className="text-5xl mb-4">🔍</div>
+                <div className="text-5xl mb-4"></div>
                 <h3 className="text-xl font-semibold text-white mb-2">No results found</h3>
                 <p className="text-white/60 mb-4">
                   No documentation matches &quot;{searchQuery}&quot;

@@ -45,7 +45,7 @@ export default function OrdersAPIPage() {
           <h2 className="text-2xl font-bold text-white mb-4">GET /my-orders</h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">Get all orders (purchases) for authenticated user.</p>
-            
+
             <h3 className="text-white font-semibold mb-3">Query Parameters</h3>
             <div className="overflow-x-auto mb-6">
               <table className="w-full text-sm">
@@ -124,7 +124,7 @@ export default function OrdersAPIPage() {
           <h2 className="text-2xl font-bold text-white mb-4">GET /my-sales</h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">Get all sales for authenticated seller.</p>
-            
+
             <h3 className="text-white font-semibold mb-3">Example Request</h3>
             <CodeBlock code={`curl -X GET "http://localhost:5000/api/orders/my-sales?page=1" \\\\
   -H "Authorization: Bearer YOUR_JWT_TOKEN"`} />
@@ -166,7 +166,7 @@ export default function OrdersAPIPage() {
           <h2 className="text-2xl font-bold text-white mb-4">GET /:orderId</h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">Get detailed information about a specific order.</p>
-            
+
             <h3 className="text-white font-semibold mb-3">Example Request</h3>
             <CodeBlock code={`curl -X GET http://localhost:5000/api/orders/ord_H8dN3K2mL9jP \\\\
   -H "Authorization: Bearer YOUR_JWT_TOKEN"`} />
@@ -242,13 +242,13 @@ export default function OrdersAPIPage() {
               title="Products API"
               description="Browse and purchase digital products"
               href="/docs/api/products"
-              icon="📦"
+              icon=""
             />
             <NextStepCard
               title="Payouts API"
               description="Manage seller earnings and withdrawals"
               href="/docs/api/payouts"
-              icon="💸"
+              icon=""
             />
           </div>
         </section>

@@ -130,7 +130,7 @@ export default function ProfileModal({ user, onClose, onUpdate }: any) {
                 {currentUser.profilePictureUrl ? (
                   <img src={currentUser.profilePictureUrl} alt={currentUser.name} className="w-full h-full object-cover" />
                 ) : (
-                  "👤"
+                  ""
                 )}
               </div>
             </div>
@@ -171,7 +171,7 @@ export default function ProfileModal({ user, onClose, onUpdate }: any) {
                   ) : currentUser.profilePictureUrl ? (
                     <img src={currentUser.profilePictureUrl} alt={currentUser.name} className="w-full h-full object-cover" />
                   ) : (
-                    "👤"
+                    ""
                   )}
                 </div>
                 <input

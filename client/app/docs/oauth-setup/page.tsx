@@ -68,7 +68,7 @@ export default function OAuthSetupPage() {
           </h2>
           <div className="grid md:grid-cols-4 gap-4">
             <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3">👤</div>
+              <div className="text-3xl mb-3"></div>
               <h3 className="text-white font-semibold mb-2">1. User Clicks Login</h3>
               <p className="text-white/60 text-sm">User chooses Google or GitHub</p>
             </div>
@@ -83,7 +83,7 @@ export default function OAuthSetupPage() {
               <p className="text-white/60 text-sm">Provider returns auth code</p>
             </div>
             <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3">✅</div>
+              <div className="text-3xl mb-3"></div>
               <h3 className="text-white font-semibold mb-2">4. Create Session</h3>
               <p className="text-white/60 text-sm">User logged in successfully</p>
             </div>
@@ -95,7 +95,7 @@ export default function OAuthSetupPage() {
           <h2 className="text-2xl font-bold text-white mb-4">
             <span className="text-cyan-400">1.</span> Google OAuth Setup
           </h2>
-          
+
           {/* Step 1.1 */}
           <div className="mb-6">
             <h3 className="text-xl font-semibold text-white mb-3">1.1 Create Google Cloud Project</h3>
@@ -231,7 +231,7 @@ export default function OAuthSetupPage() {
             <h3 className="text-xl font-semibold text-white mb-3">1.4 Add to Environment Variables</h3>
             <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
               <p className="text-white/80 mb-4">Add these to your <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">server/.env</code> file:</p>
-              <CodeBlock 
+              <CodeBlock
                 code={`GOOGLE_CLIENT_ID=your_google_client_id_here
 GOOGLE_CLIENT_SECRET=your_google_client_secret_here
 GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback`}
@@ -246,7 +246,7 @@ GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback`}
           <h2 className="text-2xl font-bold text-white mb-4">
             <span className="text-cyan-400">2.</span> GitHub OAuth Setup
           </h2>
-          
+
           {/* Step 2.1 */}
           <div className="mb-6">
             <h3 className="text-xl font-semibold text-white mb-3">2.1 Register OAuth App on GitHub</h3>
@@ -325,7 +325,7 @@ GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback`}
               </ol>
               <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                 <p className="text-yellow-200 text-sm flex items-start gap-2">
-                  <span className="text-xl">⚠️</span>
+                  <span className="text-xl"></span>
                   <span>
                     <strong>Important:</strong> Save your client secret securely. GitHub won't show it again.
                   </span>
@@ -339,7 +339,7 @@ GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback`}
             <h3 className="text-xl font-semibold text-white mb-3">2.3 Add to Environment Variables</h3>
             <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
               <p className="text-white/80 mb-4">Add these to your <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">server/.env</code> file:</p>
-              <CodeBlock 
+              <CodeBlock
                 code={`GITHUB_CLIENT_ID=your_github_client_id_here
 GITHUB_CLIENT_SECRET=your_github_client_secret_here
 GITHUB_CALLBACK_URL=http://localhost:3000/api/auth/github/callback`}
@@ -356,7 +356,7 @@ GITHUB_CALLBACK_URL=http://localhost:3000/api/auth/github/callback`}
           </h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">Your final <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">server/.env</code> should include:</p>
-            <CodeBlock 
+            <CodeBlock
               code={`# OAuth - Google
 GOOGLE_CLIENT_ID=1234567890-abcdefghijklmnop.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=GOCSPX-abc123def456
@@ -418,7 +418,7 @@ SESSION_SECRET=your_super_secret_session_key_here`}
           </h2>
           <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/30 rounded-xl p-6">
             <p className="text-white/80 mb-4">Before deploying to production:</p>
-            
+
             <div className="space-y-4">
               <div>
                 <h3 className="text-white font-semibold mb-2">1. Update OAuth Apps with Production URLs</h3>
@@ -430,7 +430,7 @@ SESSION_SECRET=your_super_secret_session_key_here`}
               <div>
                 <h3 className="text-white font-semibold mb-2">2. Update Environment Variables</h3>
                 <p className="text-white/60 text-sm mb-2">Update callback URLs in production <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">.env</code>:</p>
-                <CodeBlock 
+                <CodeBlock
                   code={`GOOGLE_CALLBACK_URL=https://yourdomain.com/api/auth/google/callback
 GITHUB_CALLBACK_URL=https://yourdomain.com/api/auth/github/callback`}
                   language="bash"

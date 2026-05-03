@@ -47,13 +47,13 @@ export default function SpendingHistoryModal({ onClose }: { onClose: () => void 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "paid":
-        return "✅";
+        return "";
       case "failed":
-        return "❌";
+        return "";
       case "created":
         return "⏳";
       default:
-        return "📦";
+        return "";
     }
   };
 

@@ -46,7 +46,7 @@ export default function PayoutsAPIPage() {
           <h2 className="text-2xl font-bold text-white mb-4">GET /balance</h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">Get current payout balance and earnings breakdown for authenticated seller.</p>
-            
+
             <h3 className="text-white font-semibold mb-3">Example Request</h3>
             <CodeBlock code={`curl -X GET http://localhost:5000/api/payouts/balance \\
   -H "Authorization: Bearer YOUR_JWT_TOKEN"`} />
@@ -81,7 +81,7 @@ export default function PayoutsAPIPage() {
           <h2 className="text-2xl font-bold text-white mb-4">POST /request</h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">Request a payout to registered bank account.</p>
-            
+
             <h3 className="text-white font-semibold mb-3">Request Body</h3>
             <div className="overflow-x-auto mb-6">
               <table className="w-full text-sm">
@@ -158,7 +158,7 @@ export default function PayoutsAPIPage() {
           <h2 className="text-2xl font-bold text-white mb-4">GET /history</h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">Get paginated list of all payout transactions.</p>
-            
+
             <h3 className="text-white font-semibold mb-3">Query Parameters</h3>
             <div className="overflow-x-auto mb-6">
               <table className="w-full text-sm">
@@ -236,7 +236,7 @@ export default function PayoutsAPIPage() {
           <h2 className="text-2xl font-bold text-white mb-4">GET /:payoutId</h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">Get detailed information about a specific payout.</p>
-            
+
             <h3 className="text-white font-semibold mb-3">Example Request</h3>
             <CodeBlock code={`curl -X GET http://localhost:5000/api/payouts/pyt_H8dN3K2mL9jP \\
   -H "Authorization: Bearer YOUR_JWT_TOKEN"`} />
@@ -272,7 +272,7 @@ export default function PayoutsAPIPage() {
           <h2 className="text-2xl font-bold text-white mb-4">POST /:payoutId/cancel</h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-4">Cancel a pending payout request (only if status is "processing").</p>
-            
+
             <h3 className="text-white font-semibold mb-3">Example Request</h3>
             <CodeBlock code={`curl -X POST http://localhost:5000/api/payouts/pyt_J9kM5N3pQ2rS/cancel \\
   -H "Authorization: Bearer YOUR_JWT_TOKEN"`} />
@@ -339,13 +339,13 @@ export default function PayoutsAPIPage() {
               title="Products API"
               description="Manage digital products and listings"
               href="/docs/api/products"
-              icon="📦"
+              icon=""
             />
             <NextStepCard
               title="Payout System Guide"
               description="Learn how the payout system works"
               href="/docs/payout-system"
-              icon="💸"
+              icon=""
             />
             <NextStepCard
               title="Bank Account Setup"

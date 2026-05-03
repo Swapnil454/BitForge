@@ -4,7 +4,20 @@ import { useEffect, useState, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
+import {
+  BriefcaseBusiness,
+  CircleHelp,
+  ClipboardList,
+  LogOut,
+  Package,
+  Settings,
+  Shield,
+  TriangleAlert,
+  University,
+  UserRound,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { clearAuthStorage, getStoredUser, setCookie, getCookie } from "@/lib/cookies";
 import { notificationAPI, userAPI, adminAPI, chatAPI } from "@/lib/api";
 import { useAdminDashboard, useInvalidateAdminCache, adminQueryKeys } from "@/lib/hooks";
@@ -275,17 +288,17 @@ export default function AdminDashboard() {
                     </div>
                     <MenuItem 
                       label="Profile" 
-                      icon="👤"
+                      icon={<UserRound className="h-4 w-4" />}
                       onClick={() => { router.push("/dashboard/settings?tab=profile"); setProfileOpen(false); }} 
                     />
                     <MenuItem 
                       label="Settings" 
-                      icon="⚙️"
+                      icon={<Settings className="h-4 w-4" />}
                       onClick={() => { router.push("/dashboard/settings"); setProfileOpen(false); }} 
                     />
                     <MenuItem 
                       label="Help Center" 
-                      icon="❓"
+                      icon={<CircleHelp className="h-4 w-4" />}
                       badge={chatUnreadCount > 0 ? chatUnreadCount : undefined}
                       onClick={() => {
                         // Invalidate to reset unread count after viewing
@@ -296,14 +309,14 @@ export default function AdminDashboard() {
                     />
                     <MenuItem 
                       label="Careers Management" 
-                      icon="💼"
+                      icon={<BriefcaseBusiness className="h-4 w-4" />}
                       onClick={() => {
                         router.push("/dashboard/admin/careers");
                         setProfileOpen(false);
                       }} 
                     />
                     <div className="h-px bg-linear-to-r from-transparent via-indigo-500/20 to-transparent" />
-                    <MenuItem label="Logout" icon="🚪" danger onClick={() => { setIsLogoutModalOpen(true); setProfileOpen(false); }} />
+                    <MenuItem label="Logout" icon={<LogOut className="h-4 w-4" />} danger onClick={() => { setIsLogoutModalOpen(true); setProfileOpen(false); }} />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -312,42 +325,43 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <section className="max-w-7xl mx-auto px-4 py-8 space-y-10">
+      <section className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* KPIs */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <button
             onClick={() => router.push("/dashboard/admin/transactions")}
             className="text-left"
           >
-            <KPI title="Total Revenue" value={`₹${stats.totalRevenue.toLocaleString()}`} />
+            <KPI compact title="Total Revenue" value={`₹${stats.totalRevenue.toLocaleString()}`} />
           </button>
           <button
             onClick={() => router.push("/dashboard/admin/users?role=buyer")}
             className="text-left"
           >
-            <KPI title="Total Buyers" value={(stats.totalBuyers || 0).toLocaleString()} />
+            <KPI compact title="Total Buyers" value={(stats.totalBuyers || 0).toLocaleString()} />
           </button>
           <button
             onClick={() => router.push("/dashboard/admin/users?role=seller")}
             className="text-left"
           >
-            <KPI title="Total Sellers" value={stats.totalSellers.toLocaleString()} />
+            <KPI compact title="Total Sellers" value={stats.totalSellers.toLocaleString()} />
           </button>
           <button
             onClick={() => router.push("/dashboard/admin/products-management")}
             className="text-left"
           >
-            <KPI title="Total Products" value={stats.totalProducts.toLocaleString()} />
+            <KPI compact title="Total Products" value={stats.totalProducts.toLocaleString()} />
           </button>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
 
           <DashboardActionCard
+            variant="buyer"
             title="All Users"
             description="Manage platform users"
-            icon="👥"
+            icon={<Users className="h-8 w-8 md:h-9 md:w-9 text-cyan-200" strokeWidth={2} />}
             href="/dashboard/admin/users"
             gradientFrom="from-cyan-600/20"
             gradientTo="to-blue-600/20"
@@ -358,9 +372,10 @@ export default function AdminDashboard() {
           />
 
           <DashboardActionCard
+            variant="buyer"
             title="Pending Sellers"
             description="Review seller requests"
-            icon="👔"
+            icon={<BriefcaseBusiness className="h-8 w-8 md:h-9 md:w-9 text-purple-200" strokeWidth={2} />}
             href="/dashboard/admin/sellers"
             gradientFrom="from-purple-600/20"
             gradientTo="to-indigo-600/20"
@@ -371,9 +386,10 @@ export default function AdminDashboard() {
           />
 
           <DashboardActionCard
+            variant="buyer"
             title="Pending Products"
             description="Approve new listings"
-            icon="📦"
+            icon={<Package className="h-8 w-8 md:h-9 md:w-9 text-blue-200" strokeWidth={2} />}
             href="/dashboard/admin/products"
             gradientFrom="from-blue-600/20"
             gradientTo="to-sky-600/20"
@@ -384,9 +400,10 @@ export default function AdminDashboard() {
           />
 
           <DashboardActionCard
+            variant="buyer"
             title="Open Disputes"
             description="Resolve user issues"
-            icon="⚠️"
+            icon={<TriangleAlert className="h-8 w-8 md:h-9 md:w-9 text-red-200" strokeWidth={2} />}
             href="/dashboard/admin/disputes"
             gradientFrom="from-red-600/20"
             gradientTo="to-rose-600/20"
@@ -397,9 +414,10 @@ export default function AdminDashboard() {
           />
 
           <DashboardActionCard
+            variant="buyer"
             title="Pending Payouts"
             description="Approve withdrawals"
-            icon="💰"
+            icon={<Wallet className="h-8 w-8 md:h-9 md:w-9 text-emerald-200" strokeWidth={2} />}
             href="/dashboard/admin/payouts"
             gradientFrom="from-emerald-600/20"
             gradientTo="to-green-600/20"
@@ -410,9 +428,10 @@ export default function AdminDashboard() {
           />
 
           <DashboardActionCard
+            variant="buyer"
             title="Bank Accounts"
             description="Manage payout banks"
-            icon="🏦"
+            icon={<University className="h-8 w-8 md:h-9 md:w-9 text-yellow-200" strokeWidth={2} />}
             href="/dashboard/admin/bank-account"
             gradientFrom="from-yellow-600/20"
             gradientTo="to-amber-600/20"
@@ -423,9 +442,10 @@ export default function AdminDashboard() {
           />
 
           <DashboardActionCard
+            variant="buyer"
             title="Trust & Security"
             description="Malware, reviews & identity"
-            icon="🛡️"
+            icon={<Shield className="h-8 w-8 md:h-9 md:w-9 text-red-200" strokeWidth={2} />}
             href="/dashboard/admin/security"
             gradientFrom="from-red-600/20"
             gradientTo="to-orange-600/20"
@@ -435,13 +455,27 @@ export default function AdminDashboard() {
             hoverTextColor="text-red-200"
           />
 
+          <DashboardActionCard
+            variant="buyer"
+            title="Help Center"
+            description="Guides and support docs"
+            icon={<CircleHelp className="h-8 w-8 md:h-9 md:w-9 text-indigo-200" strokeWidth={2} />}
+            href="/dashboard/admin/help-center"
+            gradientFrom="from-indigo-600/20"
+            gradientTo="to-violet-600/20"
+            borderColor="border-indigo-500/40"
+            hoverBorderColor="border-indigo-400/60"
+            hoverShadow="hover:shadow-indigo-500/30"
+            hoverTextColor="text-indigo-200"
+          />
+
         </div>
         {/* Tables */}
         <div
           onClick={() => router.push("/dashboard/admin/transactions")}
           className="w-full text-left group cursor-pointer"
         >
-          <Glass title="📋 Recent Transactions">
+          <Glass title={<span className="inline-flex items-center gap-2"><ClipboardList className="h-4 w-4 text-cyan-300" /> Recent Transactions</span>}>
             {stats.recentTransactions && stats.recentTransactions.length > 0 ? (
               <div className="space-y-3">
                 {stats.recentTransactions.slice(0, 2).map((t) => (
@@ -468,7 +502,9 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <div className="text-center py-6">
-                <div className="text-4xl mb-2">📋</div>
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-white/15 bg-white/5 mb-2">
+                  <ClipboardList className="h-6 w-6 text-cyan-300" />
+                </div>
                 <p className="text-white/60 text-sm mb-3">
                   No transactions yet
                 </p>
@@ -532,8 +568,8 @@ function AdminDashboardSkeleton() {
         </div>
       </header>
 
-      <section className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <section className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
@@ -542,8 +578,8 @@ function AdminDashboardSkeleton() {
           ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-4 md:gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
               className="h-24 rounded-xl bg-slate-800/90 border border-indigo-500/30 shadow-md shadow-indigo-500/25 animate-pulse"

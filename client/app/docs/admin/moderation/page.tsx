@@ -30,7 +30,7 @@ export default function AdminModerationPage() {
             <p className="text-white/80 mb-4">Enforce community guidelines, handle reports, and remove prohibited content.</p>
             <div className="grid md:grid-cols-3 gap-4">
               <div className="bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-3xl mb-2">🚨</div>
+                <div className="text-3xl mb-2"></div>
                 <p className="text-white font-semibold">Reports</p>
                 <p className="text-white/60 text-sm">User-submitted flags</p>
               </div>
@@ -40,7 +40,7 @@ export default function AdminModerationPage() {
                 <p className="text-white/60 text-sm">Policy infractions</p>
               </div>
               <div className="bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-3xl mb-2">✅</div>
+                <div className="text-3xl mb-2"></div>
                 <p className="text-white font-semibold">Actions</p>
                 <p className="text-white/60 text-sm">Warning/removal</p>
               </div>
@@ -119,7 +119,7 @@ export default function AdminModerationPage() {
             <p className="text-white/60 text-sm">Manage user accounts</p>
           </Link>
           <Link href="/docs/admin/products" className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3">📦</div>
+            <div className="text-3xl mb-3"></div>
             <h3 className="text-lg font-semibold text-white mb-2">Product Approval</h3>
             <p className="text-white/60 text-sm">Review submissions</p>
           </Link>

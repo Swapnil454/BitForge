@@ -102,7 +102,7 @@ export default function TrustCenterPage() {
           {/* Security & Infrastructure */}
           <section id="security" className="border-t border-white/10 pt-10">
             <h2 className="mb-4 text-2xl font-semibold text-white">Security & Infrastructure</h2>
-            
+
             <div className="space-y-6">
               <div>
                 <h3 className="mb-2 text-base font-semibold text-white/90">Application Security</h3>
@@ -183,7 +183,7 @@ export default function TrustCenterPage() {
           {/* Data Privacy */}
           <section id="privacy" className="border-t border-white/10 pt-10">
             <h2 className="mb-4 text-2xl font-semibold text-white">Data Privacy & Protection</h2>
-            
+
             <div className="space-y-6">
               <div>
                 <h3 className="mb-2 text-base font-semibold text-white/90">Privacy Principles</h3>
@@ -261,7 +261,7 @@ export default function TrustCenterPage() {
           {/* Payment Security */}
           <section id="payments" className="border-t border-white/10 pt-10">
             <h2 className="mb-4 text-2xl font-semibold text-white">Payment Security</h2>
-            
+
             <div className="space-y-6">
               <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/5 p-5">
                 <p className="text-sm text-white/80">
@@ -335,7 +335,7 @@ export default function TrustCenterPage() {
           {/* Seller Verification */}
           <section id="verification" className="border-t border-white/10 pt-10">
             <h2 className="mb-4 text-2xl font-semibold text-white">Seller Verification & Trust</h2>
-            
+
             <div className="space-y-6">
               <div>
                 <h3 className="mb-2 text-base font-semibold text-white/90">Seller Onboarding Process</h3>
@@ -407,7 +407,7 @@ export default function TrustCenterPage() {
           {/* Compliance */}
           <section id="compliance" className="border-t border-white/10 pt-10">
             <h2 className="mb-4 text-2xl font-semibold text-white">Compliance & Certifications</h2>
-            
+
             <div className="space-y-6">
               <div>
                 <h3 className="mb-2 text-base font-semibold text-white/90">Regulatory Compliance</h3>
@@ -477,7 +477,7 @@ export default function TrustCenterPage() {
           {/* Incident Response */}
           <section id="incident" className="border-t border-white/10 pt-10">
             <h2 className="mb-4 text-2xl font-semibold text-white">Incident Response & Business Continuity</h2>
-            
+
             <div className="space-y-6">
               <div>
                 <h3 className="mb-2 text-base font-semibold text-white/90">Security Incident Response Plan</h3>
@@ -553,7 +553,7 @@ export default function TrustCenterPage() {
           {/* Transparency */}
           <section id="transparency" className="border-t border-white/10 pt-10">
             <h2 className="mb-4 text-2xl font-semibold text-white">Transparency & Reporting</h2>
-            
+
             <div className="space-y-6">
               <div>
                 <h3 className="mb-2 text-base font-semibold text-white/90">Security Transparency</h3>
@@ -614,7 +614,7 @@ export default function TrustCenterPage() {
           {/* Best Practices */}
           <section id="best-practices" className="border-t border-white/10 pt-10">
             <h2 className="mb-4 text-2xl font-semibold text-white">Security Best Practices for Users</h2>
-            
+
             <div className="space-y-6">
               <div>
                 <h3 className="mb-2 text-base font-semibold text-white/90">For All Users</h3>
@@ -674,7 +674,7 @@ export default function TrustCenterPage() {
               </div>
 
               <div className="rounded-2xl border border-amber-400/30 bg-amber-500/5 p-5">
-                <h3 className="mb-2 text-base font-semibold text-amber-200">⚠️ Recognizing Phishing & Scams</h3>
+                <h3 className="mb-2 text-base font-semibold text-amber-200"> Recognizing Phishing & Scams</h3>
                 <p className="mb-2 text-sm text-white/70">
                   BitForge will <strong>NEVER</strong>:
                 </p>
@@ -696,7 +696,7 @@ export default function TrustCenterPage() {
           {/* Responsible Disclosure */}
           <section id="disclosure" className="border-t border-white/10 pt-10">
             <h2 className="mb-4 text-2xl font-semibold text-white">Responsible Security Disclosure</h2>
-            
+
             <div className="space-y-6">
               <div>
                 <h3 className="mb-2 text-base font-semibold text-white/90">Bug Bounty Program</h3>
@@ -708,11 +708,11 @@ export default function TrustCenterPage() {
 
               <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/5 p-5">
                 <h3 className="mb-3 text-base font-semibold text-white">How to Report a Vulnerability</h3>
-                
+
                 <p className="mb-3 text-sm text-white/80">
                   <strong>Email:</strong> <span className="text-cyan-300">security@bittforge.in</span>
                 </p>
-                
+
                 <p className="mb-2 text-sm text-white/80">Include in your report:</p>
                 <ul className="ml-6 list-disc space-y-1 text-sm text-white/70">
                   <li>Detailed description of the vulnerability;</li>
@@ -722,7 +722,7 @@ export default function TrustCenterPage() {
                   <li>Your contact information for follow-up;</li>
                   <li>Any suggested remediation steps.</li>
                 </ul>
-                
+
                 <p className="mt-4 text-sm text-white/80">
                   <strong>Response Timeline:</strong>
                 </p>
@@ -790,36 +790,36 @@ export default function TrustCenterPage() {
           {/* Contact */}
           <section id="contact" className="border-t border-white/10 pt-10">
             <h2 className="mb-4 text-2xl font-semibold text-white">Security Contact Information</h2>
-            
+
             <div className="space-y-6">
               <div className="rounded-2xl border border-white/12 bg-white/5 p-5">
                 <p className="mb-4 font-semibold text-white">Security Team Contacts</p>
-                
+
                 <div className="space-y-4 text-sm">
                   <div>
                     <p className="mb-1 font-medium text-white/90">Security Vulnerabilities & Bug Reports</p>
                     <p className="text-white/70">Email: <span className="text-cyan-300">security@bittforge.in</span></p>
                     <p className="text-xs text-white/60">Use for: Vulnerability disclosure, security bugs, penetration test findings</p>
                   </div>
-                  
+
                   <div>
                     <p className="mb-1 font-medium text-white/90">Privacy & Data Protection</p>
                     <p className="text-white/70">Email: <span className="text-cyan-300">privacy@bittforge.in</span></p>
                     <p className="text-xs text-white/60">Use for: Data access requests, privacy concerns, GDPR/DPDP queries</p>
                   </div>
-                  
+
                   <div>
                     <p className="mb-1 font-medium text-white/90">Grievance Officer (DPDP Act)</p>
                     <p className="text-white/70">Email: <span className="text-cyan-300">grievance@bittforge.in</span></p>
                     <p className="text-xs text-white/60">Use for: Formal complaints, data rights escalation, regulatory concerns</p>
                   </div>
-                  
+
                   <div>
                     <p className="mb-1 font-medium text-white/90">Compliance & Legal</p>
                     <p className="text-white/70">Email: <span className="text-cyan-300">compliance@bittforge.in</span></p>
                     <p className="text-xs text-white/60">Use for: Compliance reports, legal requests, audit inquiries</p>
                   </div>
-                  
+
                   <div>
                     <p className="mb-1 font-medium text-white/90">General Support</p>
                     <p className="text-white/70">Email: <span className="text-cyan-300">support@bittforge.in</span></p>

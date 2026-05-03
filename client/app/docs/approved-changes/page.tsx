@@ -72,7 +72,7 @@ export default function ApprovedChangesPage() {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <span className="text-xl">📋</span> Change Information
+                <span className="text-xl"></span> Change Information
               </h3>
               <ul className="space-y-2 text-white/70 text-sm">
                 <li className="flex items-start gap-2">
@@ -166,7 +166,7 @@ export default function ApprovedChangesPage() {
           <div className="space-y-4">
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">🔍</span> Filter Options
+                <span className="text-xl"></span> Filter Options
               </h3>
               <p className="text-white/60 text-sm mb-3">
                 Narrow down your change history using filters:
@@ -199,17 +199,17 @@ export default function ApprovedChangesPage() {
           <h2 className="text-2xl font-bold text-white mb-4">Why Track Changes?</h2>
           <div className="grid md:grid-cols-3 gap-4">
             <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3">🔍</div>
+              <div className="text-3xl mb-3"></div>
               <h3 className="text-white font-semibold mb-2">Transparency</h3>
               <p className="text-white/60 text-sm">Full audit trail of product modifications</p>
             </div>
             <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3">📊</div>
+              <div className="text-3xl mb-3"></div>
               <h3 className="text-white font-semibold mb-2">Analytics</h3>
               <p className="text-white/60 text-sm">Understand product evolution over time</p>
             </div>
             <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3">✅</div>
+              <div className="text-3xl mb-3"></div>
               <h3 className="text-white font-semibold mb-2">Compliance</h3>
               <p className="text-white/60 text-sm">Proof of approval for audits</p>
             </div>
@@ -219,12 +219,12 @@ export default function ApprovedChangesPage() {
         {/* Related */}
         <div className="grid sm:grid-cols-2 gap-4">
           <Link href="/docs/product-changes" className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3">📝</div>
+            <div className="text-3xl mb-3"></div>
             <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-cyan-300">Product Changes</h3>
             <p className="text-white/60 text-sm">How to submit changes</p>
           </Link>
           <Link href="/docs/product-management" className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3">📦</div>
+            <div className="text-3xl mb-3"></div>
             <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-cyan-300">Product Management</h3>
             <p className="text-white/60 text-sm">Complete management guide</p>
           </Link>

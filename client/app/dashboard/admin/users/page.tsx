@@ -1,200 +1,12 @@
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import { useRouter, useSearchParams } from "next/navigation";
-// import { motion } from "framer-motion";
-// import { adminAPI } from "@/lib/api";
-// import toast from "react-hot-toast";
-// import { Store, ShoppingCart, ShieldCheck, Users } from "lucide-react";
-
-// interface User {
-//   _id: string;
-//   name: string;
-//   email: string;
-//   role: "buyer" | "seller" | "admin";
-//   isVerified: boolean;
-//   createdAt: string;
-// }
-
-// export default function AllUsersPage() {
-//   const router = useRouter();
-//   const searchParams = useSearchParams();
-//   const roleParam = searchParams.get("role") as User["role"] | null;
-
-//   const isSpecificRolePage =
-//     roleParam === "buyer" || roleParam === "seller" || roleParam === "admin";
-
-//   const [users, setUsers] = useState<User[]>([]);
-//   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-//   const [loading, setLoading] = useState(true);
-//   const [searchTerm, setSearchTerm] = useState("");
-//   const [roleFilter, setRoleFilter] = useState<"all" | User["role"]>("all");
-
-//   /* ---------------- FETCH ---------------- */
-//   useEffect(() => {
-//     const fetchUsers = async () => {
-//       try {
-//         const data = await adminAPI.getAllUsers();
-//         setUsers(data || []);
-//       } catch {
-//         toast.error("Failed to load users");
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-//     fetchUsers();
-//   }, []);
-
-//   /* ---------------- ROLE LOCK ---------------- */
-//   useEffect(() => {
-//     if (isSpecificRolePage && roleParam) setRoleFilter(roleParam);
-//     else setRoleFilter("all");
-//   }, [roleParam]);
-
-//   /* ---------------- FILTER + SEARCH ---------------- */
-//   useEffect(() => {
-//     let list =
-//       roleFilter === "all"
-//         ? users
-//         : users.filter((u) => u.role === roleFilter);
-
-//     if (searchTerm.trim()) {
-//       const t = searchTerm.toLowerCase();
-//       list = list.filter(
-//         (u) =>
-//           u.name.toLowerCase().includes(t) ||
-//           u.email.toLowerCase().includes(t)
-//       );
-//     }
-
-//     setFilteredUsers(list);
-//   }, [users, roleFilter, searchTerm]);
-
-//   const buyerCount = users.filter((u) => u.role === "buyer").length;
-//   const sellerCount = users.filter((u) => u.role === "seller").length;
-//   const adminCount = users.filter((u) => u.role === "admin").length;
-
-//   const headerConfig = {
-//     all: { title: "👥 All Users", subtitle: "Manage all users", icon: Users, value: users.length },
-//     buyer: { title: "🛒 Buyers", subtitle: "Manage all buyer accounts", icon: ShoppingCart, value: buyerCount },
-//     seller: { title: "🧑‍💼 Sellers", subtitle: "Manage all seller accounts", icon: Store, value: sellerCount },
-//     admin: { title: "🛡️ Admins", subtitle: "Manage admin accounts", icon: ShieldCheck, value: adminCount },
-//   }[roleFilter];
-
-//   if (loading) {
-//     return (
-//       <div className="min-h-screen flex items-center justify-center text-white">
-//         Loading users...
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-[#0a0a14] via-[#0f0f1e] to-[#14142b] text-white p-6">
-//       <div className="max-w-7xl mx-auto">
-
-//         {/* Back */}
-//         <button
-//           onClick={() => router.push("/dashboard/admin")}
-//           className="mb-4 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm"
-//         >
-//           ← Back to Dashboard
-//         </button>
-
-//         {/* 🔥 HEADER + KPI ROW */}
-//         <div className="flex items-start justify-between gap-4 mb-6">
-//           <div>
-//             <h1 className="text-3xl font-bold">{headerConfig.title}</h1>
-//             <p className="text-white/60 mt-1">{headerConfig.subtitle}</p>
-//           </div>
-
-//           {/* Compact KPI */}
-//           <HeaderKPI
-//             icon={headerConfig.icon}
-//             label={`Total ${roleFilter === "all" ? "Users" : roleFilter.charAt(0).toUpperCase() + roleFilter.slice(1)}`}
-//             value={headerConfig.value}
-//           />
-//         </div>
-
-//         {/* Search */}
-//         <input
-//           value={searchTerm}
-//           onChange={(e) => setSearchTerm(e.target.value)}
-//           placeholder="Search by name or email..."
-//           className="w-full mb-8 px-4 py-2 bg-white/5 border border-white/10 rounded-lg"
-//         />
-
-//         {/* USERS LIST */}
-//         <div className="grid gap-4">
-//           {filteredUsers.map((user) => (
-//             <motion.div
-//               key={user._id}
-//               initial={{ opacity: 0, y: 10 }}
-//               animate={{ opacity: 1, y: 0 }}
-//               className="bg-white/5 border border-white/10 rounded-xl p-6"
-//             >
-//               <div className="flex gap-4 items-center">
-//                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center font-bold text-xl">
-//                   {user.name[0].toUpperCase()}
-//                 </div>
-
-//                 <div className="flex-1">
-//                   <div className="flex gap-2 items-center">
-//                     <h3 className="text-lg font-semibold">{user.name}</h3>
-//                     <span className="text-xs px-2 py-1 rounded-full bg-white/10">
-//                       {user.role}
-//                     </span>
-//                     {user.isVerified && <span className="text-green-400">✓</span>}
-//                   </div>
-//                   <p className="text-white/60">{user.email}</p>
-//                 </div>
-//               </div>
-//             </motion.div>
-//           ))}
-//         </div>
-
-//       </div>
-//     </div>
-//   );
-// }
-
-// /* ---------------- COMPACT HEADER KPI ---------------- */
-// function HeaderKPI({
-//   icon: Icon,
-//   label,
-//   value,
-// }: {
-//   icon: any;
-//   label: string;
-//   value: number;
-// }) {
-//   return (
-//     <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3 min-w-[180px]">
-//       <div className="w-9 h-9 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center">
-//         <Icon className="w-5 h-5" />
-//       </div>
-//       <div className="text-right">
-//         <p className="text-xs text-white/60">{label}</p>
-//         <p className="text-2xl font-bold leading-tight">{value}</p>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-
-
-
-
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { adminAPI } from "@/lib/api";
 import toast from "react-hot-toast";
-import { Store, ShoppingCart, ShieldCheck, Users } from "lucide-react";
+import { ShoppingCart, UserCheck, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
 
 interface User {
   _id: string;
@@ -208,136 +20,209 @@ interface User {
 function AllUsersPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const roleParam = searchParams.get("role") as User["role"] | null;
-
-  const isSpecificRolePage =
-    roleParam === "buyer" || roleParam === "seller" || roleParam === "admin";
+  const roleParam = (searchParams.get("role") as User["role"] | "all") || "buyer";
 
   const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [roleFilter, setRoleFilter] = useState<"all" | User["role"]>("all");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const PAGE_SIZE = 10;
 
-  /* ---------------- FETCH ---------------- */
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const data = await adminAPI.getAllUsers();
-        setUsers(data || []);
-      } catch {
-        toast.error("Failed to load users");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchUsers();
-  }, []);
+  }, [page, searchTerm, roleParam]);
 
-  /* ---------------- ROLE LOCK ---------------- */
   useEffect(() => {
-    if (isSpecificRolePage && roleParam) setRoleFilter(roleParam);
-    else setRoleFilter("all");
-  }, [roleParam]);
+    setPage(1);
+  }, [searchTerm, roleParam]);
 
-  /* ---------------- FILTER + SEARCH ---------------- */
-  useEffect(() => {
-    let list =
-      roleFilter === "all"
-        ? users
-        : users.filter((u) => u.role === roleFilter);
-
-    if (searchTerm.trim()) {
-      const t = searchTerm.toLowerCase();
-      list = list.filter(
-        (u) =>
-          u.name.toLowerCase().includes(t) ||
-          u.email.toLowerCase().includes(t)
-      );
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const data = await adminAPI.getAllUsers({
+        page,
+        limit: PAGE_SIZE,
+        search: searchTerm,
+        role: roleParam,
+      });
+      setUsers(data.users || []);
+      setTotalPages(data.pagination?.pages || 1);
+      
+      if (roleParam === "all") {
+        setTotalCount(data.pagination?.total || 0);
+      } else {
+        setTotalCount(roleParam === "buyer" ? data.stats?.totalBuyers : data.stats?.totalSellers);
+      }
+    } catch (error: any) {
+      toast.error("Failed to load users");
+    } finally {
+      setLoading(false);
     }
-
-    setFilteredUsers(list);
-  }, [users, roleFilter, searchTerm]);
-
-  const buyerCount = users.filter((u) => u.role === "buyer").length;
-  const sellerCount = users.filter((u) => u.role === "seller").length;
-  const adminCount = users.filter((u) => u.role === "admin").length;
+  };
 
   const headerConfig = {
-    all: { title: "👥 All Users", subtitle: "Manage all users", icon: Users, value: users.length },
-    buyer: { title: "🛒 Buyers", subtitle: "Manage all buyer accounts", icon: ShoppingCart, value: buyerCount },
-    seller: { title: "🧑‍💼 Sellers", subtitle: "Manage all seller accounts", icon: Store, value: sellerCount },
-    admin: { title: "🛡️ Admins", subtitle: "Manage admin accounts", icon: ShieldCheck, value: adminCount },
-  }[roleFilter];
-
-  /* ---------------- SKELETON STATE ---------------- */
-  if (loading) {
-    return <SkeletonPage />;
-  }
+    buyer: { title: "Buyers", subtitle: "Manage all buyer accounts", icon: ShoppingCart },
+    seller: { title: "Sellers", subtitle: "Manage all seller accounts", icon: UserCheck },
+    admin: { title: "Admins", subtitle: "Manage admin accounts", icon: UserCheck },
+    all: { title: "All Users", subtitle: "Manage all user accounts", icon: UserCheck },
+  }[roleParam] || { title: "Users", subtitle: "Manage user accounts", icon: UserCheck };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0a14] via-[#0f0f1e] to-[#14142b] text-white p-6">
-      <div className="max-w-7xl mx-auto">
-
-        {/* Back */}
-        <button
-          onClick={() => router.push("/dashboard/admin")}
-          className="mb-4 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm"
-        >
-          ← Back to Dashboard
-        </button>
-
-        {/* HEADER + SMALL KPI */}
-        <div className="flex items-start justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">{headerConfig.title}</h1>
-            <p className="text-white/60 mt-1">{headerConfig.subtitle}</p>
+    <div className="min-h-screen bg-[#0a0a0f] text-white selection:bg-purple-500/30">
+      <PageHeader
+        backHref="/dashboard/admin"
+        backLabel="Dashboard"
+        title={headerConfig.title}
+        subtitle={headerConfig.subtitle}
+        rightSlot={
+          <div className="flex items-center bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-3 backdrop-blur-xl shadow-2xl transition-all hover:bg-white/[0.05]">
+            <div className="flex flex-col items-center">
+              <span className="text-[22px] font-black bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40 leading-none">
+                {totalCount}
+              </span>
+              <span className="text-[9px] uppercase tracking-[0.2em] text-white/30 font-bold mt-1">Users</span>
+            </div>
           </div>
+        }
+      />
 
-          <HeaderKPI
-            icon={headerConfig.icon}
-            label={`Total ${roleFilter === "all" ? "Users" : roleFilter}`}
-            value={headerConfig.value}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+        {/* Search Bar - Full Width & Highlighted */}
+        <div className="relative group w-full">
+          <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-white/30 group-focus-within:text-purple-400 transition-colors" />
+          </div>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder={`Search by name or email...`}
+            className="w-full bg-[#16161e] border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-base text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500/50 transition-all shadow-2xl group-hover:bg-[#1a1a24]"
           />
         </div>
 
-        {/* Search */}
-        <input
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search by name or email..."
-          className="w-full mb-8 px-4 py-2 bg-white/5 border border-white/10 rounded-lg"
-        />
+        {/* Users List */}
+        <div className="space-y-4">
+          <AnimatePresence mode="popLayout">
+            {loading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-[88px] bg-[#1c1c24] border border-white/10 rounded-2xl animate-pulse" />
+              ))
+            ) : users.length > 0 ? (
+              users.map((user, idx) => (
+                <motion.div
+                  key={user._id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ delay: idx * 0.03 }}
+                  className="group relative bg-[#1c1c24] hover:bg-[#23232d] border border-white/[0.05] hover:border-purple-500/40 rounded-2xl p-4 sm:p-5 transition-all duration-300"
+                >
+                  <div className="flex items-center gap-5">
+                    {/* Avatar with Ring */}
+                    <div className="relative shrink-0">
+                      <div className="w-14 h-14 rounded-full bg-[#1c1c26] border-2 border-white/5 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-105 duration-300 shadow-xl">
+                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <span className="text-xl font-bold text-white/80 group-hover:text-white transition-colors">
+                          {user.name[0].toUpperCase()}
+                        </span>
+                      </div>
+                      {user.isVerified && (
+                        <div className="absolute -bottom-0.5 -right-0.5 bg-emerald-500 rounded-full p-1 border-[3px] border-[#0a0a0f] shadow-lg">
+                          <UserCheck className="w-2.5 h-2.5 text-white" />
+                        </div>
+                      )}
+                    </div>
 
-        {/* USERS LIST */}
-        <div className="grid gap-4">
-          {filteredUsers.map((user) => (
-            <motion.div
-              key={user._id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white/5 border border-white/10 rounded-xl p-5"
-            >
-              <div className="flex gap-4 items-center">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center font-bold">
-                  {user.name[0].toUpperCase()}
-                </div>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <h3 className="text-base sm:text-lg font-bold text-white/90 group-hover:text-white transition-colors truncate tracking-tight">
+                          {user.name}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/10 text-[9px] font-black uppercase tracking-widest text-white/30">
+                            {user.role}
+                          </span>
+                          {user.isVerified && (
+                            <span className="flex items-center gap-1 text-emerald-400/80 text-[10px] font-bold">
+                              Verified
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-sm text-white/30 truncate mt-0.5 font-medium">{user.email}</p>
+                    </div>
 
-                <div className="flex-1">
-                  <div className="flex gap-2 items-center">
-                    <h3 className="font-semibold">{user.name}</h3>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-white/10">
-                      {user.role}
-                    </span>
-                    {user.isVerified && <span className="text-green-400">✓</span>}
+                    {/* Action */}
+                    <button 
+                      onClick={() => router.push(`/dashboard/admin/users/${user._id}`)}
+                      className="hidden sm:flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.02] hover:bg-purple-500/20 border border-white/10 hover:border-purple-500/40 text-white/40 hover:text-purple-400 transition-all duration-300"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
                   </div>
-                  <p className="text-sm text-white/60">{user.email}</p>
+                </motion.div>
+              ))
+            ) : (
+              <div className="text-center py-24 bg-white/[0.02] border border-white/10 rounded-3xl backdrop-blur-sm">
+                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-6 h-6 text-white/20" />
                 </div>
+                <h3 className="text-lg font-semibold text-white/60">No users found</h3>
+                <p className="text-white/20 text-sm mt-1 px-4">Try adjusting your search to find what you're looking for.</p>
               </div>
-            </motion.div>
-          ))}
+            )}
+          </AnimatePresence>
         </div>
-      </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-4 pb-10">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1 || loading}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 disabled:opacity-30 hover:bg-white/10 transition-all text-sm font-medium"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Previous
+            </button>
+            <div className="flex items-center gap-2">
+              {Array.from({ length: totalPages }).map((_, i) => {
+                const p = i + 1;
+                // Only show a few pages if there are many
+                if (totalPages > 5 && Math.abs(p - page) > 2 && p !== 1 && p !== totalPages) {
+                  if (p === 2 || p === totalPages - 1) return <span key={p} className="text-white/20 px-1">...</span>;
+                  return null;
+                }
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-medium transition-all ${
+                      page === p
+                        ? "bg-purple-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                        : "bg-white/5 border border-white/10 hover:bg-white/10 text-white/60"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages || loading}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 disabled:opacity-30 hover:bg-white/10 transition-all text-sm font-medium"
+            >
+              Next
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
@@ -350,62 +235,24 @@ export default function AllUsersPage() {
   );
 }
 
-/* ---------------- ULTRA COMPACT KPI ---------------- */
-function HeaderKPI({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: any;
-  label: string;
-  value: number;
-}) {
-  return (
-    <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-lg px-3 py-2 min-w-[120px]">
-      
-      {/* Icon */}
-      <div className="w-7 h-7 rounded-md bg-purple-500/20 text-purple-400 flex items-center justify-center">
-        <Icon className="w-4 h-4" />
-      </div>
-
-      {/* Centered Text */}
-      <div className="flex flex-col items-center justify-center flex-1 leading-none">
-        <span className="text-[11px] text-white/60">{label}</span>
-        <span className="text-lg font-semibold">{value}</span>
-      </div>
-
-    </div>
-  );
-}
-
-
-/* ---------------- SKELETON PAGE ---------------- */
 function SkeletonPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0a14] via-[#0f0f1e] to-[#14142b] p-6 animate-pulse">
+    <div className="min-h-screen bg-[#05050a] p-6 animate-pulse">
       <div className="max-w-7xl mx-auto space-y-6">
-
-        <div className="w-40 h-8 bg-white/10 rounded-lg" />
-
+        <div className="w-48 h-8 bg-white/5 rounded-2xl" />
         <div className="flex justify-between items-center">
-          <div className="space-y-2">
-            <div className="w-48 h-6 bg-white/10 rounded" />
-            <div className="w-64 h-4 bg-white/10 rounded" />
+          <div className="space-y-3">
+            <div className="w-32 h-10 bg-white/5 rounded-2xl" />
+            <div className="w-56 h-4 bg-white/5 rounded-lg" />
           </div>
-          <div className="w-36 h-10 bg-white/10 rounded-lg" />
+          <div className="w-40 h-16 bg-white/5 rounded-2xl" />
         </div>
-
-        <div className="w-full h-10 bg-white/10 rounded-lg" />
-
+        <div className="w-full h-16 bg-white/5 rounded-2xl" />
         <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-20 bg-white/5 border border-white/10 rounded-xl"
-            />
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-24 bg-white/5 border border-white/10 rounded-2xl" />
           ))}
         </div>
-
       </div>
     </div>
   );

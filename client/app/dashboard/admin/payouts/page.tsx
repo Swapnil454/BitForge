@@ -385,7 +385,7 @@ export default function AdminPayoutsPage() {
 
         {/* PAGE TITLE */}
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">💸 Payouts</h1>
+          <h1 className="text-3xl font-bold tracking-tight"> Payouts</h1>
           <p className="text-white/60 mt-1">
             Review and manage seller payout requests
           </p>
@@ -397,11 +397,10 @@ export default function AdminPayoutsPage() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-6 py-2 rounded-full text-sm font-semibold transition ${
-                tab === t
+              className={`px-6 py-2 rounded-full text-sm font-semibold transition ${tab === t
                   ? "bg-cyan-600 text-white shadow-lg"
                   : "bg-white/5 border border-white/10 hover:bg-white/10"
-              }`}
+                }`}
             >
               {t === "pending" ? "Pending" : "History"}
             </button>
@@ -451,11 +450,10 @@ export default function AdminPayoutsPage() {
             <button
               onClick={applySearch}
               disabled={!isValidRange || searching}
-              className={`h-10 px-6 sm:px-8 rounded-lg text-sm font-semibold shrink-0 transition ${
-                !isValidRange || searching
+              className={`h-10 px-6 sm:px-8 rounded-lg text-sm font-semibold shrink-0 transition ${!isValidRange || searching
                   ? "bg-white/10 text-white/40 cursor-not-allowed"
                   : "bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90 shadow-lg"
-              }`}
+                }`}
             >
               {searching ? "Searching…" : "Search"}
             </button>
@@ -551,7 +549,7 @@ export default function AdminPayoutsPage() {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-[#1a1a2e] border border-white/20 rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold mb-4">Confirm Payment</h2>
-            
+
             {/* Payout Details */}
             <div className="bg-white/5 rounded-lg p-4 mb-6 space-y-2">
               <div className="flex justify-between">
@@ -606,7 +604,7 @@ export default function AdminPayoutsPage() {
                   className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg focus:border-cyan-400 focus:outline-none"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-white/80 mb-2">
                   Payment Notes (Optional)
@@ -663,11 +661,10 @@ function Preset({
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-2 rounded-full text-sm font-medium border transition shrink-0 ${
-        active
+      className={`px-4 py-2 rounded-full text-sm font-medium border transition shrink-0 ${active
           ? "bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-md"
           : "bg-white/5 border-white/10 hover:bg-white/10"
-      }`}
+        }`}
     >
       {label}
     </button>

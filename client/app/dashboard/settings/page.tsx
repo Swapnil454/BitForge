@@ -388,7 +388,7 @@ function SettingsContent() {
                       <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-linear-to-r from-cyan-400 to-indigo-500 flex items-center justify-center text-4xl md:text-5xl overflow-hidden shadow-lg shadow-indigo-500/20 shrink-0">
                         {user.profilePictureUrl ? (
                           <img src={user.profilePictureUrl} alt={user.name} className="w-full h-full object-cover" />
-                        ) : "👤"}
+                        ) : ""}
                       </div>
                       <div>
                         <h3 className="text-xl md:text-2xl font-bold text-white mb-1">{user.name}</h3>
@@ -424,7 +424,7 @@ function SettingsContent() {
                             <img src={preview} alt="preview" className="w-full h-full object-cover" />
                           ) : user.profilePictureUrl ? (
                             <img src={user.profilePictureUrl} alt={user.name} className="w-full h-full object-cover" />
-                          ) : "👤"}
+                          ) : ""}
                         </div>
                         <input
                           type="file"

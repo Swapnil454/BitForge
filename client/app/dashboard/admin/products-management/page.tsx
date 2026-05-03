@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { adminAPI } from "@/lib/api";
 import toast from "react-hot-toast";
+import { Package, Search, ChevronRight, ChevronLeft, CheckCircle2, Clock, XCircle, MoreVertical, BarChart3 } from "lucide-react";
+import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
+import AdminProductFilters, { ProductStatusFilter, ProductSortOption } from "./components/AdminProductFilters";
 
 interface Seller {
   _id: string;
@@ -25,295 +28,274 @@ interface Product {
   rejectionReason?: string;
 }
 
-const PAGE_SIZE = 6;
-
 export default function ProductsManagementPage() {
   const router = useRouter();
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [listLoading, setListLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [stats, setStats] = useState({ approved: 0, pending: 0, rejected: 0 });
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] =
-    useState<"all" | "approved" | "pending" | "rejected">("all");
+  const [statusFilter, setStatusFilter] = useState<ProductStatusFilter>("all");
+  const [sortBy, setSortBy] = useState<ProductSortOption>("newest");
+  
+  const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const headerMenuRef = useRef<HTMLDivElement>(null);
+  
+  const PAGE_SIZE = 10;
 
-  const [page, setPage] = useState(1);
-  const [statusOpen, setStatusOpen] = useState(false);
-
-
-  /* ---------------- FETCH ---------------- */
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const data = await adminAPI.getAllProducts();
-        setProducts(data || []);
-      } catch {
-        toast.error("Failed to load products");
-      } finally {
-        setLoading(false);
+    const handleOutside = (event: MouseEvent) => {
+      if (headerMenuRef.current && !headerMenuRef.current.contains(event.target as Node)) {
+        setHeaderMenuOpen(false);
       }
     };
-    fetchProducts();
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
   }, []);
 
-  /* ---------------- OPTIMISTIC FILTER ---------------- */
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await adminAPI.getAllProducts({
+        page,
+        limit: PAGE_SIZE,
+        search: searchTerm,
+        status: statusFilter,
+        sortBy,
+      });
+      setProducts(data.products || []);
+      setTotalPages(data.pagination?.pages || 1);
+      setTotalCount(data.pagination?.total || 0);
+      setStats(data.stats || { approved: 0, pending: 0, rejected: 0 });
+    } catch (error) {
+      toast.error("Failed to load products");
+    } finally {
+      setLoading(false);
+    }
+  }, [page, searchTerm, statusFilter, sortBy]);
+
   useEffect(() => {
-    setListLoading(true);
+    fetchProducts();
+  }, [fetchProducts]);
+
+  // Reset to page 1 on filter change
+  useEffect(() => {
     setPage(1);
+  }, [searchTerm, statusFilter, sortBy]);
 
-    const t = setTimeout(() => {
-      let list = products;
-
-      if (statusFilter !== "all") {
-        list = list.filter((p) => p.status === statusFilter);
-      }
-
-      if (searchTerm.trim()) {
-        const term = searchTerm.toLowerCase();
-        list = list.filter(
-          (p) =>
-            p.title.toLowerCase().includes(term) ||
-            p.description.toLowerCase().includes(term) ||
-            p.sellerId?.name?.toLowerCase().includes(term)
-        );
-      }
-
-      setFilteredProducts(list);
-      setListLoading(false);
-    }, 250);
-
-    return () => clearTimeout(t);
-  }, [products, statusFilter, searchTerm]);
-
-  /* ---------------- PAGINATION ---------------- */
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredProducts.length / PAGE_SIZE)
-  );
-
-  const paginatedProducts = filteredProducts.slice(
-    (page - 1) * PAGE_SIZE,
-    page * PAGE_SIZE
-  );
-
-  const count = {
-    all: products.length,
-    approved: products.filter((p) => p.status === "approved").length,
-    pending: products.filter((p) => p.status === "pending").length,
-    rejected: products.filter((p) => p.status === "rejected").length,
+  const handleClearAll = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setSortBy("newest");
   };
 
-  if (loading) return <ProductsPageSkeleton />;
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "approved": return <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />;
+      case "pending": return <Clock className="w-3.5 h-3.5 text-amber-400" />;
+      case "rejected": return <XCircle className="w-3.5 h-3.5 text-rose-400" />;
+      default: return null;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-[#0a0a14] via-[#0f0f1e] to-[#14142b] text-white p-4 sm:p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#0a0a0f] text-white selection:bg-purple-500/30">
+      <PageHeader
+        backHref="/dashboard/admin"
+        backLabel="Dashboard"
+        title="Products"
+        subtitle="Manage product approvals and catalog"
+        rightSlot={
+          <div className="flex items-center gap-4">
+             
+             <div className="relative" ref={headerMenuRef}>
+                <button
+                  onClick={() => setHeaderMenuOpen(!headerMenuOpen)}
+                  className="h-11 w-11 rounded-2xl border border-white/10 bg-white/[0.03] flex items-center justify-center hover:bg-white/[0.08] transition shadow-xl"
+                >
+                  <MoreVertical className="h-5 w-5 text-white/70" />
+                </button>
 
-        {/* Back */}
-        <button
-          onClick={() => router.push("/dashboard/admin")}
-          className="mb-4 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm"
-        >
-          ← Back to Dashboard
-        </button>
-
-        <h1 className="text-3xl font-bold">📦 Products</h1>
-        <p className="text-white/60 mb-5">
-          Manage approved, pending and rejected products
-        </p>
-
-        {/* 🔥 SEARCH + STATUS (ONE ROW ALWAYS) */}
-        <div className="flex items-center gap-3 mb-4 flex-nowrap">
-          <input
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search product, description or seller…"
-            className="flex-1 min-w-0 px-4 py-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-lg text-white placeholder-white/50 focus:border-cyan-400 focus:outline-none"
-          />
-
-          {/* Glass Select Wrapper */}
-          <div className="relative shrink-0">
-  {/* Trigger */}
-  <button
-    onClick={() => setStatusOpen((v) => !v)}
-    className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-lg text-sm text-white hover:bg-white/10 transition"
-  >
-    <span className="capitalize">
-      {statusFilter === "all" ? "All Status" : statusFilter}
-    </span>
-    <span className="text-white/50">▾</span>
-  </button>
-
-  {/* Dropdown */}
-  {statusOpen && (
-    <div
-      className="absolute right-0 mt-2 w-36 rounded-xl bg-[#0b0b14]/90 backdrop-blur-xl border border-white/10 shadow-xl z-50"
-      onMouseLeave={() => setStatusOpen(false)}
-    >
-      {(["all", "approved", "pending", "rejected"] as const).map((status) => (
-        <button
-          key={status}
-          onClick={() => {
-            setStatusFilter(status);
-            setStatusOpen(false);
-          }}
-          className={`w-full text-left px-4 py-2 text-sm capitalize transition
-            ${
-              statusFilter === status
-                ? "bg-white/10 text-white"
-                : "text-white/70 hover:bg-white/10"
-            }`}
-        >
-          {status === "all" ? "All Status" : status}
-        </button>
-      ))}
-    </div>
-  )}
-</div>
-
-        </div>
-
-        {/* 🔥 STATS (ONE ROW, SCROLLABLE) */}
-        <div className="flex gap-2 mb-6 overflow-x-auto no-scrollbar flex-nowrap">
-          {(["all", "approved", "pending", "rejected"] as const).map((key) => (
-            <button
-              key={key}
-              onClick={() => setStatusFilter(key)}
-              className={`shrink-0 px-4 py-2 rounded-full border text-sm transition ${
-                statusFilter === key
-                  ? "bg-white/15 border-white/30"
-                  : "bg-white/5 border-white/10 hover:bg-white/10"
-              }`}
-            >
-              <span className="capitalize">{key}</span>
-              <span className="ml-2 text-white/60">{count[key]}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* PRODUCTS */}
-        {listLoading ? (
-          <ProductsListSkeleton />
-        ) : paginatedProducts.length === 0 ? (
-          <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-center">
-            <p className="text-white/60">No products found</p>
+                <AnimatePresence>
+                  {headerMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      className="absolute right-0 mt-3 w-48 rounded-2xl border border-white/10 bg-[#12121a] backdrop-blur-xl p-2 shadow-2xl z-50"
+                    >
+                      <button
+                        onClick={() => {
+                          router.push("/dashboard/admin/products-management/analytics");
+                          setHeaderMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-white/60 hover:text-white hover:bg-white/[0.05] transition-all"
+                      >
+                        <BarChart3 className="w-4 h-4" />
+                        Analytics
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+             </div>
           </div>
-        ) : (
-          <div className="grid gap-4">
-            {paginatedProducts.map((product) => (
-              <motion.div
-                key={product._id}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white/5 border border-white/10 rounded-xl p-5 hover:bg-white/10"
-              >
-                <div className="flex gap-4">
-                  <div className="w-16 h-16 rounded-lg bg-white/10 flex items-center justify-center">
-                    {product.thumbnailUrl ? (
-                      <img
-                        src={product.thumbnailUrl}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    ) : (
-                      "📦"
-                    )}
-                  </div>
+        }
+      />
 
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">
-                      {product.title}
-                    </h3>
-                    <p className="text-white/70 text-sm mt-1 line-clamp-2">
-                      {product.description}
-                    </p>
-                  </div>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+        {/* Filters */}
+        <AdminProductFilters
+          searchQuery={searchTerm}
+          onSearchChange={setSearchTerm}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          onClearAll={handleClearAll}
+        />
 
-                  <button
-                    onClick={() =>
-                      router.push(
-                        `/dashboard/admin/products-management/${product._id}`
-                      )
-                    }
-                    className="shrink-0 h-8 px-3 bg-blue-600/90 hover:bg-blue-600 rounded-md text-xs font-medium"
-                  >
-                    View
-                  </button>
+        {/* Products List */}
+        <div className="space-y-4 min-h-[400px]">
+          <AnimatePresence mode="popLayout">
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="h-[120px] bg-[#1c1c24] border border-white/10 rounded-2xl animate-pulse" />
+              ))
+            ) : products.length > 0 ? (
+              products.map((product, idx) => (
+                <motion.div
+                  key={product._id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ delay: idx * 0.03 }}
+                  className="group relative bg-[#1c1c24] hover:bg-[#23232d] border border-white/[0.05] hover:border-blue-500/40 rounded-2xl p-4 transition-all duration-300"
+                >
+                  <div className="flex items-center gap-4">
+                    {/* Compact Square Thumbnail */}
+                    <div className="relative shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-black/40 overflow-hidden border border-white/5 shadow-xl">
+                      {product.thumbnailUrl ? (
+                        <img 
+                          src={product.thumbnailUrl} 
+                          alt={product.title}
+                          className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-white/10">
+                          <Package className="w-8 h-8" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Middle Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <h3 className="text-base sm:text-lg font-bold text-white/90 group-hover:text-white truncate tracking-tight uppercase">
+                          {product.title}
+                        </h3>
+                        <div className={`shrink-0 flex items-center gap-1.5 px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border ${
+                          product.status === "approved" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" :
+                          product.status === "pending" ? "bg-amber-500/10 border-amber-500/20 text-amber-400" :
+                          "bg-rose-500/10 border-rose-500/20 text-rose-400"
+                        }`}>
+                          {getStatusIcon(product.status)}
+                          {product.status}
+                        </div>
+                      </div>
+                      
+                      <p className="text-sm text-white/40 line-clamp-1 mb-1 font-medium">
+                        {product.description}
+                      </p>
+
+                      <div className="flex items-center gap-3 flex-wrap opacity-60">
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold">
+                          <span className="text-white/30 uppercase tracking-widest text-[8px]">₹</span>
+                          <span className="text-white">{product.price}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold">
+                          <span className="text-white/30 uppercase tracking-widest text-[8px]">By</span>
+                          <span className="text-white truncate max-w-[100px]">{product.sellerId?.name}</span>
+                        </div>
+                        <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-bold">
+                          <span className="text-white/30 uppercase tracking-widest text-[8px]">In</span>
+                          <span className="text-white">{product.category || "General"}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Action Button */}
+                    <button 
+                      onClick={() => router.push(`/dashboard/admin/products-management/${product._id}`)}
+                      className="shrink-0 h-8 px-4 rounded-lg bg-blue-500/10 hover:bg-blue-600 border border-blue-500/20 hover:border-blue-600 text-[11px] font-black uppercase tracking-wider text-blue-400 hover:text-white transition-all duration-300 active:scale-95"
+                    >
+                      View
+                    </button>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div className="text-center py-24 bg-[#1c1c24] border border-white/10 rounded-3xl">
+                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-6 h-6 text-white/20" />
                 </div>
-              </motion.div>
-            ))}
+                <h3 className="text-lg font-semibold text-white/60">No products found</h3>
+                <p className="text-white/20 text-sm mt-1 px-4">Try adjusting your filters or search terms.</p>
+              </div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/5">
+            <p className="text-xs font-bold text-white/30 uppercase tracking-widest">
+              Showing {products.length} of {totalCount} products
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                disabled={page === 1}
+                onClick={() => setPage(p => p - 1)}
+                className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/10 text-white/40 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/[0.08] transition-all"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }).map((_, i) => {
+                  const p = i + 1;
+                  if (totalPages > 5 && Math.abs(p - page) > 2) return null;
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={`h-10 w-10 rounded-xl text-xs font-black transition-all border ${
+                        page === p
+                          ? "bg-purple-500/20 border-purple-500/40 text-purple-400"
+                          : "bg-white/[0.03] border-white/5 text-white/30 hover:bg-white/[0.08] hover:text-white"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                disabled={page === totalPages}
+                onClick={() => setPage(p => p + 1)}
+                className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/10 text-white/40 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/[0.08] transition-all"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
           </div>
         )}
-
-        {/* PAGINATION */}
-        {!listLoading && totalPages > 1 && (
-          <div className="flex justify-center items-center gap-3 mt-8">
-            <button
-              disabled={page === 1}
-              onClick={() => setPage((p) => p - 1)}
-              className="px-3 py-1 bg-white/10 rounded disabled:opacity-40"
-            >
-              Prev
-            </button>
-            <span className="text-sm text-white/60">
-              Page {page} of {totalPages}
-            </span>
-            <button
-              disabled={page === totalPages}
-              onClick={() => setPage((p) => p + 1)}
-              className="px-3 py-1 bg-white/10 rounded disabled:opacity-40"
-            >
-              Next
-            </button>
-          </div>
-        )}
-      </div>
+      </main>
     </div>
   );
 }
-
-/* ---------------- SKELETONS ---------------- */
-
-function ProductsPageSkeleton() {
-  return (
-    <div className="min-h-screen bg-linear-to-br from-[#0a0a14] via-[#0f0f1e] to-[#14142b] p-6 animate-pulse">
-      <div className="max-w-7xl mx-auto space-y-5">
-        <div className="w-40 h-6 bg-white/10 rounded" />
-        <div className="w-72 h-4 bg-white/10 rounded" />
-        <div className="flex gap-3">
-          <div className="flex-1 h-10 bg-white/10 rounded-lg" />
-          <div className="w-36 h-10 bg-white/10 rounded-lg" />
-        </div>
-        <div className="flex gap-2">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="w-24 h-9 bg-white/10 rounded-full" />
-          ))}
-        </div>
-        <ProductsListSkeleton />
-      </div>
-    </div>
-  );
-}
-
-function ProductsListSkeleton() {
-  return (
-    <div className="grid gap-4 animate-pulse">
-      {[1, 2, 3].map((i) => (
-        <div
-          key={i}
-          className="bg-white/5 border border-white/10 rounded-xl p-5 flex gap-4"
-        >
-          <div className="w-16 h-16 bg-white/10 rounded-lg" />
-          <div className="flex-1 space-y-3">
-            <div className="w-48 h-4 bg-white/10 rounded" />
-            <div className="w-full h-3 bg-white/10 rounded" />
-            <div className="w-2/3 h-3 bg-white/10 rounded" />
-          </div>
-          <div className="w-20 h-9 bg-white/10 rounded-lg" />
-        </div>
-      ))}
-    </div>
-  );
-}
-

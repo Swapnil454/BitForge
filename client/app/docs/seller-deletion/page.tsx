@@ -33,7 +33,7 @@ export default function SellerDeletionPage() {
             </p>
             <div className="bg-black/30 p-4 rounded-lg">
               <p className="text-yellow-200 text-sm flex items-start gap-2">
-                <span className="text-xl">⚠️</span>
+                <span className="text-xl"></span>
                 <span><strong>Warning:</strong> Account deletion is permanent and irreversible. All your products will be removed from the marketplace.</span>
               </p>
             </div>
@@ -159,7 +159,7 @@ export default function SellerDeletionPage() {
             </div>
             <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-xl p-6">
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <span className="text-xl">📊</span> Retained (Legal Requirements)
+                <span className="text-xl"></span> Retained (Legal Requirements)
               </h3>
               <ul className="space-y-2 text-white/70 text-sm">
                 <li className="flex items-start gap-2">
@@ -192,21 +192,21 @@ export default function SellerDeletionPage() {
             </p>
             <ul className="space-y-3 text-white/70">
               <li className="flex items-start gap-3">
-                <span className="text-orange-400">⚠️</span>
+                <span className="text-orange-400"></span>
                 <div>
                   <p className="font-semibold text-white">Download Access</p>
                   <p className="text-sm">Customers can download for 90 days after deletion, then access is lost</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-orange-400">⚠️</span>
+                <span className="text-orange-400"></span>
                 <div>
                   <p className="font-semibold text-white">Product Updates</p>
                   <p className="text-sm">No future updates or bug fixes will be provided</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-orange-400">⚠️</span>
+                <span className="text-orange-400"></span>
                 <div>
                   <p className="font-semibold text-white">Support</p>
                   <p className="text-sm">Customer support for your products will be discontinued</p>
@@ -230,7 +230,7 @@ export default function SellerDeletionPage() {
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">📦</span> Unpublish Products
+                <span className="text-xl"></span> Unpublish Products
               </h3>
               <p className="text-white/60 text-sm">
                 Hide individual products from the marketplace while keeping your account active for future use.

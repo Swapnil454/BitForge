@@ -28,12 +28,12 @@ npm run dev
 4. **Do NOT upload a preview PDF** (that field is removed!)
 5. Watch the console for:
    ```
-   🔍 Starting automatic PDF preview generation...
+    Starting automatic PDF preview generation...
    📄 PDF has X total pages
-   📋 Will show Y real page(s) in preview
-   ✅ Preview PDF generation complete!
+    Will show Y real page(s) in preview
+    Preview PDF generation complete!
    ```
-6. Submit → Product uploaded! ✅
+6. Submit → Product uploaded! 
 
 #### Option B: Via API (Postman/cURL)
 ```bash
@@ -103,32 +103,32 @@ curl -X POST http://localhost:5000/api/products/upload \
 
 ---
 
-## 📊 Console Output Reference
+##  Console Output Reference
 
-### ✅ Successful Generation
+###  Successful Generation
 ```bash
-🔍 Starting automatic PDF preview generation...
+ Starting automatic PDF preview generation...
 📄 PDF has 15 total pages
-📋 Will show 2 real page(s) in preview
+ Will show 2 real page(s) in preview
 📑 Extracting first 2 page(s)...
-✅ Added page 1 with watermark
-✅ Added page 2 with watermark
+ Added page 1 with watermark
+ Added page 2 with watermark
 🔒 Adding 3 locked placeholder page(s)...
-✅ Added locked page 3
-✅ Added locked page 4
-✅ Added locked page 5
+ Added locked page 3
+ Added locked page 4
+ Added locked page 5
 💾 Preview PDF generated: 245678 bytes
 ☁️ Uploading preview to Cloudinary...
-✅ Preview uploaded to Cloudinary: https://res.cloudinary.com/...
-✅ Preview PDF generation complete!
-✅ Generated 2 preview page images
+ Preview uploaded to Cloudinary: https://res.cloudinary.com/...
+ Preview PDF generation complete!
+ Generated 2 preview page images
 ```
 
-### ⚠️ Preview Failed (Graceful)
+###  Preview Failed (Graceful)
 ```bash
-🔍 Starting automatic PDF preview generation...
-❌ Preview generation failed: Invalid PDF format
-⚠️ Continuing without preview...
+ Starting automatic PDF preview generation...
+ Preview generation failed: Invalid PDF format
+ Continuing without preview...
 ```
 **Note**: Product still uploads successfully!
 
@@ -139,7 +139,7 @@ curl -X POST http://localhost:5000/api/products/upload \
 
 ---
 
-## 🔍 Troubleshooting
+##  Troubleshooting
 
 ### Preview Not Generating?
 
@@ -176,15 +176,15 @@ npm list pdf-lib
 The preview should be uploaded as **"image"** resource type:
 ```javascript
 cloudinary.uploader.upload_stream({
-  resource_type: "image", // ✅ Correct
+  resource_type: "image", //  Correct
   format: "pdf",
-  // NOT "raw" ❌
+  // NOT "raw" 
 ```
 
 #### Check 2: Access Mode
 ```javascript
 {
-  access_mode: "public", // ✅ Should be public
+  access_mode: "public", //  Should be public
 }
 ```
 
@@ -202,7 +202,7 @@ page.drawText("PREVIEW ONLY", {
 
 ## 🎯 What to Look For
 
-### ✅ Success Indicators
+###  Success Indicators
 - Product uploads successfully
 - Console shows preview generation logs
 - `previewPdfUrl` is populated in database
@@ -210,7 +210,7 @@ page.drawText("PREVIEW ONLY", {
 - Watermarks are visible
 - Locked pages appear after real content
 
-### ❌ Failure Indicators (but non-blocking)
+###  Failure Indicators (but non-blocking)
 - Console shows "Preview generation failed"
 - Product still uploads (graceful degradation)
 - `previewPdfUrl` is null/undefined
@@ -218,7 +218,7 @@ page.drawText("PREVIEW ONLY", {
 
 ---
 
-## 📝 Quick Verification Checklist
+##  Quick Verification Checklist
 
 - [ ] Server running without errors
 - [ ] pdf-lib package installed
@@ -284,7 +284,7 @@ console.log("Preview Pages:", previewPageCount);
 
 ---
 
-## ✅ Success!
+##  Success!
 
 If you see watermarked previews with locked pages, **you're done!** 🎉
 

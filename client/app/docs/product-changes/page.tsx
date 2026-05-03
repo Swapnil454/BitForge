@@ -116,22 +116,22 @@ export default function ProductChangesPage() {
           </h2>
           <div className="grid md:grid-cols-4 gap-4">
             <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3">📝</div>
+              <div className="text-3xl mb-3"></div>
               <h3 className="text-white font-semibold mb-2">1. Submitted</h3>
               <p className="text-white/60 text-sm">Changes submitted for admin review</p>
             </div>
             <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3">🔍</div>
+              <div className="text-3xl mb-3"></div>
               <h3 className="text-white font-semibold mb-2">2. Under Review</h3>
               <p className="text-white/60 text-sm">Admin reviewing your changes</p>
             </div>
             <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3">✅</div>
+              <div className="text-3xl mb-3"></div>
               <h3 className="text-white font-semibold mb-2">3. Approved</h3>
               <p className="text-white/60 text-sm">Changes go live automatically</p>
             </div>
             <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3">❌</div>
+              <div className="text-3xl mb-3"></div>
               <h3 className="text-white font-semibold mb-2">4. Rejected</h3>
               <p className="text-white/60 text-sm">Feedback provided to revise</p>
             </div>
@@ -308,13 +308,13 @@ export default function ProductChangesPage() {
               title="Product Management"
               description="Complete guide to managing your products"
               href="/docs/product-management"
-              icon="📦"
+              icon=""
             />
             <NextStepCard
               title="Approved Changes"
               description="View history of approved changes"
               href="/docs/approved-changes"
-              icon="✅"
+              icon=""
             />
             <NextStepCard
               title="Upload Solutions"

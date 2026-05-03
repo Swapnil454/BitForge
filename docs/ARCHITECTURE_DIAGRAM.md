@@ -102,7 +102,7 @@
 │           │    • Total sales                   │                 │
 │           │    • Product count                 │                 │
 │           │    • Average rating                │                 │
-│           │    • Identity verified ✅          │                 │
+│           │    • Identity verified           │                 │
 │           │                                    │                 │
 │           ├─→ Fetch Products (paginated) ─────┤                 │
 │           │    • Published products            │                 │
@@ -126,7 +126,7 @@
 │  │           Security Dashboard (3 Tabs)                │       │
 │  └──────────────────────────────────────────────────────┘       │
 │                                                                   │
-│  ┌─── TAB 1: MALWARE SCANS 🦠 ─────────────────────────┐       │
+│  ┌─── TAB 1: MALWARE SCANS  ─────────────────────────┐       │
 │  │                                                       │       │
 │  │  ┌─────────────────────────────────────────────┐   │       │
 │  │  │ Stats:                                       │   │       │
@@ -141,12 +141,12 @@
 │  │  │                                              │   │       │
 │  │  │  Product: "Suspicious.pdf"                  │   │       │
 │  │  │  Seller: john@example.com                   │   │       │
-│  │  │  Malicious: 12 🦠  Suspicious: 5            │   │       │
+│  │  │  Malicious: 12   Suspicious: 5            │   │       │
 │  │  │  [View VirusTotal] [Manage Product]        │   │       │
 │  │  └─────────────────────────────────────────────┘   │       │
 │  └───────────────────────────────────────────────────┘       │
 │                                                                   │
-│  ┌─── TAB 2: CONTENT REVIEW 🔍 ────────────────────────┐       │
+│  ┌─── TAB 2: CONTENT REVIEW  ────────────────────────┐       │
 │  │                                                       │       │
 │  │  ┌─────────────────────────────────────────────┐   │       │
 │  │  │ Queue Summary:                               │   │       │
@@ -163,11 +163,11 @@
 │  │  │  Price: ₹49                                 │   │       │
 │  │  │  Quality Score: 32/100                      │   │       │
 │  │  │  Flags: [Low page count] [Small file]      │   │       │
-│  │  │  [✅ Approve] [❌ Reject] [View]            │   │       │
+│  │  │  [ Approve] [ Reject] [View]            │   │       │
 │  │  └─────────────────────────────────────────────┘   │       │
 │  └───────────────────────────────────────────────────┘       │
 │                                                                   │
-│  ┌─── TAB 3: IDENTITY VERIFICATION ✅ ──────────────────┐       │
+│  ┌─── TAB 3: IDENTITY VERIFICATION  ──────────────────┐       │
 │  │                                                       │       │
 │  │  ┌─────────────────────────────────────────────┐   │       │
 │  │  │ Pending Verifications: 8                    │   │       │
@@ -180,7 +180,7 @@
 │  │  │ Total Sales: 45                             │   │       │
 │  │  │ Rating: ⭐ 4.7                              │   │       │
 │  │  │ Member since: Jan 2023                      │   │       │
-│  │  │ [✅ Verify Identity] [❌ Reject] [Profile] │   │       │
+│  │  │ [ Verify Identity] [ Reject] [Profile] │   │       │
 │  │  └─────────────────────────────────────────────┘   │       │
 │  └───────────────────────────────────────────────────┘       │
 │                                                                   │
@@ -266,7 +266,7 @@
 │     └─→ Rejected → Notify seller (with reason)                  │
 │                                                                   │
 │  5. Identity Verification                                        │
-│     ├─→ Verified → Notify seller (✅ badge earned)              │
+│     ├─→ Verified → Notify seller ( badge earned)              │
 │     └─→ Rejected → Notify seller (with notes)                   │
 │                                                                   │
 │  Notification Channels:                                          │

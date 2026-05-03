@@ -11,44 +11,44 @@ import Cart from "../models/Cart.js";
 export const createCartCheckout = async (req, res) => {
   try {
     const userId = req.user.id;
-    
+
     // Get user's cart
     const cart = await Cart.findOne({ userId }).populate({
       path: 'items.productId',
       select: 'title price discount sellerId status thumbnailUrl',
     });
-    
+
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({ message: "Cart is empty" });
     }
-    
+
     // Validate all products and calculate totals
     const cartItems = [];
     let subtotal = 0;
     let totalGst = 0;
     let totalPlatformFee = 0;
-    
+
     for (const item of cart.items) {
       const product = item.productId;
-      
+
       if (!product || product.status !== "approved") {
-        return res.status(400).json({ 
-          message: `Product "${item.productId?.title || 'Unknown'}" is no longer available` 
+        return res.status(400).json({
+          message: `Product "${item.productId?.title || 'Unknown'}" is no longer available`
         });
       }
-      
+
       // Calculate pricing for this item
       const originalPrice = product.price;
       const discountPercent = product.discount || 0;
-      const finalPrice = discountPercent > 0 
+      const finalPrice = discountPercent > 0
         ? Math.max(originalPrice - (originalPrice * discountPercent) / 100, 0)
         : originalPrice;
-      
+
       const gst = finalPrice * 0.05; // 5% GST
       const platformFee = finalPrice * 0.02; // 2% platform fee
       const sellerAmount = finalPrice + gst - platformFee;
       const itemTotal = finalPrice + gst + platformFee;
-      
+
       cartItems.push({
         productId: product._id,
         sellerId: product.sellerId,
@@ -62,22 +62,22 @@ export const createCartCheckout = async (req, res) => {
         sellerAmount,
         itemTotal,
       });
-      
+
       subtotal += finalPrice;
       totalGst += gst;
       totalPlatformFee += platformFee;
     }
-    
+
     const totalAmount = subtotal + totalGst + totalPlatformFee;
     const amountInPaise = Math.round(totalAmount * 100);
-    
+
     console.log('🛒 Cart Checkout:');
     console.log(`   Items: ${cartItems.length}`);
     console.log(`   Subtotal: ₹${subtotal.toFixed(2)}`);
     console.log(`   GST (5%): ₹${totalGst.toFixed(2)}`);
     console.log(`   Platform Fee (2%): ₹${totalPlatformFee.toFixed(2)}`);
     console.log(`   Total Amount: ₹${totalAmount.toFixed(2)} (${amountInPaise} paise)`);
-    
+
     // Create ONE Razorpay order for entire cart
     // Receipt must be max 40 chars: use short format
     const shortId = userId.toString().slice(-8);
@@ -87,7 +87,7 @@ export const createCartCheckout = async (req, res) => {
       currency: "INR",
       receipt: `cart_${shortId}_${timestamp}`,
     });
-    
+
     // Create CartOrder document
     const cartOrder = await CartOrder.create({
       buyerId: userId,
@@ -98,10 +98,10 @@ export const createCartCheckout = async (req, res) => {
       totalAmount,
       razorpayOrderId: razorpayOrder.id,
     });
-    
-    console.log(`✅ Cart order created: ${cartOrder._id}`);
+
+    console.log(` Cart order created: ${cartOrder._id}`);
     console.log(`   Razorpay Order: ${razorpayOrder.id}`);
-    
+
     res.json({
       razorpayOrderId: razorpayOrder.id,
       key: process.env.RAZORPAY_KEY_ID,
@@ -115,9 +115,9 @@ export const createCartCheckout = async (req, res) => {
         itemTotal: item.itemTotal,
       })),
     });
-    
+
   } catch (error) {
-    console.error("❌ Cart checkout error:", error);
+    console.error(" Cart checkout error:", error);
     res.status(500).json({ message: "Failed to create checkout", error: error.message });
   }
 };
@@ -132,7 +132,7 @@ export const createOrder = async (req, res) => {
   }
 
   // Calculate final price after discount (matching frontend logic)
-  const finalPrice = product.discount > 0 
+  const finalPrice = product.discount > 0
     ? Math.max(product.price - (product.price * product.discount) / 100, 0)
     : product.price;
 
@@ -222,14 +222,14 @@ export const getAllMyOrders = async (req, res) => {
     };
 
     console.log(`==> DEBUG: User ${req.user.id} order status:`, statusCounts);
-    
+
     res.json({
       orders: allOrders,
       statusCounts,
       webhookIssue: statusCounts.created > 0 && statusCounts.paid === 0,
-      message: statusCounts.created > 0 && statusCounts.paid === 0 
-        ? "⚠️ Orders stuck in 'created' status - webhook not working!" 
-        : "✅ All orders processed correctly"
+      message: statusCounts.created > 0 && statusCounts.paid === 0
+        ? " Orders stuck in 'created' status - webhook not working!"
+        : " All orders processed correctly"
     });
   } catch (error) {
     console.error("Error fetching all orders:", error);

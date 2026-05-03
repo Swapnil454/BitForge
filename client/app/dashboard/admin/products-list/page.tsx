@@ -188,11 +188,10 @@ export default function AdminAllProductsPage() {
             <button
               key={status}
               onClick={() => setFilterStatus(status)}
-              className={`px-4 py-2 rounded-lg font-medium transition ${
-                filterStatus === status
+              className={`px-4 py-2 rounded-lg font-medium transition ${filterStatus === status
                   ? "bg-purple-600 text-white"
                   : "bg-white text-gray-700 border border-gray-200 hover:border-purple-600"
-              }`}
+                }`}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)} ({statusCounts[status]})
             </button>
@@ -232,13 +231,12 @@ export default function AdminAllProductsPage() {
                     />
                     <div className="absolute top-2 right-2">
                       <span
-                        className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
-                          product.status === "approved"
+                        className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${product.status === "approved"
                             ? "bg-green-100 text-green-800"
                             : product.status === "pending"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
                       >
                         {product.status.toUpperCase()}
                       </span>
@@ -408,7 +406,7 @@ export default function AdminAllProductsPage() {
 
             <div className="p-6 space-y-4">
               <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                <h3 className="font-bold text-red-900 mb-2">⚠️ Warning</h3>
+                <h3 className="font-bold text-red-900 mb-2"> Warning</h3>
                 <p className="text-red-700">
                   You are about to permanently delete the product <strong>"{selectedProduct.title}"</strong>. This action cannot be undone.
                 </p>

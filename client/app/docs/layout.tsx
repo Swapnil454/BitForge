@@ -152,7 +152,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                   className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 pl-9 text-sm text-white placeholder:text-white/40 focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40">
-                  🔍
+
                 </span>
               </div>
 
@@ -180,10 +180,9 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                             onClick={() => setSidebarOpen(false)}
                             className={`
                               block rounded-lg px-3 py-2 text-sm transition-all
-                              ${
-                                isActive(item.href)
-                                  ? "bg-cyan-500/10 text-cyan-300 font-medium"
-                                  : "text-white/70 hover:bg-white/5 hover:text-white"
+                              ${isActive(item.href)
+                                ? "bg-cyan-500/10 text-cyan-300 font-medium"
+                                : "text-white/70 hover:bg-white/5 hover:text-white"
                               }
                             `}
                           >
@@ -202,16 +201,16 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                   item.title.toLowerCase().includes(searchQuery.toLowerCase())
                 )
               ) && (
-                <div className="py-8 text-center">
-                  <p className="text-sm text-white/50">No results found</p>
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="mt-2 text-xs text-cyan-400 hover:text-cyan-300"
-                  >
-                    Clear search
-                  </button>
-                </div>
-              )}
+                  <div className="py-8 text-center">
+                    <p className="text-sm text-white/50">No results found</p>
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="mt-2 text-xs text-cyan-400 hover:text-cyan-300"
+                    >
+                      Clear search
+                    </button>
+                  </div>
+                )}
 
               {/* Quick Links */}
               <div className="border-t border-white/10 pt-6">

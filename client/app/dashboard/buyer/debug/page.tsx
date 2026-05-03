@@ -45,17 +45,17 @@ export default function BuyerDebugPage() {
           >
             ← Back to Dashboard
           </button>
-          <h1 className="text-4xl font-bold text-white mb-2">🔍 Debug Orders</h1>
+          <h1 className="text-4xl font-bold text-white mb-2"> Debug Orders</h1>
           <p className="text-white/60">Diagnose webhook and payment issues</p>
         </div>
 
         {/* Status Summary */}
         <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-6">
           <h2 className="text-2xl font-bold text-white mb-4">Status Summary</h2>
-          
+
           {data?.webhookIssue ? (
             <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-4">
-              <p className="text-red-300 font-bold text-lg">⚠️ WEBHOOK ISSUE DETECTED!</p>
+              <p className="text-red-300 font-bold text-lg"> WEBHOOK ISSUE DETECTED!</p>
               <p className="text-red-200 mt-2">{data.message}</p>
               <p className="text-red-200 mt-2 text-sm">
                 You have orders stuck in "created" status. This means Razorpay webhooks are not working.
@@ -63,7 +63,7 @@ export default function BuyerDebugPage() {
             </div>
           ) : (
             <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-4 mb-4">
-              <p className="text-green-300 font-bold text-lg">✅ {data?.message}</p>
+              <p className="text-green-300 font-bold text-lg"> {data?.message}</p>
             </div>
           )}
 
@@ -101,7 +101,7 @@ export default function BuyerDebugPage() {
         {/* All Orders Table */}
         <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
           <h2 className="text-2xl font-bold text-white mb-4">All Orders ({data?.orders?.length || 0})</h2>
-          
+
           {data?.orders?.length === 0 ? (
             <p className="text-white/60 text-center py-8">No orders found</p>
           ) : (
@@ -126,13 +126,12 @@ export default function BuyerDebugPage() {
                         <p className="text-white">₹{order.amount}</p>
                       </td>
                       <td className="py-3 px-2">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          order.status === 'paid' 
-                            ? 'bg-green-500/20 text-green-300 border border-green-500/30'
-                            : order.status === 'failed'
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${order.status === 'paid'
+                          ? 'bg-green-500/20 text-green-300 border border-green-500/30'
+                          : order.status === 'failed'
                             ? 'bg-red-500/20 text-red-300 border border-red-500/30'
                             : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
-                        }`}>
+                          }`}>
                           {order.status.toUpperCase()}
                         </span>
                       </td>

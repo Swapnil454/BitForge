@@ -17,7 +17,7 @@ export default function ProductManagementPage() {
       {/* Header */}
       <div className="mb-12">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-300">
-          <span>📦</span>
+          <span></span>
           For Sellers
         </div>
         <h1 className="mb-4 text-4xl font-bold text-white md:text-5xl">
@@ -105,7 +105,7 @@ export default function ProductManagementPage() {
         {/* Creating a Product */}
         <section>
           <h2 className="mb-4 text-2xl font-semibold text-white">Creating Your First Product</h2>
-          
+
           <h3 className="mb-3 text-lg font-semibold text-white">Step 1: Access Dashboard</h3>
           <ol className="space-y-2 text-white/70">
             <li>1. Sign in to your seller account</li>
@@ -160,7 +160,7 @@ export default function ProductManagementPage() {
         {/* Managing Products */}
         <section>
           <h2 className="mb-4 text-2xl font-semibold text-white">Managing Your Products</h2>
-          
+
           <h3 className="mb-3 text-lg font-semibold text-white">View All Products</h3>
           <p className="mb-4 text-white/70">
             Access your dashboard to see all your products with their status:
@@ -252,7 +252,7 @@ export default function ProductManagementPage() {
           </p>
           <ul className="space-y-2 text-white/70">
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">📊</span>
+              <span className="text-cyan-400"></span>
               <span><strong>Views:</strong> Track how many users view your product</span>
             </li>
             <li className="flex items-start gap-3">

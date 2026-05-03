@@ -44,7 +44,7 @@ export default function SecurityPage() {
                 <p className="text-white/60 text-sm">PCI-compliant payment processing</p>
               </div>
               <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-5 text-center">
-                <div className="text-3xl mb-3">📊</div>
+                <div className="text-3xl mb-3"></div>
                 <h3 className="text-white font-semibold mb-2">Data Protection</h3>
                 <p className="text-white/60 text-sm">GDPR & data privacy compliance</p>
               </div>
@@ -62,7 +62,7 @@ export default function SecurityPage() {
             <div className="space-y-4">
               <div className="bg-white/5 p-4 rounded-lg">
                 <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
-                  <span className="text-red-400">❌</span> Never Do This
+                  <span className="text-red-400"></span> Never Do This
                 </h4>
                 <ul className="space-y-2 text-white/70 text-sm">
                   <li className="flex items-start gap-2">
@@ -182,7 +182,7 @@ fetch('https://api.contentsellify.com/products', {
   }
 });
 
-// ❌ Bad - HTTP (will fail)
+//  Bad - HTTP (will fail)
 fetch('http://api.contentsellify.com/products', ...)`}
                 language="javascript"
               />
@@ -190,7 +190,7 @@ fetch('http://api.contentsellify.com/products', ...)`}
 
             <div className="bg-white/5 border border-white/10 rounded-xl p-6">
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <span className="text-xl">📦</span> TLS 1.2+
+                <span className="text-xl"></span> TLS 1.2+
               </h3>
               <p className="text-white/70 text-sm">
                 Our API requires TLS 1.2 or higher. Older protocols (SSL, TLS 1.0, TLS 1.1) are disabled for security.
@@ -249,7 +249,7 @@ fetch('http://api.contentsellify.com/products', ...)`}
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">📝</span> Data Minimization
+                <span className="text-xl"></span> Data Minimization
               </h3>
               <p className="text-white/60 text-sm">
                 Only collect customer data you need. Don't store sensitive information unnecessarily. Use ContentSellify's built-in customer management.
@@ -306,27 +306,27 @@ if (!verifyWebhook(req.body, req.headers['x-webhook-signature'], secret)) {
           <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-6">
             <div className="space-y-3">
               <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" className="mt-1"/>
+                <input type="checkbox" className="mt-1" />
                 <span className="text-white/80">API keys stored in environment variables, not in code</span>
               </label>
               <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" className="mt-1"/>
+                <input type="checkbox" className="mt-1" />
                 <span className="text-white/80">Using HTTPS for all API requests</span>
               </label>
               <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" className="mt-1"/>
+                <input type="checkbox" className="mt-1" />
                 <span className="text-white/80">Webhook signatures verified on all incoming webhooks</span>
               </label>
               <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" className="mt-1"/>
+                <input type="checkbox" className="mt-1" />
                 <span className="text-white/80">Separate API keys for development and production</span>
               </label>
               <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" className="mt-1"/>
+                <input type="checkbox" className="mt-1" />
                 <span className="text-white/80">OAuth tokens refresh automatically before expiration</span>
               </label>
               <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" className="mt-1"/>
+                <input type="checkbox" className="mt-1" />
                 <span className="text-white/80">Customer data handled according to GDPR requirements</span>
               </label>
             </div>
@@ -338,7 +338,7 @@ if (!verifyWebhook(req.body, req.headers['x-webhook-signature'], secret)) {
           <h2 className="text-2xl font-bold text-white mb-4">Report Security Issues</h2>
           <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-6">
             <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-              <span className="text-xl">🚨</span> Found a Vulnerability?
+              <span className="text-xl"></span> Found a Vulnerability?
             </h3>
             <p className="text-white/70 mb-4">
               We take security seriously. If you discover a security vulnerability, please report it responsibly:

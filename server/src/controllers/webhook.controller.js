@@ -14,15 +14,15 @@ const PLATFORM_FEE_RATE = 0.02; // 2% platform fee
 // Process cart order payment
 const processCartOrder = async (cartOrder, payment) => {
   console.log("==> 🛒 Processing CART order with", cartOrder.items.length, "items");
-  
+
   const buyer = await User.findById(cartOrder.buyerId);
   const createdOrders = [];
-  
+
   // Create individual Order records for each item
   for (const item of cartOrder.items) {
     const product = await Product.findById(item.productId);
     const seller = await User.findById(item.sellerId);
-    
+
     // Create Order for this product
     const order = await Order.create({
       buyerId: cartOrder.buyerId,
@@ -37,17 +37,17 @@ const processCartOrder = async (cartOrder, payment) => {
       sellerAmount: item.sellerAmount,
       status: "paid",
     });
-    
+
     // Update cart order item with order reference
     item.orderId = order._id;
-    
+
     createdOrders.push({ order, product, seller });
-    
-    console.log(`   ✅ Order created for: ${item.productName} (₹${item.itemTotal.toFixed(2)})`);
-    
+
+    console.log(`    Order created for: ${item.productName} (₹${item.itemTotal.toFixed(2)})`);
+
     // Create invoice for this item
     const invoiceNumber = await Invoice.generateInvoiceNumber();
-    
+
     await Invoice.create({
       orderId: order._id,
       invoiceNumber,
@@ -75,9 +75,9 @@ const processCartOrder = async (cartOrder, payment) => {
       razorpayPaymentId: payment.id,
       paymentMethod: payment.method || 'Razorpay',
     });
-    
-    console.log(`   ✅ Invoice created: ${invoiceNumber}`);
-    
+
+    console.log(`    Invoice created: ${invoiceNumber}`);
+
     // Notify seller
     try {
       await createNotification(
@@ -89,20 +89,20 @@ const processCartOrder = async (cartOrder, payment) => {
         "Order"
       );
     } catch (err) {
-      console.log(`   ⚠️ Failed to notify seller: ${err.message}`);
+      console.log(`    Failed to notify seller: ${err.message}`);
     }
   }
-  
+
   // Save updated cart order with order references
   await cartOrder.save();
-  
+
   // Clear user's cart
   await Cart.findOneAndUpdate(
     { userId: cartOrder.buyerId },
     { $set: { items: [], updatedAt: new Date() } }
   );
   console.log("==> 🗑️ Cart cleared for user");
-  
+
   // Notify buyer (single notification for entire purchase)
   try {
     const productNames = cartOrder.items.map(i => i.productName).join(", ");
@@ -114,11 +114,11 @@ const processCartOrder = async (cartOrder, payment) => {
       cartOrder._id,
       "CartOrder"
     );
-    console.log("==> ✅ Buyer notified");
+    console.log("==>  Buyer notified");
   } catch (err) {
-    console.log(`==> ⚠️ Failed to notify buyer: ${err.message}`);
+    console.log(`==>  Failed to notify buyer: ${err.message}`);
   }
-  
+
   return createdOrders;
 };
 
@@ -127,11 +127,11 @@ export const razorpayWebhook = async (req, res) => {
     console.log("==> ///////////////////////////////////////////////////////////");
     console.log("==> Webhook received:", req.body.event);
     console.log("==> Timestamp:", new Date().toISOString());
-    
+
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
     if (!secret || secret === 'xxxx' || secret === 'your_webhook_secret') {
-      console.error("==> ❌ CRITICAL: RAZORPAY_WEBHOOK_SECRET not properly configured!");
+      console.error("==>  CRITICAL: RAZORPAY_WEBHOOK_SECRET not properly configured!");
       console.error("==> Current value:", secret);
       console.error("==> Get real webhook secret from: https://dashboard.razorpay.com/app/webhooks");
       return res.status(500).json({ message: "Webhook secret not configured" });
@@ -144,14 +144,14 @@ export const razorpayWebhook = async (req, res) => {
       .digest("hex");
 
     if (generatedSignature !== receivedSignature) {
-      console.error("==> ❌ Invalid webhook signature!");
+      console.error("==>  Invalid webhook signature!");
       console.error("==> Expected:", generatedSignature.substring(0, 20) + "...");
       console.error("==> Received:", receivedSignature?.substring(0, 20) + "...");
       console.error("==> This means RAZORPAY_WEBHOOK_SECRET is incorrect!");
       return res.status(400).json({ message: "Invalid signature" });
     }
 
-    console.log("==> ✅ Webhook signature verified");
+    console.log("==>  Webhook signature verified");
     const event = req.body.event;
 
     if (event === "payment.captured") {
@@ -162,21 +162,21 @@ export const razorpayWebhook = async (req, res) => {
 
       // Check if this is a CART order
       const cartOrder = await CartOrder.findOne({ razorpayOrderId: payment.order_id });
-      
+
       if (cartOrder) {
         // Process cart order
         if (cartOrder.status === "paid") {
           console.log("==> ℹ️ Cart order already processed, skipping");
           return res.json({ status: "ok" });
         }
-        
+
         cartOrder.razorpayPaymentId = payment.id;
         cartOrder.status = "paid";
         cartOrder.paidAt = new Date();
-        
+
         await processCartOrder(cartOrder, payment);
-        
-        console.log("==> ✅ Cart order processed successfully");
+
+        console.log("==>  Cart order processed successfully");
         console.log("==> ///////////////////////////////////////////////////////////");
         return res.json({ status: "ok" });
       }
@@ -192,11 +192,11 @@ export const razorpayWebhook = async (req, res) => {
       ).populate('productId', 'title').populate('buyerId', 'email').populate('sellerId', 'name');
 
       if (!order) {
-        console.error("==> ❌ Order not found for razorpayOrderId:", payment.order_id);
+        console.error("==>  Order not found for razorpayOrderId:", payment.order_id);
         return res.json({ status: "ok" });
       }
 
-      console.log("==> ✅ Order updated to PAID:", order._id);
+      console.log("==>  Order updated to PAID:", order._id);
       console.log("==> Product:", order.productId?.title);
       console.log("==> Buyer:", order.buyerId?.email);
       console.log("==> Platform Fee: ₹", order.platformFee);
@@ -249,7 +249,7 @@ export const razorpayWebhook = async (req, res) => {
           paymentMethod: payment.method || 'Razorpay',
         });
 
-        console.log("==> ✅ Invoice created:", invoice.invoiceNumber);
+        console.log("==>  Invoice created:", invoice.invoiceNumber);
         console.log("==> Total Amount: ₹", totalAmount.toFixed(2));
 
         try {
@@ -262,7 +262,7 @@ export const razorpayWebhook = async (req, res) => {
               order._id,
               "Order"
             );
-            console.log("==> ✅ Buyer notified");
+            console.log("==>  Buyer notified");
           }
 
           if (order?.sellerId) {
@@ -274,22 +274,22 @@ export const razorpayWebhook = async (req, res) => {
               order._id,
               "Order"
             );
-            console.log("==> ✅ Seller notified");
+            console.log("==>  Seller notified");
           }
         } catch (notifyErr) {
-          console.error("==> ⚠️ Notification error:", notifyErr.message);
+          console.error("==>  Notification error:", notifyErr.message);
         }
       } else {
         console.log("==> ℹ️ Invoice already exists, skipping creation");
       }
 
-      console.log("==> ✅ Webhook processed successfully");
+      console.log("==>  Webhook processed successfully");
       console.log("==> ///////////////////////////////////////////////////////////");
     }
 
     res.json({ status: "ok" });
   } catch (error) {
-    console.error("==> ❌ Webhook error:", error);
+    console.error("==>  Webhook error:", error);
     console.error("==> ///////////////////////////////////////////////////////////");
     res.status(500).json({ message: "Webhook processing failed", error: error.message });
   }

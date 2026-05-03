@@ -107,8 +107,15 @@ export const adminAPI = {
         return response.data;
     },
 
-    getAllTransactions: async () => {
-        const response = await api.get('/admin/transactions');
+    getAllTransactions: async (params?: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        type?: string;
+        status?: string;
+        sortBy?: string;
+    }) => {
+        const response = await api.get('/admin/transactions', { params });
         return response.data;
     },
 
@@ -207,8 +214,13 @@ export const adminAPI = {
         return response.data;
     },
 
-    getAllUsers: async () => {
-        const response = await api.get('/admin/users');
+    getAllUsers: async (params?: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        role?: string;
+    }) => {
+        const response = await api.get('/admin/users', { params });
         return response.data;
     },
 
@@ -222,13 +234,30 @@ export const adminAPI = {
         return response.data;
     },
 
-    getAllProducts: async () => {
-        const response = await api.get('/admin/products/all');
+    getAllProducts: async (params?: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        status?: string;
+        category?: string;
+        sortBy?: string;
+    }) => {
+        const response = await api.get('/admin/products/all', { params });
         return response.data;
     },
 
     getProductDetails: async (id: string) => {
         const response = await api.get(`/admin/products/${id}/details`);
+        return response.data;
+    },
+
+    getProductAnalytics: async () => {
+        const response = await api.get("/admin/products/analytics");
+        return response.data;
+    },
+
+    getProductReport: async () => {
+        const response = await api.get("/admin/products/report", { responseType: 'blob' });
         return response.data;
     },
 

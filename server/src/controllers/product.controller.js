@@ -3,14 +3,14 @@ import cloudinary from "../config/cloudinary.js";
 import Product from "../models/Product.js";
 import User from "../models/User.js";
 import { createNotification } from "./notification.controller.js";
-import { 
-  generatePreviewPages, 
+import {
+  generatePreviewPages,
   extractFileMetadata,
   performBasicFileCheck
 } from "../utils/previewGenerator.js";
 import { scanFileWithVirusTotal } from "../utils/virusTotalScanner.js";
 import { autoReviewContent } from "../utils/contentReview.js";
-import { 
+import {
   generateAutomaticPreviewPDF,
   generatePreviewPageImages,
   validatePDF
@@ -19,11 +19,11 @@ import {
 // Helper function to handle approved product updates
 const handleApprovedProductUpdate = async (product, req, res, updateData) => {
   try {
-    const { 
-      title, 
-      description, 
-      price, 
-      discount, 
+    const {
+      title,
+      description,
+      price,
+      discount,
       deleteThumbnail,
       pageCount,
       language,
@@ -42,17 +42,17 @@ const handleApprovedProductUpdate = async (product, req, res, updateData) => {
     if (req.files && req.files.file && req.files.file[0]) {
       try {
         const file = req.files.file[0];
-        
+
         // Extract new file metadata
         const metadata = await extractFileMetadata(file.buffer, file.mimetype);
         fileSizeBytes = metadata.fileSizeBytes;
         actualPageCount = metadata.pageCount || actualPageCount;
-        
+
         const uploadResult = await new Promise((resolve, reject) => {
           const result = cloudinary.uploader.upload_stream(
             {
               resource_type: "raw",
-              type: "authenticated",  // 🔐 Secure - not publicly accessible
+              type: "authenticated",  // Secure - not publicly accessible
               folder: "sellify/products",
             },
             (error, uploadResult) => {
@@ -65,26 +65,26 @@ const handleApprovedProductUpdate = async (product, req, res, updateData) => {
 
         fileKey = uploadResult.public_id;
         fileUrl = uploadResult.secure_url;
-        
+
         // 🚀 AUTOMATIC PREVIEW GENERATION
         if (file.mimetype.includes('pdf')) {
           try {
             console.log("📄 PDF updated - regenerating preview...");
-            
+
             const previewResult = await generateAutomaticPreviewPDF(
               file.buffer,
               uploadResult.public_id
             );
-            
+
             previewPdfKey = previewResult.previewPdfKey;
             previewPdfUrl = previewResult.previewPdfUrl;
             actualPageCount = previewResult.totalPages;
-            
+
             previewPages = [];
-            
-            console.log("✅ Preview regenerated for approved product update");
+
+            console.log(" Preview regenerated for approved product update");
           } catch (err) {
-            console.error("❌ Preview generation failed:", err);
+            console.error(" Preview generation failed:", err);
           }
         }
       } catch (cloudinaryError) {
@@ -129,7 +129,7 @@ const handleApprovedProductUpdate = async (product, req, res, updateData) => {
 
     // Handle preview PDF - now automatic, kept for backward compatibility
     if (req.files && req.files.previewPdf && req.files.previewPdf[0]) {
-      console.log("⚠️ Manual preview PDF upload detected (deprecated)");
+      console.log(" Manual preview PDF upload detected (deprecated)");
     }
 
     // Create pending change request with new fields
@@ -197,10 +197,10 @@ export const getSellerProducts = async (req, res) => {
 
 export const uploadProduct = async (req, res) => {
   try {
-    const { 
-      title, 
-      description, 
-      price, 
+    const {
+      title,
+      description,
+      price,
       discount,
       pageCount,
       language,
@@ -215,8 +215,8 @@ export const uploadProduct = async (req, res) => {
 
     // Validate new required fields
     if (!language || !format || !intendedAudience) {
-      return res.status(400).json({ 
-        message: "Language, format, and intended audience are required" 
+      return res.status(400).json({
+        message: "Language, format, and intended audience are required"
       });
     }
 
@@ -229,15 +229,15 @@ export const uploadProduct = async (req, res) => {
 
     // Extract file metadata
     const metadata = await extractFileMetadata(file.buffer, file.mimetype);
-    
+
     // Perform malware scan (VirusTotal or basic checks)
     console.log("Starting malware scan for:", file.originalname);
     const scanResult = await scanFileWithVirusTotal(file.buffer, file.originalname);
     console.log("Scan result:", scanResult);
-    
+
     if (!scanResult.clean) {
-      return res.status(400).json({ 
-        message: "File failed security scan", 
+      return res.status(400).json({
+        message: "File failed security scan",
         reason: scanResult.reason,
         details: scanResult.detections
       });
@@ -248,7 +248,7 @@ export const uploadProduct = async (req, res) => {
       const result = cloudinary.uploader.upload_stream(
         {
           resource_type: "raw",
-          type: "authenticated",  // 🔐 Secure - not publicly accessible
+          type: "authenticated",  // Secure - not publicly accessible
           folder: "sellify/products",
         },
         (error, uploadResult) => {
@@ -283,45 +283,45 @@ export const uploadProduct = async (req, res) => {
     let previewPdfUploadResult = null;
     let previewPages = [];
     let actualPageCount = metadata.pageCount || 1;
-    
+
     // Check if file is PDF and automatically generate preview
     if (file.mimetype.includes('pdf')) {
       try {
         console.log("📄 PDF detected - starting automatic preview generation...");
-        
+
         // Validate PDF format
         validatePDF(file.buffer, file.mimetype);
-        
+
         // Generate watermarked preview PDF automatically
         const previewResult = await generateAutomaticPreviewPDF(
           file.buffer,
           fileUploadResult.public_id
         );
-        
-        console.log("✅ Preview generated:", {
+
+        console.log(" Preview generated:", {
           totalPages: previewResult.totalPages,
           previewPages: previewResult.previewPages,
           lockedPages: previewResult.lockedPages
         });
-        
+
         // Store preview PDF info
         previewPdfUploadResult = {
           public_id: previewResult.previewPdfKey,
           secure_url: previewResult.previewPdfUrl
         };
-        
+
         // Update actual page count from analysis
         actualPageCount = previewResult.totalPages;
-        
+
         // Note: Preview page images are disabled for now
         // The preview PDF download is the primary feature
         previewPages = [];
-        
-        console.log("✅ Preview PDF ready for download");
+
+        console.log(" Preview PDF ready for download");
       } catch (previewError) {
-        console.error("❌ Preview generation failed:", previewError);
+        console.error(" Preview generation failed:", previewError);
         // Don't block product upload if preview fails - continue without preview
-        console.log("⚠️ Continuing without preview...");
+        console.log(" Continuing without preview...");
       }
     } else {
       // For non-PDF files, use legacy preview generation
@@ -356,7 +356,7 @@ export const uploadProduct = async (req, res) => {
       thumbnailUrl: thumbnailUploadResult?.secure_url || null,
       previewPdfKey: previewPdfUploadResult?.public_id || null,
       previewPdfUrl: previewPdfUploadResult?.secure_url || null,
-      
+
       // B. Structured validation fields
       pageCount: pageCount ? Number(pageCount) : actualPageCount,
       fileSizeBytes: metadata.fileSizeBytes,
@@ -364,10 +364,10 @@ export const uploadProduct = async (req, res) => {
       lastUpdatedAt: new Date(),
       format: format,
       intendedAudience: intendedAudience,
-      
+
       // A. Preview pages
       previewPages: previewPages,
-      
+
       // D. Trust checklist
       malwareScanned: scanResult.scanned,
       malwareScanDate: scanResult.scanDate,
@@ -380,7 +380,7 @@ export const uploadProduct = async (req, res) => {
       contentReviewed: reviewResult.status,
       contentReviewDate: reviewResult.status === "auto-reviewed" ? new Date() : null,
       refundEligible: true,
-      
+
       status: "pending",
     });
 
@@ -411,11 +411,11 @@ export const uploadProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
   try {
     const { productId } = req.params;
-    const { 
-      title, 
-      description, 
-      price, 
-      discount, 
+    const {
+      title,
+      description,
+      price,
+      discount,
       deleteThumbnail,
       pageCount,
       language,
@@ -435,11 +435,11 @@ export const updateProduct = async (req, res) => {
 
     // If product is approved, create a pending change request instead
     if (product.status === "approved") {
-      return handleApprovedProductUpdate(product, req, res, { 
-        title, 
-        description, 
-        price, 
-        discount, 
+      return handleApprovedProductUpdate(product, req, res, {
+        title,
+        description,
+        price,
+        discount,
         deleteThumbnail,
         pageCount,
         language,
@@ -460,18 +460,18 @@ export const updateProduct = async (req, res) => {
     if (req.files && req.files.file && req.files.file[0]) {
       try {
         const file = req.files.file[0];
-        
+
         // Extract metadata from new file
         const metadata = await extractFileMetadata(file.buffer, file.mimetype);
         fileSizeBytes = metadata.fileSizeBytes;
         actualPageCount = metadata.pageCount || actualPageCount;
-        
+
         // Delete old file from Cloudinary if exists
         if (product.fileKey) {
           try {
-            await cloudinary.uploader.destroy(product.fileKey, { 
+            await cloudinary.uploader.destroy(product.fileKey, {
               resource_type: "raw",
-              type: "authenticated"  // 🔐 Must match upload type
+              type: "authenticated"  // Must match upload type
             });
           } catch (cloudinaryError) {
             console.error("Cloudinary delete error:", cloudinaryError);
@@ -484,7 +484,7 @@ export const updateProduct = async (req, res) => {
           const result = cloudinary.uploader.upload_stream(
             {
               resource_type: "raw",
-              type: "authenticated",  // 🔐 Secure - not publicly accessible
+              type: "authenticated",  // Secure - not publicly accessible
               folder: "sellify/products",
             },
             (error, uploadResult) => {
@@ -497,7 +497,7 @@ export const updateProduct = async (req, res) => {
 
         fileKey = uploadResult.public_id;
         fileUrl = uploadResult.secure_url;
-        
+
         // 🚀 AUTOMATIC PREVIEW GENERATION for new file
         // Delete old preview if exists
         if (product.previewPdfKey) {
@@ -507,26 +507,26 @@ export const updateProduct = async (req, res) => {
             console.error("Preview delete error:", err);
           }
         }
-        
+
         // Generate new preview if PDF
         if (file.mimetype.includes('pdf')) {
           try {
             console.log("📄 PDF updated - regenerating preview...");
-            
+
             const previewResult = await generateAutomaticPreviewPDF(
               file.buffer,
               uploadResult.public_id
             );
-            
+
             previewPdfKey = previewResult.previewPdfKey;
             previewPdfUrl = previewResult.previewPdfUrl;
             actualPageCount = previewResult.totalPages;
-            
+
             previewPages = [];
-            
-            console.log("✅ Preview regenerated successfully");
+
+            console.log(" Preview regenerated successfully");
           } catch (err) {
-            console.error("❌ Preview generation failed:", err);
+            console.error(" Preview generation failed:", err);
           }
         }
       } catch (cloudinaryError) {
@@ -590,7 +590,7 @@ export const updateProduct = async (req, res) => {
     // NOTE: This is now handled automatically in file upload section above
     // Keeping this section for backward compatibility with old manual uploads
     if (req.files && req.files.previewPdf && req.files.previewPdf[0]) {
-      console.log("⚠️ Manual preview PDF upload detected (deprecated - use automatic generation)");
+      console.log(" Manual preview PDF upload detected (deprecated - use automatic generation)");
       // Manual preview upload is deprecated but still supported for legacy
     }
 
@@ -682,9 +682,9 @@ export const deleteProduct = async (req, res) => {
     // Delete file from Cloudinary if exists
     if (product.fileKey) {
       try {
-        await cloudinary.uploader.destroy(product.fileKey, { 
+        await cloudinary.uploader.destroy(product.fileKey, {
           resource_type: "raw",
-          type: "authenticated"  // 🔐 Must match upload type
+          type: "authenticated"  // Must match upload type
         });
       } catch (cloudinaryError) {
         console.error("Cloudinary delete error:", cloudinaryError);
@@ -717,7 +717,7 @@ export const deleteProduct = async (req, res) => {
 export const getProductById = async (req, res) => {
   try {
     const { productId } = req.params;
-    
+
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });

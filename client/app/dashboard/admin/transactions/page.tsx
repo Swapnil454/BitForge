@@ -1,10 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { adminAPI } from "@/lib/api";
 import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
+import { motion, AnimatePresence } from "framer-motion";
+import { MoreVertical } from "lucide-react";
+
+import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
+import AdminInlineSearchFilters, { SortOption, StatusFilter, TypeFilter } from "./components/AdminInlineSearchFilters";
 
 interface Transaction {
   _id: string;
@@ -24,36 +29,56 @@ interface Transaction {
   errorReason?: string;
 }
 
-type SortKey = "date" | "amount" | "status" | "type";
-type SortDir = "asc" | "desc";
-
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [filterType, setFilterType] = useState<"all" | "buyer_to_admin" | "admin_to_seller">("all");
-  const [filterStatus, setFilterStatus] = useState<"all" | "success" | "failed" | "pending">("all");
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [searchTerm, setSearchTerm] = useState("");
-
-  const [sortKey, setSortKey] = useState<SortKey>("date");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [sortBy, setSortBy] = useState<SortOption>("date_desc");
 
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
+  const headerMenuRef = useRef<HTMLDivElement>(null);
 
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const PAGE_SIZE = 10;
 
+  useEffect(() => {
+    setPage(1);
+  }, [typeFilter, statusFilter, searchTerm, sortBy]);
+
   const router = useRouter();
-  
 
   useEffect(() => {
     fetchTransactions();
+  }, [page, typeFilter, statusFilter, searchTerm, sortBy]);
+
+  useEffect(() => {
+    const handleOutside = (event: MouseEvent) => {
+      if (headerMenuRef.current && !headerMenuRef.current.contains(event.target as Node)) {
+        setHeaderMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
   }, []);
 
   const fetchTransactions = async () => {
+    setLoading(true);
     try {
-      const data = await adminAPI.getAllTransactions();
+      const data = await adminAPI.getAllTransactions({
+        page,
+        limit: PAGE_SIZE,
+        search: searchTerm,
+        type: typeFilter,
+        status: statusFilter,
+        sortBy,
+      });
       setTransactions(data.transactions || []);
+      setTotalPages(data.pagination?.pages || 1);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to load transactions");
     } finally {
@@ -61,354 +86,324 @@ export default function TransactionsPage() {
     }
   };
 
-  /* ================= FILTER + SORT ================= */
-
-  const filteredTransactions = useMemo(() => {
-    let data = [...transactions];
-
-    data = data.filter(t => {
-      const matchesType = filterType === "all" || t.type === filterType;
-      const matchesStatus = filterStatus === "all" || t.status === filterStatus;
-      const matchesSearch =
-        !searchTerm ||
-        t.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.buyerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.sellerName?.toLowerCase().includes(searchTerm.toLowerCase());
-
-      return matchesType && matchesStatus && matchesSearch;
-    });
-
-    data.sort((a, b) => {
-      let A: any = a[sortKey];
-      let B: any = b[sortKey];
-
-      if (sortKey === "date") {
-        A = new Date(a.date).getTime();
-        B = new Date(b.date).getTime();
-      }
-
-      if (A < B) return sortDir === "asc" ? -1 : 1;
-      if (A > B) return sortDir === "asc" ? 1 : -1;
-      return 0;
-    });
-
-    return data;
-  }, [transactions, filterType, filterStatus, searchTerm, sortKey, sortDir]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [filterType, filterStatus, searchTerm, sortKey, sortDir]);
-
-  const totalPages = Math.ceil(filteredTransactions.length / PAGE_SIZE);
-
-  const paginatedTransactions = filteredTransactions.slice(
-    (page - 1) * PAGE_SIZE,
-    page * PAGE_SIZE
-  );
-
-
-  const toggleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortDir(prev => (prev === "asc" ? "desc" : "asc"));
-    } else {
-      setSortKey(key);
-      setSortDir("asc");
-    }
-  };
-
   /* ================= EXPORT EXCEL ================= */
 
-  const exportExcel = () => {
-    if (!filteredTransactions.length) {
-      toast.error("No data to export");
-      return;
+  const exportExcel = async () => {
+    setHeaderMenuOpen(false);
+    const toastId = toast.loading("Preparing export...");
+    try {
+      // Fetch all matching data for export (limit 5000)
+      const data = await adminAPI.getAllTransactions({
+        limit: 5000,
+        search: searchTerm,
+        type: typeFilter,
+        status: statusFilter,
+        sortBy,
+      });
+
+      if (!data.transactions?.length) {
+        toast.error("No data to export", { id: toastId });
+        return;
+      }
+
+      const rows = data.transactions.map((t: Transaction) => ({
+        Date: new Date(t.date).toLocaleString(),
+        Type: t.type === "buyer_to_admin" ? "Buyer → Admin" : "Admin → Seller",
+        OrderID: t.orderId,
+        Product: t.productName,
+        Amount: t.amount,
+        Status: t.status,
+        Buyer: t.buyerName || "",
+        Seller: t.sellerName || "",
+        PaymentID: t.razorpayPaymentId || "",
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
+      XLSX.writeFile(workbook, `admin_transactions_${new Date().toISOString().split("T")[0]}.xlsx`);
+      toast.success("Export successful", { id: toastId });
+    } catch (error) {
+      toast.error("Export failed", { id: toastId });
     }
-
-    const rows = filteredTransactions.map(t => ({
-      Date: new Date(t.date).toLocaleString(),
-      Type: t.type === "buyer_to_admin" ? "Buyer → Admin" : "Admin → Seller",
-      OrderID: t.orderId,
-      Product: t.productName,
-      Amount: t.amount,
-      Status: t.status,
-      Buyer: t.buyerName || "",
-      Seller: t.sellerName || "",
-      PaymentID: t.razorpayPaymentId || "",
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
-    XLSX.writeFile(workbook, "transactions.xlsx");
   };
 
-  /* ================= STATS ================= */
-
-  const stats = {
-    total: transactions.length,
-    buyerToAdmin: transactions.filter(t => t.type === "buyer_to_admin").length,
-    adminToSeller: transactions.filter(t => t.type === "admin_to_seller").length,
-    totalAmount: transactions.filter(t => t.status === "success").reduce((s, t) => s + t.amount, 0),
-  };
-
-  /* ================= UI HELPERS ================= */
-
-  const SortHeader = ({ label, field }: { label: string; field: SortKey }) => (
-    <button
-      onClick={() => toggleSort(field)}
-      className="flex items-center gap-1 hover:text-cyan-300"
-    >
-      {label}
-      {sortKey === field && (sortDir === "asc" ? "↑" : "↓")}
-    </button>
-  );
-
-  /* ================= RENDER ================= */
+  const paginatedTransactions = transactions;
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-950 to-black p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[#05050a] text-white">
+      <PageHeader
+        backHref="/dashboard/admin"
+        backLabel="Dashboard"
+        title="Transaction History"
+        subtitle="Manage all payments and payouts globally"
+        rightSlot={
+          <div className="relative" ref={headerMenuRef}>
+            <button
+              onClick={() => setHeaderMenuOpen(!headerMenuOpen)}
+              className="h-10 w-10 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center hover:bg-white/10 transition"
+            >
+              <MoreVertical className="h-5 w-5 text-white/70" />
+            </button>
 
-        {/* Header */}
-        <div>
-          <button
-            onClick={() => router.push("/dashboard/admin")}
-            className="text-cyan-400 hover:text-cyan-300 text-sm mb-2"
-          >
-            ← Back to Dashboard
-          </button>
-          <h1 className="text-3xl font-bold text-white">Transaction History</h1>
-          <p className="text-white/60">All payments and payouts</p>
-        </div>
+            <AnimatePresence>
+              {headerMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                  className="absolute right-0 mt-2 w-48 rounded-xl border border-white/10 bg-[#0a0a14]/95 p-1.5 shadow-2xl backdrop-blur-xl z-50"
+                >
+                  <button
+                    onClick={() => {
+                      setHeaderMenuOpen(false);
+                      router.push("/dashboard/admin/transactions/analytics");
+                    }}
+                    className="w-full rounded-lg px-3 py-2 text-left text-sm text-white/80 hover:bg-white/10 hover:text-white transition"
+                  >
+                    View Analytics
+                  </button>
+                  <button
+                    onClick={exportExcel}
+                    className="w-full rounded-lg px-3 py-2 text-left text-sm text-emerald-400/80 hover:bg-emerald-500/10 hover:text-emerald-400 transition"
+                  >
+                    Export to Excel
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        }
+      />
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            ["Total", stats.total],
-            ["Buyer Payments", stats.buyerToAdmin],
-            ["Seller Payouts", stats.adminToSeller],
-            ["Total Amount", `₹${stats.totalAmount.toLocaleString()}`],
-          ].map(([l, v]) => (
-            <div key={l as string} className="bg-white/5 border border-white/10 rounded-2xl p-4">
-              <p className="text-xs text-white/60">{l}</p>
-              <p className="text-2xl font-bold text-white">{v}</p>
-            </div>
-          ))}
-        </div>
+      <main className="max-w-7xl mx-auto px-2 sm:px-6 py-4 space-y-4">
+        <AdminInlineSearchFilters
+          searchQuery={searchTerm}
+          onSearchChange={setSearchTerm}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          typeFilter={typeFilter}
+          onTypeFilterChange={setTypeFilter}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          onClearAll={() => {
+            setSearchTerm("");
+            setTypeFilter("all");
+            setStatusFilter("all");
+            setSortBy("date_desc");
+          }}
+        />
 
-        {/* Filters */}
-        {/* <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-wrap gap-3">
-          <input
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            placeholder="Search…"
-            className="flex-1 min-w-[220px] px-4 py-2 bg-white/10 border border-white/15 rounded-xl text-white outline-none"
-          />
-
-          <select value={filterType} onChange={e => setFilterType(e.target.value as any)} className="px-4 py-2 bg-white/10 border border-white/15 rounded-xl text-white">
-            <option value="all">All Types</option>
-            <option value="buyer_to_admin">Buyer → Admin</option>
-            <option value="admin_to_seller">Admin → Seller</option>
-          </select>
-
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value as any)} className="px-4 py-2 bg-white/10 border border-white/15 rounded-xl text-white">
-            <option value="all">All Status</option>
-            <option value="success">Success</option>
-            <option value="failed">Failed</option>
-            <option value="pending">Pending</option>
-          </select>
-
-          <button
-            onClick={exportExcel}
-            className="px-4 py-2 bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 rounded-xl hover:bg-emerald-500/30"
-          >
-            Export Excel
-          </button>
-        </div> */}
-
-        <div className="flex flex-col md:flex-row md:items-center gap-3">
-
-  {/* FILTER GLASS (unchanged) */}
-  <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-wrap gap-3 flex-1">
-    <input
-      value={searchTerm}
-      onChange={e => setSearchTerm(e.target.value)}
-      placeholder="Search…"
-      className="flex-1 min-w-[220px] px-4 py-2 bg-white/10 border border-white/15 rounded-xl text-white outline-none"
-    />
-
-    <div className="relative">
-      <select
-        value={filterType}
-        onChange={e => setFilterType(e.target.value as any)}
-        className="
-          appearance-none
-          px-4 py-2 pr-10
-          bg-white/10
-          border border-white/15
-          rounded-xl
-          text-white
-          backdrop-blur-xl
-          outline-none
-          focus:border-cyan-400/60
-          focus:ring-2 focus:ring-cyan-400/30
-          transition
-          cursor-pointer
-        "
-      >
-        <option value="all" className="bg-[#0b1220] text-white">
-          All Types
-        </option>
-        <option value="buyer_to_admin" className="bg-[#0b1220] text-white">
-          Buyer → Admin
-        </option>
-        <option value="admin_to_seller" className="bg-[#0b1220] text-white">
-          Admin → Seller
-        </option>
-      </select>
-
-      {/* Custom arrow */}
-      <svg
-        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-      </svg>
-    </div>
-
-    <div className="relative">
-      <select
-        value={filterStatus}
-        onChange={e => setFilterStatus(e.target.value as any)}
-        className="
-          appearance-none
-          px-4 py-2 pr-10
-          bg-white/10
-          border border-white/15
-          rounded-xl
-          text-white
-          backdrop-blur-xl
-          outline-none
-          focus:border-purple-400/60
-          focus:ring-2 focus:ring-purple-400/30
-          transition
-          cursor-pointer
-        "
-      >
-        <option value="all" className="bg-[#0b1220] text-white">
-          All Status
-        </option>
-        <option value="success" className="bg-[#0b1220] text-white">
-          Success
-        </option>
-        <option value="failed" className="bg-[#0b1220] text-white">
-          Failed
-        </option>
-        <option value="pending" className="bg-[#0b1220] text-white">
-          Pending
-        </option>
-      </select>
-
-      <svg
-        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-      </svg>
-    </div>
-
-  </div>
-
-  {/* EXPORT BUTTON (RIGHT SIDE) */}
-  <div className="flex justify-end">
-    <button
-      onClick={exportExcel}
-      className="px-4 py-2 bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 rounded-xl hover:bg-emerald-500/30 whitespace-nowrap"
-    >
-      Export Excel
-    </button>
-  </div>
-
-</div>
-
-
-        {/* Table */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-          <div className="max-h-[70vh] overflow-y-auto">
-            <table className="min-w-full text-sm">
-              <thead className="sticky top-0 bg-slate-900 text-white/60">
-                <tr>
-                  <th className="px-6 py-4"><SortHeader label="Date" field="date" /></th>
-                  <th className="px-6 py-4"><SortHeader label="Type" field="type" /></th>
-                  <th className="px-6 py-4">Order</th>
-                  <th className="px-6 py-4">Product</th>
-                  <th className="px-6 py-4">User</th>
-                  <th className="px-6 py-4"><SortHeader label="Amount" field="amount" /></th>
-                  <th className="px-6 py-4"><SortHeader label="Status" field="status" /></th>
+        {/* Table Container */}
+        <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden backdrop-blur-sm shadow-xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse table-fixed sm:table-auto">
+              <thead>
+                <tr className="border-b border-white/10 bg-white/5">
+                  <th className="w-[85px] sm:w-auto px-2 py-3 sm:px-6 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white/40">Date</th>
+                  <th className="w-[70px] sm:w-auto px-2 py-3 sm:px-6 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white/40">Type</th>
+                  <th className="px-2 py-3 sm:px-6 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white/40">Product</th>
+                  <th className="hidden xs:table-cell px-2 py-3 sm:px-6 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white/40">User</th>
+                  <th className="w-[80px] sm:w-auto px-2 py-3 sm:px-6 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white/40 text-right">Amount</th>
+                  <th className="w-[70px] sm:w-auto px-2 py-3 sm:px-6 sm:py-4 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white/40 text-center">Status</th>
                 </tr>
               </thead>
-
               <tbody className="divide-y divide-white/5">
                 {loading ? (
-                  Array.from({ length: 6 }).map((_, i) => (
+                  Array.from({ length: 10 }).map((_, i) => (
                     <tr key={i} className="animate-pulse">
-                      {Array.from({ length: 7 }).map((__, j) => (
-                        <td key={j} className="px-6 py-4">
-                          <div className="h-4 bg-white/10 rounded" />
-                        </td>
-                      ))}
+                      <td className="px-2 py-3 sm:px-6 sm:py-5"><div className="h-3 bg-white/10 rounded w-12" /></td>
+                      <td className="px-2 py-3 sm:px-6 sm:py-5"><div className="h-3 bg-white/10 rounded w-10" /></td>
+                      <td className="px-2 py-3 sm:px-6 sm:py-5"><div className="h-3 bg-white/10 rounded w-full" /></td>
+                      <td className="hidden xs:table-cell px-2 py-3 sm:px-6 sm:py-5"><div className="h-3 bg-white/10 rounded w-16" /></td>
+                      <td className="px-2 py-3 sm:px-6 sm:py-5 text-right"><div className="h-3 bg-white/10 rounded w-10 ml-auto" /></td>
+                      <td className="px-2 py-3 sm:px-6 sm:py-5"><div className="h-3 bg-white/10 rounded w-8 mx-auto" /></td>
                     </tr>
                   ))
-                ) : filteredTransactions.length === 0 ? (
+                ) : paginatedTransactions.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-10 text-white/60">
-                      No transactions found
+                    <td colSpan={6} className="px-6 py-20 text-center text-white/40 italic">
+                      No transactions found matching your filters.
                     </td>
                   </tr>
                 ) : (
-                  paginatedTransactions.map(t => (
+                  paginatedTransactions.map((t) => (
                     <tr
                       key={t._id}
                       onClick={() => setSelectedTx(t)}
-                      className="hover:bg-white/5 cursor-pointer"
+                      className="group cursor-pointer hover:bg-white/[0.04] transition-colors"
                     >
-                      <td className="px-6 py-4 text-white/70">{new Date(t.date).toLocaleString()}</td>
-                      <td className="px-6 py-4 text-white">{t.type === "buyer_to_admin" ? "Buyer → Admin" : "Admin → Seller"}</td>
-                      <td className="px-6 py-4 text-white">{t.orderId}</td>
-                      <td className="px-6 py-4 text-white/80 truncate max-w-xs">{t.productName}</td>
-                      <td className="px-6 py-4 text-white/80">{t.buyerName || t.sellerName}</td>
-                      <td className="px-6 py-4 text-emerald-400 font-bold">₹{t.amount.toLocaleString()}</td>
-                      <td className="px-6 py-4 text-white">{t.status}</td>
+                      <td className="px-2 py-3 sm:px-6 sm:py-4">
+                        <p className="text-[10px] sm:text-sm font-medium text-white/80">
+                          {new Date(t.date).toLocaleDateString("en-GB")}
+                        </p>
+                        <p className="text-[9px] sm:text-[11px] text-white/40 mt-0.5 uppercase">
+                          {new Date(t.date).toLocaleTimeString("en-IN", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })}
+                        </p>
+                      </td>
+                      <td className="px-2 py-3 sm:px-6 sm:py-4">
+                        <span
+                          className={`inline-flex px-1.5 py-0.5 rounded-full text-[8px] sm:text-[10px] font-bold border ${
+                            t.type === "buyer_to_admin"
+                              ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20"
+                              : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                          }`}
+                        >
+                          {t.type === "buyer_to_admin" ? "BUYER" : "PAYOUT"}
+                        </span>
+                      </td>
+                      <td className="px-2 py-3 sm:px-6 sm:py-4">
+                        <p className="text-[10px] sm:text-sm font-semibold text-white truncate max-w-[100px] sm:max-w-[200px] group-hover:text-cyan-400 transition-colors">
+                          {t.productName}
+                        </p>
+                        <p className="text-[9px] sm:text-[11px] font-mono text-white/30 mt-0.5">{t.orderId.slice(-8)}</p>
+                      </td>
+                      <td className="hidden xs:table-cell px-2 py-3 sm:px-6 sm:py-4">
+                        <p className="text-[10px] sm:text-sm font-medium text-white/70 truncate max-w-[80px] sm:max-w-none">
+                          {t.buyerName || t.sellerName}
+                        </p>
+                      </td>
+                      <td className="px-2 py-3 sm:px-6 sm:py-4 text-right">
+                        <p className="text-[11px] sm:text-base font-bold text-white">₹{t.amount.toLocaleString()}</p>
+                      </td>
+                      <td className="px-2 py-3 sm:px-6 sm:py-4 text-center">
+                        <div className="flex items-center justify-center">
+                          <span
+                            className={`h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full ${
+                              t.status === "success"
+                                ? "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]"
+                                : t.status === "failed"
+                                ? "bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.5)]"
+                                : "bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.5)]"
+                            }`}
+                          />
+                          <span className="ml-1.5 sm:ml-2 text-[9px] sm:text-xs font-semibold text-white/80 capitalize">{t.status}</span>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
           </div>
-        </div>
 
-        {/* Modal */}
+          {/* Pagination */}
+          {!loading && totalPages > 1 && (
+            <div className="px-3 py-2.5 sm:px-6 sm:py-4 border-t border-white/10 bg-white/[0.02] flex items-center justify-between">
+              <p className="text-[10px] sm:text-xs text-white/40">
+                Page {page} of {totalPages}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  disabled={page === 1}
+                  onClick={() => setPage(page - 1)}
+                  className="px-2.5 py-1 rounded-lg border border-white/10 text-[10px] sm:text-xs font-medium text-white/60 hover:bg-white/5 hover:text-white disabled:opacity-30 transition"
+                >
+                  Prev
+                </button>
+                <button
+                  disabled={page === totalPages}
+                  onClick={() => setPage(page + 1)}
+                  className="px-2.5 py-1 rounded-lg border border-white/10 text-[10px] sm:text-xs font-medium text-white/60 hover:bg-white/5 hover:text-white disabled:opacity-30 transition"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Detail Modal */}
+      <AnimatePresence>
         {selectedTx && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setSelectedTx(null)}>
-            <div onClick={e => e.stopPropagation()} className="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-xl w-full">
-              <h3 className="text-xl font-bold text-white mb-4">Transaction Details</h3>
-              <pre className="text-white/80 text-sm whitespace-pre-wrap">
-                {JSON.stringify(selectedTx, null, 2)}
-              </pre>
-              <button onClick={() => setSelectedTx(null)} className="mt-4 w-full py-2 bg-white/10 rounded-lg text-white">
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+            onClick={() => setSelectedTx(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-xl rounded-3xl border border-white/10 bg-[#0a0a14] p-6 shadow-2xl overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-4">
+                <button onClick={() => setSelectedTx(null)} className="p-2 text-white/40 hover:text-white transition">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <h3 className="text-xl font-bold text-white mb-6">Transaction Details</h3>
+              
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="grid grid-cols-2 gap-4">
+                  <DetailItem label="Order ID" value={selectedTx.orderId} isMono />
+                  <DetailItem label="Status" value={selectedTx.status} />
+                  <DetailItem label="Amount" value={`₹${selectedTx.amount.toLocaleString()}`} />
+                  <DetailItem label="Date" value={new Date(selectedTx.date).toLocaleString()} />
+                </div>
+                
+                <div className="pt-4 border-t border-white/5">
+                  <DetailItem label="Product" value={selectedTx.productName} />
+                </div>
+
+                <div className="pt-4 border-t border-white/5">
+                  <p className="text-[10px] uppercase tracking-wider text-white/30 font-bold mb-2">User Details</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <DetailItem label="Name" value={selectedTx.buyerName || selectedTx.sellerName || "N/A"} />
+                    <DetailItem label="Email" value={selectedTx.buyerEmail || selectedTx.sellerEmail || "N/A"} />
+                  </div>
+                </div>
+
+                {selectedTx.razorpayPaymentId && (
+                  <div className="pt-4 border-t border-white/5">
+                    <p className="text-[10px] uppercase tracking-wider text-white/30 font-bold mb-2">Gateway Info</p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <DetailItem label="Payment ID" value={selectedTx.razorpayPaymentId} isMono />
+                      <DetailItem label="Order ID" value={selectedTx.razorpayOrderId || "N/A"} isMono />
+                    </div>
+                  </div>
+                )}
+                
+                {selectedTx.errorReason && (
+                  <div className="pt-4 border-t border-white/5">
+                    <DetailItem label="Failure Reason" value={selectedTx.errorReason} />
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={() => setSelectedTx(null)}
+                className="mt-8 w-full py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition"
+              >
                 Close
               </button>
-            </div>
+            </motion.div>
           </div>
         )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
-      </div>
+function DetailItem({ label, value, isMono }: { label: string; value: string; isMono?: boolean }) {
+  return (
+    <div>
+      <p className="text-[11px] text-white/40 font-medium">{label}</p>
+      <p className={`text-sm text-white/90 mt-0.5 break-all ${isMono ? "font-mono" : "font-semibold"}`}>{value}</p>
     </div>
   );
 }

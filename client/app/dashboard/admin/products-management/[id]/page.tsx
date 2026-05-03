@@ -149,13 +149,13 @@ export default function ProductDetailsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "approved":
-        return "✅";
+        return "";
       case "pending":
         return "⏳";
       case "rejected":
-        return "❌";
+        return "";
       default:
-        return "📦";
+        return "";
     }
   };
 
@@ -223,7 +223,7 @@ export default function ProductDetailsPage() {
             )}
             {!product.thumbnailUrl && (
               <div className="w-full h-48 bg-white/5 rounded-lg flex items-center justify-center border border-white/10">
-                <span className="text-6xl">📦</span>
+                <span className="text-6xl"></span>
               </div>
             )}
           </div>
@@ -231,7 +231,7 @@ export default function ProductDetailsPage() {
 
         {/* Product Information */}
         <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">📋 Product Information</h2>
+          <h2 className="text-xl font-semibold mb-4"> Product Information</h2>
           <div className="space-y-4">
             <div>
               <label className="text-white/60 text-sm">Product Name</label>
@@ -273,14 +273,14 @@ export default function ProductDetailsPage() {
         {/* Rejection Reason (if rejected) */}
         {product.rejectionReason && (
           <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-2 text-red-400">❌ Rejection Reason</h2>
+            <h2 className="text-xl font-semibold mb-2 text-red-400"> Rejection Reason</h2>
             <p className="text-white/90">{product.rejectionReason}</p>
           </div>
         )}
 
         {/* Seller Information */}
         <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-          <h2 className="text-xl font-semibold mb-4">👤 Seller Information</h2>
+          <h2 className="text-xl font-semibold mb-4"> Seller Information</h2>
           {product.sellerId ? (
             <div className="space-y-3">
               <div>
@@ -304,7 +304,7 @@ export default function ProductDetailsPage() {
             </div>
           ) : (
             <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-              <p className="text-yellow-400">⚠️ Seller information not available (seller may have been deleted)</p>
+              <p className="text-yellow-400"> Seller information not available (seller may have been deleted)</p>
             </div>
           )}
         </div>
@@ -393,7 +393,7 @@ export default function ProductDetailsPage() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-gradient-to-br from-[#0f0f1e] to-[#14142b] border border-red-500/30 rounded-xl max-w-md w-full p-8">
               <div className="text-center mb-6">
-                <div className="text-6xl mb-4">⚠️</div>
+                <div className="text-6xl mb-4"></div>
                 <h2 className="text-2xl font-bold text-red-400">Delete Product</h2>
                 <p className="text-white/60 mt-2">This action cannot be undone</p>
               </div>

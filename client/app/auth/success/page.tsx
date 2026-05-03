@@ -50,7 +50,7 @@ function AuthSuccessPageContent() {
         toast.success("Successfully logged in!");
         router.push(`/dashboard/${user.role}`);
       } catch (error) {
-        console.error('❌ Error decoding token:', error);
+        console.error(' Error decoding token:', error);
         toast.error("Authentication failed. Invalid token.");
         clearAuthStorage();
         router.push("/login");

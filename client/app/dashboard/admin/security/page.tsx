@@ -145,7 +145,7 @@ export default function SecurityDashboard() {
               ← Back
             </button>
             <h1 className="text-xl font-bold bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
-              🛡️ Trust & Security Dashboard
+              Trust & Security Dashboard
             </h1>
           </div>
         </div>
@@ -156,33 +156,30 @@ export default function SecurityDashboard() {
         <div className="flex gap-2 mb-8 bg-black/40 p-1 rounded-xl border border-white/10 w-fit">
           <button
             onClick={() => setActiveTab("malware")}
-            className={`px-6 py-3 rounded-lg font-medium transition ${
-              activeTab === "malware"
-                ? "bg-red-500/20 text-red-300 border border-red-500/50"
-                : "text-white/60 hover:text-white hover:bg-white/5"
-            }`}
+            className={`px-6 py-3 rounded-lg font-medium transition ${activeTab === "malware"
+              ? "bg-red-500/20 text-red-300 border border-red-500/50"
+              : "text-white/60 hover:text-white hover:bg-white/5"
+              }`}
           >
-            🦠 Malware Scans
+            Malware Scans
           </button>
           <button
             onClick={() => setActiveTab("content")}
-            className={`px-6 py-3 rounded-lg font-medium transition ${
-              activeTab === "content"
-                ? "bg-orange-500/20 text-orange-300 border border-orange-500/50"
-                : "text-white/60 hover:text-white hover:bg-white/5"
-            }`}
+            className={`px-6 py-3 rounded-lg font-medium transition ${activeTab === "content"
+              ? "bg-orange-500/20 text-orange-300 border border-orange-500/50"
+              : "text-white/60 hover:text-white hover:bg-white/5"
+              }`}
           >
-            🔍 Content Review
+            Content Review
           </button>
           <button
             onClick={() => setActiveTab("identity")}
-            className={`px-6 py-3 rounded-lg font-medium transition ${
-              activeTab === "identity"
-                ? "bg-blue-500/20 text-blue-300 border border-blue-500/50"
-                : "text-white/60 hover:text-white hover:bg-white/5"
-            }`}
+            className={`px-6 py-3 rounded-lg font-medium transition ${activeTab === "identity"
+              ? "bg-blue-500/20 text-blue-300 border border-blue-500/50"
+              : "text-white/60 hover:text-white hover:bg-white/5"
+              }`}
           >
-            ✅ Identity Verification
+            Identity Verification
           </button>
         </div>
 
@@ -194,25 +191,25 @@ export default function SecurityDashboard() {
               <StatCard
                 label="Total Scans"
                 value={malwareStats.totalScans}
-                icon="📊"
+                icon=""
                 color="blue"
               />
               <StatCard
                 label="Clean Products"
                 value={malwareStats.cleanProducts}
-                icon="✅"
+                icon=""
                 color="green"
               />
               <StatCard
                 label="With Detections"
                 value={malwareStats.productsWithDetections}
-                icon="⚠️"
+                icon=""
                 color="red"
               />
               <StatCard
                 label="Scan Rate"
                 value={`${malwareStats.scanRate}%`}
-                icon="📈"
+                icon=""
                 color="purple"
               />
             </div>
@@ -220,10 +217,10 @@ export default function SecurityDashboard() {
             {/* High Threat Products */}
             <div className="bg-black/40 border border-red-500/30 rounded-xl p-6">
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <span className="text-2xl">🚨</span>
+                <span className="text-2xl"></span>
                 High Threat Products
               </h2>
-              
+
               {malwareStats.highThreatProducts.length === 0 ? (
                 <p className="text-white/60 text-center py-8">No high-threat products detected</p>
               ) : (
@@ -242,14 +239,14 @@ export default function SecurityDashboard() {
                         </div>
                         <div className="text-right">
                           <div className="text-red-400 font-bold text-lg">
-                            {product.malwareScanDetails.detections.malicious} 🦠
+                            {product.malwareScanDetails.detections.malicious}
                           </div>
                           <div className="text-orange-400 text-sm">
                             {product.malwareScanDetails.detections.suspicious} suspicious
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex gap-2 mt-3">
                         {product.virusTotalLink && (
                           <a
@@ -281,7 +278,7 @@ export default function SecurityDashboard() {
           <div className="space-y-6">
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <StatCard label="Total Flagged" value={contentReview.summary.total} icon="📋" color="gray" />
+              <StatCard label="Total Flagged" value={contentReview.summary.total} icon="" color="gray" />
               <StatCard label="High Severity" value={contentReview.summary.high} icon="🔴" color="red" />
               <StatCard label="Medium Severity" value={contentReview.summary.medium} icon="🟡" color="yellow" />
               <StatCard label="Low Severity" value={contentReview.summary.low} icon="🟢" color="green" />
@@ -290,7 +287,7 @@ export default function SecurityDashboard() {
             {/* Flagged Products */}
             <div className="bg-black/40 border border-orange-500/30 rounded-xl p-6">
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <span className="text-2xl">🔍</span>
+                <span className="text-2xl"></span>
                 Products Requiring Manual Review
               </h2>
 
@@ -301,32 +298,30 @@ export default function SecurityDashboard() {
                   {contentReview.products.map((product) => (
                     <div
                       key={product._id}
-                      className={`border rounded-lg p-4 ${
-                        product.reviewSeverity === "high"
-                          ? "bg-red-500/10 border-red-500/30"
-                          : product.reviewSeverity === "medium"
+                      className={`border rounded-lg p-4 ${product.reviewSeverity === "high"
+                        ? "bg-red-500/10 border-red-500/30"
+                        : product.reviewSeverity === "medium"
                           ? "bg-yellow-500/10 border-yellow-500/30"
                           : "bg-green-500/10 border-green-500/30"
-                      }`}
+                        }`}
                     >
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-semibold text-white">{product.title}</h3>
                             <span
-                              className={`px-2 py-0.5 rounded text-xs font-medium ${
-                                product.reviewSeverity === "high"
-                                  ? "bg-red-500/20 text-red-300"
-                                  : product.reviewSeverity === "medium"
+                              className={`px-2 py-0.5 rounded text-xs font-medium ${product.reviewSeverity === "high"
+                                ? "bg-red-500/20 text-red-300"
+                                : product.reviewSeverity === "medium"
                                   ? "bg-yellow-500/20 text-yellow-300"
                                   : "bg-green-500/20 text-green-300"
-                              }`}
+                                }`}
                             >
                               {product.reviewSeverity.toUpperCase()}
                             </span>
                           </div>
                           <p className="text-sm text-white/60 mb-2">
-                            by {product.sellerId.name} {product.sellerId.identityVerified && "✅"}
+                            by {product.sellerId.name} {product.sellerId.identityVerified && ""}
                           </p>
                           <p className="text-sm text-white/80 line-clamp-2">{product.description}</p>
                         </div>
@@ -358,7 +353,7 @@ export default function SecurityDashboard() {
                           onClick={() => handleResolveContent(product._id, "approve")}
                           className="flex-1 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 rounded-lg text-sm font-medium transition border border-green-500/50"
                         >
-                          ✅ Approve
+                          Approve
                         </button>
                         <button
                           onClick={() => {
@@ -367,7 +362,7 @@ export default function SecurityDashboard() {
                           }}
                           className="flex-1 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-sm font-medium transition border border-red-500/50"
                         >
-                          ❌ Reject
+                          Reject
                         </button>
                         <Link
                           href={`/marketplace/${product._id}`}
@@ -389,7 +384,7 @@ export default function SecurityDashboard() {
           <div className="space-y-6">
             <div className="bg-black/40 border border-blue-500/30 rounded-xl p-6">
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <span className="text-2xl">✅</span>
+                <span className="text-2xl"></span>
                 Pending Identity Verifications ({pendingIdentity.total})
               </h2>
 
@@ -430,7 +425,7 @@ export default function SecurityDashboard() {
                           }}
                           className="flex-1 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 rounded-lg text-sm font-medium transition border border-green-500/50"
                         >
-                          ✅ Verify Identity
+                          Verify Identity
                         </button>
                         <button
                           onClick={() => {
@@ -439,7 +434,7 @@ export default function SecurityDashboard() {
                           }}
                           className="flex-1 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-sm font-medium transition border border-red-500/50"
                         >
-                          ❌ Reject
+                          Reject
                         </button>
                         <Link
                           href={`/seller/${seller._id}`}

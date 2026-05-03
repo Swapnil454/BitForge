@@ -29,9 +29,9 @@ export const downloadProduct = async (req, res) => {
     // 4️⃣ Check download limit
     const downloadLimit = order.downloadLimit || 5;
     const downloadCount = order.downloadCount || 0;
-    
+
     if (downloadCount >= downloadLimit) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         message: `Download limit reached (${downloadLimit} downloads). Contact support for assistance.`,
         downloadCount,
         downloadLimit
@@ -56,14 +56,14 @@ export const downloadProduct = async (req, res) => {
         .replace(/[<>:"\/\\|?*]/g, "")
         .replace(/\s+/g, " ")
         .trim();
-      
-      filename = safeName.toLowerCase().endsWith(".pdf") 
-        ? safeName 
+
+      filename = safeName.toLowerCase().endsWith(".pdf")
+        ? safeName
         : `${safeName}.pdf`;
     }
-    
+
     console.log(`📥 Download filename will be: "${filename}"`);
-    console.log(`📊 Download count: ${downloadCount + 1}/${downloadLimit}`);
+    console.log(` Download count: ${downloadCount + 1}/${downloadLimit}`);
 
     console.log(`📥 Streaming download for order: ${orderId}`);
     console.log(`   File Key: ${product.fileKey}`);
@@ -71,15 +71,15 @@ export const downloadProduct = async (req, res) => {
 
     // 8️⃣ Try to get the resource - handle both authenticated and upload types
     let downloadUrl;
-    
+
     try {
-      console.log(`🔍 Trying to find as authenticated resource...`);
+      console.log(` Trying to find as authenticated resource...`);
       await cloudinary.api.resource(product.fileKey, {
         resource_type: "raw",
         type: "authenticated",
       });
-      console.log(`✅ Found as authenticated resource`);
-      
+      console.log(` Found as authenticated resource`);
+
       const timestamp = Math.floor(Date.now() / 1000);
       downloadUrl = cloudinary.utils.private_download_url(
         product.fileKey,
@@ -92,15 +92,15 @@ export const downloadProduct = async (req, res) => {
         }
       );
     } catch (authError) {
-      console.log(`⚠️ Not found as authenticated, trying as upload type...`);
-      
+      console.log(` Not found as authenticated, trying as upload type...`);
+
       try {
         await cloudinary.api.resource(product.fileKey, {
           resource_type: "raw",
           type: "upload",
         });
-        console.log(`✅ Found as upload resource`);
-        
+        console.log(` Found as upload resource`);
+
         const timestamp = Math.floor(Date.now() / 1000);
         downloadUrl = cloudinary.utils.private_download_url(
           product.fileKey,
@@ -113,26 +113,26 @@ export const downloadProduct = async (req, res) => {
           }
         );
       } catch (uploadError) {
-        console.error(`❌ Resource not found as authenticated or upload type`);
+        console.error(` Resource not found as authenticated or upload type`);
         throw new Error(`File not found in Cloudinary: ${product.fileKey}`);
       }
     }
-    
-    console.log(`🔐 Generated download URL: ${downloadUrl.substring(0, 80)}...`);
-    
+
+    console.log(`Generated download URL: ${downloadUrl.substring(0, 80)}...`);
+
     // 9️⃣ Fetch from Cloudinary
     const response = await fetch(downloadUrl);
-    
+
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`❌ Cloudinary fetch failed: ${response.status} - ${response.statusText}`);
+      console.error(` Cloudinary fetch failed: ${response.status} - ${response.statusText}`);
       console.error(`   Error body: ${errorText.substring(0, 200)}`);
       throw new Error(`Cloudinary returned ${response.status}: ${response.statusText}`);
     }
 
     // 🔟 Get original file buffer
     let fileBuffer = Buffer.from(await response.arrayBuffer());
-    
+
     // 1️⃣1️⃣ Apply watermark with buyer info
     const buyerInfo = {
       buyerName: order.buyerId.name || "Unknown",
@@ -145,18 +145,18 @@ export const downloadProduct = async (req, res) => {
       }),
       productName: product.title || "Digital Product"
     };
-    
-    console.log(`🔐 Applying watermark for: ${buyerInfo.buyerEmail}`);
+
+    console.log(`Applying watermark for: ${buyerInfo.buyerEmail}`);
     const { buffer: watermarkedBuffer, filename: finalFilename } = await applyWatermark(
       fileBuffer,
       filename,
       buyerInfo
     );
-    
+
     // 1️⃣2️⃣ Track download
     const ipAddress = req.ip || req.headers["x-forwarded-for"] || "unknown";
     const userAgent = req.headers["user-agent"] || "unknown";
-    
+
     await Order.findByIdAndUpdate(orderId, {
       $inc: { downloadCount: 1 },
       $set: { lastDownloadAt: new Date() },
@@ -168,33 +168,33 @@ export const downloadProduct = async (req, res) => {
         }
       }
     });
-    
-    console.log(`📊 Download tracked: ${downloadCount + 1}/${downloadLimit}`);
+
+    console.log(` Download tracked: ${downloadCount + 1}/${downloadLimit}`);
 
     // 1️⃣3️⃣ Set download headers
-    const contentType = finalFilename.toLowerCase().endsWith(".zip") 
-      ? "application/zip" 
+    const contentType = finalFilename.toLowerCase().endsWith(".zip")
+      ? "application/zip"
       : "application/pdf";
-    
+
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Disposition', `attachment; filename="${finalFilename}"`);
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
     res.setHeader('X-Download-Count', downloadCount + 1);
     res.setHeader('X-Download-Limit', downloadLimit);
-    
+
     console.log(`📤 Sending watermarked file: "${finalFilename}"`);
-    
+
     // 1️⃣4️⃣ Send watermarked file
     res.send(watermarkedBuffer);
 
-    console.log(`✅ Download completed for: ${finalFilename} (watermarked)`);
+    console.log(` Download completed for: ${finalFilename} (watermarked)`);
 
   } catch (error) {
-    console.error("❌ Download error:", error);
-    return res.status(500).json({ 
+    console.error(" Download error:", error);
+    return res.status(500).json({
       message: "Failed to download file",
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -202,20 +202,20 @@ export const downloadProduct = async (req, res) => {
 // Get download info for an order (remaining downloads, history)
 export const getDownloadInfo = async (req, res) => {
   const { orderId } = req.params;
-  
+
   try {
     const order = await Order.findById(orderId).select(
       "downloadCount downloadLimit lastDownloadAt downloadHistory buyerId"
     );
-    
+
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
-    
+
     if (order.buyerId.toString() !== req.user.id) {
       return res.status(403).json({ message: "Access denied" });
     }
-    
+
     res.json({
       downloadCount: order.downloadCount || 0,
       downloadLimit: order.downloadLimit || 5,

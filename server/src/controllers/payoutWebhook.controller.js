@@ -43,13 +43,13 @@ export const razorpayXPayoutWebhook = async (req, res) => {
     return res.json({ status: "payout_not_found" });
   }
 
-  // ✅ SUCCESS
+  //  SUCCESS
   if (event === "payout.processed") {
     payout.status = "paid";
     await payout.save();
   }
 
-  // ❌ FAILURE
+  //  FAILURE
   if (event === "payout.failed") {
     payout.status = "rejected";
     payout.failureReason = payload.failure_reason || "Unknown";

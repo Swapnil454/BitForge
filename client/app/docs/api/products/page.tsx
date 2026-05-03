@@ -45,7 +45,7 @@ export default function ProductsAPIPage() {
             title="Authorization Header"
             code={`Authorization: Bearer <your_jwt_token>`}
           />
-          
+
           <div className="mt-4 rounded-lg border border-cyan-500/30 bg-cyan-500/5 p-4">
             <p className="text-sm text-white/70">
               <strong className="text-cyan-300">Get Token:</strong> Login at <code>/auth/login</code> to receive JWT token
@@ -412,7 +412,7 @@ export default function ProductsAPIPage() {
               href="/docs/api/payouts"
               className="group block rounded-xl border border-white/10 bg-white/5 p-4 transition-all hover:border-cyan-400/40"
             >
-              <div className="mb-2 text-2xl">💸</div>
+              <div className="mb-2 text-2xl"></div>
               <h3 className="mb-1 font-semibold text-white group-hover:text-cyan-300">
                 Payouts API →
               </h3>

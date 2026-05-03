@@ -37,7 +37,7 @@ router.get('/google/callback',
       const frontendURL = `${process.env.CLIENT_URL}/auth/success?token=${token}`;
       res.redirect(frontendURL);
     } catch (error) {
-      console.error('❌ Google OAuth callback error:', error);
+      console.error(' Google OAuth callback error:', error);
       res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_error`);
     }
   }
@@ -74,7 +74,7 @@ router.get('/github/callback',
       const frontendURL = `${process.env.CLIENT_URL}/auth/success?token=${token}`;
       res.redirect(frontendURL);
     } catch (error) {
-      console.error('❌ GitHub OAuth callback error:', error);
+      console.error(' GitHub OAuth callback error:', error);
       res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_error`);
     }
   }

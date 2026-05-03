@@ -103,7 +103,7 @@ export default function TroubleshootingPage() {
             {/* Payout Issues */}
             <details className="bg-white/5 border border-white/10 rounded-xl p-5 cursor-pointer group">
               <summary className="text-white font-semibold list-none cursor-pointer flex items-center gap-2">
-                <span className="text-xl">💸</span> Payout Delays or Failures
+                <span className="text-xl"></span> Payout Delays or Failures
               </summary>
               <div className="mt-4 space-y-3 text-white/70 text-sm">
                 <p><strong className="text-white">Symptom:</strong> Payouts not arriving or showing as failed.</p>
@@ -127,7 +127,7 @@ export default function TroubleshootingPage() {
             {/* Product Approval */}
             <details className="bg-white/5 border border-white/10 rounded-xl p-5 cursor-pointer group">
               <summary className="text-white font-semibold list-none cursor-pointer flex items-center gap-2">
-                <span className="text-xl">📦</span> Product Not Approved
+                <span className="text-xl"></span> Product Not Approved
               </summary>
               <div className="mt-4 space-y-3 text-white/70 text-sm">
                 <p><strong className="text-white">Symptom:</strong> Product submission rejected or pending for days.</p>
@@ -243,7 +243,7 @@ headers: {
             </div>
             <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
               <p className="text-yellow-200 text-sm flex items-start gap-2">
-                <span className="text-xl">⚠️</span>
+                <span className="text-xl"></span>
                 <span><strong>Warning:</strong> Never enable debug mode in production. It may expose sensitive information.</span>
               </p>
             </div>

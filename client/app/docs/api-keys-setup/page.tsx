@@ -121,7 +121,7 @@ RAZORPAYX_KEY_SECRET=your_razorpayx_secret`}
 
           <div className="mt-6 rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
             <div className="flex items-start gap-3">
-              <span className="text-xl">⚠️</span>
+              <span className="text-xl"></span>
               <div>
                 <p className="mb-2 font-semibold text-yellow-300">Important</p>
                 <p className="text-sm text-white/70">
@@ -135,7 +135,7 @@ RAZORPAYX_KEY_SECRET=your_razorpayx_secret`}
         {/* Google OAuth */}
         <section>
           <h2 className="mb-4 text-2xl font-semibold text-white">Google OAuth Setup</h2>
-          
+
           <h3 className="mb-3 text-lg font-semibold text-white">Step 1: Create Google Cloud Project</h3>
           <ol className="space-y-3 text-white/70">
             <li>1. Go to <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="text-cyan-300 hover:text-cyan-200 underline">Google Cloud Console</a></li>
@@ -165,7 +165,7 @@ GOOGLE_REDIRECT_URI=http://localhost:5000/auth/google/callback`}
         {/* GitHub OAuth */}
         <section>
           <h2 className="mb-4 text-2xl font-semibold text-white">GitHub OAuth Setup</h2>
-          
+
           <h3 className="mb-3 text-lg font-semibold text-white">Step 1: Create OAuth App</h3>
           <ol className="space-y-3 text-white/70">
             <li>1. Go to GitHub <strong>Settings → Developer settings</strong></li>

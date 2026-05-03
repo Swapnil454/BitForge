@@ -62,7 +62,7 @@ export default function CartPage() {
 
   useEffect(() => {
     if (!authChecked) return;
-    
+
     fetchCart();
 
     // Load Razorpay checkout script
@@ -156,9 +156,9 @@ export default function CartPage() {
           order_id: razorpayOrderId,
           handler: async function (response: any) {
             try {
-              console.log('✅ Payment successful:', response);
+              console.log(' Payment successful:', response);
               toast.success(`Payment successful! ${itemCount} item(s) purchased.`);
-              
+
               // Cart will be cleared by webhook, but refresh UI
               await fetchCart();
               router.push('/dashboard/buyer/purchases');
@@ -237,8 +237,8 @@ export default function CartPage() {
   if (loading || !authChecked) {
     return (
       <div className="min-h-screen bg-[#05050a] text-white pb-32 md:pb-8 overflow-x-hidden">
-        <PageHeader 
-          title="Shopping Cart" 
+        <PageHeader
+          title="Shopping Cart"
           backHref="/dashboard/buyer"
         />
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
@@ -302,7 +302,7 @@ export default function CartPage() {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
         {!cart || cart.items.length === 0 ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white/5 border border-white/10 rounded-xl p-8 md:p-12 text-center"
@@ -347,13 +347,13 @@ export default function CartPage() {
                               }}
                             />
                             <div className="hidden w-full h-full flex items-center justify-center text-4xl md:text-5xl">
-                              📦
+
                             </div>
                           </div>
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500/10 to-blue-500/10">
                             <div className="text-center">
-                              <div className="text-4xl md:text-5xl mb-1">📦</div>
+                              <div className="text-4xl md:text-5xl mb-1"></div>
                               <div className="text-xs text-white/50 font-medium">No Image</div>
                             </div>
                           </div>
@@ -371,14 +371,14 @@ export default function CartPage() {
                         <p className="text-white/50 text-xs md:text-sm mb-3 md:mb-4">
                           Seller: <span className="text-white/70">{item.productId?.sellerId?.name || 'Unknown'}</span>
                         </p>
-                        
+
                         {/* Mobile Layout: Price and Controls Stacked */}
                         <div className="space-y-3">
                           <div className="flex items-center justify-between gap-3">
                             <div className="text-xl md:text-2xl font-bold text-green-400">
                               ₹{(item.price * item.quantity).toLocaleString()}
                             </div>
-                            
+
                             {item.productId?.discount && item.productId.discount > 0 && (
                               <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 px-2 py-1 rounded-md">
                                 <span className="text-xs font-semibold text-green-400">
@@ -450,7 +450,7 @@ export default function CartPage() {
                     <span>Original Price ({cart.totalItems} items)</span>
                     <span className="line-through">₹{calculateOriginalPrice().toFixed(2)}</span>
                   </div>
-                  
+
                   {calculateTotalDiscount() > 0 && (
                     <>
                       <div className="flex justify-between text-green-400 text-sm font-semibold">
@@ -463,24 +463,24 @@ export default function CartPage() {
                       </div>
                     </>
                   )}
-                  
+
                   <div className="border-t border-white/10 pt-3">
                     <div className="flex justify-between text-white/70 text-sm">
                       <span>Price After Discount</span>
                       <span>₹{calculatePriceAfterDiscount().toFixed(2)}</span>
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-between text-white/70 text-sm">
                     <span>GST (5%)</span>
                     <span>+₹{calculateGST().toFixed(2)}</span>
                   </div>
-                  
+
                   <div className="flex justify-between text-white/70 text-sm">
                     <span>Platform Fee (2%)</span>
                     <span>+₹{calculatePlatformFee().toFixed(2)}</span>
                   </div>
-                  
+
                   <div className="border-t border-white/10 pt-3">
                     <div className="flex justify-between text-white text-lg font-bold">
                       <span>Final Total</span>
@@ -514,7 +514,7 @@ export default function CartPage() {
             </div>
 
             {/* Order Summary - Mobile (Fixed Bottom) */}
-            <motion.div 
+            <motion.div
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-slate-900 via-slate-900/98 to-slate-900/95 backdrop-blur-xl border-t border-white/10 shadow-2xl w-screen"
@@ -545,30 +545,30 @@ export default function CartPage() {
                       </div>
                     </div>
                   </summary>
-                  
+
                   <div className="mt-4 pt-4 border-t border-white/10 space-y-2 text-sm">
                     <div className="flex justify-between text-white/70">
                       <span>Original Price ({cart.totalItems} items)</span>
                       <span className="line-through">₹{calculateOriginalPrice().toFixed(2)}</span>
                     </div>
-                    
+
                     {calculateTotalDiscount() > 0 && (
                       <div className="flex justify-between text-green-400 font-semibold">
                         <span>Discount</span>
                         <span>-₹{calculateTotalDiscount().toFixed(2)}</span>
                       </div>
                     )}
-                    
+
                     <div className="flex justify-between text-white/70">
                       <span>Price After Discount</span>
                       <span>₹{calculatePriceAfterDiscount().toFixed(2)}</span>
                     </div>
-                    
+
                     <div className="flex justify-between text-white/70">
                       <span>GST (5%)</span>
                       <span>+₹{calculateGST().toFixed(2)}</span>
                     </div>
-                    
+
                     <div className="flex justify-between text-white/70">
                       <span>Platform Fee (2%)</span>
                       <span>+₹{calculatePlatformFee().toFixed(2)}</span>

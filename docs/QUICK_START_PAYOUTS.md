@@ -2,8 +2,8 @@
 
 ## 🎯 What Changed?
 
-**Before**: RazorpayX automated payouts ❌  
-**Now**: Manual payouts with commission tracking ✅
+**Before**: RazorpayX automated payouts   
+**Now**: Manual payouts with commission tracking 
 
 ---
 
@@ -74,7 +74,7 @@ POST /api/admin/payouts/:id/approve
 }
 ```
 
-✅ **Done!** Seller gets paid, you keep commission.
+ **Done!** Seller gets paid, you keep commission.
 
 ---
 
@@ -92,7 +92,7 @@ POST /api/admin/payouts/:id/approve
 
 ---
 
-## 📊 Admin Dashboard APIs
+##  Admin Dashboard APIs
 
 ### View Pending
 ```bash
@@ -235,7 +235,7 @@ curl -X POST "http://localhost:5000/api/admin/payouts/PAYOUT_ID/approve" \
 
 ---
 
-## ✅ Checklist: First Payout
+##  Checklist: First Payout
 
 Processing your first payout? Follow this:
 
@@ -256,16 +256,16 @@ Processing your first payout? Follow this:
 ## 🔥 Pro Tips
 
 ### Always Remember
-✅ Transfer **netPayableAmount** (the smaller amount)  
-✅ Save **UTR/transaction reference** every time  
-✅ Platform commission = 10% + GST (18% on commission)  
-✅ Effective rate = 11.8% total
+ Transfer **netPayableAmount** (the smaller amount)  
+ Save **UTR/transaction reference** every time  
+ Platform commission = 10% + GST (18% on commission)  
+ Effective rate = 11.8% total
 
 ### Never Do
-❌ Don't transfer requested amount (transfer net amount)  
-❌ Don't skip UTR reference  
-❌ Don't process without verifying seller  
-❌ Don't forget to mark as paid in system
+ Don't transfer requested amount (transfer net amount)  
+ Don't skip UTR reference  
+ Don't process without verifying seller  
+ Don't forget to mark as paid in system
 
 ---
 
@@ -273,12 +273,12 @@ Processing your first payout? Follow this:
 
 | Feature | Status |
 |---------|--------|
-| Manual payouts | ✅ Active |
-| Commission tracking | ✅ Active |
-| GST calculation | ✅ Active |
-| Admin dashboard | ✅ Active |
-| Seller transparency | ✅ Active |
-| Audit trail | ✅ Active |
+| Manual payouts |  Active |
+| Commission tracking |  Active |
+| GST calculation |  Active |
+| Admin dashboard |  Active |
+| Seller transparency |  Active |
+| Audit trail |  Active |
 | RazorpayX | ⏸️ Disabled (can re-enable) |
 
 ---
@@ -300,9 +300,9 @@ Processing your first payout? Follow this:
 
 ---
 
-**🎉 You're ready to process payouts manually!**
+**You're ready to process payouts manually!**
 
-**Status**: ✅ Production Ready  
+**Status**:  Production Ready  
 **Date**: January 26, 2026  
 **Version**: 1.0.0
 

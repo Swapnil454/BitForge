@@ -277,7 +277,7 @@ export const getBuyerTransactionDetails = async (req, res) => {
       date: order.createdAt,
       razorpayPaymentId: order.razorpayPaymentId || null,
       razorpayOrderId: order.razorpayOrderId || null,
-      // 🔐 Don't expose direct URL - use /api/download/:orderId endpoint for signed URL
+      // Don't expose direct URL - use /api/download/:orderId endpoint for signed URL
       downloadAvailable: order.status === "paid" && !!order.productId?.fileKey,
     });
   } catch (error) {
@@ -374,7 +374,7 @@ export const getBuyerPurchaseDetails = async (req, res) => {
       ? `${order.productId.title.replace(/[^a-z0-9]/gi, "_")}.pdf`
       : "download.pdf";
 
-    // 🔐 Don't expose direct URL - client should use /api/download/:orderId for signed URL
+    // Don't expose direct URL - client should use /api/download/:orderId for signed URL
     const downloadAvailable = !!order.productId?.fileKey;
 
     // Check if product is soft-deleted (archived)

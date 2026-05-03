@@ -38,12 +38,12 @@ export default function AdminPayoutsPage() {
                 <p className="text-white/60 text-sm">Approve or hold payouts</p>
               </div>
               <div className="bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-3xl mb-2">🔍</div>
+                <div className="text-3xl mb-2"></div>
                 <p className="text-white font-semibold">Monitor Transactions</p>
                 <p className="text-white/60 text-sm">Track all payout activity</p>
               </div>
               <div className="bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-3xl mb-2">⚠️</div>
+                <div className="text-3xl mb-2"></div>
                 <p className="text-white font-semibold">Handle Issues</p>
                 <p className="text-white/60 text-sm">Resolve failed payouts</p>
               </div>
@@ -93,7 +93,7 @@ export default function AdminPayoutsPage() {
               </ol>
             </div>
             <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded">
-              <p className="text-red-200 text-sm">⚠️ <strong>Warning:</strong> Manual payouts bypass automated fraud checks. Use with caution.</p>
+              <p className="text-red-200 text-sm"> <strong>Warning:</strong> Manual payouts bypass automated fraud checks. Use with caution.</p>
             </div>
           </div>
         </section>
@@ -116,7 +116,7 @@ export default function AdminPayoutsPage() {
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">📝</span> Adding Hold Notes
+                <span className="text-xl"></span> Adding Hold Notes
               </h3>
               <p className="text-white/70 text-sm mb-2">Always document why a payout is held:</p>
               <ul className="space-y-1 text-white/70 text-sm list-disc list-inside">
@@ -136,7 +136,7 @@ export default function AdminPayoutsPage() {
             <p className="text-white/80 mb-4">Monitor payout health and trends:</p>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 p-4 rounded-lg">
-                <h4 className="text-white font-semibold mb-2">📊 Key Metrics</h4>
+                <h4 className="text-white font-semibold mb-2"> Key Metrics</h4>
                 <ul className="space-y-1 text-white/70 text-sm">
                   <li>• Total payouts processed this month</li>
                   <li>• Average payout amount</li>
@@ -145,7 +145,7 @@ export default function AdminPayoutsPage() {
                 </ul>
               </div>
               <div className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 p-4 rounded-lg">
-                <h4 className="text-white font-semibold mb-2">🚨 Alert Conditions</h4>
+                <h4 className="text-white font-semibold mb-2"> Alert Conditions</h4>
                 <ul className="space-y-1 text-white/70 text-sm">
                   <li>• Payout failure rate &gt; 5%</li>
                   <li>• Processing time &gt; 7 days</li>
@@ -159,7 +159,7 @@ export default function AdminPayoutsPage() {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <Link href="/docs/payout-system" className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3">💸</div>
+            <div className="text-3xl mb-3"></div>
             <h3 className="text-lg font-semibold text-white mb-2">Seller Payout System</h3>
             <p className="text-white/60 text-sm">How payouts work for sellers</p>
           </Link>

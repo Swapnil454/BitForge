@@ -9,6 +9,7 @@ import Dispute from "../models/Dispute.js";
 import Invoice from "../models/Invoice.js";
 import Order from "../models/Order.js";
 import Notification from "../models/Notification.js";
+import PDFDocument from 'pdfkit';
 
 export const getPendingSellers = async (req, res) => {
   const sellers = await User.find({
@@ -74,13 +75,55 @@ export const getPendingProducts = async (req, res) => {
   res.json(products);
 };
 
-// Get all products with different statuses
+// Get all products with pagination and filtering
 export const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find({})
+    const { page = 1, limit = 10, search = "", status = "all", category = "all", sortBy = "newest" } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const query = {};
+    if (status !== "all") query.status = status;
+    if (category !== "all") query.category = category;
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } }
+      ];
+    }
+
+    const sort = {};
+    if (sortBy === "newest") sort.createdAt = -1;
+    else if (sortBy === "oldest") sort.createdAt = 1;
+    else if (sortBy === "price_high") sort.price = -1;
+    else if (sortBy === "price_low") sort.price = 1;
+
+    const products = await Product.find(query)
       .populate("sellerId", "name email")
-      .sort({ createdAt: -1 });
-    res.json(products);
+      .sort(sort)
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Product.countDocuments(query);
+    const approvedCount = await Product.countDocuments({ status: "approved" });
+    const pendingCount = await Product.countDocuments({ status: "pending" });
+    const rejectedCount = await Product.countDocuments({ status: "rejected" });
+
+    res.json({
+      products,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(total / parseInt(limit))
+      },
+      stats: {
+        total,
+        approved: approvedCount,
+        pending: pendingCount,
+        rejected: rejectedCount
+      }
+    });
   } catch (error) {
     console.error("Error fetching all products:", error);
     res.status(500).json({ message: "Failed to fetch products" });
@@ -103,6 +146,149 @@ export const getProductDetails = async (req, res) => {
   } catch (error) {
     console.error("Error fetching product details:", error);
     res.status(500).json({ message: "Failed to fetch product details" });
+  }
+};
+
+// Get advanced product analytics
+export const getProductAnalytics = async (req, res) => {
+  try {
+    const totalProducts = await Product.countDocuments();
+    const approved = await Product.countDocuments({ status: "approved" });
+    const pending = await Product.countDocuments({ status: "pending" });
+    const rejected = await Product.countDocuments({ status: "rejected" });
+
+    // Category breakdown
+    const categories = await Product.aggregate([
+      { $group: { _id: "$category", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]);
+
+    // Top sellers by product count
+    const topSellers = await Product.aggregate([
+      { $group: { _id: "$sellerId", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "seller"
+        }
+      },
+      { $unwind: "$seller" },
+      { $project: { name: "$seller.name", email: "$seller.email", count: 1 } }
+    ]);
+
+    // Recent submissions (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const recentSubmissions = await Product.countDocuments({ createdAt: { $gte: sevenDaysAgo } });
+
+    res.json({
+      stats: { 
+        total: totalProducts, 
+        approved, 
+        pending, 
+        rejected,
+        recentSubmissions
+      },
+      categories,
+      topSellers
+    });
+  } catch (error) {
+    console.error("Error in getProductAnalytics:", error);
+    res.status(500).json({ message: "Failed to fetch analytics" });
+  }
+};
+
+// Generate PDF Report for Products
+export const getProductReport = async (req, res) => {
+  try {
+    const products = await Product.find().populate("sellerId", "name email");
+    
+    const doc = new PDFDocument({ margin: 50 });
+    const filename = `BitForge_Product_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+    
+    res.setHeader('Content-disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-type', 'application/pdf');
+
+    // Header
+    doc.fillColor("#444444")
+       .fontSize(20)
+       .text("BitForge Catalog Report", 50, 50)
+       .fontSize(10)
+       .text(`Generated on: ${new Date().toLocaleString()}`, 200, 65, { align: "right" })
+       .moveDown();
+
+    doc.strokeColor("#aaaaaa")
+       .lineWidth(1)
+       .moveTo(50, 80)
+       .lineTo(550, 80)
+       .stroke();
+
+    doc.moveDown(2);
+
+    // Summary Section
+    doc.fontSize(16).text("Inventory Summary", { underline: true });
+    doc.moveDown();
+    
+    const stats = {
+      Total: products.length,
+      Approved: products.filter(p => p.status === 'approved').length,
+      Pending: products.filter(p => p.status === 'pending').length,
+      Rejected: products.filter(p => p.status === 'rejected').length
+    };
+
+    Object.entries(stats).forEach(([key, val]) => {
+      doc.fontSize(12).text(`${key}: ${val}`, { indent: 20 });
+    });
+
+    doc.moveDown(2);
+
+    // Products List
+    doc.fontSize(16).text("Detailed Catalog", { underline: true });
+    doc.moveDown();
+
+    products.forEach((p, index) => {
+      // Add new page if close to bottom
+      if (doc.y > 650) doc.addPage();
+
+      doc.fontSize(11)
+         .fillColor("#000000")
+         .text(`${index + 1}. ${p.title}`, { bold: true });
+      
+      doc.fontSize(9)
+         .fillColor("#666666")
+         .text(`Status: ${p.status.toUpperCase()}`, { indent: 15 })
+         .text(`Seller: ${p.sellerId?.name || 'N/A'} (${p.sellerId?.email || 'N/A'})`, { indent: 15 })
+         .text(`Price: Rs. ${p.price}`, { indent: 15 })
+         .text(`Category: ${p.category || 'Uncategorized'}`, { indent: 15 })
+         .text(`Added: ${new Date(p.createdAt).toLocaleDateString()}`, { indent: 15 });
+      
+      doc.moveDown(1);
+    });
+
+    // Footer
+    const range = doc.bufferedPageRange();
+    for (let i = range.start; i < range.start + range.count; i++) {
+      doc.switchToPage(i);
+      doc.fontSize(8)
+         .fillColor("#999999")
+         .text(
+           `BitForge Admin Panel - Page ${i + 1} of ${range.count}`,
+           50,
+           doc.page.height - 50,
+           { align: "center", width: 500 }
+         );
+    }
+
+    doc.pipe(res);
+    doc.end();
+  } catch (error) {
+    console.error("Error in getProductReport:", error);
+    res.status(500).json({ message: "Failed to generate report" });
   }
 };
 
@@ -366,7 +552,7 @@ export const approveProductChange = async (req, res) => {
       await createNotification(
         product.sellerId,
         "product_change_approved",
-        "Product Update Approved ✅",
+        "Product Update Approved ",
         `Your update for "${product.title}" has been approved and is now live`,
         product._id,
         "Product"
@@ -431,7 +617,7 @@ export const approveProductChange = async (req, res) => {
       await createNotification(
         product.sellerId,
         "product_change_approved",
-        "Product Deletion Approved ✅",
+        "Product Deletion Approved ",
         hasPurchases 
           ? `Your product "${product.title}" has been archived. Existing buyers retain access.`
           : `Your product "${product.title}" has been deleted as requested`,
@@ -1196,11 +1382,47 @@ export const rejectSellerDeletion = async (req, res) => {
   }
 };
 
-// Get all users
+// Get all users with pagination and filtering
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({}).select("-password -deletionOTP -deletionOTPExpire").sort({ createdAt: -1 });
-    res.json(users);
+    const { page = 1, limit = 10, search = "", role = "all" } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const query = {};
+    if (role !== "all") {
+      query.role = role;
+    }
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } }
+      ];
+    }
+
+    const users = await User.find(query)
+      .select("-password -deletionOTP -deletionOTPExpire")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await User.countDocuments(query);
+    const totalBuyers = await User.countDocuments({ role: "buyer" });
+    const totalSellers = await User.countDocuments({ role: "seller" });
+
+    res.json({
+      users,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(total / parseInt(limit))
+      },
+      stats: {
+        totalBuyers,
+        totalSellers
+      }
+    });
   } catch (error) {
     console.error("Error fetching all users:", error);
     res.status(500).json({ message: "Failed to fetch users" });
@@ -1308,18 +1530,59 @@ export const deleteUserByAdmin = async (req, res) => {
 // Get all transactions (buyer payments + seller payouts)
 export const getAllTransactions = async (req, res) => {
   try {
-    // Get all buyer payments (orders)
-    const orders = await Order.find()
-      .populate("buyerId", "name email")
-      .populate("productId", "title")
-      .sort({ createdAt: -1 });
+    const { page = 1, limit = 10, search = "", type = "all", status = "all", sortBy = "date_desc" } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    // Build filters for Orders
+    const orderFilter = {};
+    if (status !== "all") {
+      if (status === "success") orderFilter.status = "paid";
+      else if (status === "failed") orderFilter.status = "failed";
+      else orderFilter.status = "pending";
+    }
+    
+    // Build filters for Payouts
+    const payoutFilter = {};
+    if (status !== "all") {
+      if (status === "success") payoutFilter.status = "paid";
+      else if (status === "failed") payoutFilter.status = "rejected";
+      else payoutFilter.status = "pending";
+    }
 
-    // Get all seller payouts
-    const payouts = await Payout.find()
-      .populate("sellerId", "name email")
-      .sort({ createdAt: -1 });
+    let orders = [];
+    let payouts = [];
 
-    // Format buyer to admin transactions
+    // Fetch Orders if type is 'all' or 'buyer_to_admin'
+    if (type === "all" || type === "buyer_to_admin") {
+      const query = { ...orderFilter };
+      if (search) {
+        query.$or = [
+          { productName: { $regex: search, $options: "i" } },
+          { razorpayOrderId: { $regex: search, $options: "i" } },
+          { orderId: { $regex: search, $options: "i" } }
+        ];
+      }
+      orders = await Order.find(query)
+        .populate("buyerId", "name email")
+        .populate("productId", "title")
+        .sort({ createdAt: -1 });
+    }
+
+    // Fetch Payouts if type is 'all' or 'admin_to_seller'
+    if (type === "all" || type === "admin_to_seller") {
+      const query = { ...payoutFilter };
+      if (search) {
+        query.$or = [
+          { paymentReference: { $regex: search, $options: "i" } },
+          { rejectionReason: { $regex: search, $options: "i" } }
+        ];
+      }
+      payouts = await Payout.find(query)
+        .populate("sellerId", "name email")
+        .sort({ createdAt: -1 });
+    }
+
+    // Format and Combine
     const buyerTransactions = orders.map(order => ({
       _id: order._id,
       type: "buyer_to_admin",
@@ -1335,7 +1598,6 @@ export const getAllTransactions = async (req, res) => {
       paymentMethod: "razorpay"
     }));
 
-    // Format admin to seller transactions (payouts)
     const sellerTransactions = payouts.map(payout => ({
       _id: payout._id,
       type: "admin_to_seller",
@@ -1351,15 +1613,43 @@ export const getAllTransactions = async (req, res) => {
       errorReason: payout.rejectionReason
     }));
 
-    // Combine and sort by date
-    const allTransactions = [...buyerTransactions, ...sellerTransactions].sort(
-      (a, b) => new Date(b.date) - new Date(a.date)
-    );
+    let allTransactions = [...buyerTransactions, ...sellerTransactions];
+
+    // Final search filter for user names/emails (after formatting/populating)
+    if (search) {
+      const s = search.toLowerCase();
+      allTransactions = allTransactions.filter(t => 
+        (t.buyerName?.toLowerCase().includes(s)) ||
+        (t.buyerEmail?.toLowerCase().includes(s)) ||
+        (t.sellerName?.toLowerCase().includes(s)) ||
+        (t.sellerEmail?.toLowerCase().includes(s)) ||
+        (t.productName?.toLowerCase().includes(s)) ||
+        (t.orderId?.toLowerCase().includes(s))
+      );
+    }
+
+    // Sorting
+    allTransactions.sort((a, b) => {
+      if (sortBy === "date_desc") return new Date(b.date) - new Date(a.date);
+      if (sortBy === "date_asc") return new Date(a.date) - new Date(b.date);
+      if (sortBy === "amount_desc") return b.amount - a.amount;
+      if (sortBy === "amount_asc") return a.amount - b.amount;
+      return new Date(b.date) - new Date(a.date);
+    });
+
+    const total = allTransactions.length;
+    const paginatedTransactions = allTransactions.slice(skip, skip + parseInt(limit));
 
     res.json({
-      transactions: allTransactions,
+      transactions: paginatedTransactions,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(total / parseInt(limit))
+      },
       summary: {
-        total: allTransactions.length,
+        total,
         buyerPayments: buyerTransactions.length,
         sellerPayouts: sellerTransactions.length,
         successCount: allTransactions.filter(t => t.status === "success").length,
@@ -1572,7 +1862,7 @@ export const resolveContentReview = async (req, res) => {
         await createNotification(
           product.sellerId,
           'product_approved',
-          'Content Review Passed ✅',
+          'Content Review Passed ',
           `Your product "${product.title}" has been manually reviewed and approved by our team.`,
           product._id,
           'Product'
@@ -1644,7 +1934,7 @@ export const verifySellerIdentity = async (req, res) => {
     await createNotification(
       seller._id,
       verified ? 'identity_verified' : 'identity_rejected',
-      verified ? 'Identity Verified ✅' : 'Identity Verification Issue',
+      verified ? 'Identity Verified ' : 'Identity Verification Issue',
       verified
         ? 'Your identity has been verified! This badge will help build trust with buyers.'
         : `There was an issue with your identity verification. ${notes || 'Please contact support for details.'}`,

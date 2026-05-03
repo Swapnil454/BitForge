@@ -32,16 +32,16 @@ export default function MarketplacePage() {
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
   const router = useRouter();
   const user = getStoredUser<{ role?: string }>();
-  
+
   // Auth hook for gating actions
-  const { 
-    isAuthenticated, 
-    requireAuth, 
-    showAuthModal, 
-    pendingAction, 
-    closeAuthModal, 
-    goToLogin, 
-    goToRegister 
+  const {
+    isAuthenticated,
+    requireAuth,
+    showAuthModal,
+    pendingAction,
+    closeAuthModal,
+    goToLogin,
+    goToRegister
   } = useAuth();
 
   // Load wishlist from localStorage on mount
@@ -87,7 +87,7 @@ export default function MarketplacePage() {
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchQuery.toLowerCase());
+      product.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSearch;
   });
 
@@ -104,20 +104,20 @@ export default function MarketplacePage() {
   const toggleWishlist = (e: React.MouseEvent, productId: string) => {
     e.stopPropagation();
     e.preventDefault();
-    
+
     // Require auth for wishlist action
     requireAuth("add to wishlist", () => {
       const isAlreadyInWishlist = wishlist.includes(productId);
       const updated = isAlreadyInWishlist
         ? wishlist.filter(id => id !== productId)
         : [...wishlist, productId];
-      
+
       // Update state
       setWishlist(updated);
-      
+
       // Update localStorage
       localStorage.setItem("wishlist", JSON.stringify(updated));
-      
+
       // Show toast notification
       if (isAlreadyInWishlist) {
         toast.success("Removed from wishlist");
@@ -130,14 +130,14 @@ export default function MarketplacePage() {
   const handleAddToCart = async (e: React.MouseEvent, productId: string) => {
     e.stopPropagation();
     e.preventDefault();
-    
+
     // Require auth for cart action
     requireAuth("add to cart", async () => {
       const isInCart = cartItems.includes(productId);
-      
+
       try {
         setAddingToCart(productId);
-        
+
         if (isInCart) {
           // Remove from cart
           await cartAPI.removeFromCart(productId);
@@ -186,8 +186,8 @@ export default function MarketplacePage() {
               ←
             </button>
             <div>
-            <h1 className="text-3xl md:text-4xl font-bold">Content Marketplace</h1>
-            <p className="text-white/70">Discover and purchase premium digital content</p>
+              <h1 className="text-3xl md:text-4xl font-bold">Content Marketplace</h1>
+              <p className="text-white/70">Discover and purchase premium digital content</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -255,7 +255,7 @@ export default function MarketplacePage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map(product => {
-              const finalPrice = product.discount > 0 
+              const finalPrice = product.discount > 0
                 ? Math.max(product.price - (product.price * product.discount) / 100, 0)
                 : product.price;
 
@@ -285,10 +285,10 @@ export default function MarketplacePage() {
                     </div>
                   ) : (
                     <div className="w-full h-48 sm:h-56 bg-linear-to-br from-cyan-500/20 to-indigo-500/20 flex items-center justify-center">
-                      <span className="text-4xl">📦</span>
+                      <span className="text-4xl"></span>
                     </div>
                   )}
-                  
+
                   <div className="p-5">
                     <h2 className="font-semibold text-xl text-white mb-2 line-clamp-1 group-hover:text-cyan-300 transition">
                       {product.title}
@@ -296,7 +296,7 @@ export default function MarketplacePage() {
                     <p className="text-white/70 text-sm mb-4 line-clamp-2">
                       {product.description}
                     </p>
-                    
+
                     {/* Price Section */}
                     <div className="mb-3">
                       {product.discount > 0 ? (
@@ -319,14 +319,14 @@ export default function MarketplacePage() {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="flex justify-between items-center pt-3 border-t border-white/10">
                       {product.category && (
                         <span className="px-3 py-1 bg-white/10 text-white/80 text-xs rounded-full border border-white/20">
                           {product.category}
                         </span>
                       )}
-                      
+
                       {product.sellerId?.name && (
                         <p className="text-xs text-white/50">
                           by {product.sellerId.name}
@@ -339,17 +339,16 @@ export default function MarketplacePage() {
                       <button
                         onClick={(e) => handleAddToCart(e, product._id)}
                         disabled={addingToCart === product._id}
-                        className={`flex-1 px-4 py-2.5 rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed text-sm ${
-                          cartItems.includes(product._id)
+                        className={`flex-1 px-4 py-2.5 rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed text-sm ${cartItems.includes(product._id)
                             ? 'bg-white/10 hover:bg-white/20 border border-white/20 text-white shadow-lg'
                             : 'bg-linear-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white shadow-lg shadow-cyan-500/30'
-                        }`}
+                          }`}
                       >
-                        {addingToCart === product._id 
-                          ? 'Updating...' 
-                          : cartItems.includes(product._id) 
-                          ? 'Remove from Cart' 
-                          : 'Add to Cart'
+                        {addingToCart === product._id
+                          ? 'Updating...'
+                          : cartItems.includes(product._id)
+                            ? 'Remove from Cart'
+                            : 'Add to Cart'
                         }
                       </button>
                       <button

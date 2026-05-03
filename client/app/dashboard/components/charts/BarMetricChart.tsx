@@ -26,7 +26,7 @@ export function BarMetricChart<T extends { month: string }>({
   height = 160,
   gradientId = "barGradient",
   barColor = "#6366f1",
-  emptyIcon = "📊",
+  emptyIcon = "",
   emptyText = "No data to display",
 }: BarMetricChartProps<T>) {
   const hasData =

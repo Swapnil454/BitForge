@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { adminAPI } from "@/lib/api";
 import toast from "react-hot-toast";
 import { getStoredUser } from "@/lib/cookies";
+import { motion, AnimatePresence } from "framer-motion";
+import { RefreshCw, Loader2 } from "lucide-react";
+import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
 
 interface Seller {
   _id: string;
@@ -18,10 +21,40 @@ interface Seller {
   deletionRequestDate?: string;
 }
 
-export default function PendingSellersPage() {
+// --- Skeleton ---
+function PageSkeleton() {
+  return (
+    <div className="min-h-screen bg-[#05050a]">
+      <div className="h-16 w-full border-b border-white/[0.05] bg-[#0a0a0f]" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+        {/* Section title */}
+        <div className="h-5 w-48 bg-[#16161e] rounded-xl animate-pulse" />
+        {/* Cards */}
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-[#16161e] border border-white/[0.05] rounded-2xl p-6 animate-pulse space-y-4">
+            <div className="flex justify-between">
+              <div className="space-y-2">
+                <div className="h-5 w-40 bg-white/[0.04] rounded-lg" />
+                <div className="h-3 w-56 bg-white/[0.03] rounded-md" />
+                <div className="h-3 w-32 bg-white/[0.03] rounded-md" />
+              </div>
+              <div className="flex gap-2">
+                <div className="h-9 w-24 bg-white/[0.04] rounded-lg" />
+                <div className="h-9 w-20 bg-white/[0.04] rounded-lg" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function SellersPage() {
   const [sellers, setSellers] = useState<Seller[]>([]);
   const [deletionRequests, setDeletionRequests] = useState<Seller[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [processing, setProcessing] = useState<string | null>(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
@@ -31,24 +64,18 @@ export default function PendingSellersPage() {
 
   useEffect(() => {
     const parsed = getStoredUser<{ role?: string }>();
-    if (!parsed) {
-      router.push("/login");
-      return;
-    }
-
-    if (parsed.role !== "admin") {
-      router.push("/dashboard");
-      return;
-    }
-
+    if (!parsed) { router.push("/login"); return; }
+    if (parsed.role !== "admin") { router.push("/dashboard"); return; }
     fetchSellers();
   }, [router]);
 
-  const fetchSellers = async () => {
+  const fetchSellers = async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
     try {
       const [pendingSellers, pendingDeletions] = await Promise.all([
         adminAPI.getPendingSellers(),
-        adminAPI.getPendingSellerDeletions()
+        adminAPI.getPendingSellerDeletions(),
       ]);
       setSellers(pendingSellers || []);
       setDeletionRequests(pendingDeletions || []);
@@ -56,6 +83,7 @@ export default function PendingSellersPage() {
       toast.error(error.response?.data?.message || "Failed to load sellers");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -72,7 +100,7 @@ export default function PendingSellersPage() {
     }
   };
 
-  const handleReject = async (seller: Seller, type: "approval" | "deletion") => {
+  const handleReject = (seller: Seller, type: "approval" | "deletion") => {
     setSelectedSeller(seller);
     setRejectType(type);
     setShowRejectModal(true);
@@ -83,7 +111,6 @@ export default function PendingSellersPage() {
       toast.error("Please provide a rejection reason");
       return;
     }
-
     setProcessing(selectedSeller._id);
     try {
       if (rejectType === "approval") {
@@ -105,10 +132,7 @@ export default function PendingSellersPage() {
   };
 
   const handleApproveDeletion = async (id: string) => {
-    if (!confirm("Are you sure you want to approve this seller account deletion? This action cannot be undone.")) {
-      return;
-    }
-
+    if (!confirm("Are you sure you want to approve this seller account deletion? This action cannot be undone.")) return;
     setProcessing(id);
     try {
       await adminAPI.approveSellerDeletion(id);
@@ -121,50 +145,52 @@ export default function PendingSellersPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#05050a] text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-          <p>Loading sellers...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <PageSkeleton />;
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
+    <div className="min-h-screen bg-[#05050a] text-white">
+      <PageHeader
+        backHref="/dashboard/admin"
+        backLabel="Back"
+        title="Seller Management"
+        subtitle="Review applications and deletion requests"
+        rightSlot={
           <button
-            onClick={() => router.push("/dashboard/admin")}
-            className="text-purple-400 hover:text-purple-300 mb-4 flex items-center gap-2"
+            onClick={() => fetchSellers(true)}
+            disabled={refreshing}
+            className="h-9 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 disabled:opacity-50"
           >
-            <span>←</span> Back to Dashboard
+            <RefreshCw className={`w-3 h-3 ${refreshing ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline">Refresh</span>
           </button>
-          <h1 className="text-3xl font-bold">Seller Management</h1>
-          <p className="text-white/60 mt-2">Review seller applications and deletion requests</p>
-        </div>
+        }
+      />
+
+      <div className="max-w-7xl mx-auto p-6">
 
         {/* Deletion Requests Section */}
         {deletionRequests.length > 0 && (
           <div className="mb-8">
-            <div className="mb-4 flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-orange-400">🗑️ Account Deletion Requests</h2>
-              <span className="px-3 py-1 bg-orange-500/20 text-orange-400 rounded-full text-sm font-semibold">
-                {deletionRequests.length}
-              </span>
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">Pending Review</p>
+                <h2 className="text-lg font-black text-orange-400 flex items-center gap-2">🗑️ Account Deletion Requests
+                  <span className="px-2.5 py-0.5 bg-orange-500/15 text-orange-400 rounded-full text-xs font-black border border-orange-500/20">
+                    {deletionRequests.length}
+                  </span>
+                </h2>
+              </div>
             </div>
             <div className="grid gap-4">
               {deletionRequests.map((seller) => (
-                <div key={seller._id} className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-6">
-                  <div className="flex justify-between items-start">
+                <div key={seller._id} className="bg-orange-500/[0.06] border border-orange-500/20 rounded-2xl p-6 hover:border-orange-500/30 transition-all">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                     <div className="flex-1">
                       <h3 className="text-xl font-semibold">{seller.name}</h3>
                       <p className="text-white/70">{seller.email}</p>
                       {seller.phone && <p className="text-white/70">{seller.phone}</p>}
                       <p className="text-sm text-white/50 mt-2">
-                        Requested: {seller.deletionRequestDate ? new Date(seller.deletionRequestDate).toLocaleDateString() : 'N/A'}
+                        Requested: {seller.deletionRequestDate ? new Date(seller.deletionRequestDate).toLocaleDateString() : "N/A"}
                       </p>
                       {seller.deletionRequestReason && (
                         <div className="mt-3 bg-white/10 p-3 rounded-lg border border-white/10">
@@ -173,13 +199,13 @@ export default function PendingSellersPage() {
                         </div>
                       )}
                     </div>
-                    <div className="flex gap-2 ml-4">
+                    <div className="flex gap-2 sm:ml-4 shrink-0">
                       <button
                         onClick={() => handleApproveDeletion(seller._id)}
                         disabled={processing === seller._id}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition font-semibold"
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition font-semibold flex items-center gap-2"
                       >
-                        {processing === seller._id ? "Processing..." : "✓ Approve"}
+                        {processing === seller._id ? <Loader2 className="w-4 h-4 animate-spin" /> : "✓"} Approve
                       </button>
                       <button
                         onClick={() => handleReject(seller, "deletion")}
@@ -198,11 +224,15 @@ export default function PendingSellersPage() {
 
         {/* New Seller Applications Section */}
         <div>
-          <div className="mb-4 flex items-center gap-3">
-            <h2 className="text-2xl font-bold">📝 New Seller Applications</h2>
-            <span className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm font-semibold">
-              {sellers.length}
-            </span>
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">Applications</p>
+              <h2 className="text-lg font-black text-white flex items-center gap-2">New Seller Applications
+                <span className="px-2.5 py-0.5 bg-purple-500/15 text-purple-400 rounded-full text-xs font-black border border-purple-500/20">
+                  {sellers.length}
+                </span>
+              </h2>
+            </div>
           </div>
           {sellers.length === 0 ? (
             <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-center">
@@ -211,8 +241,8 @@ export default function PendingSellersPage() {
           ) : (
             <div className="grid gap-4">
               {sellers.map((seller) => (
-                <div key={seller._id} className="bg-white/5 border border-white/10 rounded-xl p-6">
-                  <div className="flex justify-between items-start">
+                <div key={seller._id} className="bg-[#16161e] border border-white/[0.06] rounded-2xl p-6 hover:border-white/10 transition-all">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                     <div>
                       <h3 className="text-xl font-semibold">{seller.name}</h3>
                       <p className="text-white/70">{seller.email}</p>
@@ -224,13 +254,14 @@ export default function PendingSellersPage() {
                         {seller.approvalStatus}
                       </span>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 shrink-0">
                       <button
                         onClick={() => handleApprove(seller._id)}
                         disabled={processing === seller._id}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition"
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition flex items-center gap-2"
                       >
-                        {processing === seller._id ? "Processing..." : "Approve"}
+                        {processing === seller._id ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                        Approve
                       </button>
                       <button
                         onClick={() => handleReject(seller, "approval")}
@@ -255,59 +286,58 @@ export default function PendingSellersPage() {
         )}
 
         {/* Rejection Modal */}
-        {showRejectModal && selectedSeller && (
-          <div
-            onClick={() => {
-              setShowRejectModal(false);
-              setSelectedSeller(null);
-              setRejectionReason("");
-            }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="bg-[#0b0b14] border border-white/10 rounded-2xl p-6 w-full max-w-md"
+        <AnimatePresence>
+          {showRejectModal && selectedSeller && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => { setShowRejectModal(false); setSelectedSeller(null); setRejectionReason(""); }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
             >
-              <h2 className="text-2xl font-bold text-white mb-4">
-                Reject {rejectType === "approval" ? "Seller Application" : "Deletion Request"}
-              </h2>
-              <p className="text-white/70 mb-4">
-                Rejecting {rejectType === "approval" ? "application" : "deletion request"} for <strong>{selectedSeller.name}</strong>
-              </p>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-white/80 mb-2">
-                  Rejection Reason *
-                </label>
-                <textarea
-                  value={rejectionReason}
-                  onChange={(e) => setRejectionReason(e.target.value)}
-                  rows={4}
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/50 focus:border-red-500 focus:outline-none resize-none"
-                  placeholder="Explain why you're rejecting this request"
-                />
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    setShowRejectModal(false);
-                    setSelectedSeller(null);
-                    setRejectionReason("");
-                  }}
-                  className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmReject}
-                  disabled={processing === selectedSeller._id}
-                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition disabled:opacity-50"
-                >
-                  {processing === selectedSeller._id ? "Rejecting..." : "Confirm Reject"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+              <motion.div
+                initial={{ scale: 0.96, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.96, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-[#0b0b14] border border-white/10 rounded-2xl p-6 w-full max-w-md"
+              >
+                <h2 className="text-2xl font-bold text-white mb-4">
+                  Reject {rejectType === "approval" ? "Seller Application" : "Deletion Request"}
+                </h2>
+                <p className="text-white/70 mb-4">
+                  Rejecting {rejectType === "approval" ? "application" : "deletion request"} for <strong>{selectedSeller.name}</strong>
+                </p>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-white/80 mb-2">Rejection Reason *</label>
+                  <textarea
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/50 focus:border-red-500 focus:outline-none resize-none"
+                    placeholder="Explain why you're rejecting this request"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => { setShowRejectModal(false); setSelectedSeller(null); setRejectionReason(""); }}
+                    className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmReject}
+                    disabled={processing === selectedSeller._id}
+                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {processing === selectedSeller._id ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                    Confirm Reject
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

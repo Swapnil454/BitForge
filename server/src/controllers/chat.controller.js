@@ -138,6 +138,41 @@ export const adminListConversations = async (req, res) => {
           unreadCount: { $sum: { $cond: ["$isUnreadByAdmin", 1, 0] } },
         },
       },
+      {
+        $lookup: {
+          from: "chatmessages",
+          let: { conversationUserId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$from", "$$conversationUserId"] },
+                    { $eq: ["$toRole", "admin"] },
+                  ],
+                },
+              },
+            },
+            { $sort: { createdAt: -1 } },
+            { $limit: 1 },
+            {
+              $project: {
+                message: 1,
+                attachments: 1,
+                createdAt: 1,
+                status: 1,
+                isDeleted: 1,
+              },
+            },
+          ],
+          as: "latestIncoming",
+        },
+      },
+      {
+        $addFields: {
+          latestIncoming: { $arrayElemAt: ["$latestIncoming", 0] },
+        },
+      },
       { $sort: { lastMessageAt: -1 } },
     ];
 
@@ -157,6 +192,13 @@ export const adminListConversations = async (req, res) => {
         email: user?.email || "",
         lastMessageAt: r.lastMessageAt,
         unreadCount: r.unreadCount || 0,
+        lastIncomingMessage: r.latestIncoming?.message || "",
+        lastIncomingAttachments: r.latestIncoming?.attachments || [],
+        lastIncomingAt: r.latestIncoming?.createdAt || null,
+        lastIncomingStatus:
+          r.latestIncoming?.status ||
+          (r.latestIncoming?.isDeleted ? "deleted" : "active"),
+        lastIncomingIsDeleted: Boolean(r.latestIncoming?.isDeleted),
       };
     });
 

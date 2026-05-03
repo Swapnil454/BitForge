@@ -36,7 +36,7 @@ export default function BankAccountSetupPage() {
         {/* Prerequisites */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-            <span className="text-cyan-400">📋</span> Prerequisites
+            <span className="text-cyan-400"></span> Prerequisites
           </h2>
           <div className="bg-white/5 border border-white/10 rounded-xl p-6">
             <ul className="space-y-3">
@@ -110,7 +110,7 @@ export default function BankAccountSetupPage() {
           </h2>
           <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
             <p className="text-white/80 mb-6">Fill in the following information carefully:</p>
-            
+
             <div className="space-y-6">
               <div>
                 <h3 className="text-white font-semibold mb-2">Account Holder Name</h3>
@@ -152,7 +152,7 @@ export default function BankAccountSetupPage() {
 
             <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
               <p className="text-yellow-200 text-sm flex items-start gap-2">
-                <span className="text-xl">⚠️</span>
+                <span className="text-xl"></span>
                 <span>
                   <strong>Important:</strong> Ensure all details match your bank records exactly. Incorrect information will cause payout failures.
                 </span>
@@ -228,9 +228,9 @@ export default function BankAccountSetupPage() {
                 <h3 className="text-white font-semibold mb-3">Minimum Payout Amount</h3>
                 <p className="text-white/70 text-sm mb-3">Set the minimum balance required before requesting a payout:</p>
                 <div className="flex items-center gap-4">
-                  <input 
-                    type="number" 
-                    className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white w-32" 
+                  <input
+                    type="number"
+                    className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white w-32"
                     placeholder="₹500"
                     disabled
                   />
@@ -394,13 +394,13 @@ export default function BankAccountSetupPage() {
               title="Request Your First Payout"
               description="Learn how to withdraw your earnings once you've made sales"
               href="/docs/payout-system"
-              icon="💸"
+              icon=""
             />
             <NextStepCard
               title="Upload Products"
               description="Start selling digital content and earning money"
               href="/docs/product-management"
-              icon="📦"
+              icon=""
             />
             <NextStepCard
               title="Payment Testing"
@@ -412,7 +412,7 @@ export default function BankAccountSetupPage() {
               title="Dashboard Overview"
               description="Track earnings, sales, and manage your products"
               href="/dashboard"
-              icon="📊"
+              icon=""
             />
           </div>
         </section>

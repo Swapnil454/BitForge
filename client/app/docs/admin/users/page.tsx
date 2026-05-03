@@ -61,7 +61,7 @@ export default function AdminUsersPage() {
               <p className="text-white/70 text-sm">Send password reset email to user. Use when user has account access issues.</p>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-              <h3 className="text-white font-semibold mb-2">✅ Verify Account</h3>
+              <h3 className="text-white font-semibold mb-2"> Verify Account</h3>
               <p className="text-white/70 text-sm">Manually verify seller account if automated verification fails.</p>
             </div>
           </div>
@@ -94,7 +94,7 @@ export default function AdminUsersPage() {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <Link href="/docs/admin/analytics" className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3">📊</div>
+            <div className="text-3xl mb-3"></div>
             <h3 className="text-lg font-semibold text-white mb-2">Analytics</h3>
             <p className="text-white/60 text-sm">User metrics & insights</p>
           </Link>

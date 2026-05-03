@@ -72,13 +72,13 @@ export default function NotificationsPage() {
   const handleMarkAsRead = async (notificationId: string) => {
     try {
       await notificationAPI.markAsRead(notificationId);
-      
+
       setNotifications((prev) =>
         prev.map((n) =>
           n._id === notificationId ? { ...n, isRead: true } : n
         )
       );
-      
+
       setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
@@ -89,11 +89,11 @@ export default function NotificationsPage() {
   const handleMarkAllAsRead = async () => {
     try {
       await notificationAPI.markAllAsRead();
-      
+
       setNotifications((prev) =>
         prev.map((n) => ({ ...n, isRead: true }))
       );
-      
+
       setUnreadCount(0);
       showSuccess("All notifications marked as read");
     } catch (error) {
@@ -105,16 +105,16 @@ export default function NotificationsPage() {
   const handleDeleteNotification = async (notificationId: string) => {
     try {
       await notificationAPI.deleteNotification(notificationId);
-      
+
       const notification = notifications.find((n) => n._id === notificationId);
       if (notification && !notification.isRead) {
         setUnreadCount((prev) => Math.max(0, prev - 1));
       }
-      
+
       setNotifications((prev) =>
         prev.filter((n) => n._id !== notificationId)
       );
-      
+
       showSuccess("Notification deleted");
     } catch (error) {
       console.error("Failed to delete notification:", error);
@@ -124,7 +124,7 @@ export default function NotificationsPage() {
 
   const deletionNotifications = notifications.filter((n) => n.type === "user_deleted");
   const sellerDeletionNotifications = notifications.filter((n) => n.type === "seller_deletion_requested");
-  const otherNotifications = notifications.filter((n) => 
+  const otherNotifications = notifications.filter((n) =>
     n.type !== "user_deleted" && n.type !== "seller_deletion_requested"
   );
 
@@ -161,7 +161,7 @@ export default function NotificationsPage() {
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
     if (days < 7) return `${days}d ago`;
-    
+
     return d.toLocaleDateString();
   };
 
@@ -222,21 +222,19 @@ export default function NotificationsPage() {
           <div className="flex gap-2">
             <button
               onClick={() => setFilter("all")}
-              className={`px-4 py-2 rounded-lg transition ${
-                filter === "all"
+              className={`px-4 py-2 rounded-lg transition ${filter === "all"
                   ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
                   : "bg-white/5 text-white/60 border border-white/10 hover:border-white/20"
-              }`}
+                }`}
             >
               All
             </button>
             <button
               onClick={() => setFilter("unread")}
-              className={`px-4 py-2 rounded-lg transition ${
-                filter === "unread"
+              className={`px-4 py-2 rounded-lg transition ${filter === "unread"
                   ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
                   : "bg-white/5 text-white/60 border border-white/10 hover:border-white/20"
-              }`}
+                }`}
             >
               Unread ({unreadCount})
             </button>
@@ -314,7 +312,7 @@ export default function NotificationsPage() {
           <div className="mb-8 p-6 rounded-xl bg-yellow-500/10 border border-yellow-500/30">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-yellow-400 flex items-center gap-2">
-                <span className="text-2xl">⚠️</span>
+                <span className="text-2xl"></span>
                 Seller Deletion Requests ({sellerDeletionNotifications.length})
               </h2>
               <button
@@ -380,100 +378,99 @@ export default function NotificationsPage() {
           <>
             <h2 className="text-lg font-bold text-white mb-4">Other Notifications</h2>
             <div className="space-y-3">
-          <AnimatePresence>
-            {loading ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-center py-12 text-white/60"
-              >
-                Loading notifications...
-              </motion.div>
-            ) : filteredNotifications.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-center py-12 text-white/60"
-              >
-                No {filter === "unread" ? "unread" : ""} notifications
-              </motion.div>
-            ) : (
-              filteredNotifications.map((notification, index) => (
-                <motion.div
-                  key={notification._id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={`p-4 rounded-lg border-l-4 bg-white/5 border-b border-r border-white/10 ${getNotificationColor(
-                    notification.type
-                  )} ${!notification.isRead ? "ring-1 ring-cyan-500/30" : ""}`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-2xl">{notification.icon}</span>
-                        <div>
-                          <h3
-                            className={`font-semibold ${
-                              notification.isRead
-                                ? "text-white/70"
-                                : "text-white font-bold"
-                            }`}
-                          >
-                            {notification.title}
-                          </h3>
-                          <p className="text-sm text-white/50">
-                            {formatDate(notification.createdAt)}
+              <AnimatePresence>
+                {loading ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-center py-12 text-white/60"
+                  >
+                    Loading notifications...
+                  </motion.div>
+                ) : filteredNotifications.length === 0 ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-center py-12 text-white/60"
+                  >
+                    No {filter === "unread" ? "unread" : ""} notifications
+                  </motion.div>
+                ) : (
+                  filteredNotifications.map((notification, index) => (
+                    <motion.div
+                      key={notification._id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      transition={{ delay: index * 0.05 }}
+                      className={`p-4 rounded-lg border-l-4 bg-white/5 border-b border-r border-white/10 ${getNotificationColor(
+                        notification.type
+                      )} ${!notification.isRead ? "ring-1 ring-cyan-500/30" : ""}`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="text-2xl">{notification.icon}</span>
+                            <div>
+                              <h3
+                                className={`font-semibold ${notification.isRead
+                                    ? "text-white/70"
+                                    : "text-white font-bold"
+                                  }`}
+                              >
+                                {notification.title}
+                              </h3>
+                              <p className="text-sm text-white/50">
+                                {formatDate(notification.createdAt)}
+                              </p>
+                            </div>
+                          </div>
+                          <p className="text-sm text-white/60 ml-11">
+                            {notification.message}
                           </p>
+                          {notification.type && (
+                            <div className="mt-2 ml-11">
+                              <span className="inline-block px-2 py-1 text-xs rounded bg-white/5 text-white/50">
+                                {notification.type
+                                  .replace(/_/g, " ")
+                                  .charAt(0)
+                                  .toUpperCase() +
+                                  notification.type
+                                    .replace(/_/g, " ")
+                                    .slice(1)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 ml-4">
+                          {!notification.isRead && (
+                            <button
+                              onClick={() => handleMarkAsRead(notification._id)}
+                              className="p-2 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 transition"
+                              title="Mark as read"
+                            >
+                              ✓
+                            </button>
+                          )}
+                          <button
+                            onClick={() =>
+                              handleDeleteNotification(notification._id)
+                            }
+                            className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition"
+                            title="Delete"
+                          >
+                            ✕
+                          </button>
                         </div>
                       </div>
-                      <p className="text-sm text-white/60 ml-11">
-                        {notification.message}
-                      </p>
-                      {notification.type && (
-                        <div className="mt-2 ml-11">
-                          <span className="inline-block px-2 py-1 text-xs rounded bg-white/5 text-white/50">
-                            {notification.type
-                              .replace(/_/g, " ")
-                              .charAt(0)
-                              .toUpperCase() +
-                              notification.type
-                                .replace(/_/g, " ")
-                                .slice(1)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 ml-4">
-                      {!notification.isRead && (
-                        <button
-                          onClick={() => handleMarkAsRead(notification._id)}
-                          className="p-2 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 transition"
-                          title="Mark as read"
-                        >
-                          ✓
-                        </button>
-                      )}
-                      <button
-                        onClick={() =>
-                          handleDeleteNotification(notification._id)
-                        }
-                        className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition"
-                        title="Delete"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))
-            )}
-          </AnimatePresence>
+                    </motion.div>
+                  ))
+                )}
+              </AnimatePresence>
             </div>
           </>
         )}

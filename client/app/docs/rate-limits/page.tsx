@@ -162,7 +162,7 @@ export default function RateLimitsPage() {
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">📦</span> Batch Requests
+                <span className="text-xl"></span> Batch Requests
               </h3>
               <p className="text-white/60 text-sm">Use batch endpoints when available: <code className="text-cyan-300">/products/batch</code> instead of individual product requests.</p>
             </div>

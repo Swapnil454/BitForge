@@ -30,7 +30,7 @@ export default function UploadSolutionsPage() {
           <div className="space-y-4">
             <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-6">
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <span className="text-xl">❌</span> Error: File Too Large
+                <span className="text-xl"></span> Error: File Too Large
               </h3>
               <p className="text-white/70 mb-3"><strong className="text-white">Message:</strong> "File size exceeds maximum limit of 500MB"</p>
               <p className="text-white/70 mb-3"><strong className="text-white">Cause:</strong> Your file is larger than our 500MB limit per file.</p>
@@ -59,7 +59,7 @@ export default function UploadSolutionsPage() {
 
             <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-6">
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <span className="text-xl">⚠️</span> Error: Unsupported File Type
+                <span className="text-xl"></span> Error: Unsupported File Type
               </h3>
               <p className="text-white/70 mb-3"><strong className="text-white">Message:</strong> "File type not allowed"</p>
               <p className="text-white/70 mb-3"><strong className="text-white">Cause:</strong> File format not in our supported list.</p>
@@ -179,7 +179,7 @@ export default function UploadSolutionsPage() {
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">📝</span> Clear File Names
+                <span className="text-xl"></span> Clear File Names
               </h3>
               <p className="text-white/60 text-sm">
                 Use descriptive names without special characters: "React-Course-2024-v2.zip" instead of "course(final)!!!.zip"
@@ -207,7 +207,7 @@ export default function UploadSolutionsPage() {
         {/* Related */}
         <div className="grid sm:grid-cols-2 gap-4 mb-10">
           <Link href="/docs/product-management" className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3">📦</div>
+            <div className="text-3xl mb-3"></div>
             <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-cyan-300">Product Management</h3>
             <p className="text-white/60 text-sm">Complete product setup guide</p>
           </Link>

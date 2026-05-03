@@ -30,19 +30,19 @@ export default function AdminProductsPage() {
             <p className="text-white/80 mb-4">Review and approve seller product submissions to maintain marketplace quality.</p>
             <div className="grid md:grid-cols-4 gap-3">
               <div className="bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-2xl mb-2">📝</div>
+                <div className="text-2xl mb-2"></div>
                 <p className="text-white font-semibold text-sm">Submitted</p>
               </div>
               <div className="bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-2xl mb-2">🔍</div>
+                <div className="text-2xl mb-2"></div>
                 <p className="text-white font-semibold text-sm">Reviewing</p>
               </div>
               <div className="bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-2xl mb-2">✅</div>
+                <div className="text-2xl mb-2"></div>
                 <p className="text-white font-semibold text-sm">Approved</p>
               </div>
               <div className="bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-2xl mb-2">❌</div>
+                <div className="text-2xl mb-2"></div>
                 <p className="text-white font-semibold text-sm">Rejected</p>
               </div>
             </div>
@@ -54,35 +54,35 @@ export default function AdminProductsPage() {
           <div className="bg-white/5 border border-white/10 rounded-xl p-6">
             <div className="space-y-3">
               <label className="flex items-start gap-3">
-                <input type="checkbox" className="mt-1"/>
+                <input type="checkbox" className="mt-1" />
                 <div>
                   <p className="text-white font-semibold">Title & Description</p>
                   <p className="text-white/60 text-sm">Clear, accurate, no misleading claims</p>
                 </div>
               </label>
               <label className="flex items-start gap-3">
-                <input type="checkbox" className="mt-1"/>
+                <input type="checkbox" className="mt-1" />
                 <div>
                   <p className="text-white font-semibold">Content Quality</p>
                   <p className="text-white/60 text-sm">High-quality files, proper formatting</p>
                 </div>
               </label>
               <label className="flex items-start gap-3">
-                <input type="checkbox" className="mt-1"/>
+                <input type="checkbox" className="mt-1" />
                 <div>
                   <p className="text-white font-semibold">Copyright & Licensing</p>
                   <p className="text-white/60 text-sm">Seller owns rights or has proper license</p>
                 </div>
               </label>
               <label className="flex items-start gap-3">
-                <input type="checkbox" className="mt-1"/>
+                <input type="checkbox" className="mt-1" />
                 <div>
                   <p className="text-white font-semibold">Preview Materials</p>
                   <p className="text-white/60 text-sm">Screenshots/samples representative of product</p>
                 </div>
               </label>
               <label className="flex items-start gap-3">
-                <input type="checkbox" className="mt-1"/>
+                <input type="checkbox" className="mt-1" />
                 <div>
                   <p className="text-white font-semibold">Policy Compliance</p>
                   <p className="text-white/60 text-sm">No prohibited content, follows guidelines</p>
@@ -107,7 +107,7 @@ export default function AdminProductsPage() {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <Link href="/docs/product-management" className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3">📦</div>
+            <div className="text-3xl mb-3"></div>
             <h3 className="text-lg font-semibold text-white mb-2">Product Management</h3>
             <p className="text-white/60 text-sm">Seller product guide</p>
           </Link>

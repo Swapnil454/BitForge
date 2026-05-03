@@ -58,8 +58,8 @@ const growthBg = (v: number) =>
   v > 0
     ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
     : v < 0
-    ? "bg-red-500/10 border-red-500/20 text-red-400"
-    : "bg-white/5 border-white/10 text-white/40";
+      ? "bg-red-500/10 border-red-500/20 text-red-400"
+      : "bg-white/5 border-white/10 text-white/40";
 
 const GrowthIcon = ({ v }: { v: number }) =>
   v > 0 ? (
@@ -124,8 +124,8 @@ export default function RevenueGrowthPage() {
   /* ─── INSIGHT banner ─── */
   const insight = (() => {
     if (data.revenueGrowth > 20) return { emoji: "🎉", label: "Excellent Growth", msg: "Revenue increased significantly this month.", border: "border-emerald-500/20", bg: "bg-emerald-500/8" };
-    if (data.revenueGrowth > 0) return { emoji: "📈", label: "Positive Growth", msg: "Revenue is trending upward.", border: "border-cyan-500/20", bg: "bg-cyan-500/8" };
-    if (data.revenueGrowth < 0) return { emoji: "⚠️", label: "Revenue Decline", msg: "Review pricing or marketing strategy.", border: "border-red-500/20", bg: "bg-red-500/8" };
+    if (data.revenueGrowth > 0) return { emoji: "", label: "Positive Growth", msg: "Revenue is trending upward.", border: "border-cyan-500/20", bg: "bg-cyan-500/8" };
+    if (data.revenueGrowth < 0) return { emoji: "", label: "Revenue Decline", msg: "Review pricing or marketing strategy.", border: "border-red-500/20", bg: "bg-red-500/8" };
     return { emoji: "➖", label: "No Change", msg: "No completed sales found for comparison.", border: "border-white/10", bg: "bg-white/5" };
   })();
 
