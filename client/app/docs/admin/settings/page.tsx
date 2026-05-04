@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { DollarSign, Wrench, AlertCircle } from "lucide-react";
 
 export default function AdminSettingsPage() {
   return (
@@ -30,12 +31,12 @@ export default function AdminSettingsPage() {
             <p className="text-white/80 mb-4">Configure platform-wide settings, fees, features, and policies.</p>
             <div className="grid md:grid-cols-3 gap-4">
               <div className="bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-3xl mb-2">💰</div>
+                <DollarSign className="w-5 h-5 mx-auto mb-2 text-yellow-400" />
                 <p className="text-white font-semibold">Fees</p>
                 <p className="text-white/60 text-sm">Commission rates</p>
               </div>
               <div className="bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-3xl mb-2">⚙️</div>
+                <Wrench className="w-5 h-5 mx-auto mb-2 text-orange-400" />
                 <p className="text-white font-semibold">Features</p>
                 <p className="text-white/60 text-sm">Enable/disable</p>
               </div>
@@ -129,7 +130,7 @@ export default function AdminSettingsPage() {
             <p className="text-white/60 text-sm">Platform metrics</p>
           </Link>
           <Link href="/docs/security" className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3">🔒</div>
+            <AlertCircle className="w-5 h-5 mb-3 text-red-400" />
             <h3 className="text-lg font-semibold text-white mb-2">Security</h3>
             <p className="text-white/60 text-sm">Best practices guide</p>
           </Link>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Trash2, Shield } from "lucide-react";
 
 export default function AdminUsersPage() {
   return (
@@ -53,7 +54,7 @@ export default function AdminUsersPage() {
               <p className="text-white/70 text-sm">Temporarily disable account for policy violations. User can appeal suspension.</p>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-              <h3 className="text-white font-semibold mb-2">🗑️ Delete Account</h3>
+              <h3 className="text-white font-semibold mb-2 flex items-center gap-2"><Trash2 className="w-4 h-4" /> Delete Account</h3>
               <p className="text-white/70 text-sm">Permanently remove account and data. Cannot be undone. Requires approval.</p>
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
@@ -99,7 +100,7 @@ export default function AdminUsersPage() {
             <p className="text-white/60 text-sm">User metrics & insights</p>
           </Link>
           <Link href="/docs/admin/moderation" className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3">🛡️</div>
+            <Shield className="w-5 h-5 mb-3 text-purple-400" />
             <h3 className="text-lg font-semibold text-white mb-2">Moderation</h3>
             <p className="text-white/60 text-sm">Handle reports & abuse</p>
           </Link>

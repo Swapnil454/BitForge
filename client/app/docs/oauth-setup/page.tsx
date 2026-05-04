@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Rocket, Check, Shield, AlertCircle, Lock, Users } from "lucide-react";
 
 export default function OAuthSetupPage() {
   return (
@@ -42,19 +43,19 @@ export default function OAuthSetupPage() {
             </p>
             <ul className="space-y-2 text-white/70">
               <li className="flex items-start gap-3">
-                <span className="text-green-400">✓</span>
+                <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-1" />
                 <span>Register and log in without creating passwords</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-green-400">✓</span>
+                <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-1" />
                 <span>Link multiple authentication providers to one account</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-green-400">✓</span>
+                <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-1" />
                 <span>Improve security with industry-standard OAuth flows</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-green-400">✓</span>
+                <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-1" />
                 <span>Reduce friction in the registration process</span>
               </li>
             </ul>
@@ -64,7 +65,7 @@ export default function OAuthSetupPage() {
         {/* How OAuth Works */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-            <span className="text-cyan-400">🔄</span> How OAuth Works
+            <Rocket className="w-6 h-6 text-cyan-400" /> How OAuth Works
           </h2>
           <div className="grid md:grid-cols-4 gap-4">
             <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-5 text-center">
@@ -414,7 +415,7 @@ SESSION_SECRET=your_super_secret_session_key_here`}
         {/* Production Deployment */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-            <span className="text-cyan-400">🚀</span> Production Deployment
+            <Rocket className="w-6 h-6 text-cyan-400" /> Production Deployment
           </h2>
           <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/30 rounded-xl p-6">
             <p className="text-white/80 mb-4">Before deploying to production:</p>
@@ -515,28 +516,28 @@ GITHUB_CALLBACK_URL=https://yourdomain.com/api/auth/github/callback`}
         {/* Security Best Practices */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-            <span className="text-cyan-400">🛡️</span> Security Best Practices
+            <Shield className="w-6 h-6 text-cyan-400" /> Security Best Practices
           </h2>
           <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-6">
             <ul className="space-y-3 text-white/80">
               <li className="flex items-start gap-3">
-                <span className="text-red-400">🔒</span>
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                 <span><strong className="text-white">Never commit secrets:</strong> Keep OAuth client secrets out of version control</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-red-400">🔒</span>
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                 <span><strong className="text-white">Validate state parameter:</strong> Prevent CSRF attacks by verifying state tokens</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-red-400">🔒</span>
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                 <span><strong className="text-white">Use HTTPS in production:</strong> Always use secure connections for OAuth flows</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-red-400">🔒</span>
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                 <span><strong className="text-white">Rotate secrets regularly:</strong> Update OAuth secrets periodically for security</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-red-400">🔒</span>
+                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                 <span><strong className="text-white">Minimal scopes:</strong> Only request necessary user permissions</span>
               </li>
             </ul>
@@ -551,25 +552,25 @@ GITHUB_CALLBACK_URL=https://yourdomain.com/api/auth/github/callback`}
               title="Complete Quick Start"
               description="Finish setting up your development environment"
               href="/docs/quick-start"
-              icon="🚀"
+              icon={<Rocket className="w-6 h-6" />}
             />
             <NextStepCard
               title="Authentication API"
               description="Learn about JWT tokens and session management"
               href="/docs/api/authentication"
-              icon="🔐"
+              icon={<Lock className="w-6 h-6" />}
             />
             <NextStepCard
               title="User Management"
               description="Admin guide for managing user accounts"
               href="/docs/admin/users"
-              icon="👥"
+              icon={<Users className="w-6 h-6" />}
             />
             <NextStepCard
               title="Security Guide"
               description="Best practices for securing your application"
               href="/docs/security"
-              icon="🛡️"
+              icon={<Shield className="w-6 h-6" />}
             />
           </div>
         </section>
@@ -634,14 +635,14 @@ function NextStepCard({
   title: string;
   description: string;
   href: string;
-  icon: string;
+  icon: React.ReactNode;
 }) {
   return (
     <Link
       href={href}
       className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-white/10 transition-all"
     >
-      <div className="text-3xl mb-3">{icon}</div>
+      <div className="text-3xl mb-3 text-cyan-400">{icon}</div>
       <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-cyan-300">
         {title}
       </h3>

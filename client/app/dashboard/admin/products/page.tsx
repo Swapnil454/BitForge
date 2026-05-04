@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { adminAPI } from "@/lib/api";
 import toast from "react-hot-toast";
 import { getStoredUser } from "@/lib/cookies";
-import { RefreshCw, Loader2 } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
 
 /* ================= TYPES ================= */
@@ -242,7 +242,7 @@ export default function AdminProductsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white">
+    <main className="min-h-screen bg-[#05050a] text-white pb-24">
       <PageHeader
         backHref="/dashboard/admin"
         backLabel="Back"
@@ -252,29 +252,37 @@ export default function AdminProductsPage() {
           <button
             onClick={() => loadAll(true)}
             disabled={refreshing}
-            className="h-9 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 disabled:opacity-50"
+            className="h-9 w-9 flex items-center justify-center rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-all disabled:opacity-50"
           >
-            <RefreshCw className={`w-3 h-3 ${refreshing ? "animate-spin" : ""}`} />
-            <span className="hidden sm:inline">Refresh</span>
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
           </button>
         }
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 space-y-5">
 
         {/* Tabs */}
-        <div className="flex gap-3">
+        <div className="flex bg-[#16161e] rounded-2xl p-1 gap-1 border border-white/[0.05]">
           <button
             onClick={() => {
               setActiveTab("new");
               clearSelection();
             }}
-            className={`px-4 py-2 rounded-xl border ${
+            className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
               activeTab === "new"
-                ? "bg-cyan-500/20 border-cyan-400/40"
-                : "bg-white/5 border-white/10"
+                ? "bg-gradient-to-r from-cyan-500 to-indigo-500 text-white shadow-lg"
+                : "text-white/30 hover:text-white/60"
             }`}
           >
-            New Products ({products.length})
+            <span className="inline-flex items-center gap-2">
+              <span>New Products</span>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
+                  activeTab === "new" ? "bg-white/20 text-white" : "bg-white/10 text-white/70"
+                }`}
+              >
+                {products.length}
+              </span>
+            </span>
           </button>
 
           <button
@@ -282,28 +290,45 @@ export default function AdminProductsPage() {
               setActiveTab("changes");
               clearSelection();
             }}
-            className={`px-4 py-2 rounded-xl border ${
+            className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
               activeTab === "changes"
-                ? "bg-purple-500/20 border-purple-400/40"
-                : "bg-white/5 border-white/10"
+                ? "bg-gradient-to-r from-cyan-500 to-indigo-500 text-white shadow-lg"
+                : "text-white/30 hover:text-white/60"
             }`}
           >
-            Pending Changes ({changes.length})
+            <span className="inline-flex items-center gap-2">
+              <span>Pending Changes</span>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
+                  activeTab === "changes" ? "bg-white/20 text-white" : "bg-white/10 text-white/70"
+                }`}
+              >
+                {changes.length}
+              </span>
+            </span>
           </button>
         </div>
 
         {/* Bulk bar */}
         {activeTab === "changes" && selected.length > 0 && (
-          <div className="flex gap-3 bg-white/5 border border-white/10 rounded-xl p-3">
-            <span className="text-sm text-white/70">
+          <div className="flex items-center justify-between gap-3 bg-[#16161e] border border-white/[0.06] rounded-xl p-3">
+            <span className="text-[10px] font-black uppercase tracking-widest text-white/50">
               {selected.length} selected
             </span>
-            <button onClick={bulkApprove} className="text-green-400">
-              Approve (A)
-            </button>
-            <button onClick={bulkReject} className="text-red-400">
-              Reject (R)
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={bulkApprove}
+                className="px-3 py-1.5 rounded-lg bg-emerald-600/90 hover:bg-emerald-500 text-xs font-black uppercase tracking-widest transition-all"
+              >
+                Approve (A)
+              </button>
+              <button
+                onClick={bulkReject}
+                className="px-3 py-1.5 rounded-lg bg-red-600/80 hover:bg-red-500 text-xs font-black uppercase tracking-widest transition-all"
+              >
+                Reject (R)
+              </button>
+            </div>
           </div>
         )}
 
@@ -311,8 +336,10 @@ export default function AdminProductsPage() {
         {!loading && activeTab === "new" && (
           <div className="space-y-4">
             {products.length === 0 ? (
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center text-white/70">
-                No new products awaiting approval.
+              <div className="min-h-[52vh] flex items-center justify-center">
+                <p className="text-lg font-semibold tracking-wide text-white/70 md:text-xl">
+                  No new products awaiting approval.
+                </p>
               </div>
             ) : (
               products.map(p => (
@@ -339,14 +366,14 @@ export default function AdminProductsPage() {
                       <button
                         onClick={() => approvePendingProduct(p._id)}
                         disabled={processingId === p._id}
-                        className="px-4 py-2 rounded-lg bg-green-500/20 border border-green-400/40 text-green-300 text-sm disabled:opacity-60"
+                        className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-black uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => rejectPendingProduct(p._id)}
                         disabled={processingId === p._id}
-                        className="px-4 py-2 rounded-lg bg-red-500/20 border border-red-400/40 text-red-300 text-sm disabled:opacity-60"
+                        className="px-4 py-2.5 rounded-xl bg-red-600/80 hover:bg-red-500 text-xs font-black uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         Reject
                       </button>
@@ -418,14 +445,14 @@ export default function AdminProductsPage() {
                       <button
                         onClick={() => approveOne(p._id)}
                         disabled={processingId === p._id}
-                        className="px-3 py-1.5 bg-green-500/20 border border-green-400/30 rounded-lg text-green-300"
+                        className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-black uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => rejectOne(p._id)}
                         disabled={processingId === p._id}
-                        className="px-3 py-1.5 bg-red-500/20 border border-red-400/30 rounded-lg text-red-300"
+                        className="px-4 py-2.5 rounded-xl bg-red-600/80 hover:bg-red-500 text-xs font-black uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         Reject
                       </button>
@@ -438,7 +465,7 @@ export default function AdminProductsPage() {
           </div>
         )}
 
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

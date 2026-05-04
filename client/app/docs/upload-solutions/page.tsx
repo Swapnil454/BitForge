@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AlertCircle } from "lucide-react";
 
 export default function UploadSolutionsPage() {
   return (
@@ -30,7 +31,7 @@ export default function UploadSolutionsPage() {
           <div className="space-y-4">
             <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-6">
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <span className="text-xl"></span> Error: File Too Large
+                <AlertCircle className="w-5 h-5" /> Error: File Too Large
               </h3>
               <p className="text-white/70 mb-3"><strong className="text-white">Message:</strong> "File size exceeds maximum limit of 500MB"</p>
               <p className="text-white/70 mb-3"><strong className="text-white">Cause:</strong> Your file is larger than our 500MB limit per file.</p>
@@ -195,7 +196,7 @@ export default function UploadSolutionsPage() {
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">🔒</span> Include README
+                <AlertCircle className="w-5 h-5" /> Include README
               </h3>
               <p className="text-white/60 text-sm">
                 Always include a README file with installation instructions, requirements, and support contact info.

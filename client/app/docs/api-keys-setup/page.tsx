@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Lock, Check, Building } from "lucide-react";
 
 export default function APIKeysSetupPage() {
   return (
@@ -18,7 +19,7 @@ export default function APIKeysSetupPage() {
       {/* Header */}
       <div className="mb-12">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-300">
-          <span>🔑</span>
+          <Lock className="w-4 h-4" />
           Getting Started
         </div>
         <h1 className="mb-4 text-4xl font-bold text-white md:text-5xl">
@@ -244,7 +245,7 @@ node test-api.js`}
               href="/docs/bank-account-setup"
               className="group block rounded-xl border border-white/10 bg-white/5 p-4 transition-all hover:border-cyan-400/40"
             >
-              <div className="mb-2 text-2xl">🏦</div>
+              <Building className="mb-2 w-6 h-6 text-cyan-400" />
               <h3 className="mb-1 font-semibold text-white group-hover:text-cyan-300">
                 Bank Account Setup →
               </h3>
@@ -254,7 +255,7 @@ node test-api.js`}
               href="/docs/oauth-setup"
               className="group block rounded-xl border border-white/10 bg-white/5 p-4 transition-all hover:border-cyan-400/40"
             >
-              <div className="mb-2 text-2xl">🔐</div>
+              <Lock className="mb-2 w-6 h-6 text-cyan-400" />
               <h3 className="mb-1 font-semibold text-white group-hover:text-cyan-300">
                 OAuth Detail Guide →
               </h3>

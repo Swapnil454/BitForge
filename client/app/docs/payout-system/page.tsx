@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { DollarSign, ShoppingCart, CreditCard, Check, Radio, Building } from "lucide-react";
 
 export default function PayoutSystemPage() {
   return (
@@ -17,7 +18,7 @@ export default function PayoutSystemPage() {
       {/* Header */}
       <div className="mb-12">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
-          <span>💰</span>
+          <DollarSign className="w-4 h-4" />
           For Sellers
         </div>
         <h1 className="mb-4 text-4xl font-bold text-white md:text-5xl">
@@ -36,8 +37,8 @@ export default function PayoutSystemPage() {
           <div className="space-y-4">
             <div className="rounded-lg border border-white/10 bg-white/5 p-5">
               <div className="mb-3 flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500/20 text-lg">
-                  🛒
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500/20">
+                  <ShoppingCart className="w-5 h-5" />
                 </span>
                 <h3 className="text-lg font-semibold text-white">1. Customer Purchases</h3>
               </div>
@@ -48,8 +49,8 @@ export default function PayoutSystemPage() {
 
             <div className="rounded-lg border border-white/10 bg-white/5 p-5">
               <div className="mb-3 flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500/20 text-lg">
-                  💳
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500/20">
+                  <CreditCard className="w-5 h-5" />
                 </span>
                 <h3 className="text-lg font-semibold text-white">2. Platform Fee Deducted</h3>
               </div>
@@ -159,19 +160,19 @@ export default function PayoutSystemPage() {
           <h3 className="mb-3 text-lg font-semibold text-white">Payout Requirements</h3>
           <ul className="space-y-2 text-white/70">
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">✓</span>
+              <Check className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-1" />
               <span>Minimum balance: <strong>₹500</strong></span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">✓</span>
+              <Check className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-1" />
               <span>Verified bank account</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">✓</span>
+              <Check className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-1" />
               <span>KYC verification completed (for amounts over ₹10,000)</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">✓</span>
+              <Check className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-1" />
               <span>No pending disputes or refunds</span>
             </li>
           </ul>
@@ -240,15 +241,15 @@ export default function PayoutSystemPage() {
           </p>
           <ul className="space-y-2 text-white/70">
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400"></span>
+              <Radio className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-1" />
               <span><strong>Sales Report:</strong> View all product sales with dates and amounts</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400"></span>
+              <Radio className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-1" />
               <span><strong>Payout History:</strong> Track all completed and pending payouts</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400"></span>
+              <Radio className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-1" />
               <span><strong>Analytics:</strong> Monthly earnings breakdown and trends</span>
             </li>
             <li className="flex items-start gap-3">
@@ -313,7 +314,7 @@ export default function PayoutSystemPage() {
               href="/docs/bank-account-setup"
               className="group block rounded-xl border border-white/10 bg-white/5 p-4 transition-all hover:border-cyan-400/40"
             >
-              <div className="mb-2 text-2xl">🏦</div>
+              <Building className="mb-2 w-6 h-6 text-cyan-400" />
               <h3 className="mb-1 font-semibold text-white group-hover:text-cyan-300">
                 Bank Account Setup →
               </h3>
@@ -323,7 +324,7 @@ export default function PayoutSystemPage() {
               href="/docs/api/payouts"
               className="group block rounded-xl border border-white/10 bg-white/5 p-4 transition-all hover:border-cyan-400/40"
             >
-              <div className="mb-2 text-2xl">📡</div>
+              <Radio className="mb-2 w-6 h-6 text-cyan-400" />
               <h3 className="mb-1 font-semibold text-white group-hover:text-cyan-300">
                 Payouts API →
               </h3>

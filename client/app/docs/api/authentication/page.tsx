@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Lock, ShoppingCart } from "lucide-react";
 
 export default function AuthenticationAPIPage() {
   return (
@@ -47,7 +48,7 @@ export default function AuthenticationAPIPage() {
           <h2 className="text-2xl font-bold text-white mb-4">Authentication Methods</h2>
           <div className="grid sm:grid-cols-3 gap-4">
             <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-2">🔐</div>
+              <Lock className="w-5 h-5 mx-auto mb-2 text-purple-400" />
               <h3 className="text-white font-semibold">JWT Tokens</h3>
               <p className="text-white/60 text-sm mt-2">Bearer token authentication</p>
             </div>
@@ -572,13 +573,13 @@ export default function AuthenticationAPIPage() {
               title="Orders API"
               description="Track purchases and transaction history"
               href="/docs/api/orders"
-              icon="🛒"
+              icon={<ShoppingCart className="w-5 h-5" />}
             />
             <NextStepCard
               title="OAuth Setup Guide"
               description="Configure Google and GitHub OAuth"
               href="/docs/oauth-setup"
-              icon="🔐"
+              icon={<Lock className="w-5 h-5" />}
             />
           </div>
         </section>

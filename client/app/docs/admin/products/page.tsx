@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Shield } from "lucide-react";
 
 export default function AdminProductsPage() {
   return (
@@ -112,7 +113,7 @@ export default function AdminProductsPage() {
             <p className="text-white/60 text-sm">Seller product guide</p>
           </Link>
           <Link href="/docs/admin/moderation" className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3">🛡️</div>
+            <Shield className="w-5 h-5 mb-3 text-purple-400" />
             <h3 className="text-lg font-semibold text-white mb-2">Moderation</h3>
             <p className="text-white/60 text-sm">Content moderation policies</p>
           </Link>

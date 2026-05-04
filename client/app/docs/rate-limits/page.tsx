@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Rocket } from "lucide-react";
 
 export default function RateLimitsPage() {
   return (
@@ -38,7 +39,7 @@ export default function RateLimitsPage() {
                 <p className="text-white/60 text-sm">Standard Tier</p>
               </div>
               <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-5 text-center">
-                <div className="text-3xl mb-3">🚀</div>
+                <Rocket className="w-6 h-6 mx-auto mb-3 text-blue-400" />
                 <h3 className="text-white font-semibold mb-2">500 req/min</h3>
                 <p className="text-white/60 text-sm">Pro Tier</p>
               </div>

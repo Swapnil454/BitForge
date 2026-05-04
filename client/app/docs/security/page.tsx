@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Lock, AlertCircle, CreditCard, Check, Trash2, Key, Lock as LockIcon, Bell, TestTube } from "lucide-react";
 
 export default function SecurityPage() {
   return (
@@ -34,17 +35,17 @@ export default function SecurityPage() {
             </p>
             <div className="grid md:grid-cols-3 gap-4 mt-6">
               <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-5 text-center">
-                <div className="text-3xl mb-3">🔐</div>
+                <Lock className="w-8 h-8 mb-3 text-cyan-400 mx-auto" />
                 <h3 className="text-white font-semibold mb-2">API Security</h3>
                 <p className="text-white/60 text-sm">Protect your API keys and tokens</p>
               </div>
               <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-5 text-center">
-                <div className="text-3xl mb-3">💳</div>
+                <CreditCard className="w-8 h-8 mb-3 text-cyan-400 mx-auto" />
                 <h3 className="text-white font-semibold mb-2">Payment Security</h3>
                 <p className="text-white/60 text-sm">PCI-compliant payment processing</p>
               </div>
               <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-5 text-center">
-                <div className="text-3xl mb-3"></div>
+                <AlertCircle className="w-8 h-8 mb-3 text-cyan-400 mx-auto" />
                 <h3 className="text-white font-semibold mb-2">Data Protection</h3>
                 <p className="text-white/60 text-sm">GDPR & data privacy compliance</p>
               </div>
@@ -61,9 +62,9 @@ export default function SecurityPage() {
             <h3 className="text-white font-semibold mb-4">Protect Your API Keys</h3>
             <div className="space-y-4">
               <div className="bg-white/5 p-4 rounded-lg">
-                <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
-                  <span className="text-red-400"></span> Never Do This
-                </h4>
+                <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-red-400" /> Never Do This
+                </h3>
                 <ul className="space-y-2 text-white/70 text-sm">
                   <li className="flex items-start gap-2">
                     <span className="text-red-400">•</span>
@@ -85,7 +86,7 @@ export default function SecurityPage() {
               </div>
               <div className="bg-white/5 p-4 rounded-lg">
                 <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
-                  <span className="text-green-400">✓</span> Best Practices
+                  <Check className="w-5 h-5 text-green-400" /> Best Practices
                 </h4>
                 <ul className="space-y-2 text-white/70 text-sm">
                   <li className="flex items-start gap-2">
@@ -168,7 +169,7 @@ echo ".env" >> .gitignore`}
           <div className="space-y-4">
             <div className="bg-white/5 border border-white/10 rounded-xl p-6">
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <span className="text-xl">🔒</span> Always Use HTTPS
+                <AlertCircle className="w-5 h-5" /> Always Use HTTPS
               </h3>
               <p className="text-white/70 mb-4">
                 All API requests must be made over HTTPS. HTTP requests are automatically rejected for security.
@@ -190,7 +191,7 @@ fetch('http://api.contentsellify.com/products', ...)`}
 
             <div className="bg-white/5 border border-white/10 rounded-xl p-6">
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <span className="text-xl"></span> TLS 1.2+
+                <Lock className="w-5 h-5" /> TLS 1.2+
               </h3>
               <p className="text-white/70 text-sm">
                 Our API requires TLS 1.2 or higher. Older protocols (SSL, TLS 1.0, TLS 1.1) are disabled for security.
@@ -211,7 +212,9 @@ fetch('http://api.contentsellify.com/products', ...)`}
               </p>
               <div className="grid md:grid-cols-2 gap-4 mt-4">
                 <div className="bg-white/5 p-4 rounded-lg">
-                  <h4 className="text-white font-semibold mb-2">✓ We Store</h4>
+                  <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-400" /> We Store
+                  </h4>
                   <ul className="space-y-1 text-white/70 text-sm">
                     <li>• Credit card numbers (encrypted)</li>
                     <li>• CVV codes (temporarily)</li>
@@ -220,7 +223,9 @@ fetch('http://api.contentsellify.com/products', ...)`}
                   </ul>
                 </div>
                 <div className="bg-white/5 p-4 rounded-lg">
-                  <h4 className="text-white font-semibold mb-2">✓ You Receive</h4>
+                  <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-400" /> You Receive
+                  </h4>
                   <ul className="space-y-1 text-white/70 text-sm">
                     <li>• Order confirmation</li>
                     <li>• Customer email</li>
@@ -257,7 +262,7 @@ fetch('http://api.contentsellify.com/products', ...)`}
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">🗑️</span> Data Retention
+                <Trash2 className="w-5 h-5" /> Data Retention
               </h3>
               <p className="text-white/60 text-sm">
                 Transaction records are kept for 7 years for legal compliance. User data is deleted within 30 days of account deletion request.
@@ -338,7 +343,7 @@ if (!verifyWebhook(req.body, req.headers['x-webhook-signature'], secret)) {
           <h2 className="text-2xl font-bold text-white mb-4">Report Security Issues</h2>
           <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-6">
             <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-              <span className="text-xl"></span> Found a Vulnerability?
+              <AlertCircle className="w-5 h-5 text-red-500" /> Found a Vulnerability?
             </h3>
             <p className="text-white/70 mb-4">
               We take security seriously. If you discover a security vulnerability, please report it responsibly:
@@ -360,25 +365,25 @@ if (!verifyWebhook(req.body, req.headers['x-webhook-signature'], secret)) {
               title="API Keys Setup"
               description="Get your API credentials"
               href="/docs/api-keys-setup"
-              icon="🔑"
+              icon={<Key className="w-6 h-6" />}
             />
             <NextStepCard
               title="OAuth Setup"
               description="Implement OAuth authentication"
               href="/docs/oauth-setup"
-              icon="🔐"
+              icon={<LockIcon className="w-6 h-6" />}
             />
             <NextStepCard
               title="Webhooks"
               description="Secure webhook implementation"
               href="/docs/webhooks"
-              icon="🔔"
+              icon={<Bell className="w-6 h-6" />}
             />
             <NextStepCard
               title="Testing Guide"
               description="Test in sandbox environment"
               href="/docs/testing"
-              icon="🧪"
+              icon={<TestTube className="w-6 h-6" />}
             />
           </div>
         </section>
@@ -436,14 +441,14 @@ function NextStepCard({
   title: string;
   description: string;
   href: string;
-  icon: string;
+  icon: React.ReactNode;
 }) {
   return (
     <Link
       href={href}
       className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-white/10 transition-all"
     >
-      <div className="text-3xl mb-3">{icon}</div>
+      <div className="text-3xl mb-3 text-cyan-400">{icon}</div>
       <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-cyan-300">
         {title}
       </h3>

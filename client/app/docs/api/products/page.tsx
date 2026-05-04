@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Radio, ShoppingCart, Check } from "lucide-react";
 
 export default function ProductsAPIPage() {
   return (
@@ -22,7 +23,7 @@ export default function ProductsAPIPage() {
       {/* Header */}
       <div className="mb-12">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-300">
-          <span>📡</span>
+          <Radio className="w-4 h-4" />
           API Reference
         </div>
         <h1 className="mb-4 text-4xl font-bold text-white md:text-5xl">
@@ -422,7 +423,7 @@ export default function ProductsAPIPage() {
               href="/docs/api/orders"
               className="group block rounded-xl border border-white/10 bg-white/5 p-4 transition-all hover:border-cyan-400/40"
             >
-              <div className="mb-2 text-2xl">🛒</div>
+              <ShoppingCart className="w-5 h-5 mb-2 text-yellow-400" />
               <h3 className="mb-1 font-semibold text-white group-hover:text-cyan-300">
                 Orders API →
               </h3>

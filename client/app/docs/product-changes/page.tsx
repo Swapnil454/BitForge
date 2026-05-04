@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Check, MessageCircle } from "lucide-react";
 
 export default function ProductChangesPage() {
   return (
@@ -204,23 +205,23 @@ export default function ProductChangesPage() {
             <p className="text-white/80 mb-4">Some changes can be made instantly without approval:</p>
             <ul className="space-y-2 text-white/70">
               <li className="flex items-start gap-3">
-                <span className="text-green-400">✓</span>
+                <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
                 <span>Minor price adjustments (under 10% change)</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-green-400">✓</span>
+                <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
                 <span>Adding or removing tags/keywords</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-green-400">✓</span>
+                <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
                 <span>Updating product availability (enable/disable)</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-green-400">✓</span>
+                <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
                 <span>Fixing typos in description (minor text edits)</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-green-400">✓</span>
+                <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
                 <span>Updating FAQ or additional information</span>
               </li>
             </ul>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { DollarSign, Users, Wrench } from "lucide-react";
 
 export default function AdminAnalyticsPage() {
   return (
@@ -30,12 +31,12 @@ export default function AdminAnalyticsPage() {
             <p className="text-white/80 mb-4">Monitor platform health, revenue, user growth, and marketplace trends.</p>
             <div className="grid md:grid-cols-4 gap-3">
               <div className="bg-white/5 p-4 rounded-lg">
-                <div className="text-2xl mb-2">💰</div>
+                <DollarSign className="w-5 h-5 mx-auto mb-2 text-yellow-400" />
                 <p className="text-white font-semibold">Revenue</p>
                 <p className="text-white/60 text-sm">Platform earnings</p>
               </div>
               <div className="bg-white/5 p-4 rounded-lg">
-                <div className="text-2xl mb-2">👥</div>
+                <Users className="w-5 h-5 mx-auto mb-2 text-blue-400" />
                 <p className="text-white font-semibold">Users</p>
                 <p className="text-white/60 text-sm">Growth metrics</p>
               </div>
@@ -101,7 +102,7 @@ export default function AdminAnalyticsPage() {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <Link href="/docs/admin/settings" className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3">⚙️</div>
+            <Wrench className="w-5 h-5 mb-3 text-orange-400" />
             <h3 className="text-lg font-semibold text-white mb-2">Settings</h3>
             <p className="text-white/60 text-sm">Platform configuration</p>
           </Link>

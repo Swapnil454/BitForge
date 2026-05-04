@@ -1,9 +1,61 @@
 "use client";
 
 import Link from "next/link";
-import DynamicHeader from "@/app/components/DynamicHeader";
 import Image from "next/image";
 import { useState, useMemo } from "react";
+import {
+  Rocket,
+  DollarSign,
+  Edit3,
+  Upload,
+  Trash2,
+  Lock,
+  Radio,
+  ShoppingCart,
+  AlertCircle,
+  CreditCard,
+  Shield,
+  Users,
+  Clock,
+  TestTube,
+  Wrench,
+  MessageCircle,
+  Network,
+  Key,
+  Building,
+  Code,
+} from "lucide-react";
+
+// Icon mapping function
+const iconMap: Record<string, React.ReactNode> = {
+  "🚀": <Rocket className="w-5 h-5" />,
+  "💰": <DollarSign className="w-5 h-5" />,
+  "✏️": <Edit3 className="w-5 h-5" />,
+  "📤": <Upload className="w-5 h-5" />,
+  "🗑️": <Trash2 className="w-5 h-5" />,
+  "🔐": <Lock className="w-5 h-5" />,
+  "📡": <Radio className="w-5 h-5" />,
+  "🛒": <ShoppingCart className="w-5 h-5" />,
+  "🔒": <AlertCircle className="w-5 h-5" />,
+  "📢": <MessageCircle className="w-5 h-5" />,
+  "💳": <CreditCard className="w-5 h-5" />,
+  "🛡️": <Shield className="w-5 h-5" />,
+  "👥": <Users className="w-5 h-5" />,
+  "⚙️": <Wrench className="w-5 h-5" />,
+  "⏱️": <Clock className="w-5 h-5" />,
+  "🧪": <TestTube className="w-5 h-5" />,
+  "🔧": <Wrench className="w-5 h-5" />,
+  "🔑": <Key className="w-5 h-5" />,
+  "🏦": <Building className="w-5 h-5" />,
+  "👨‍💻": <Code className="w-5 h-5" />,
+};
+
+const IconWrapper = ({ icon }: { icon: string | React.ReactNode }) => {
+  if (typeof icon === "string") {
+    return iconMap[icon] || null;
+  }
+  return icon;
+};
 
 // All documentation cards data
 const allDocs = {
@@ -61,7 +113,7 @@ const allDocs = {
     {
       title: "Payout API Reference",
       description: "Endpoints for manual payouts, balance checks, and transaction history.",
-      icon: "",
+      icon: "💰",
       href: "/docs/api/payouts",
     },
     {
@@ -226,18 +278,15 @@ export default function DocsPage() {
   };
   return (
     <main className="relative min-h-screen bg-[#05050a] text-white overflow-x-hidden">
-      {/* HEADER */}
-      <DynamicHeader title="Documentation" />
-
       {/* BACKGROUND GLOW */}
       <div className="pointer-events-none fixed inset-0 z-0 opacity-60">
         <div className="absolute -left-40 top-10 h-80 w-80 rounded-full bg-cyan-500/20 blur-3xl" />
         <div className="absolute bottom-0 -right-32 h-96 w-96 rounded-full bg-indigo-500/25 blur-3xl" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-5 pb-20 pt-24 sm:pt-28 md:pt-32 md:pb-28">
+      <div className="relative z-10 mx-auto max-w-7xl px-5 pb-20 pt-8 sm:pt-10 md:pt-12 md:pb-28">
         {/* HERO */}
-        <section className="mb-16 -mt-24 max-w-4xl">
+        <section className="mb-16 mt-2 max-w-4xl sm:mt-4">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300/80">
             Documentation
           </p>
@@ -304,7 +353,9 @@ export default function DocsPage() {
                             className="block px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors"
                           >
                             <div className="flex items-start gap-3">
-                              <span className="text-xl flex-shrink-0">{doc.icon}</span>
+                              <div className="text-xl flex-shrink-0">
+                                <IconWrapper icon={doc.icon} />
+                              </div>
                               <div className="flex-1 min-w-0">
                                 <div className="text-sm font-medium text-white truncate">
                                   {doc.title}
@@ -351,8 +402,8 @@ export default function DocsPage() {
                 href="/docs/quick-start"
                 className="group rounded-2xl border border-emerald-400/30 bg-linear-to-b from-emerald-500/10 to-cyan-500/10 p-6 transition-all hover:border-emerald-400/50 hover:shadow-lg hover:shadow-emerald-500/10"
               >
-                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/20 text-2xl">
-                  🚀
+                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/20">
+                  <IconWrapper icon="🚀" />
                 </div>
                 <h3 className="mb-2 text-lg font-semibold text-white">Quick Start</h3>
                 <p className="mb-4 text-sm text-white/70">
@@ -367,8 +418,8 @@ export default function DocsPage() {
                 href="/docs/api-keys-setup"
                 className="group rounded-2xl border border-cyan-400/30 bg-linear-to-b from-cyan-500/10 to-indigo-500/10 p-6 transition-all hover:border-cyan-400/50 hover:shadow-lg hover:shadow-cyan-500/10"
               >
-                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/20 text-2xl">
-                  🔑
+                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/20">
+                  <IconWrapper icon="🔑" />
                 </div>
                 <h3 className="mb-2 text-lg font-semibold text-white">API Keys Setup</h3>
                 <p className="mb-4 text-sm text-white/70">
@@ -383,8 +434,8 @@ export default function DocsPage() {
                 href="/docs/bank-account-setup"
                 className="group rounded-2xl border border-indigo-400/30 bg-linear-to-b from-indigo-500/10 to-purple-500/10 p-6 transition-all hover:border-indigo-400/50 hover:shadow-lg hover:shadow-indigo-500/10"
               >
-                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/20 text-2xl">
-                  🏦
+                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/20">
+                  <IconWrapper icon="🏦" />
                 </div>
                 <h3 className="mb-2 text-lg font-semibold text-white">Bank Account Setup</h3>
                 <p className="mb-4 text-sm text-white/70">
@@ -421,7 +472,9 @@ export default function DocsPage() {
           {filteredDocs.sellers.length > 0 && (!isSearchActive || searchQuery) && (
             <div>
               <div className="mb-6 flex items-center gap-3">
-                <span className="text-2xl">💼</span>
+               <div className="mb-3 inline-flex h-6 w-6 items-center justify-center">
+                  <IconWrapper icon="💼" />
+                </div>
                 <h2 className="text-2xl font-semibold text-white">For Sellers</h2>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -436,7 +489,9 @@ export default function DocsPage() {
           {filteredDocs.developers.length > 0 && (!isSearchActive || searchQuery) && (
             <div>
               <div className="mb-6 flex items-center gap-3">
-                <span className="text-2xl">👨‍💻</span>
+                <div className="mb-3 inline-flex h-6 w-6 items-center justify-center">
+                  <IconWrapper icon="👨‍💻" />
+                </div>
                 <h2 className="text-2xl font-semibold text-white">For Developers</h2>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -451,7 +506,9 @@ export default function DocsPage() {
           {filteredDocs.admins.length > 0 && (!isSearchActive || searchQuery) && (
             <div>
               <div className="mb-6 flex items-center gap-3">
-                <span className="text-2xl">⚙️</span>
+                <div className="mb-3 inline-flex h-6 w-6 items-center justify-center">
+                  <IconWrapper icon="⚙️" />
+                </div>
                 <h2 className="text-2xl font-semibold text-white">For Admins</h2>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -466,7 +523,9 @@ export default function DocsPage() {
           {filteredDocs.platform.length > 0 && (!isSearchActive || searchQuery) && (
             <div>
               <div className="mb-6 flex items-center gap-3">
-                <span className="text-2xl">📚</span>
+                <div className="mb-3 inline-flex h-6 w-6 items-center justify-center">
+                  <IconWrapper icon="📚" />
+                </div>
                 <h2 className="text-2xl font-semibold text-white">Platform Guides</h2>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -601,8 +660,8 @@ function DocCard({
       href={href}
       className="group block rounded-xl border border-white/10 bg-white/5 p-5 transition-all hover:border-cyan-400/40 hover:bg-white/10"
     >
-      <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-500/10 text-xl group-hover:bg-cyan-500/20">
-        {icon}
+      <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-500/10 group-hover:bg-cyan-500/20">
+        {icon ? <IconWrapper icon={icon} /> : null}
       </div>
       <h3 className="mb-2 text-base font-semibold text-white group-hover:text-cyan-300">
         {title}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { DollarSign, AlertCircle, Lock, MessageCircle, ShoppingCart, Key, TestTube } from "lucide-react";
 
 export default function WebhooksPage() {
   return (
@@ -46,7 +47,7 @@ export default function WebhooksPage() {
             {/* Payment Events */}
             <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <span className="text-xl">💰</span> Payment Events
+                <DollarSign className="w-5 h-5" /> Payment Events
               </h3>
               <div className="space-y-2 text-white/70 text-sm">
                 <div className="flex items-start gap-2">
@@ -109,7 +110,7 @@ export default function WebhooksPage() {
             {/* Product Events */}
             <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <span className="text-xl">🛍️</span> Product Events
+                <ShoppingCart className="w-5 h-5" /> Product Events
               </h3>
               <div className="space-y-2 text-white/70 text-sm">
                 <div className="flex items-start gap-2">
@@ -286,7 +287,7 @@ app.post('/webhooks', (req, res) => {
             </div>
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">🔒</span> Always Verify Signatures
+                <AlertCircle className="w-5 h-5" /> Always Verify Signatures
               </h3>
               <p className="text-white/60 text-sm">
                 Never trust webhook payloads without verifying the signature. This prevents attackers from sending fake events.
@@ -338,25 +339,25 @@ contentsellify webhooks test --event payment.completed`}
               title="API Keys Setup"
               description="Get your API credentials"
               href="/docs/api-keys-setup"
-              icon="🔑"
+              icon={<Key className="w-6 h-6" />}
             />
             <NextStepCard
               title="Authentication API"
               description="Learn about API authentication"
               href="/docs/api/authentication"
-              icon="🔐"
+              icon={<Lock className="w-6 h-6" />}
             />
             <NextStepCard
               title="Testing Guide"
               description="Test mode and sample data"
               href="/docs/testing"
-              icon="🧪"
+              icon={<TestTube className="w-6 h-6" />}
             />
             <NextStepCard
               title="Contact Support"
               description="Get help with webhooks"
               href="/contact"
-              icon="💬"
+              icon={<MessageCircle className="w-6 h-6" />}
             />
           </div>
         </section>
@@ -414,14 +415,14 @@ function NextStepCard({
   title: string;
   description: string;
   href: string;
-  icon: string;
+  icon: React.ReactNode;
 }) {
   return (
     <Link
       href={href}
       className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-white/10 transition-all"
     >
-      <div className="text-3xl mb-3">{icon}</div>
+      <div className="text-3xl mb-3 text-cyan-400">{icon}</div>
       <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-cyan-300">
         {title}
       </h3>

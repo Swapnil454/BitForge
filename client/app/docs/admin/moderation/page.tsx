@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Users } from "lucide-react";
 
 export default function AdminModerationPage() {
   return (
@@ -114,7 +115,7 @@ export default function AdminModerationPage() {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <Link href="/docs/admin/users" className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3">👥</div>
+            <Users className="w-5 h-5 mb-3 text-blue-400" />
             <h3 className="text-lg font-semibold text-white mb-2">User Management</h3>
             <p className="text-white/60 text-sm">Manage user accounts</p>
           </Link>

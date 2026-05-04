@@ -8,6 +8,20 @@ import { useRouter } from "next/navigation";
 import GlassySelect from "./components/GlassySelect";
 import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
 
+const DEFAULT_DEPARTMENTS = [
+  "Engineering",
+  "Product",
+  "Design",
+  "Operations",
+  "Marketing",
+  "Sales",
+  "Support",
+  "Other",
+];
+const DEFAULT_EMPLOYMENT_TYPES = ["Full-time", "Part-time", "Contract", "Internship"];
+const DEFAULT_EXPERIENCE_LEVELS = ["0-2 years", "2-5 years", "5-8 years", "8+ years"];
+const DEFAULT_LOCATIONS = ["Remote", "Hybrid", "On-site"];
+
 interface Career {
   _id: string;
   title: string;
@@ -39,6 +53,17 @@ interface Stats {
   byDepartment: Array<{ _id: string; count: number }>;
 }
 
+const mergeUniqueSorted = (values: Array<string | undefined | null>) =>
+  Array.from(
+    new Set(
+      values
+        .map((value) => (value ?? "").trim())
+        .filter((value) => value !== "")
+    )
+  ).sort((a, b) => a.localeCompare(b));
+
+const normalizeValue = (value: string) => value.trim().toLowerCase();
+
 export default function AdminCareersPage() {
   const router = useRouter();
   const [careers, setCareers] = useState<Career[]>([]);
@@ -62,6 +87,12 @@ export default function AdminCareersPage() {
     fetchCareers();
     fetchStats();
   }, [filterStatus]);
+
+  useEffect(() => {
+    setSelectedIds((prev) => prev.filter((id) => careers.some((career) => career._id === id)));
+    setOpenMenuId(null);
+    setIsBulkMenuOpen(false);
+  }, [careers]);
 
   const fetchCareers = async () => {
     try {
@@ -241,10 +272,23 @@ export default function AdminCareersPage() {
     return `${diffDays} days ago`;
   };
 
-  const departmentOptions = Array.from(new Set(careers.map((c) => c.department))).sort();
-  const locationOptions = Array.from(new Set(careers.map((c) => c.location))).sort();
-  const employmentTypeOptions = Array.from(new Set(careers.map((c) => c.employmentType))).sort();
-  const experienceOptions = Array.from(new Set(careers.map((c) => c.experience))).sort();
+  const departmentOptions = mergeUniqueSorted([
+    ...DEFAULT_DEPARTMENTS,
+    ...(stats?.byDepartment?.map((dept) => dept._id) ?? []),
+    ...careers.map((career) => career.department),
+  ]);
+  const locationOptions = mergeUniqueSorted([
+    ...DEFAULT_LOCATIONS,
+    ...careers.map((career) => career.location),
+  ]);
+  const employmentTypeOptions = mergeUniqueSorted([
+    ...DEFAULT_EMPLOYMENT_TYPES,
+    ...careers.map((career) => career.employmentType),
+  ]);
+  const experienceOptions = mergeUniqueSorted([
+    ...DEFAULT_EXPERIENCE_LEVELS,
+    ...careers.map((career) => career.experience),
+  ]);
 
   const hasActiveFilters =
     searchTerm.trim() !== "" ||
@@ -291,11 +335,18 @@ export default function AdminCareersPage() {
       career.title.toLowerCase().includes(query) ||
       career.description.toLowerCase().includes(query);
 
-    const matchesDept = filterDepartment === "all" || career.department === filterDepartment;
-    const matchesLocation = filterLocation === "all" || career.location === filterLocation;
+    const matchesDept =
+      filterDepartment === "all" ||
+      normalizeValue(career.department) === normalizeValue(filterDepartment);
+    const matchesLocation =
+      filterLocation === "all" ||
+      normalizeValue(career.location) === normalizeValue(filterLocation);
     const matchesType =
-      filterEmploymentType === "all" || career.employmentType === filterEmploymentType;
-    const matchesExperience = filterExperience === "all" || career.experience === filterExperience;
+      filterEmploymentType === "all" ||
+      normalizeValue(career.employmentType) === normalizeValue(filterEmploymentType);
+    const matchesExperience =
+      filterExperience === "all" ||
+      normalizeValue(career.experience) === normalizeValue(filterExperience);
     const matchesFeatured =
       filterFeatured === "all" ||
       (filterFeatured === "featured" ? career.featured : !career.featured);
@@ -345,13 +396,13 @@ export default function AdminCareersPage() {
         backHref="/dashboard/admin"
         backLabel="Dashboard"
         title="Careers Management"
-        subtitle="Create and manage job openings"
+        subtitle="Manage job openings"
         rightSlot={
           <Link
             href="/dashboard/admin/careers/create"
-            className="rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-500 px-3 py-2 text-xs font-semibold text-white shadow-[0_0_18px_rgba(56,189,248,0.45)] transition-opacity hover:opacity-90 sm:px-4 sm:text-sm"
+            className="inline-flex h-9 items-center justify-center rounded-lg bg-gradient-to-r from-cyan-500 to-indigo-500 px-2.5 text-[11px] font-semibold text-white shadow-[0_0_12px_rgba(56,189,248,0.35)] transition-opacity hover:opacity-90 sm:h-auto sm:rounded-xl sm:px-4 sm:py-2 sm:text-sm sm:shadow-[0_0_18px_rgba(56,189,248,0.45)]"
           >
-            <span className="sm:hidden">New Job</span>
+            <span className="sm:hidden">New</span>
             <span className="hidden sm:inline">Create New Job</span>
           </Link>
         }
@@ -362,24 +413,24 @@ export default function AdminCareersPage() {
           <div className="mb-3 p-0">
             {/* Stats */}
             {stats && (
-              <div>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 sm:p-4">
                 <div className="mb-2">
                   <h3 className="text-sm font-semibold tracking-wide text-white/90">Overview</h3>
                 </div>
-                <div className="grid grid-cols-4 gap-2 lg:grid-cols-4">
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-2 text-center">
+                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-2.5 text-center">
                     <div className="text-lg font-bold text-emerald-400">{getStatusCount("published")}</div>
                     <div className="mt-0 text-[10px] text-white/50">Live</div>
                   </div>
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-2 text-center">
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-2.5 text-center">
                     <div className="text-lg font-bold text-yellow-400">{getStatusCount("draft")}</div>
                     <div className="mt-0 text-[10px] text-white/50">Drafts</div>
                   </div>
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-2 text-center">
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-2.5 text-center">
                     <div className="text-lg font-bold text-red-400">{getStatusCount("closed")}</div>
                     <div className="mt-0 text-[10px] text-white/50">Closed</div>
                   </div>
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-2 text-center">
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-2.5 text-center">
                     <div className="text-lg font-bold text-cyan-400">{careers.length}</div>
                     <div className="mt-0 text-[10px] text-white/50">Total</div>
                   </div>
@@ -392,7 +443,8 @@ export default function AdminCareersPage() {
             )}
 
             {/* Status filters */}
-            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 sm:p-4">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-4">
               <div className="col-span-2 mb-0.5 sm:col-span-2 lg:col-span-4">
                 <h3 className="text-sm font-semibold tracking-wide text-white/90">Status</h3>
               </div>
@@ -409,14 +461,15 @@ export default function AdminCareersPage() {
                   {status.charAt(0).toUpperCase() + status.slice(1)}
                 </button>
               ))}
+              </div>
             </div>
 
             {/* Search + advanced filters */}
-            <div className="mt-3">
+            <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 sm:p-4">
               <div className="mb-2">
                 <h3 className="text-sm font-semibold tracking-wide text-white/90">Search & Filters</h3>
               </div>
-              <div className="grid gap-2 lg:grid-cols-[minmax(260px,1.5fr)_repeat(5,minmax(125px,1fr))] lg:items-end">
+              <div className="grid gap-3 lg:grid-cols-[minmax(260px,1.5fr)_repeat(5,minmax(125px,1fr))] lg:items-end">
                 <div className="lg:min-w-0">
                   <label className="mb-1.5 block text-xs font-medium text-white/60">Search jobs</label>
                   <input
@@ -428,8 +481,8 @@ export default function AdminCareersPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs lg:contents">
-                  <div className="lg:min-w-0">
+                <div className="grid grid-cols-1 gap-3 text-xs lg:grid-cols-2 xl:contents">
+                  <div className="lg:min-w-0 xl:min-w-[160px]">
                     <label className="mb-1 block text-[11px] font-medium text-white/60">Department</label>
                     <GlassySelect
                       value={filterDepartment}
@@ -440,18 +493,19 @@ export default function AdminCareersPage() {
                       ]}
                     />
                   </div>
-                  <div className="lg:min-w-0">
+                  <div className="lg:min-w-0 xl:min-w-[190px]">
                     <label className="mb-1 block text-[11px] font-medium text-white/60">Location</label>
                     <GlassySelect
                       value={filterLocation}
                       onChange={(v) => setFilterLocation(v)}
+                      buttonClassName="py-3 text-[15px]"
                       options={[
                         { value: "all", label: "All" },
                         ...locationOptions.map((loc) => ({ value: loc, label: loc })),
                       ]}
                     />
                   </div>
-                  <div className="lg:min-w-0">
+                  <div className="lg:min-w-0 xl:min-w-[170px]">
                     <label className="mb-1 block text-[11px] font-medium text-white/60">Employment type</label>
                     <GlassySelect
                       value={filterEmploymentType}
@@ -462,18 +516,19 @@ export default function AdminCareersPage() {
                       ]}
                     />
                   </div>
-                  <div className="lg:min-w-0">
+                  <div className="lg:min-w-0 xl:min-w-[190px]">
                     <label className="mb-1 block text-[11px] font-medium text-white/60">Experience</label>
                     <GlassySelect
                       value={filterExperience}
                       onChange={(v) => setFilterExperience(v)}
+                      buttonClassName="py-3 text-[15px]"
                       options={[
                         { value: "all", label: "All" },
                         ...experienceOptions.map((exp) => ({ value: exp, label: exp })),
                       ]}
                     />
                   </div>
-                  <div className="col-span-2 lg:col-span-1 lg:min-w-0">
+                  <div className="lg:min-w-0 xl:min-w-[170px]">
                     <label className="mb-1 block text-[11px] font-medium text-white/60">Featured</label>
                     <GlassySelect
                       value={filterFeatured}
@@ -535,7 +590,7 @@ export default function AdminCareersPage() {
           </div>
 
       {/* Bulk selection + actions */}
-      {careers.length > 0 && (
+      {filteredCareers.length > 0 && (
         <div className="mt-1 mb-1.5 rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2">
           <div className="mb-2 flex items-center justify-between border-b border-white/10 pb-1.5">
             <h3 className="text-[13px] font-semibold tracking-wide text-white/90">Manage Results</h3>

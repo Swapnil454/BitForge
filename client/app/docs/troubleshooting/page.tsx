@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Upload, CreditCard, MessageCircle, Rocket, AlertCircle } from "lucide-react";
 
 export default function TroubleshootingPage() {
   return (
@@ -55,7 +56,7 @@ export default function TroubleshootingPage() {
             {/* Upload Errors */}
             <details className="bg-white/5 border border-white/10 rounded-xl p-5 cursor-pointer group">
               <summary className="text-white font-semibold list-none cursor-pointer flex items-center gap-2">
-                <span className="text-xl">📤</span> File Upload Failures
+                <Upload className="w-5 h-5" /> File Upload Failures
               </summary>
               <div className="mt-4 space-y-3 text-white/70 text-sm">
                 <p><strong className="text-white">Symptom:</strong> Files fail to upload or upload gets stuck.</p>
@@ -79,7 +80,7 @@ export default function TroubleshootingPage() {
             {/* Payment Issues */}
             <details className="bg-white/5 border border-white/10 rounded-xl p-5 cursor-pointer group">
               <summary className="text-white font-semibold list-none cursor-pointer flex items-center gap-2">
-                <span className="text-xl">💳</span> Payment Processing Errors
+                <CreditCard className="w-5 h-5" /> Payment Processing Errors
               </summary>
               <div className="mt-4 space-y-3 text-white/70 text-sm">
                 <p><strong className="text-white">Symptom:</strong> Payments failing or getting declined.</p>
@@ -243,7 +244,7 @@ headers: {
             </div>
             <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
               <p className="text-yellow-200 text-sm flex items-start gap-2">
-                <span className="text-xl"></span>
+                <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                 <span><strong>Warning:</strong> Never enable debug mode in production. It may expose sensitive information.</span>
               </p>
             </div>
@@ -262,7 +263,7 @@ headers: {
                 <p className="text-white/60 text-xs mt-2">Response within 24 hours</p>
               </div>
               <div className="bg-white/5 p-4 rounded-lg">
-                <h3 className="text-white font-semibold mb-2">💬 Live Chat</h3>
+                <h3 className="text-white font-semibold mb-2"><MessageCircle className="w-5 h-5 inline mr-2" />Live Chat</h3>
                 <p className="text-white/70 text-sm">Available in dashboard</p>
                 <p className="text-white/60 text-xs mt-2">9 AM - 6 PM EST, Mon-Fri</p>
               </div>
@@ -275,7 +276,7 @@ headers: {
           <h2 className="text-2xl font-bold text-white mb-6">Related Resources</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <Link href="/docs/quick-start" className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-white/10 transition-all">
-              <div className="text-3xl mb-3">🚀</div>
+              <Rocket className="w-8 h-8 mb-3 text-cyan-400" />
               <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-cyan-300">Quick Start</h3>
               <p className="text-white/60 text-sm">Get started with ContentSellify</p>
             </Link>
@@ -285,12 +286,12 @@ headers: {
               <p className="text-white/60 text-sm">Setup authentication</p>
             </Link>
             <Link href="/docs/security" className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-white/10 transition-all">
-              <div className="text-3xl mb-3">🔒</div>
+              <AlertCircle className="w-8 h-8 mb-3 text-cyan-400" />
               <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-cyan-300">Security</h3>
               <p className="text-white/60 text-sm">Best practices guide</p>
             </Link>
             <Link href="/contact" className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-white/10 transition-all">
-              <div className="text-3xl mb-3">💬</div>
+              <MessageCircle className="w-8 h-8 mb-3 text-cyan-400" />
               <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-cyan-300">Contact</h3>
               <p className="text-white/60 text-sm">Get help from support</p>
             </Link>

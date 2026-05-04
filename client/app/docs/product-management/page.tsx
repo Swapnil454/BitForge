@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { Check, DollarSign, MessageCircle, Upload } from "lucide-react";
+
+const CheckIcon = () => <Check className="w-5 h-5" />;
 
 export default function ProductManagementPage() {
   return (
@@ -38,23 +41,23 @@ export default function ProductManagementPage() {
           </p>
           <ul className="space-y-2 text-white/70">
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">✓</span>
+              <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
               <span>E-books, PDFs, and documents</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">✓</span>
+              <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
               <span>Software, plugins, and code libraries</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">✓</span>
+              <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
               <span>Digital art, graphics, and design assets</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">✓</span>
+              <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
               <span>Templates, presets, and configurations</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">✓</span>
+              <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
               <span>Video courses, audio files, and media</span>
             </li>
           </ul>
@@ -256,7 +259,7 @@ export default function ProductManagementPage() {
               <span><strong>Views:</strong> Track how many users view your product</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">💰</span>
+              <DollarSign className="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0" />
               <span><strong>Sales:</strong> Monitor total sales and revenue</span>
             </li>
             <li className="flex items-start gap-3">
@@ -264,7 +267,7 @@ export default function ProductManagementPage() {
               <span><strong>Ratings:</strong> See customer feedback and ratings</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">💬</span>
+              <MessageCircle className="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0" />
               <span><strong>Reviews:</strong> Read and respond to customer reviews</span>
             </li>
           </ul>
@@ -278,7 +281,7 @@ export default function ProductManagementPage() {
               href="/docs/payout-system"
               className="group block rounded-xl border border-white/10 bg-white/5 p-4 transition-all hover:border-cyan-400/40"
             >
-              <div className="mb-2 text-2xl">💰</div>
+              <DollarSign className="w-5 h-5 mb-2 text-yellow-400" />
               <h3 className="mb-1 font-semibold text-white group-hover:text-cyan-300">
                 Payout System →
               </h3>
@@ -288,7 +291,7 @@ export default function ProductManagementPage() {
               href="/docs/upload-solutions"
               className="group block rounded-xl border border-white/10 bg-white/5 p-4 transition-all hover:border-cyan-400/40"
             >
-              <div className="mb-2 text-2xl">📤</div>
+              <Upload className="w-5 h-5 mb-2 text-green-400" />
               <h3 className="mb-1 font-semibold text-white group-hover:text-cyan-300">
                 Upload Solutions →
               </h3>

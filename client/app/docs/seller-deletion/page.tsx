@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Trash2 } from "lucide-react";
 
 export default function SellerDeletionPage() {
   return (
@@ -33,7 +34,7 @@ export default function SellerDeletionPage() {
             </p>
             <div className="bg-black/30 p-4 rounded-lg">
               <p className="text-yellow-200 text-sm flex items-start gap-2">
-                <span className="text-xl"></span>
+                <Trash2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
                 <span><strong>Warning:</strong> Account deletion is permanent and irreversible. All your products will be removed from the marketplace.</span>
               </p>
             </div>
@@ -136,7 +137,7 @@ export default function SellerDeletionPage() {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-6">
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <span className="text-xl">🗑️</span> Permanently Removed
+                <Trash2 className="w-5 h-5" /> Permanently Removed
               </h3>
               <ul className="space-y-2 text-white/70 text-sm">
                 <li className="flex items-start gap-2">

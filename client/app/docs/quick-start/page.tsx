@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Rocket, Check, Key, Building, DollarSign } from "lucide-react";
 
 export default function QuickStartPage() {
   return (
@@ -18,7 +19,7 @@ export default function QuickStartPage() {
       {/* Header */}
       <div className="mb-12">
         <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
-          <span>🚀</span>
+          <Rocket className="w-4 h-4" />
           Getting Started
         </div>
         <h1 className="mb-4 text-4xl font-bold text-white md:text-5xl">
@@ -40,19 +41,19 @@ export default function QuickStartPage() {
           </p>
           <ul className="space-y-2 text-white/70">
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">✓</span>
+              <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
               <span><strong>Node.js 18+</strong> and npm/yarn package manager</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">✓</span>
+              <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
               <span><strong>MongoDB</strong> (local or MongoDB Atlas)</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">✓</span>
+              <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
               <span><strong>Git</strong> for version control</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">✓</span>
+              <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
               <span>
                 <strong>Razorpay Account</strong> for payments (
                 <a
@@ -322,25 +323,25 @@ node scripts/createTestUsers.js`}
           <h2 className="mb-6 text-2xl font-semibold text-white">Next Steps</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <NextStepCard
-              icon="🔑"
+              icon={<Key className="w-6 h-6" />}
               title="API Keys Setup"
               description="Configure Razorpay, OAuth, and other integrations"
               href="/docs/api-keys-setup"
             />
             <NextStepCard
-              icon="🏦"
+              icon={<Building className="w-6 h-6" />}
               title="Bank Account Setup"
               description="Set up RazorpayX for seller payouts"
               href="/docs/bank-account-setup"
             />
             <NextStepCard
-              icon=""
+              icon={<Rocket className="w-6 h-6" />}
               title="Product Management"
               description="Learn how to manage products as a seller"
               href="/docs/product-management"
             />
             <NextStepCard
-              icon="💰"
+              icon={<DollarSign className="w-6 h-6" />}
               title="Payout System"
               description="Understand how earnings and payouts work"
               href="/docs/payout-system"
@@ -408,7 +409,7 @@ function NextStepCard({
   description,
   href,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   description: string;
   href: string;
@@ -418,7 +419,7 @@ function NextStepCard({
       href={href}
       className="group block rounded-xl border border-white/10 bg-white/5 p-4 transition-all hover:border-cyan-400/40 hover:bg-white/10"
     >
-      <div className="mb-2 text-2xl">{icon}</div>
+      <div className="mb-2 text-2xl text-cyan-400">{icon}</div>
       <h3 className="mb-1 font-semibold text-white group-hover:text-cyan-300">
         {title} →
       </h3>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { ShoppingCart, Check } from "lucide-react";
 
 export default function PayoutsAPIPage() {
   return (
@@ -333,7 +334,7 @@ export default function PayoutsAPIPage() {
               title="Orders API"
               description="Track purchases and transaction details"
               href="/docs/api/orders"
-              icon="🛒"
+              icon={<ShoppingCart className="w-5 h-5" />}
             />
             <NextStepCard
               title="Products API"

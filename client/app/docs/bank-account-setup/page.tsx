@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Check, Shield, AlertCircle } from "lucide-react";
 
 export default function BankAccountSetupPage() {
   return (
@@ -41,25 +42,25 @@ export default function BankAccountSetupPage() {
           <div className="bg-white/5 border border-white/10 rounded-xl p-6">
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
-                <span className="text-green-400 mt-1">✓</span>
+                <Check className="w-5 h-5 text-green-400 mt-1 flex-shrink-0" />
                 <span className="text-white/80">
                   <strong className="text-white">Seller Account:</strong> Registered and verified on ContentSellify
                 </span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-green-400 mt-1">✓</span>
+                <Check className="w-5 h-5 text-green-400 mt-1 flex-shrink-0" />
                 <span className="text-white/80">
                   <strong className="text-white">Bank Account:</strong> Active savings or current account in your name
                 </span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-green-400 mt-1">✓</span>
+                <Check className="w-5 h-5 text-green-400 mt-1 flex-shrink-0" />
                 <span className="text-white/80">
                   <strong className="text-white">Account Details:</strong> Account number, IFSC code, and account holder name
                 </span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-green-400 mt-1">✓</span>
+                <Check className="w-5 h-5 text-green-400 mt-1 flex-shrink-0" />
                 <span className="text-white/80">
                   <strong className="text-white">Verification:</strong> Cancelled cheque or bank statement (for verification)
                 </span>
@@ -358,28 +359,28 @@ export default function BankAccountSetupPage() {
         {/* Security Best Practices */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-            <span className="text-cyan-400">🛡️</span> Security Best Practices
+            <Shield className="w-5 h-5 text-cyan-400" /> Security Best Practices
           </h2>
           <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-6">
             <ul className="space-y-3 text-white/80">
               <li className="flex items-start gap-3">
-                <span className="text-red-400">🔒</span>
+                <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
                 <span><strong className="text-white">Never share:</strong> Bank account details, OTPs, or passwords with anyone</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-red-400">🔒</span>
+                <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
                 <span><strong className="text-white">Only use:</strong> Your own bank account (not friend's or relative's)</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-red-400">🔒</span>
+                <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
                 <span><strong className="text-white">Verify URL:</strong> Always check you're on the official ContentSellify domain</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-red-400">🔒</span>
+                <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
                 <span><strong className="text-white">Enable 2FA:</strong> Add two-factor authentication to your account</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-red-400">🔒</span>
+                <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
                 <span><strong className="text-white">Monitor transactions:</strong> Regularly check payout history for unauthorized activity</span>
               </li>
             </ul>

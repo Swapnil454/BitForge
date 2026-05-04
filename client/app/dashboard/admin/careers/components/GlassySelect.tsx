@@ -12,10 +12,18 @@ export interface GlassySelectProps {
   onChange: (value: string) => void;
   options: GlassyOption[];
   className?: string;
+  buttonClassName?: string;
   placeholder?: string;
 }
 
-export default function GlassySelect({ value, onChange, options, className, placeholder = "Select" }: GlassySelectProps) {
+export default function GlassySelect({
+  value,
+  onChange,
+  options,
+  className,
+  buttonClassName,
+  placeholder = "Select",
+}: GlassySelectProps) {
   const [open, setOpen] = useState(false);
   const selected = options.find((o) => o.value === value);
 
@@ -24,7 +32,7 @@ export default function GlassySelect({ value, onChange, options, className, plac
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 sm:px-4 sm:py-2.5 text-sm text-white/90 hover:bg-white/10 backdrop-blur-md transition-all focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+        className={`flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 sm:px-4 sm:py-2.5 text-sm text-white/90 hover:bg-white/10 backdrop-blur-md transition-all focus:outline-none focus:ring-2 focus:ring-cyan-500/50 ${buttonClassName ?? ""}`}
       >
         <span className="truncate text-left">
           {selected ? selected.label : placeholder}
