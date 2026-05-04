@@ -652,7 +652,7 @@ function DocCard({
 }: {
   title: string;
   description: string;
-  icon: string;
+  icon: React.ReactNode;
   href: string;
 }) {
   return (

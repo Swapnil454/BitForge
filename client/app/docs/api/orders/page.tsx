@@ -305,7 +305,7 @@ function NextStepCard({
   title: string;
   description: string;
   href: string;
-  icon: string;
+  icon: React.ReactNode;
 }) {
   return (
     <Link
