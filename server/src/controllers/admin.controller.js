@@ -871,16 +871,16 @@ export const getPayoutDetails = async (req, res) => {
   }
 };
 
-// Get all payouts with filters (for admin dashboard)
+// Get all payouts with filters (for admin dashboard) — returns rich format
 export const getAllPayouts = async (req, res) => {
   try {
-    const { status, limit = 50, page = 1 } = req.query;
-    
-    const filter = status ? { status } : {};
+    const { status, limit = 100, page = 1 } = req.query;
+
+    const filter = status && status !== 'all' ? { status } : {};
     const skip = (page - 1) * limit;
 
     const payouts = await Payout.find(filter)
-      .populate("sellerId", "name email")
+      .populate("sellerId", "name email bankAccounts")
       .populate("paidBy", "name email")
       .sort({ createdAt: -1 })
       .limit(parseInt(limit))
@@ -888,8 +888,46 @@ export const getAllPayouts = async (req, res) => {
 
     const total = await Payout.countDocuments(filter);
 
+    const formattedPayouts = payouts.map(payout => {
+      const seller = payout.sellerId;
+      const primaryAccount = seller?.bankAccounts?.find(acc => acc.isPrimary);
+
+      return {
+        _id: payout._id,
+        sellerId: seller ? {
+          id: seller._id,
+          name: seller.name || 'Unknown Seller',
+          email: seller.email || 'N/A',
+        } : null,
+        primaryBankAccount: primaryAccount ? {
+          accountHolderName: primaryAccount.accountHolderName,
+          accountNumber: primaryAccount.accountNumber,
+          ifscCode: primaryAccount.ifscCode,
+          bankName: primaryAccount.bankName,
+          branchName: primaryAccount.branchName,
+        } : null,
+        financialBreakdown: {
+          requestedAmount: payout.amount,
+          platformCommission: payout.platformCommission,
+          gstOnCommission: payout.gstOnCommission,
+          totalDeductions: payout.totalDeductions,
+          netPayableAmount: payout.netPayableAmount,
+        },
+        amount: payout.amount,
+        status: payout.status,
+        paymentReference: payout.paymentReference,
+        paymentNotes: payout.paymentNotes,
+        paymentMethod: payout.paymentMethod,
+        paidBy: payout.paidBy ? { name: payout.paidBy.name, email: payout.paidBy.email } : null,
+        paidAt: payout.paidAt,
+        rejectionReason: payout.rejectionReason,
+        createdAt: payout.createdAt,
+        updatedAt: payout.updatedAt,
+      };
+    });
+
     res.json({
-      payouts,
+      payouts: formattedPayouts,
       pagination: {
         total,
         page: parseInt(page),

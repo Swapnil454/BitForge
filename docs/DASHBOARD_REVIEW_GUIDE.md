@@ -213,7 +213,7 @@ After purchasing a product, buyers can **easily write reviews directly from thei
 ║  ─────────────────────────────────────────────────────    ║
 ║                                                            ║
 ║                                                            ║
-║  [Cancel]        [⏳ Submitting Review...]               ║
+║  [Cancel]        [ Submitting Review...]               ║
 ║                        ↑ Loading state                    ║
 ║                                                            ║
 ╚═══════════════════════════════════════════════════════════╝
@@ -326,7 +326,7 @@ Back to My Purchases page
    ```
 
 8. **Click "Submit Review"**
-   - Button shows loading: [⏳ Submitting Review...]
+   - Button shows loading: [ Submitting Review...]
    - API call to `/api/reviews`
    - Backend validates purchase
    - Review saved to database

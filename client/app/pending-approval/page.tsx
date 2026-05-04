@@ -60,7 +60,7 @@
 //         toast.error("Your account application was not approved.");
 //       } else if (fresh.approvalStatus === "pending" || (!fresh.isApproved && !fresh.approvalStatus)) {
 //         toast("Your account is still pending approval. Please wait for admin review.", {
-//           icon: "⏳",
+//           icon: "",
 //           duration: 4000,
 //         });
 //       }
@@ -215,11 +215,11 @@
 //                   />
 //                 </svg>
 //               </div>
-              
+
 //               <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
 //                 Application Not Approved
 //               </h1>
-              
+
 //               <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 mb-6">
 //                 <h2 className="text-xl font-semibold text-red-400 mb-2">
 //                   Account Rejected
@@ -349,7 +349,7 @@ export default function PendingApprovalPage() {
         toast.error("Your account application was not approved.");
       } else {
         toast("Your account is still pending approval.", {
-          icon: "⏳",
+          icon: "",
         });
       }
 

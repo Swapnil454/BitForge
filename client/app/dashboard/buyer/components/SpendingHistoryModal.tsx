@@ -51,7 +51,7 @@ export default function SpendingHistoryModal({ onClose }: { onClose: () => void 
       case "failed":
         return "";
       case "created":
-        return "⏳";
+        return "";
       default:
         return "";
     }

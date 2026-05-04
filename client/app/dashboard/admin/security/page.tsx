@@ -5,7 +5,14 @@ import { useRouter } from "next/navigation";
 import { adminAPI } from "@/lib/api";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
+import {
+  ShieldAlert, FileSearch, UserCheck, RefreshCw,
+  ExternalLink, AlertTriangle, CheckCircle2, XCircle,
+  Bug, Star, Phone, Calendar, BarChart3
+} from "lucide-react";
 
+/* ─── Types ─── */
 interface MalwareStats {
   totalScans: number;
   productsWithDetections: number;
@@ -17,18 +24,8 @@ interface MalwareStats {
     _id: string;
     title: string;
     virusTotalLink: string;
-    malwareScanDetails: {
-      detections: {
-        malicious: number;
-        suspicious: number;
-        harmless: number;
-        undetected: number;
-      };
-    };
-    sellerId: {
-      name: string;
-      email: string;
-    };
+    malwareScanDetails: { detections: { malicious: number; suspicious: number; harmless: number; undetected: number } };
+    sellerId: { name: string; email: string };
     createdAt: string;
   }>;
 }
@@ -43,19 +40,10 @@ interface ContentReviewQueue {
     reviewSeverity: "high" | "medium" | "low";
     contentQualityScore: number;
     requiresManualReview: boolean;
-    sellerId: {
-      name: string;
-      email: string;
-      identityVerified: boolean;
-    };
+    sellerId: { name: string; email: string; identityVerified: boolean };
     createdAt: string;
   }>;
-  summary: {
-    total: number;
-    high: number;
-    medium: number;
-    low: number;
-  };
+  summary: { total: number; high: number; medium: number; low: number };
 }
 
 interface PendingIdentity {
@@ -71,20 +59,41 @@ interface PendingIdentity {
   total: number;
 }
 
+type ActiveTab = "malware" | "content" | "identity";
+
+const TABS: { key: ActiveTab; label: string; icon: typeof ShieldAlert }[] = [
+  { key: "malware",  label: "Malware Scans",          icon: Bug        },
+  { key: "content",  label: "Content Review",          icon: FileSearch },
+  { key: "identity", label: "Identity Verification",   icon: UserCheck  },
+];
+
+const SEVERITY_STYLES = {
+  high:   { card: "border-red-500/20 bg-red-500/[0.05]",    badge: "bg-red-500/15 text-red-400 border-red-500/25"    },
+  medium: { card: "border-amber-500/20 bg-amber-500/[0.05]", badge: "bg-amber-500/15 text-amber-400 border-amber-500/25" },
+  low:    { card: "border-emerald-500/20 bg-emerald-500/[0.05]", badge: "bg-emerald-500/15 text-emerald-400 border-emerald-500/25" },
+};
+
+/* ─── Reject / Notes modals state ─── */
+interface ModalState {
+  type: "content-reject" | "identity-verify" | "identity-reject" | null;
+  id: string;
+  name?: string;
+}
+
 export default function SecurityDashboard() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [malwareStats, setMalwareStats] = useState<MalwareStats | null>(null);
+  const [loading, setLoading]             = useState(true);
+  const [refreshing, setRefreshing]       = useState(false);
+  const [malwareStats, setMalwareStats]   = useState<MalwareStats | null>(null);
   const [contentReview, setContentReview] = useState<ContentReviewQueue | null>(null);
   const [pendingIdentity, setPendingIdentity] = useState<PendingIdentity | null>(null);
-  const [activeTab, setActiveTab] = useState<"malware" | "content" | "identity">("malware");
+  const [activeTab, setActiveTab]         = useState<ActiveTab>("malware");
+  const [modal, setModal]                 = useState<ModalState>({ type: null, id: "" });
+  const [modalInput, setModalInput]       = useState("");
 
-  useEffect(() => {
-    fetchAllData();
-  }, []);
+  useEffect(() => { fetchAllData(); }, []);
 
-  const fetchAllData = async () => {
-    setLoading(true);
+  const fetchAllData = async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true); else setLoading(true);
     try {
       const [malware, content, identity] = await Promise.all([
         adminAPI.getMalwareDashboardStats(),
@@ -94,397 +103,334 @@ export default function SecurityDashboard() {
       setMalwareStats(malware);
       setContentReview(content);
       setPendingIdentity(identity);
-    } catch (error) {
-      console.error("Failed to fetch security data:", error);
+    } catch {
       toast.error("Failed to load security dashboard");
     } finally {
-      setLoading(false);
+      setLoading(false); setRefreshing(false);
     }
   };
 
-  const handleResolveContent = async (productId: string, action: "approve" | "reject", reason?: string) => {
+  const closeModal = () => { setModal({ type: null, id: "" }); setModalInput(""); };
+
+  const handleModalSubmit = async () => {
+    if (!modal.type) return;
     try {
-      await adminAPI.resolveContentReview(productId, action, reason);
-      toast.success(`Product ${action === "approve" ? "approved" : "rejected"} successfully`);
-      fetchAllData();
-    } catch (error) {
-      console.error("Failed to resolve content review:", error);
-      toast.error("Failed to resolve content review");
-    }
+      if (modal.type === "content-reject") {
+        if (!modalInput.trim()) { toast.error("Reason required"); return; }
+        await adminAPI.resolveContentReview(modal.id, "reject", modalInput);
+        toast.success("Product rejected");
+      } else if (modal.type === "identity-verify") {
+        await adminAPI.verifySellerIdentity(modal.id, true, modalInput || undefined);
+        toast.success("Seller identity verified");
+      } else if (modal.type === "identity-reject") {
+        if (!modalInput.trim()) { toast.error("Reason required"); return; }
+        await adminAPI.verifySellerIdentity(modal.id, false, modalInput);
+        toast.success("Verification rejected");
+      }
+      closeModal(); fetchAllData();
+    } catch { toast.error("Action failed"); }
   };
 
-  const handleVerifyIdentity = async (sellerId: string, verified: boolean, notes?: string) => {
-    try {
-      await adminAPI.verifySellerIdentity(sellerId, verified, notes);
-      toast.success(`Seller identity ${verified ? "verified" : "verification revoked"}`);
-      fetchAllData();
-    } catch (error) {
-      console.error("Failed to verify identity:", error);
-      toast.error("Failed to verify seller identity");
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#05050a] text-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-      </div>
-    );
-  }
+  /* ── Skeleton ── */
+  if (loading) return (
+    <main className="min-h-screen bg-[#05050a] text-white">
+      <div className="h-16 border-b border-white/[0.05] bg-[#0a0a0f]" />
+      <section className="max-w-5xl mx-auto px-4 py-8 space-y-4 animate-pulse">
+        <div className="flex gap-2">
+          {[1,2,3].map(i => <div key={i} className="h-11 flex-1 bg-[#16161e] rounded-xl" />)}
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[1,2,3,4].map(i => <div key={i} className="h-24 bg-[#16161e] rounded-2xl" />)}
+        </div>
+        {[1,2,3].map(i => <div key={i} className="h-28 bg-[#16161e] rounded-2xl" />)}
+      </section>
+    </main>
+  );
 
   return (
-    <main className="min-h-screen bg-[#05050a] text-white">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-black/60 backdrop-blur-xl border-b border-white/10">
-        <div className="max-w-7xl mx-auto h-16 px-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.back()}
-              className="p-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition"
-            >
-              ← Back
-            </button>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
-              Trust & Security Dashboard
-            </h1>
-          </div>
-        </div>
-      </header>
+    <main className="min-h-screen bg-[#05050a] text-white pb-24">
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Tab Navigation */}
-        <div className="flex gap-2 mb-8 bg-black/40 p-1 rounded-xl border border-white/10 w-fit">
-          <button
-            onClick={() => setActiveTab("malware")}
-            className={`px-6 py-3 rounded-lg font-medium transition ${activeTab === "malware"
-              ? "bg-red-500/20 text-red-300 border border-red-500/50"
-              : "text-white/60 hover:text-white hover:bg-white/5"
-              }`}
-          >
-            Malware Scans
+      <PageHeader
+        title="Trust & Security"
+        subtitle="Malware scans, content review & identity verification"
+        backHref="/dashboard/admin"
+        backLabel="Back"
+        rightSlot={
+          <button onClick={() => fetchAllData(true)} disabled={refreshing}
+            className="h-9 w-9 flex items-center justify-center rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-all">
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
           </button>
-          <button
-            onClick={() => setActiveTab("content")}
-            className={`px-6 py-3 rounded-lg font-medium transition ${activeTab === "content"
-              ? "bg-orange-500/20 text-orange-300 border border-orange-500/50"
-              : "text-white/60 hover:text-white hover:bg-white/5"
-              }`}
-          >
-            Content Review
-          </button>
-          <button
-            onClick={() => setActiveTab("identity")}
-            className={`px-6 py-3 rounded-lg font-medium transition ${activeTab === "identity"
-              ? "bg-blue-500/20 text-blue-300 border border-blue-500/50"
-              : "text-white/60 hover:text-white hover:bg-white/5"
-              }`}
-          >
-            Identity Verification
-          </button>
+        }
+      />
+
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
+
+        {/* ── Tabs ── */}
+        <div className="flex bg-[#16161e] rounded-2xl p-1 gap-1 border border-white/[0.05]">
+          {TABS.map(t => {
+            const Icon = t.icon;
+            return (
+              <button key={t.key} onClick={() => setActiveTab(t.key)}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${
+                  activeTab === t.key
+                    ? "bg-gradient-to-r from-cyan-500 to-indigo-500 text-white shadow-lg"
+                    : "text-white/30 hover:text-white/60"
+                }`}>
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">{t.label}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Malware Tab */}
+        {/* ════ MALWARE TAB ════ */}
         {activeTab === "malware" && malwareStats && (
-          <div className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard
-                label="Total Scans"
-                value={malwareStats.totalScans}
-                icon=""
-                color="blue"
-              />
-              <StatCard
-                label="Clean Products"
-                value={malwareStats.cleanProducts}
-                icon=""
-                color="green"
-              />
-              <StatCard
-                label="With Detections"
-                value={malwareStats.productsWithDetections}
-                icon=""
-                color="red"
-              />
-              <StatCard
-                label="Scan Rate"
-                value={`${malwareStats.scanRate}%`}
-                icon=""
-                color="purple"
-              />
+          <div className="space-y-5">
+            {/* Stat cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { label: "Total Scans",      value: malwareStats.totalScans,              color: "cyan"    },
+                { label: "Clean Products",   value: malwareStats.cleanProducts,            color: "emerald" },
+                { label: "With Detections",  value: malwareStats.productsWithDetections,   color: "red"     },
+                { label: "Scan Rate",        value: `${malwareStats.scanRate}%`,           color: "indigo"  },
+              ].map(s => <MiniStat key={s.label} {...s} />)}
             </div>
 
-            {/* High Threat Products */}
-            <div className="bg-black/40 border border-red-500/30 rounded-xl p-6">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <span className="text-2xl"></span>
-                High Threat Products
-              </h2>
-
+            {/* High threat list */}
+            <SectionBox title="High Threat Products" accent="red" icon={<AlertTriangle className="w-4 h-4 text-red-400" />}
+              count={malwareStats.highThreatProducts.length}>
               {malwareStats.highThreatProducts.length === 0 ? (
-                <p className="text-white/60 text-center py-8">No high-threat products detected</p>
-              ) : (
-                <div className="space-y-3">
-                  {malwareStats.highThreatProducts.map((product) => (
-                    <div
-                      key={product._id}
-                      className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 hover:border-red-500/50 transition"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-white">{product.title}</h3>
-                          <p className="text-sm text-white/60">
-                            by {product.sellerId.name} ({product.sellerId.email})
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-red-400 font-bold text-lg">
-                            {product.malwareScanDetails.detections.malicious}
-                          </div>
-                          <div className="text-orange-400 text-sm">
-                            {product.malwareScanDetails.detections.suspicious} suspicious
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2 mt-3">
-                        {product.virusTotalLink && (
-                          <a
-                            href={product.virusTotalLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition border border-white/20"
-                          >
-                            View VirusTotal Report →
-                          </a>
-                        )}
-                        <Link
-                          href={`/dashboard/admin/products/${product._id}`}
-                          className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-sm font-medium transition border border-red-500/50"
-                        >
-                          Manage Product
-                        </Link>
-                      </div>
+                <EmptyState icon={<ShieldAlert className="w-8 h-8 text-white/10" />} text="No high-threat products detected" />
+              ) : malwareStats.highThreatProducts.map(p => (
+                <div key={p._id} className="bg-[#1c1c24] border border-red-500/20 rounded-xl p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <p className="font-black text-sm text-white">{p.title}</p>
+                      <p className="text-xs text-white/40 mt-0.5">{p.sellerId.name} · {p.sellerId.email}</p>
                     </div>
-                  ))}
+                    <div className="text-right shrink-0">
+                      <p className="text-lg font-black text-red-400">{p.malwareScanDetails.detections.malicious}</p>
+                      <p className="text-[10px] text-amber-400">{p.malwareScanDetails.detections.suspicious} suspicious</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    {p.virusTotalLink && (
+                      <a href={p.virusTotalLink} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-lg text-[10px] font-black uppercase tracking-widest transition-all">
+                        <ExternalLink className="w-3 h-3" /> VirusTotal
+                      </a>
+                    )}
+                    <Link href={`/dashboard/admin/products/${p._id}`}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg text-[10px] font-black uppercase tracking-widest text-red-400 transition-all">
+                      Manage Product
+                    </Link>
+                  </div>
                 </div>
-              )}
-            </div>
+              ))}
+            </SectionBox>
           </div>
         )}
 
-        {/* Content Review Tab */}
+        {/* ════ CONTENT REVIEW TAB ════ */}
         {activeTab === "content" && contentReview && (
-          <div className="space-y-6">
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <StatCard label="Total Flagged" value={contentReview.summary.total} icon="" color="gray" />
-              <StatCard label="High Severity" value={contentReview.summary.high} icon="🔴" color="red" />
-              <StatCard label="Medium Severity" value={contentReview.summary.medium} icon="🟡" color="yellow" />
-              <StatCard label="Low Severity" value={contentReview.summary.low} icon="🟢" color="green" />
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { label: "Total Flagged",    value: contentReview.summary.total,  color: "gray"    },
+                { label: "High Severity",    value: contentReview.summary.high,   color: "red"     },
+                { label: "Medium Severity",  value: contentReview.summary.medium, color: "amber"   },
+                { label: "Low Severity",     value: contentReview.summary.low,    color: "emerald" },
+              ].map(s => <MiniStat key={s.label} {...s} />)}
             </div>
 
-            {/* Flagged Products */}
-            <div className="bg-black/40 border border-orange-500/30 rounded-xl p-6">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <span className="text-2xl"></span>
-                Products Requiring Manual Review
-              </h2>
-
+            <SectionBox title="Flagged for Manual Review" accent="amber" icon={<FileSearch className="w-4 h-4 text-amber-400" />}
+              count={contentReview.products.length}>
               {contentReview.products.length === 0 ? (
-                <p className="text-white/60 text-center py-8">No products flagged for review</p>
-              ) : (
-                <div className="space-y-4">
-                  {contentReview.products.map((product) => (
-                    <div
-                      key={product._id}
-                      className={`border rounded-lg p-4 ${product.reviewSeverity === "high"
-                        ? "bg-red-500/10 border-red-500/30"
-                        : product.reviewSeverity === "medium"
-                          ? "bg-yellow-500/10 border-yellow-500/30"
-                          : "bg-green-500/10 border-green-500/30"
-                        }`}
-                    >
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold text-white">{product.title}</h3>
-                            <span
-                              className={`px-2 py-0.5 rounded text-xs font-medium ${product.reviewSeverity === "high"
-                                ? "bg-red-500/20 text-red-300"
-                                : product.reviewSeverity === "medium"
-                                  ? "bg-yellow-500/20 text-yellow-300"
-                                  : "bg-green-500/20 text-green-300"
-                                }`}
-                            >
-                              {product.reviewSeverity.toUpperCase()}
-                            </span>
-                          </div>
-                          <p className="text-sm text-white/60 mb-2">
-                            by {product.sellerId.name} {product.sellerId.identityVerified && ""}
-                          </p>
-                          <p className="text-sm text-white/80 line-clamp-2">{product.description}</p>
+                <EmptyState icon={<FileSearch className="w-8 h-8 text-white/10" />} text="No products flagged for review" />
+              ) : contentReview.products.map(p => {
+                const s = SEVERITY_STYLES[p.reviewSeverity];
+                return (
+                  <div key={p._id} className={`border rounded-xl p-4 ${s.card}`}>
+                    <div className="flex justify-between items-start mb-2 gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                          <p className="font-black text-sm text-white truncate">{p.title}</p>
+                          <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black border uppercase tracking-widest ${s.badge}`}>
+                            {p.reviewSeverity}
+                          </span>
                         </div>
-                        <div className="text-right ml-4">
-                          <div className="text-white font-semibold">₹{product.price}</div>
-                          <div className="text-xs text-white/60">
-                            Quality: {product.contentQualityScore}/100
-                          </div>
-                        </div>
+                        <p className="text-xs text-white/40">{p.sellerId.name}</p>
+                        <p className="text-xs text-white/60 mt-1 line-clamp-2">{p.description}</p>
                       </div>
-
-                      {/* Flags */}
-                      {product.reviewFlags && product.reviewFlags.length > 0 && (
-                        <div className="mb-3 flex flex-wrap gap-2">
-                          {product.reviewFlags.map((flag, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-1 bg-white/10 rounded text-xs text-white/80 border border-white/20"
-                            >
-                              {flag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Actions */}
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleResolveContent(product._id, "approve")}
-                          className="flex-1 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 rounded-lg text-sm font-medium transition border border-green-500/50"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => {
-                            const reason = prompt("Enter rejection reason:");
-                            if (reason) handleResolveContent(product._id, "reject", reason);
-                          }}
-                          className="flex-1 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-sm font-medium transition border border-red-500/50"
-                        >
-                          Reject
-                        </button>
-                        <Link
-                          href={`/marketplace/${product._id}`}
-                          className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition border border-white/20"
-                        >
-                          View
-                        </Link>
+                      <div className="text-right shrink-0">
+                        <p className="text-sm font-black text-white">₹{p.price}</p>
+                        <p className="text-[10px] text-white/30 mt-0.5">Score {p.contentQualityScore}/100</p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    {p.reviewFlags?.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        {p.reviewFlags.map((f, i) => (
+                          <span key={i} className="px-2 py-0.5 bg-white/[0.05] border border-white/[0.08] rounded-lg text-[10px] text-white/50">{f}</span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex gap-2 pt-1">
+                      <button onClick={() => { adminAPI.resolveContentReview(p._id, "approve").then(() => { toast.success("Approved"); fetchAllData(); }).catch(() => toast.error("Failed")); }}
+                        className="flex-1 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-emerald-400 transition-all flex items-center justify-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Approve
+                      </button>
+                      <button onClick={() => setModal({ type: "content-reject", id: p._id, name: p.title })}
+                        className="flex-1 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-red-400 transition-all flex items-center justify-center gap-1">
+                        <XCircle className="w-3.5 h-3.5" /> Reject
+                      </button>
+                      <Link href={`/marketplace/${p._id}`}
+                        className="px-4 py-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] rounded-xl text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-all flex items-center gap-1">
+                        <ExternalLink className="w-3 h-3" />
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </SectionBox>
           </div>
         )}
 
-        {/* Identity Verification Tab */}
+        {/* ════ IDENTITY TAB ════ */}
         {activeTab === "identity" && pendingIdentity && (
-          <div className="space-y-6">
-            <div className="bg-black/40 border border-blue-500/30 rounded-xl p-6">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <span className="text-2xl"></span>
-                Pending Identity Verifications ({pendingIdentity.total})
-              </h2>
-
-              {pendingIdentity.sellers.length === 0 ? (
-                <p className="text-white/60 text-center py-8">No pending identity verifications</p>
-              ) : (
-                <div className="space-y-4">
-                  {pendingIdentity.sellers.map((seller) => (
-                    <div
-                      key={seller._id}
-                      className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 hover:border-blue-500/50 transition"
-                    >
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-white">{seller.name}</h3>
-                          <p className="text-sm text-white/60">{seller.email}</p>
-                          {seller.phone && <p className="text-sm text-white/60">📱 {seller.phone}</p>}
-                        </div>
-                        <div className="text-right">
-                          <div className="text-white font-semibold">
-                            {seller.totalSales} sales
-                          </div>
-                          <div className="text-sm text-yellow-400">
-                            ⭐ {seller.averageRating.toFixed(1)}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="text-xs text-white/50 mb-3">
-                        Member since: {new Date(seller.createdAt).toLocaleDateString()}
-                      </div>
-
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => {
-                            const notes = prompt("Enter verification notes (optional):");
-                            handleVerifyIdentity(seller._id, true, notes || undefined);
-                          }}
-                          className="flex-1 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 rounded-lg text-sm font-medium transition border border-green-500/50"
-                        >
-                          Verify Identity
-                        </button>
-                        <button
-                          onClick={() => {
-                            const notes = prompt("Enter reason for rejection:");
-                            if (notes) handleVerifyIdentity(seller._id, false, notes);
-                          }}
-                          className="flex-1 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-sm font-medium transition border border-red-500/50"
-                        >
-                          Reject
-                        </button>
-                        <Link
-                          href={`/seller/${seller._id}`}
-                          className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition border border-white/20"
-                        >
-                          View Profile
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
+          <SectionBox title={`Pending Verifications`} accent="cyan" icon={<UserCheck className="w-4 h-4 text-cyan-400" />}
+            count={pendingIdentity.total}>
+            {pendingIdentity.sellers.length === 0 ? (
+              <EmptyState icon={<UserCheck className="w-8 h-8 text-white/10" />} text="No pending identity verifications" />
+            ) : pendingIdentity.sellers.map(s => (
+              <div key={s._id} className="bg-[#1c1c24] border border-cyan-500/15 rounded-xl p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <p className="font-black text-sm text-white">{s.name}</p>
+                    <p className="text-xs text-white/40 mt-0.5">{s.email}</p>
+                    {s.phone && <p className="text-xs text-white/30 flex items-center gap-1 mt-0.5"><Phone className="w-3 h-3" />{s.phone}</p>}
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-black text-white">{s.totalSales} sales</p>
+                    <p className="text-xs text-amber-400 flex items-center justify-end gap-0.5 mt-0.5"><Star className="w-3 h-3" />{s.averageRating.toFixed(1)}</p>
+                    <p className="text-[10px] text-white/25 flex items-center justify-end gap-0.5 mt-1"><Calendar className="w-3 h-3" />{new Date(s.createdAt).toLocaleDateString()}</p>
+                  </div>
                 </div>
-              )}
+                <div className="flex gap-2">
+                  <button onClick={() => setModal({ type: "identity-verify", id: s._id, name: s.name })}
+                    className="flex-1 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-emerald-400 transition-all flex items-center justify-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Verify
+                  </button>
+                  <button onClick={() => setModal({ type: "identity-reject", id: s._id, name: s.name })}
+                    className="flex-1 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest text-red-400 transition-all flex items-center justify-center gap-1">
+                    <XCircle className="w-3.5 h-3.5" /> Reject
+                  </button>
+                  <Link href={`/seller/${s._id}`}
+                    className="px-4 py-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] rounded-xl text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-all flex items-center gap-1">
+                    <ExternalLink className="w-3 h-3" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </SectionBox>
+        )}
+      </section>
+
+      {/* ── Action Modal ── */}
+      {modal.type && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          onClick={closeModal}>
+          <div className="bg-[#16161e] border border-white/[0.08] rounded-3xl w-full max-w-md shadow-2xl p-6"
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-5">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                modal.type === "identity-verify"
+                  ? "bg-emerald-500/10 border border-emerald-500/20"
+                  : "bg-red-500/10 border border-red-500/20"
+              }`}>
+                {modal.type === "identity-verify"
+                  ? <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  : <XCircle className="w-5 h-5 text-red-400" />}
+              </div>
+              <div>
+                <h2 className="text-sm font-black">
+                  {modal.type === "content-reject"   && "Reject Product"}
+                  {modal.type === "identity-verify"  && "Verify Identity"}
+                  {modal.type === "identity-reject"  && "Reject Verification"}
+                </h2>
+                <p className="text-xs text-white/40">{modal.name}</p>
+              </div>
+            </div>
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-1.5">
+                {modal.type === "identity-verify" ? "Notes (optional)" : "Reason *"}
+              </label>
+              <textarea value={modalInput} onChange={e => setModalInput(e.target.value)} rows={3}
+                placeholder={modal.type === "identity-verify" ? "Add any verification notes…" : "Enter reason…"}
+                className="w-full bg-[#1c1c24] border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-cyan-500/40 transition-all resize-none" />
+            </div>
+            <div className="flex gap-2 mt-4">
+              <button onClick={handleModalSubmit}
+                className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                  modal.type === "identity-verify"
+                    ? "bg-emerald-600 hover:bg-emerald-500"
+                    : "bg-red-600 hover:bg-red-500"
+                }`}>
+                {modal.type === "identity-verify" ? "✓ Confirm Verify" : "✗ Confirm Reject"}
+              </button>
+              <button onClick={closeModal}
+                className="px-5 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                Cancel
+              </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </main>
   );
 }
 
-// Stat Card Component
-function StatCard({
-  label,
-  value,
-  icon,
-  color,
-}: {
-  label: string;
-  value: number | string;
-  icon: string;
-  color: "blue" | "green" | "red" | "purple" | "yellow" | "gray";
-}) {
-  const colorClasses = {
-    blue: "border-blue-500/30 bg-blue-500/10",
-    green: "border-green-500/30 bg-green-500/10",
-    red: "border-red-500/30 bg-red-500/10",
-    purple: "border-purple-500/30 bg-purple-500/10",
-    yellow: "border-yellow-500/30 bg-yellow-500/10",
-    gray: "border-white/20 bg-white/5",
+/* ── Mini Stat Card ── */
+function MiniStat({ label, value, color }: { label: string; value: number | string; color: string }) {
+  const accent: Record<string, string> = {
+    cyan:    "border-cyan-500/20 bg-cyan-500/[0.05] text-cyan-400",
+    emerald: "border-emerald-500/20 bg-emerald-500/[0.05] text-emerald-400",
+    red:     "border-red-500/20 bg-red-500/[0.05] text-red-400",
+    indigo:  "border-indigo-500/20 bg-indigo-500/[0.05] text-indigo-400",
+    amber:   "border-amber-500/20 bg-amber-500/[0.05] text-amber-400",
+    gray:    "border-white/[0.08] bg-white/[0.03] text-white/60",
   };
-
   return (
-    <div className={`${colorClasses[color]} border rounded-xl p-4`}>
-      <div className="flex items-center gap-3">
-        <span className="text-3xl">{icon}</span>
-        <div>
-          <p className="text-white/60 text-sm">{label}</p>
-          <p className="text-2xl font-bold text-white">{value}</p>
-        </div>
+    <div className={`border rounded-2xl p-4 ${accent[color] || accent.gray}`}>
+      <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-1">{label}</p>
+      <p className="text-2xl font-black text-white">{value}</p>
+    </div>
+  );
+}
+
+/* ── Section Box ── */
+function SectionBox({ title, accent, icon, count, children }: {
+  title: string; accent: string; icon: React.ReactNode; count: number; children: React.ReactNode;
+}) {
+  const border: Record<string, string> = {
+    red: "border-red-500/15", amber: "border-amber-500/15", cyan: "border-cyan-500/15",
+  };
+  return (
+    <div className={`bg-[#16161e] border rounded-2xl overflow-hidden ${border[accent] || "border-white/[0.06]"}`}>
+      <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.04]">
+        <h2 className="text-sm font-black flex items-center gap-2">{icon}{title}</h2>
+        <span className="px-2 py-0.5 bg-white/[0.06] border border-white/[0.08] rounded-lg text-[10px] font-black text-white/40">{count}</span>
       </div>
+      <div className="p-4 space-y-3">{children}</div>
+    </div>
+  );
+}
+
+/* ── Empty State ── */
+function EmptyState({ icon, text }: { icon: React.ReactNode; text: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-12">
+      {icon}
+      <p className="text-sm font-black text-white/20 mt-3">{text}</p>
     </div>
   );
 }

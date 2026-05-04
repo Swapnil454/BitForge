@@ -1,4 +1,6 @@
 
+import "./config/env.js"; // ← MUST be first: loads .env before anything reads process.env
+
 import app from "./app.js";
 import connect from "./connect.js";
 import { initSocket } from "./lib/socket.js";

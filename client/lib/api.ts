@@ -168,6 +168,11 @@ export const adminAPI = {
         const response = await api.get('/admin/payouts/pending');
         return response.data;
     },
+
+    getAllPayouts: async (params?: { status?: string; page?: number; limit?: number }) => {
+        const response = await api.get('/admin/payouts/all', { params });
+        return response.data;
+    },
     
     approvePayout: async (id: string, paymentData: { paymentReference: string; paymentNotes: string; paymentMethod?: string }) => {
         const response = await api.post(`/admin/payouts/${id}/approve`, paymentData);

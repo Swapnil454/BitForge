@@ -143,7 +143,7 @@ export const createNotification = async (userId, type, title, message, relatedId
       download_ready: "⬇️",
       product_approved: "🎉",
       product_rejected: "",
-      product_pending_review: "⏳",
+      product_pending_review: "",
       product_update_requested: "",
       product_deletion_requested: "🗑️",
       product_change_approved: "",

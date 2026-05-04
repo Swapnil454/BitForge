@@ -151,7 +151,7 @@ export default function ProductDetailsPage() {
       case "approved":
         return "";
       case "pending":
-        return "⏳";
+        return "";
       case "rejected":
         return "";
       default:

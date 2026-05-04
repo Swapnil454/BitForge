@@ -148,7 +148,7 @@ No migration required. New feature is additive only.
 -  Unit testing ready
 -  Integration testing ready
 -  E2E testing ready
-- ⏳ Recommended: Run full test suite before production
+-  Recommended: Run full test suite before production
 
 ### 📞 Known Issues
 - None

@@ -168,6 +168,7 @@ function LoginPageContent() {
                 key={m}
                 type="button"
                 onClick={() => setLoginMethod(m as any)}
+                suppressHydrationWarning
                 className={`flex-1 py-2 text-sm rounded-lg transition ${
                   loginMethod === m ? "bg-white text-black font-semibold" : "text-white/60"
                 }`}
@@ -184,6 +185,7 @@ function LoginPageContent() {
               placeholder="Email"
               value={formData.email}
               onChange={handleInputChange}
+              suppressHydrationWarning
               className="
                 w-full px-3 py-2 sm:px-4 sm:py-3
                 text-sm sm:text-base
@@ -240,6 +242,7 @@ function LoginPageContent() {
               placeholder="Password"
               value={formData.password}
               onChange={handleInputChange}
+              suppressHydrationWarning
               className="
                 w-full px-3 py-2 sm:px-4 sm:py-3
                 text-sm sm:text-base
@@ -252,6 +255,7 @@ function LoginPageContent() {
             <button
               type="button"
               onClick={() => setShowPassword(v => !v)}
+              suppressHydrationWarning
               className="absolute right-3 top-2.5 sm:top-3.5 text-white/50"
             >
               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -262,6 +266,7 @@ function LoginPageContent() {
           <button
             type="submit"
             disabled={isLoading}
+            suppressHydrationWarning
             className="w-full py-3 rounded-xl font-bold text-black bg-gradient-to-r from-cyan-400 to-indigo-500 shadow-[0_0_40px_rgba(56,189,248,0.6)] hover:scale-[1.02] transition"
           >
             {isLoading ? "Logging in..." : "Continue"}
@@ -371,6 +376,7 @@ function OAuthButton({ icon, label }: any) {
       onClick={() =>
         (window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/oauth/${label.toLowerCase()}`)
       }
+      suppressHydrationWarning
       className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
     >
       {icon}
