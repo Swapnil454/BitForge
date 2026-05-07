@@ -9,6 +9,8 @@ import {
   resetPassword,
   requestAccountDeletion,
   confirmAccountDeletion,
+  requestReactivationOtp,
+  reactivateAccount,
 } from "../controllers/user.controller.js";
 
 const router = express.Router();
@@ -25,5 +27,9 @@ router.post("/reset-password", resetPassword);
 // Account deletion routes
 router.post("/request-account-deletion", authMiddleware, requestAccountDeletion);
 router.post("/confirm-account-deletion", authMiddleware, confirmAccountDeletion);
+
+// Account reactivation routes (public)
+router.post("/request-reactivation-otp", requestReactivationOtp);
+router.post("/reactivate-account", reactivateAccount);
 
 export default router;

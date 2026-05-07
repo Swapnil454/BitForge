@@ -26,6 +26,7 @@ import careerRoutes from "./routes/career.routes.js";
 import orderFixRoutes from "./routes/orderFix.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
 import sellerProfileRoutes from "./routes/sellerProfile.routes.js";
+import reportRoutes from "./routes/report.routes.js";
 
 const app = express();
 
@@ -106,6 +107,7 @@ app.use("/api/careers", careerRoutes);
 app.use("/api/order-fix", orderFixRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/sellers", sellerProfileRoutes);
+app.use("/api/reports", reportRoutes);
 
 
 export default app;

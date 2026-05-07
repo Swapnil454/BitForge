@@ -42,7 +42,8 @@ api.interceptors.response.use(
             const ignorePaths = [
                 '/users/change-password',
                 '/users/reset-password',
-                '/users/request-password-reset'
+                '/users/request-password-reset',
+                '/reports/my-reports'
             ];
 
             const isIgnoredRoute = ignorePaths.some((path) => requestUrl.includes(path));
@@ -60,6 +61,22 @@ api.interceptors.response.use(
             } else {
                 // Let caller handle non-token 401 errors (e.g., wrong password)
                 return Promise.reject(error);
+            }
+        }
+
+        // Global Ban/Delete Interceptor
+        if (status === 403) {
+            const accountStatus = error.response?.data?.accountStatus;
+            if (accountStatus === 'banned') {
+                if (typeof window !== 'undefined') {
+                    const reason = error.response?.data?.bannedReason || 'Terms of service violation';
+                    window.dispatchEvent(new CustomEvent('account-banned', { detail: { reason } }));
+                }
+            } else if (accountStatus === 'deleted') {
+                if (typeof window !== 'undefined') {
+                    const email = error.response?.data?.email || '';
+                    window.dispatchEvent(new CustomEvent('account-deleted', { detail: { email } }));
+                }
             }
         }
 
@@ -236,6 +253,16 @@ export const adminAPI = {
 
     deleteUser: async (id: string, reason: string) => {
         const response = await api.delete(`/admin/users/${id}`, { data: { reason } });
+        return response.data;
+    },
+
+    getUserById: async (id: string) => {
+        const response = await api.get(`/admin/users/${id}`);
+        return response.data;
+    },
+
+    unbanUser: async (id: string) => {
+        const response = await api.post(`/admin/users/${id}/unban`);
         return response.data;
     },
 
@@ -689,6 +716,43 @@ export const userAPI = {
 
     confirmAccountDeletion: async (otp: string, reason: string) => {
         const response = await api.post('/users/confirm-account-deletion', { otp, reason });
+        return response.data;
+    },
+
+    requestReactivationOtp: async (email: string) => {
+        const response = await api.post('/users/request-reactivation-otp', { email });
+        return response.data;
+    },
+
+    reactivateAccount: async (email: string, otp: string) => {
+        const response = await api.post('/users/reactivate-account', { email, otp });
+        return response.data;
+    }
+};
+
+// Report API functions
+export const reportAPI = {
+    submitReport: async (formData: FormData) => {
+        const response = await api.post('/reports', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+        return response.data;
+    },
+
+    getMyReports: async (params?: { page?: number; limit?: number }) => {
+        const response = await api.get('/reports/my-reports', { params });
+        return response.data;
+    },
+
+    getAllReports: async (params?: { page?: number; limit?: number; status?: string }) => {
+        const response = await api.get('/reports/admin', { params });
+        return response.data;
+    },
+
+    updateReportStatus: async (id: string, data: { status: string; adminNotes?: string }) => {
+        const response = await api.patch(`/reports/admin/${id}/status`, data);
         return response.data;
     }
 };

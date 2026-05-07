@@ -73,6 +73,16 @@ const userSchema = new mongoose.Schema(
     resetPasswordOTP: String,
     resetPasswordExpire: Date,
 
+    // Account Status (soft-delete / ban system)
+    accountStatus: {
+      type: String,
+      enum: ['active', 'deleted', 'banned'],
+      default: 'active'
+    },
+    accountStatusUpdatedAt: Date,
+    bannedReason: String,
+    deletedAt: Date,
+
     // Account Deletion Verification
     deletionOTP: String,
     deletionOTPExpire: Date,

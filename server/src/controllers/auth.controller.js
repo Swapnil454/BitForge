@@ -231,11 +231,42 @@ export const login = async (req, res) => {
       });
     }
 
-    // Compare password
+    // Compare password first
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
+
+    // ─── Account Status Guard ───────────────────────────────────────────────
+    // Deleted accounts: prompt reactivation
+    if (user.accountStatus === 'deleted') {
+      return res.status(403).json({
+        message: "This account has been deactivated.",
+        accountStatus: 'deleted',
+        email: user.email,
+      });
+    }
+
+    // Banned accounts: block full access but provide token for report tracking
+    if (user.accountStatus === 'banned') {
+      const token = generateToken(user);
+      return res.status(403).json({
+        message: "Your account has been suspended.",
+        accountStatus: 'banned',
+        bannedReason: user.bannedReason || null,
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          role: user.role || 'buyer',
+          isVerified: user.isVerified,
+          accountStatus: user.accountStatus,
+        }
+      });
+    }
+    // ────────────────────────────────────────────────────────────────────────
 
     // Generate JWT token
     const token = generateToken(user);
@@ -248,8 +279,9 @@ export const login = async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        role: user.role || 'buyer', // Include role field
-        isVerified: user.isVerified
+        role: user.role || 'buyer',
+        isVerified: user.isVerified,
+        accountStatus: user.accountStatus,
       }
     });
 

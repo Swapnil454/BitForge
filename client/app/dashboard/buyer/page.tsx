@@ -21,6 +21,8 @@ import {
   ClipboardList,
   Heart,
   LogOut,
+  Flag,
+  FileText,
   Package,
   Scale,
   Settings,
@@ -360,6 +362,16 @@ export default function BuyerDashboard() {
                       icon={<CircleHelp className="h-4 w-4" />}
                       badge={chatUnreadCount > 0 ? chatUnreadCount : undefined}
                       onClick={() => { router.push("/dashboard/buyer/help-center"); setProfileOpen(false); }} 
+                    />
+                    <MenuItem 
+                      label="Submit Report" 
+                      icon={<Flag className="h-4 w-4" />}
+                      onClick={() => { router.push("/report"); setProfileOpen(false); }} 
+                    />
+                    <MenuItem 
+                      label="My Reports" 
+                      icon={<FileText className="h-4 w-4" />}
+                      onClick={() => { router.push("/dashboard/buyer/reports"); setProfileOpen(false); }} 
                     />
                     <div className="h-px bg-linear-to-r from-transparent via-indigo-500/20 to-transparent" />
                     <MenuItem label="Logout" icon={<LogOut className="h-4 w-4" />} danger onClick={() => { setIsLogoutModalOpen(true); setProfileOpen(false); }} />

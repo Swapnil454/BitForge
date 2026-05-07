@@ -315,6 +315,14 @@ export default function AdminDashboard() {
                         setProfileOpen(false);
                       }} 
                     />
+                    <MenuItem 
+                      label="Reports Management" 
+                      icon={<ClipboardList className="h-4 w-4" />}
+                      onClick={() => {
+                        router.push("/dashboard/admin/reports");
+                        setProfileOpen(false);
+                      }} 
+                    />
                     <div className="h-px bg-linear-to-r from-transparent via-indigo-500/20 to-transparent" />
                     <MenuItem label="Logout" icon={<LogOut className="h-4 w-4" />} danger onClick={() => { setIsLogoutModalOpen(true); setProfileOpen(false); }} />
                   </motion.div>

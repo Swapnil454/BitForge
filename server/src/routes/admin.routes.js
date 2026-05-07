@@ -33,6 +33,8 @@ import {
   getAllUsers,
   updateUserProfile,
   deleteUserByAdmin,
+  getUserById,
+  unbanUser,
   getAllTransactions,
   getMalwareFlaggedProducts,
   getMalwareDashboardStats,
@@ -106,8 +108,10 @@ router.post("/sellers/:id/deletions/reject", rejectSellerDeletion);
 
 // User management
 router.get("/users", getAllUsers);
+router.get("/users/:id", getUserById);
 router.put("/users/:id/profile", updateUserProfile);
 router.delete("/users/:id", deleteUserByAdmin);
+router.post("/users/:id/unban", unbanUser);
 
 // Trust & Security Features
 router.get("/security/malware/flagged", getMalwareFlaggedProducts);

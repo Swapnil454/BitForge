@@ -1329,7 +1329,7 @@ export const getPendingSellerDeletions = async (req, res) => {
   }
 };
 
-// Approve seller account deletion
+// Approve seller account deletion — soft-delete (preserve data, block login)
 export const approveSellerDeletion = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1347,13 +1347,20 @@ export const approveSellerDeletion = async (req, res) => {
       return res.status(400).json({ message: "No pending deletion request for this seller" });
     }
 
-    // Notify seller about approval before deletion
+    // Soft-delete: set accountStatus to 'deleted', preserve all data
+    seller.accountStatus = 'deleted';
+    seller.accountStatusUpdatedAt = new Date();
+    seller.deletedAt = new Date();
+    seller.deletionRequestStatus = 'approved';
+    await seller.save();
+
+    // Notify seller about approval
     try {
       await createNotification(
         seller._id,
         'seller_deletion_approved',
         'Account Deletion Approved',
-        `Your account deletion request has been approved. Your account will be removed shortly.`,
+        'Your account deletion request has been approved. Your account has been deactivated and your data has been preserved.',
         seller._id,
         'User'
       );
@@ -1361,10 +1368,7 @@ export const approveSellerDeletion = async (req, res) => {
       console.error("Error notifying seller about deletion approval:", notifyErr);
     }
 
-    // Delete the seller account
-    await User.findByIdAndDelete(id);
-
-    res.json({ message: "Seller account deleted successfully" });
+    res.json({ message: "Seller account deactivated successfully" });
   } catch (error) {
     console.error("Error approving seller deletion:", error);
     res.status(500).json({ message: "Failed to approve deletion" });
@@ -1518,14 +1522,48 @@ export const updateUserProfile = async (req, res) => {
   }
 };
 
-// Delete user by admin with reason
+// Get specific user by ID (for admin detailed view)
+export const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id).select("-password");
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Get stats based on role
+    let stats = {};
+    if (user.role === 'seller') {
+      const Product = (await import("../models/Product.js")).default;
+      const Order = (await import("../models/Order.js")).default;
+      
+      const totalProducts = await Product.countDocuments({ seller: id });
+      const totalOrders = await Order.countDocuments({ seller: id, status: 'completed' });
+      
+      stats = { totalProducts, totalOrders };
+    } else if (user.role === 'buyer') {
+      const Order = (await import("../models/Order.js")).default;
+      const totalOrders = await Order.countDocuments({ user: id });
+      
+      stats = { totalOrders };
+    }
+
+    res.json({ user, stats });
+  } catch (error) {
+    console.error("Error fetching user details:", error);
+    res.status(500).json({ message: "Failed to fetch user details" });
+  }
+};
+
+// Ban user by admin (replaces hard-delete — preserves data, blocks login)
 export const deleteUserByAdmin = async (req, res) => {
   try {
     const { id } = req.params;
     const { reason } = req.body;
 
     if (!reason || String(reason).trim().length < 5) {
-      return res.status(400).json({ message: "Deletion reason is required (min 5 characters)" });
+      return res.status(400).json({ message: "Ban reason is required (min 5 characters)" });
     }
 
     const user = await User.findById(id);
@@ -1533,35 +1571,78 @@ export const deleteUserByAdmin = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Don't allow admin to delete themselves
+    // Don't allow admin to ban themselves
     if (user._id.toString() === req.user.id) {
-      return res.status(400).json({ message: "You cannot delete your own account" });
+      return res.status(400).json({ message: "You cannot ban your own account" });
     }
 
-    // Create notification for user before deletion
+    // Apply ban — do NOT delete the document
+    user.accountStatus = 'banned';
+    user.accountStatusUpdatedAt = new Date();
+    user.bannedReason = String(reason).trim();
+    await user.save();
+
+    // Notify user about the ban
     try {
       await createNotification(
         user._id,
-        'account_deleted_by_admin',
-        'Account Deleted by Administrator',
-        `Your account has been deleted by an administrator. Reason: ${String(reason).trim()}`,
+        'account_banned_by_admin',
+        'Account Suspended',
+        `Your account has been suspended by an administrator. Reason: ${String(reason).trim()}`,
         user._id,
         'User'
       );
     } catch (notifyErr) {
-      console.error("Error notifying user about account deletion:", notifyErr);
+      console.error("Error notifying user about account ban:", notifyErr);
     }
 
-    // Delete user's notifications
-    await Notification.deleteMany({ userId: user._id });
-
-    // Delete the user
-    await User.findByIdAndDelete(id);
-
-    res.json({ message: "User account deleted successfully", deletedUser: { name: user.name, email: user.email } });
+    res.json({
+      message: "User account banned successfully",
+      bannedUser: { name: user.name, email: user.email, bannedReason: user.bannedReason },
+    });
   } catch (error) {
-    console.error("Error deleting user:", error);
-    res.status(500).json({ message: "Failed to delete user" });
+    console.error("Error banning user:", error);
+    res.status(500).json({ message: "Failed to ban user" });
+  }
+};
+
+// Unban user by admin (restore accountStatus to active)
+export const unbanUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.accountStatus !== 'banned') {
+      return res.status(400).json({ message: "User is not currently banned" });
+    }
+
+    user.accountStatus = 'active';
+    user.accountStatusUpdatedAt = new Date();
+    user.bannedReason = undefined;
+    await user.save();
+
+    // Notify user about unban
+    try {
+      await createNotification(
+        user._id,
+        'account_unbanned_by_admin',
+        'Account Reinstated',
+        'Your account suspension has been lifted. You can now log in again.',
+        user._id,
+        'User'
+      );
+    } catch (notifyErr) {
+      console.error("Error notifying user about unban:", notifyErr);
+    }
+
+    res.json({ message: "User account reinstated successfully", user: { name: user.name, email: user.email } });
+  } catch (error) {
+    console.error("Error unbanning user:", error);
+    res.status(500).json({ message: "Failed to unban user" });
   }
 };
 

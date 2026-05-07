@@ -158,8 +158,8 @@ function AllUsersPageContent() {
 
                     {/* Action */}
                     <button 
-                      onClick={() => router.push(`/dashboard/admin/users/${user._id}`)}
-                      className="hidden sm:flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.02] hover:bg-purple-500/20 border border-white/10 hover:border-purple-500/40 text-white/40 hover:text-purple-400 transition-all duration-300"
+                      onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/admin/users/${user._id}`); }}
+                      className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.02] hover:bg-purple-500/20 border border-white/10 hover:border-purple-500/40 text-white/40 hover:text-purple-400 transition-all duration-300"
                     >
                       <ChevronRight className="w-5 h-5" />
                     </button>

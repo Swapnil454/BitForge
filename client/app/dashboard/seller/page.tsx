@@ -10,6 +10,8 @@ import {
   IndianRupee,
   Landmark,
   LogOut,
+  Flag,
+  FileText,
   Menu,
   Package,
   Receipt,
@@ -327,6 +329,22 @@ export default function Dashboard() {
                       onClick={() => {
                         cacheInvalidator.invalidateChatUnread();
                         router.push("/dashboard/seller/help-center");
+                        setProfileOpen(false);
+                      }}
+                    />
+                    <MenuItem
+                      label="Submit Report"
+                      icon={<Flag className="h-4 w-4" />}
+                      onClick={() => {
+                        router.push("/report");
+                        setProfileOpen(false);
+                      }}
+                    />
+                    <MenuItem
+                      label="My Reports"
+                      icon={<FileText className="h-4 w-4" />}
+                      onClick={() => {
+                        router.push("/dashboard/seller/reports");
                         setProfileOpen(false);
                       }}
                     />

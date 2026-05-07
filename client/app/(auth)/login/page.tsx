@@ -9,7 +9,9 @@ import { Eye, EyeOff, ChevronDown } from "lucide-react";
 import { FaGoogle, FaGithub } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { authAPI } from "@/lib/api";
-import { setCookie } from "@/lib/cookies";
+import { setCookie, removeCookie, getCookie, getStoredUser } from "@/lib/cookies";
+import BannedModal from "@/app/components/BannedModal";
+import ReactivationModal from "@/app/components/ReactivationModal";
 
 /* ================= COUNTRY CODES ================= */
 
@@ -51,7 +53,23 @@ function LoginPageContent() {
   const [selectedCountry, setSelectedCountry] = useState(countryCodes[2]);
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
 
+  // Status Modals
+  const [showBannedModal, setShowBannedModal] = useState(false);
+  const [bannedReason, setBannedReason] = useState("");
+  const [showReactivationModal, setShowReactivationModal] = useState(false);
+  const [reactivationEmail, setReactivationEmail] = useState("");
+
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  /* ================= AUTH CHECK ================= */
+  useEffect(() => {
+    const token = getCookie('token');
+    const user = getStoredUser();
+    if (token) {
+      const role = user?.role || 'buyer';
+      router.replace(nextPath || `/dashboard/${role}`);
+    }
+  }, [router, nextPath]);
 
   /* ================= OUTSIDE CLICK ================= */
 
@@ -118,9 +136,49 @@ function LoginPageContent() {
         router.push(`/dashboard/${role}`);
       }, 1400);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Login failed");
+      const errResponse = err.response?.data;
+      
+      if (err.response?.status === 403) {
+        if (errResponse?.accountStatus === 'banned') {
+          if (errResponse?.token && errResponse?.user) {
+            setCookie("token", errResponse.token, 7);
+            setCookie("user", JSON.stringify(errResponse.user), 7);
+          }
+          setBannedReason(errResponse.bannedReason || "");
+          setShowBannedModal(true);
+          setIsLoading(false);
+          return;
+        }
+        if (errResponse?.accountStatus === 'deleted') {
+          setReactivationEmail(errResponse.email || formData.email);
+          setShowReactivationModal(true);
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      toast.error(errResponse?.message || "Login failed");
       setIsLoading(false);
     }
+  };
+
+  const handleReactivationSuccess = (token: string, user: any) => {
+    setShowReactivationModal(false);
+    setCookie("token", token, 7);
+    setCookie("user", JSON.stringify(user), 7);
+    
+    const role = user.role || "buyer";
+    setUserRole(role);
+    setShowRoleBadge(true);
+
+    setTimeout(() => {
+      setShowRoleBadge(false);
+      setShowSkeleton(true);
+    }, 800);
+
+    setTimeout(() => {
+      router.push(`/dashboard/${role}`);
+    }, 1400);
   };
 
   return (
@@ -347,6 +405,22 @@ function LoginPageContent() {
           </div>
           <div className="h-64 bg-white/5 rounded-xl animate-pulse" />
         </div>
+      )}
+
+      {/* MODALS */}
+      {showBannedModal && (
+        <BannedModal 
+          bannedReason={bannedReason} 
+          onClose={() => setShowBannedModal(false)} 
+        />
+      )}
+      
+      {showReactivationModal && (
+        <ReactivationModal 
+          email={reactivationEmail} 
+          onClose={() => setShowReactivationModal(false)} 
+          onSuccess={handleReactivationSuccess}
+        />
       )}
     </div>
   );
