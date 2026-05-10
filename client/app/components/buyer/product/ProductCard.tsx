@@ -86,26 +86,11 @@ export default function ProductCard({
   return (
     <div
       onClick={() => router.push(`/marketplace/${product._id}`)}
-      className={`w-full group flex flex-col cursor-pointer rounded-2xl bg-white dark:bg-[#0D1B2A] border border-gray-100 dark:border-slate-800/60 hover:border-cyan-400/40 dark:hover:border-cyan-600/40 shadow-sm hover:shadow-xl ${cat.glow} transition-all duration-300 overflow-hidden`}
+      className={`w-full group flex flex-col cursor-pointer rounded-2xl bg-white dark:bg-[#080d19] border border-gray-100 dark:border-white/5 hover:border-cyan-400/40 dark:hover:border-cyan-500/30 shadow-sm hover:shadow-xl ${cat.glow} transition-all duration-300 overflow-hidden relative`}
     >
       {/* ── Thumbnail ── */}
       <div className="relative w-full aspect-[16/9] bg-gray-50 dark:bg-slate-900/50 overflow-hidden">
-        {/* Wishlist */}
-        <button
-          onClick={(e) => onToggleWishlist(e, product._id)}
-          className="absolute top-2.5 right-2.5 z-10 p-1.5 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border border-gray-200 dark:border-slate-700 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all duration-200"
-          aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
-        >
-          <Heart size={13} className={isInWishlist ? "fill-pink-500 text-pink-500" : "text-gray-500 dark:text-slate-400"} />
-        </button>
-
-        {/* Discount badge */}
-        {product.discount && product.discount > 0 && (
-          <span className="absolute top-2.5 left-2.5 z-10 px-2 py-0.5 bg-red-500 text-slate-900 dark:text-white text-[10px] font-bold rounded-md shadow">
-            -{product.discount}%
-          </span>
-        )}
-
+        {/* Removed Wishlist & Discount overlay from thumbnail */}
         {product.thumbnailUrl ? (
           <img
             src={product.thumbnailUrl}
@@ -148,6 +133,13 @@ export default function ProductCard({
           </p>
         )}
 
+        {/* Discount badge moved below description */}
+        {product.discount && product.discount > 0 && (
+          <div className="mb-2.5 self-start px-2 py-0.5 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-[10px] font-bold rounded-md">
+            Save {product.discount}%
+          </div>
+        )}
+
         {/* Rating */}
         <div className="flex items-center gap-1 mb-2.5">
           {rating ? (
@@ -175,41 +167,53 @@ export default function ProductCard({
         <div className="flex-grow" />
 
         {/* Price + Actions */}
-        <div className="flex items-center justify-between pt-2.5 border-t border-gray-100 dark:border-slate-800/40 mt-1">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-3 border-t border-gray-100 dark:border-white/5 mt-auto gap-2.5 sm:gap-1">
           <div className="flex flex-col leading-tight">
             {product.discount && product.discount > 0 ? (
-              <>
-                <span className="text-[10px] text-gray-400 line-through">₹{product.price.toLocaleString()}</span>
-                <span className="font-extrabold text-base text-gray-900 dark:text-white">₹{finalPrice.toLocaleString()}</span>
-              </>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white">₹{finalPrice.toLocaleString()}</span>
+                <span className="text-[10px] sm:text-xs text-gray-400 dark:text-slate-500 line-through">₹{product.price.toLocaleString()}</span>
+              </div>
             ) : (
-              <span className="font-extrabold text-base text-gray-900 dark:text-white">₹{product.price.toLocaleString()}</span>
+              <span className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white">₹{product.price.toLocaleString()}</span>
             )}
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 w-full sm:w-auto shrink-0">
+            <button
+              onClick={(e) => { e.stopPropagation(); onToggleWishlist(e, product._id); }}
+              title={isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+              className={`p-1.5 sm:p-2 rounded-xl transition-all duration-200 shadow-sm shrink-0 ${
+                isInWishlist
+                  ? "bg-pink-50 dark:bg-pink-500/10 text-pink-500 hover:bg-pink-100 dark:hover:bg-pink-500/20 border border-pink-200 dark:border-pink-500/20"
+                  : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-slate-300 hover:bg-pink-50 dark:hover:bg-pink-500/10 hover:text-pink-600 dark:hover:text-pink-400 border border-gray-100 dark:border-white/5 hover:border-pink-200 dark:hover:border-pink-500/30"
+              }`}
+            >
+              <Heart size={14} className={isInWishlist ? "fill-pink-500" : ""} />
+            </button>
+
             <button
               onClick={(e) => { e.stopPropagation(); onAddToCart(e, product._id); }}
-              disabled={isAddingToCart || isInCart}
-              title={isInCart ? "In Cart" : "Add to Cart"}
-              className={`p-1.5 rounded-lg border transition-all duration-200 ${
+              disabled={isAddingToCart}
+              title={isInCart ? "Remove from Cart" : "Add to Cart"}
+              className={`p-1.5 sm:p-2 rounded-xl transition-all duration-200 shadow-sm border shrink-0 ${
                 isInCart
-                  ? "bg-gray-100 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400 cursor-not-allowed"
-                  : "bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 hover:border-cyan-500 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20"
+                  ? "bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-500/20"
+                  : "bg-gray-50 dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-600 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 hover:text-cyan-600 dark:hover:text-cyan-400 hover:border-cyan-200 dark:hover:border-cyan-500/30"
               }`}
             >
               {isAddingToCart
-                ? <div className="w-3.5 h-3.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                : <ShoppingCart size={13} />
+                ? <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                : <ShoppingCart size={14} className={isInCart ? "fill-red-500" : ""} />
               }
             </button>
 
             <button
-              onClick={(e) => { e.stopPropagation(); onBuyNow(e, product._id); }}
-              className="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold rounded-lg bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-slate-900 dark:text-white transition-all duration-200 shadow-sm"
+              onClick={(e) => { e.stopPropagation(); router.push(`/marketplace/${product._id}`); }}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-xs font-bold rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 whitespace-nowrap min-w-0"
             >
-              <Zap size={10} />
-              Buy Now
+              <Zap size={12} className="shrink-0" />
+              <span className="truncate">Buy Now</span>
             </button>
           </div>
         </div>

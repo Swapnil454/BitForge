@@ -21,6 +21,21 @@ export default function CategoryPills({ products = [] }: { products?: ProductTyp
   return (
     <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mt-4 mb-4">
       <div className="flex overflow-x-auto gap-2.5 pb-1 scrollbar-hide snap-x">
+        <button
+          onClick={() => router.push(`/marketplace?collection=All`)}
+          className="flex-shrink-0 flex items-center gap-1.5 sm:gap-2.5 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-full transition-all duration-300 snap-start group cursor-pointer shadow-md hover:shadow-lg shadow-indigo-500/20 hover:-translate-y-0.5 border border-transparent"
+        >
+          <div className="flex flex-col items-start leading-tight">
+            <span className="text-xs sm:text-sm font-bold text-white whitespace-nowrap drop-shadow-sm">
+              Explore All
+            </span>
+            {products.length > 0 && (
+              <span className="text-[9px] sm:text-[10px] text-white/80 font-medium">
+                {products.length} {products.length === 1 ? "product" : "products"}
+              </span>
+            )}
+          </div>
+        </button>
         {categories.map((cat) => {
           const Icon = cat.icon;
           const count = getCount(cat.id);
@@ -28,15 +43,15 @@ export default function CategoryPills({ products = [] }: { products?: ProductTyp
             <button
               key={cat.id}
               onClick={() => router.push(`/marketplace?category=${encodeURIComponent(cat.id)}`)}
-              className={`flex-shrink-0 flex items-center gap-2.5 bg-white dark:bg-[#0D1B2A] border border-gray-200 dark:border-slate-800 px-4 py-2.5 rounded-xl transition-all duration-200 snap-start group cursor-pointer ${cat.hover} dark:hover:text-slate-900 dark:hover:text-white`}
+              className={`flex-shrink-0 flex items-center gap-1.5 sm:gap-2.5 bg-white dark:bg-[#0D1B2A] border border-gray-200 dark:border-slate-800 px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-full transition-all duration-200 snap-start group cursor-pointer ${cat.hover} dark:hover:text-slate-900 dark:hover:text-white`}
             >
               {/* <Icon size={15} className={`${cat.color} group-hover:scale-110 transition-transform duration-200`} /> */}
               <div className="flex flex-col items-start leading-tight">
-                <span className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
                   {cat.label}
                 </span>
                 {count > 0 && (
-                  <span className="text-[10px] text-gray-400 dark:text-slate-500">
+                  <span className="text-[9px] sm:text-[10px] text-gray-400 dark:text-slate-500">
                     {count} {count === 1 ? "product" : "products"}
                   </span>
                 )}

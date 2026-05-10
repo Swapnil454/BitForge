@@ -116,7 +116,7 @@ export default function ProductReviews({ productId }: { productId: string }) {
   }
 
   return (
-    <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6 space-y-6">
+    <div className="sm:bg-slate-100 sm:dark:bg-white/5 sm:border sm:border-slate-200 sm:dark:border-white/10 sm:rounded-2xl py-4 sm:p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Reviews & Ratings</h2>
