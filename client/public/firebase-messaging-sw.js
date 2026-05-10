@@ -2,14 +2,19 @@
 importScripts("https://www.gstatic.com/firebasejs/12.13.0/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/12.13.0/firebase-messaging-compat.js");
 
+// Service workers cannot access process.env or Next.js env vars directly.
+// The app injects the Firebase config via URL query parameters at registration time.
+// See: app/lib/firebase.ts or wherever navigator.serviceWorker.register() is called.
+const params = new URL(self.location.href).searchParams;
+
 firebase.initializeApp({
-  apiKey: "AIzaSyBeSU2Ey8VTeKw9__ia2M8IEGUli38NvCg",
-  authDomain: "bitforge-102e9.firebaseapp.com",
-  projectId: "bitforge-102e9",
-  storageBucket: "bitforge-102e9.firebasestorage.app",
-  messagingSenderId: "258171132847",
-  appId: "1:258171132847:web:a86481431f03634033ad5a",
-  measurementId: "G-H25K3L3JNZ",
+  apiKey: params.get("apiKey"),
+  authDomain: params.get("authDomain"),
+  projectId: params.get("projectId"),
+  storageBucket: params.get("storageBucket"),
+  messagingSenderId: params.get("messagingSenderId"),
+  appId: params.get("appId"),
+  measurementId: params.get("measurementId"),
 });
 
 const messaging = firebase.messaging();
