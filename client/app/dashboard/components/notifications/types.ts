@@ -7,6 +7,14 @@ export interface Notification {
   message: string;
   createdAt: string;
   isRead: boolean;
-  icon?: React.ReactNode;
   type?: string;
+  category?: string;
+  priority?: "low" | "normal" | "high" | "urgent";
+  actionUrl?: string | null;
+  actionLabel?: string;
+  audienceRole?: Role;
+  source?: {
+    name?: string;
+    logoUrl?: string;
+  };
 }

@@ -2,6 +2,7 @@ import ChatMessage from "../models/ChatMessage.js";
 import User from "../models/User.js";
 import { getIO } from "../lib/socket.js";
 import cloudinary from "../config/cloudinary.js";
+import { createNotification } from "./notification.controller.js";
 
 // Fetch support thread for current buyer/seller with any admin
 export const getSupportThread = async (req, res) => {
@@ -83,6 +84,25 @@ export const sendSupportMessage = async (req, res) => {
     } catch (err) {
       // Socket layer not critical for HTTP success; fail silently
       console.error("sendSupportMessage socket emit error", err.message || err);
+    }
+
+    if (!isAdminSender) {
+      await createNotification(
+        toUser._id,
+        "chat_message",
+        `New support message from ${user.name}`,
+        message?.trim() || "A new attachment was shared in support chat.",
+        chat._id,
+        "ChatMessage",
+        {
+          audienceRole: "admin",
+          category: "chat",
+          metadata: {
+            senderId: String(user._id),
+            senderRole: user.role,
+          },
+        }
+      );
     }
 
     return res.status(201).json({ message: "Sent", chat: populated });
@@ -280,6 +300,23 @@ export const adminSendMessage = async (req, res) => {
     } catch (err) {
       console.error("adminSendMessage socket emit error", err.message || err);
     }
+
+    await createNotification(
+      user._id,
+      "chat_message",
+      "New admin message",
+      message.trim(),
+      chat._id,
+      "ChatMessage",
+      {
+        audienceRole: user.role,
+        category: "chat",
+        metadata: {
+          senderId: String(admin._id),
+          senderRole: "admin",
+        },
+      }
+    );
 
     return res.status(201).json({ message: "Sent", chat: populated });
   } catch (err) {

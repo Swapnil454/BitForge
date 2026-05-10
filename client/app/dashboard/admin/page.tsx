@@ -186,6 +186,10 @@ export default function AdminDashboard() {
       }
     });
 
+    socket.on("notification:new", () => {
+      cacheInvalidator.invalidateNotifications();
+    });
+
     socket.on("connect_error", (err: any) => {
       console.error("Socket connect error (admin dashboard)", err?.message || err);
     });

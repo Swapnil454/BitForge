@@ -119,6 +119,27 @@ const processCartOrder = async (cartOrder, payment) => {
     console.log(`==>  Failed to notify buyer: ${err.message}`);
   }
 
+  try {
+    const admins = await User.find({ role: "admin" }).select("_id");
+    await Promise.all(
+      admins.map((admin) =>
+        createNotification(
+          admin._id,
+          "admin_purchase_alert",
+          "New marketplace purchase",
+          `${buyer?.email || "A buyer"} completed a cart purchase worth Rs. ${cartOrder.totalAmount.toFixed(2)}.`,
+          cartOrder._id,
+          "CartOrder",
+          {
+            audienceRole: "admin",
+          }
+        )
+      )
+    );
+  } catch (err) {
+    console.log(`==>  Failed to notify admins: ${err.message}`);
+  }
+
   return createdOrders;
 };
 
@@ -276,6 +297,22 @@ export const razorpayWebhook = async (req, res) => {
             );
             console.log("==>  Seller notified");
           }
+          const admins = await User.find({ role: "admin" }).select("_id");
+          await Promise.all(
+            admins.map((admin) =>
+              createNotification(
+                admin._id,
+                "admin_purchase_alert",
+                "New marketplace purchase",
+                `${buyer?.email || payment.email || "A buyer"} completed a purchase worth Rs. ${order.amount}.`,
+                order._id,
+                "Order",
+                {
+                  audienceRole: "admin",
+                }
+              )
+            )
+          );
         } catch (notifyErr) {
           console.error("==>  Notification error:", notifyErr.message);
         }
@@ -285,6 +322,71 @@ export const razorpayWebhook = async (req, res) => {
 
       console.log("==>  Webhook processed successfully");
       console.log("==> ///////////////////////////////////////////////////////////");
+    }
+
+    if (event === "payment.failed") {
+      const payment = req.body.payload.payment.entity;
+      const failureReason =
+        payment.error_description ||
+        payment.error_reason ||
+        "Payment could not be completed.";
+
+      const cartOrder = await CartOrder.findOneAndUpdate(
+        { razorpayOrderId: payment.order_id },
+        { status: "failed" },
+        { new: true }
+      );
+
+      if (cartOrder?.buyerId) {
+        await createNotification(
+          cartOrder.buyerId,
+          "payment_failed",
+          "Purchase failed",
+          `Your cart payment could not be completed. ${failureReason}`,
+          cartOrder._id,
+          "CartOrder",
+          {
+            audienceRole: "buyer",
+          }
+        );
+      }
+
+      const order = await Order.findOneAndUpdate(
+        { razorpayOrderId: payment.order_id },
+        { status: "failed" },
+        { new: true }
+      );
+
+      if (order?.buyerId) {
+        await createNotification(
+          order.buyerId,
+          "payment_failed",
+          "Purchase failed",
+          `Your payment for "${order.productName || "your order"}" could not be completed. ${failureReason}`,
+          order._id,
+          "Order",
+          {
+            audienceRole: "buyer",
+          }
+        );
+      }
+
+      const admins = await User.find({ role: "admin" }).select("_id");
+      await Promise.all(
+        admins.map((admin) =>
+          createNotification(
+            admin._id,
+            "payment_failed",
+            "Payment failed",
+            `A payment attempt failed for Razorpay order ${payment.order_id}.`,
+            order?._id || cartOrder?._id || null,
+            order ? "Order" : "CartOrder",
+            {
+              audienceRole: "admin",
+            }
+          )
+        )
+      );
     }
 
     res.json({ status: "ok" });

@@ -661,6 +661,45 @@ export const notificationAPI = {
     deleteNotification: async (notificationId: string) => {
         const response = await api.delete(`/notifications/${notificationId}`);
         return response.data;
+    },
+
+    getPreferences: async () => {
+        const response = await api.get("/notifications/preferences");
+        return response.data;
+    },
+
+    updatePreferences: async (payload: {
+        browserPushEnabled?: boolean;
+        marketingEnabled?: boolean;
+        securityEnabled?: boolean;
+        transactionEnabled?: boolean;
+        chatEnabled?: boolean;
+        moderationEnabled?: boolean;
+    }) => {
+        const response = await api.patch("/notifications/preferences", payload);
+        return response.data;
+    },
+
+    registerPushToken: async (payload: {
+        token: string;
+        deviceId?: string;
+        platform?: string;
+        browserName?: string;
+    }) => {
+        const response = await api.post("/notifications/push-token", payload);
+        return response.data;
+    },
+
+    unregisterPushToken: async (token: string) => {
+        const response = await api.delete("/notifications/push-token", {
+            data: { token },
+        });
+        return response.data;
+    },
+
+    sendHeartbeat: async () => {
+        const response = await api.post("/notifications/heartbeat", {});
+        return response.data;
     }
 };
 

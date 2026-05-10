@@ -206,6 +206,10 @@ export default function BuyerDashboard() {
       }
     });
 
+    socket.on("notification:new", () => {
+      cacheInvalidator.invalidateNotifications();
+    });
+
     socket.on("connect_error", (err: any) => {
       console.error("Socket connect error (buyer dashboard)", err?.message || err);
     });

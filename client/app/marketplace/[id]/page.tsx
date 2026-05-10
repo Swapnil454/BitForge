@@ -352,37 +352,37 @@ export default function ProductDetailsPage() {
           </div>
         )}
         
-        <div className="sm:bg-white sm:dark:bg-[#12141c]/60 sm:backdrop-blur-2xl sm:rounded-3xl sm:border sm:border-slate-200 sm:dark:border-white/5 overflow-hidden sm:shadow-xl">
-          <div className="py-4 sm:p-8 lg:p-10 flex flex-col lg:flex-row gap-8 lg:gap-10 items-start">
+        <div className="bg-white dark:bg-[#0A101D] sm:dark:bg-[#12141c]/60 sm:backdrop-blur-2xl rounded-2xl sm:rounded-3xl border border-gray-100 sm:border-slate-200 dark:border-white/5 overflow-hidden shadow-lg sm:shadow-xl">
+          <div className="p-4 sm:p-8 lg:p-10 flex flex-col lg:flex-row gap-6 sm:gap-8 lg:gap-10 items-start">
             
             {/* Left Column - Main Content */}
-            <div className="w-full lg:w-2/3 flex flex-col gap-8">
+            <div className="w-full lg:w-2/3 flex flex-col gap-5 sm:gap-8">
               
               {/* Main Image */}
               {product.thumbnailUrl ? (
-                <div className="w-full rounded-2xl overflow-hidden shadow-md relative group">
+                <div className="w-full aspect-[4/3] sm:aspect-auto sm:h-auto rounded-xl sm:rounded-2xl overflow-hidden shadow-sm relative group bg-[#F7F7F7] dark:bg-[#0B1221] flex items-center justify-center border border-gray-100 dark:border-white/5">
                   <img
                     src={product.thumbnailUrl}
                     alt={product.title}
-                    className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="w-full h-full sm:h-auto object-contain sm:object-cover mix-blend-multiply dark:mix-blend-normal transition-transform duration-700 group-hover:scale-105 p-2 sm:p-0"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 dark:group-hover:bg-black/20 transition-colors duration-500 pointer-events-none" />
                 </div>
               ) : (
-                <div className="w-full aspect-[4/3] bg-slate-100 dark:bg-[#0a0a0f]/50 flex items-center justify-center rounded-2xl border border-slate-200 dark:border-white/5 shadow-inner">
+                <div className="w-full aspect-[4/3] bg-slate-100 dark:bg-[#0a0a0f]/50 flex items-center justify-center rounded-xl sm:rounded-2xl border border-slate-200 dark:border-white/5 shadow-inner">
                   <Archive className="w-16 h-16 text-slate-300 dark:text-white/10" />
                 </div>
               )}
 
               {/* Title & Description */}
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 sm:gap-4">
                 <div>
                   {product.category && (
-                    <span className="inline-block px-3 py-1 mb-3 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-bold uppercase tracking-widest rounded-full border border-indigo-100 dark:border-indigo-500/20">
+                    <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 mb-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest rounded-full border border-indigo-100 dark:border-indigo-500/20">
                       {product.category}
                     </span>
                   )}
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white leading-tight tracking-tight">
+                  <h1 className="text-xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white leading-tight tracking-tight">
                     {product.title}
                   </h1>
                 </div>
@@ -394,35 +394,35 @@ export default function ProductDetailsPage() {
                 </div>
               </div>
 
-              <hr className="border-slate-200 dark:border-white/10" />
+              <hr className="border-gray-100 dark:border-white/5" />
 
               {/* Product Info Grid */}
               <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Product Details</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-                  <div className="bg-slate-50 dark:bg-[#12141c] border border-slate-200 dark:border-white/5 rounded-xl p-3 sm:p-4 transition-colors hover:border-indigo-200 dark:hover:border-indigo-500/30">
-                    <div className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Format</div>
-                    <div className="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-200">{product.format ?? "-"}</div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-3 sm:mb-4">Product Details</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
+                  <div className="bg-gray-50 dark:bg-[#12141c] border border-gray-100 dark:border-white/5 rounded-lg sm:rounded-xl p-2.5 sm:p-4 transition-colors hover:border-indigo-200 dark:hover:border-indigo-500/30">
+                    <div className="text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">Format</div>
+                    <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-200">{product.format ?? "-"}</div>
                   </div>
-                  <div className="bg-slate-50 dark:bg-[#12141c] border border-slate-200 dark:border-white/5 rounded-xl p-3 sm:p-4 transition-colors hover:border-indigo-200 dark:hover:border-indigo-500/30">
-                    <div className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Pages</div>
-                    <div className="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-200">{product.pageCount ?? "-"}</div>
+                  <div className="bg-gray-50 dark:bg-[#12141c] border border-gray-100 dark:border-white/5 rounded-lg sm:rounded-xl p-2.5 sm:p-4 transition-colors hover:border-indigo-200 dark:hover:border-indigo-500/30">
+                    <div className="text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">Pages</div>
+                    <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-200">{product.pageCount ?? "-"}</div>
                   </div>
-                  <div className="bg-slate-50 dark:bg-[#12141c] border border-slate-200 dark:border-white/5 rounded-xl p-3 sm:p-4 transition-colors hover:border-indigo-200 dark:hover:border-indigo-500/30">
-                    <div className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">File Size</div>
-                    <div className="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-200">{formatFileSize(product.fileSizeBytes)}</div>
+                  <div className="bg-gray-50 dark:bg-[#12141c] border border-gray-100 dark:border-white/5 rounded-lg sm:rounded-xl p-2.5 sm:p-4 transition-colors hover:border-indigo-200 dark:hover:border-indigo-500/30">
+                    <div className="text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">File Size</div>
+                    <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-200">{formatFileSize(product.fileSizeBytes)}</div>
                   </div>
-                  <div className="bg-slate-50 dark:bg-[#12141c] border border-slate-200 dark:border-white/5 rounded-xl p-3 sm:p-4 transition-colors hover:border-indigo-200 dark:hover:border-indigo-500/30">
-                    <div className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Language</div>
-                    <div className="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-200">{product.language || "-"}</div>
+                  <div className="bg-gray-50 dark:bg-[#12141c] border border-gray-100 dark:border-white/5 rounded-lg sm:rounded-xl p-2.5 sm:p-4 transition-colors hover:border-indigo-200 dark:hover:border-indigo-500/30">
+                    <div className="text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">Language</div>
+                    <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-200">{product.language || "-"}</div>
                   </div>
-                  <div className="bg-slate-50 dark:bg-[#12141c] border border-slate-200 dark:border-white/5 rounded-xl p-3 sm:p-4 transition-colors hover:border-indigo-200 dark:hover:border-indigo-500/30">
-                    <div className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Level</div>
-                    <div className="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-200">{product.intendedAudience || "-"}</div>
+                  <div className="bg-gray-50 dark:bg-[#12141c] border border-gray-100 dark:border-white/5 rounded-lg sm:rounded-xl p-2.5 sm:p-4 transition-colors hover:border-indigo-200 dark:hover:border-indigo-500/30">
+                    <div className="text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">Level</div>
+                    <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-200">{product.intendedAudience || "-"}</div>
                   </div>
-                  <div className="bg-slate-50 dark:bg-[#12141c] border border-slate-200 dark:border-white/5 rounded-xl p-3 sm:p-4 transition-colors hover:border-indigo-200 dark:hover:border-indigo-500/30">
-                    <div className="text-slate-500 dark:text-slate-400 text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-1">Updated</div>
-                    <div className="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-200">{formatDate(product.lastUpdatedAt)}</div>
+                  <div className="bg-gray-50 dark:bg-[#12141c] border border-gray-100 dark:border-white/5 rounded-lg sm:rounded-xl p-2.5 sm:p-4 transition-colors hover:border-indigo-200 dark:hover:border-indigo-500/30">
+                    <div className="text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">Updated</div>
+                    <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-200">{formatDate(product.lastUpdatedAt)}</div>
                   </div>
                 </div>
               </div>
@@ -430,81 +430,81 @@ export default function ProductDetailsPage() {
             </div>
 
             {/* Right Column - Sticky Sidebar */}
-            <div className="w-full lg:w-1/3 flex flex-col gap-6 lg:sticky lg:top-24">
+            <div className="w-full lg:w-1/3 flex flex-col gap-4 sm:gap-6 lg:sticky lg:top-24">
               
               {/* Pricing & CTA */}
               {product.isDeleted ? (
-                <div className="bg-emerald-50 dark:bg-emerald-500/10 p-5 rounded-2xl border border-emerald-200 dark:border-emerald-500/20 flex flex-col gap-4 shadow-sm">
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center shrink-0">
-                    <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <div className="bg-emerald-50 dark:bg-emerald-500/10 p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-emerald-200 dark:border-emerald-500/20 flex flex-col gap-3 shadow-sm">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center shrink-0">
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-emerald-900 dark:text-emerald-100 mb-1">Already Purchased</h3>
-                    <p className="text-sm text-emerald-700 dark:text-emerald-300/80 mb-4">You own this product. Go to your purchases to download.</p>
+                    <h3 className="text-sm sm:text-base font-bold text-emerald-900 dark:text-emerald-100 mb-1">Already Purchased</h3>
+                    <p className="text-xs sm:text-sm text-emerald-700 dark:text-emerald-300/80 mb-3 sm:mb-4">You own this product. Go to your purchases to download.</p>
                     <button
                       onClick={() => router.push(`/dashboard/buyer/purchases`)}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 px-5 rounded-xl font-bold text-sm transition shadow-md flex items-center justify-center gap-2 w-full"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white py-2 sm:py-2.5 px-4 sm:px-5 rounded-xl font-bold text-xs sm:text-sm transition shadow-md flex items-center justify-center gap-2 w-full"
                     >
-                      <FileText className="w-4 h-4" /> Go to My Purchases
+                      <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Go to My Purchases
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="bg-slate-50 dark:bg-[#12141c]/80 rounded-2xl p-5 sm:p-6 border border-slate-200 dark:border-white/10 shadow-md">
-                  <div className="space-y-4">
+                <div className="bg-gray-50 dark:bg-[#12141c]/80 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-100 dark:border-white/10 shadow-md">
+                  <div className="space-y-3 sm:space-y-4">
                     <div className="flex justify-between items-center text-slate-500 dark:text-slate-400">
-                      <span className="text-sm font-medium">Original Price</span>
-                      <span className="line-through text-sm font-semibold">₹{calculateOriginalPrice().toLocaleString()}</span>
+                      <span className="text-xs sm:text-sm font-medium">Original Price</span>
+                      <span className="line-through text-xs sm:text-sm font-semibold">₹{calculateOriginalPrice().toLocaleString()}</span>
                     </div>
 
                     {calculateDiscount() > 0 && (
-                      <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 font-medium bg-emerald-50 dark:bg-emerald-500/10 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-500/20">
-                        <span className="text-sm font-bold flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5" />
+                      <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 font-medium bg-emerald-50 dark:bg-emerald-500/10 p-2 sm:p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-500/20">
+                        <span className="text-xs sm:text-sm font-bold flex items-center gap-1.5">
+                          <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                           Discount ({product.discount}%)
                         </span>
-                        <span className="text-sm font-bold">-₹{calculateDiscount().toLocaleString()}</span>
+                        <span className="text-xs sm:text-sm font-bold">-₹{calculateDiscount().toLocaleString()}</span>
                       </div>
                     )}
 
-                    <div className="pt-4 border-t border-slate-200 dark:border-white/10 flex justify-between items-center">
-                      <span className="text-lg font-bold text-slate-900 dark:text-white">Final Total</span>
-                      <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-indigo-600 dark:from-cyan-400 dark:to-indigo-400">
+                    <div className="pt-3 sm:pt-4 border-t border-gray-200 dark:border-white/10 flex justify-between items-center">
+                      <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Final Total</span>
+                      <span className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-indigo-600 dark:from-cyan-400 dark:to-indigo-400">
                         ₹{calculateFinalTotal().toLocaleString()}
                       </span>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex flex-col gap-3 mt-6">
+                  <div className="flex flex-col gap-2.5 sm:gap-3 mt-4 sm:mt-6">
                     <button
-                      className="w-full bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white py-3.5 px-4 rounded-xl font-bold text-base transition shadow-lg hover:shadow-indigo-500/25 flex items-center justify-center gap-2"
+                      className="w-full bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white py-3 sm:py-3.5 px-4 rounded-xl font-bold text-sm sm:text-base transition shadow-lg hover:shadow-indigo-500/25 flex items-center justify-center gap-2"
                       onClick={handleBuy}
                     >
                       Buy Now
                     </button>
-                    <div className="flex gap-3 w-full">
+                    <div className="flex gap-2.5 sm:gap-3 w-full">
                       <button
                         onClick={toggleWishlist}
-                        className={`flex-1 py-3.5 px-2 sm:px-4 rounded-xl font-bold text-xs sm:text-sm transition shadow-sm flex items-center justify-center gap-2 border ${
+                        className={`flex-1 py-3 sm:py-3.5 px-2 sm:px-4 rounded-xl font-bold text-[11px] sm:text-sm transition shadow-sm flex items-center justify-center gap-1.5 sm:gap-2 border ${
                           wishlist.includes(id as string)
                             ? 'bg-pink-50 dark:bg-pink-500/10 hover:bg-pink-100 dark:hover:bg-pink-500/20 border-pink-200 dark:border-pink-500/20 text-pink-600 dark:text-pink-400'
-                            : 'bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white'
+                            : 'bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 border-gray-200 dark:border-white/10 text-slate-900 dark:text-white'
                         }`}
                       >
-                        <Heart className={`w-4 h-4 shrink-0 ${wishlist.includes(id as string) ? 'fill-pink-500 text-pink-500' : ''}`} />
+                        <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${wishlist.includes(id as string) ? 'fill-pink-500 text-pink-500' : ''}`} />
                         <span className="truncate">Wishlist</span>
                       </button>
                       <button
                         onClick={handleAddToCart}
                         disabled={addingToCart}
-                        className={`flex-1 py-3.5 px-2 sm:px-4 rounded-xl font-bold text-xs sm:text-sm transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 border ${
+                        className={`flex-1 py-3 sm:py-3.5 px-2 sm:px-4 rounded-xl font-bold text-[11px] sm:text-sm transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 sm:gap-2 border ${
                           isInCart
                             ? 'bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400'
-                            : 'bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white'
+                            : 'bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 border-gray-200 dark:border-white/10 text-slate-900 dark:text-white'
                         }`}
                       >
-                        <ShoppingCart className={`w-4 h-4 shrink-0 ${isInCart ? 'fill-red-500 text-red-500' : ''}`} />
+                        <ShoppingCart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${isInCart ? 'fill-red-500 text-red-500' : ''}`} />
                         <span className="truncate">{addingToCart ? 'Updating...' : isInCart ? 'Remove' : 'Add to Cart'}</span>
                       </button>
                     </div>
@@ -517,19 +517,19 @@ export default function ProductDetailsPage() {
                 <button
                   type="button"
                   onClick={handleDownloadPreview}
-                  className="w-full py-3.5 bg-white dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-white/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30 rounded-xl font-bold text-sm transition shadow-sm flex items-center justify-center gap-2 group"
+                  className="w-full py-3 sm:py-3.5 bg-white dark:bg-white/5 hover:bg-indigo-50 dark:hover:bg-white/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30 rounded-xl font-bold text-xs sm:text-sm transition shadow-sm flex items-center justify-center gap-2 group"
                 >
-                  <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
+                  <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:-translate-y-0.5 transition-transform" />
                   Download Free Preview
                 </button>
               )}
 
               {/* Trust Guarantee */}
-              <div className="bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-200 dark:border-emerald-400/20 rounded-xl p-5 space-y-3">
-                <div className="font-bold text-sm flex items-center gap-2 text-emerald-700 dark:text-emerald-400 mb-3">
-                  <span className="relative flex h-2.5 w-2.5">
+              <div className="bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-200 dark:border-emerald-400/20 rounded-xl p-4 sm:p-5 space-y-2 sm:space-y-3">
+                <div className="font-bold text-xs sm:text-sm flex items-center gap-2 text-emerald-700 dark:text-emerald-400 mb-2 sm:mb-3">
+                  <span className="relative flex h-2 sm:h-2.5 w-2 sm:w-2.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    <span className="relative inline-flex rounded-full h-2 sm:h-2.5 w-2 sm:w-2.5 bg-emerald-500"></span>
                   </span>
                   Trusted Purchase Guarantee
                 </div>
@@ -540,40 +540,40 @@ export default function ProductDetailsPage() {
               </div>
 
               {/* Seller Profile */}
-              <div className="bg-slate-50 dark:bg-[#12141c]/50 border border-slate-200 dark:border-white/10 rounded-2xl p-4 sm:p-5">
-                <div className="flex items-center gap-4 mb-5">
+              <div className="bg-gray-50 dark:bg-[#12141c]/50 border border-gray-200 dark:border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-5">
+                <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-5">
                   {product.sellerId?.profilePictureUrl ? (
                     <img
                       src={product.sellerId.profilePictureUrl}
                       alt={product.sellerId.name}
-                      className="w-14 h-14 rounded-full border border-slate-200 dark:border-white/20 object-cover shadow-sm"
+                      className="w-10 h-10 sm:w-14 sm:h-14 rounded-full border border-gray-200 dark:border-white/20 object-cover shadow-sm"
                     />
                   ) : (
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500/20 to-cyan-500/20 border border-slate-200 dark:border-white/20 flex items-center justify-center text-xl font-bold text-indigo-700 dark:text-indigo-300">
+                    <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-indigo-500/20 to-cyan-500/20 border border-gray-200 dark:border-white/20 flex items-center justify-center text-lg sm:text-xl font-bold text-indigo-700 dark:text-indigo-300">
                       {product.sellerId?.name?.charAt(0) || "?"}
                     </div>
                   )}
                   
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="font-bold text-slate-900 dark:text-white text-base leading-tight">
+                    <div className="flex items-center gap-2 flex-wrap mb-0.5 sm:mb-1">
+                      <span className="font-bold text-slate-900 dark:text-white text-sm sm:text-base leading-tight">
                         {product.sellerId?.name || product.sellerId?.email}
                       </span>
                       
                       {product.sellerId?.isVerified && product.sellerStats?.identityVerifiedAt && (
-                        <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[9px] font-bold uppercase tracking-wider">
-                          <BadgeCheck className="w-3 h-3" /> Verified
+                        <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider">
+                          <BadgeCheck className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> Verified
                         </span>
                       )}
                     </div>
                     
                     {product.sellerStats?.ratingCount > 0 && (
-                      <div className="flex items-center gap-1.5 text-sm text-yellow-500 dark:text-yellow-400 mt-1">
-                        <Star className="w-3.5 h-3.5 fill-current drop-shadow-sm" />
-                        <span className="font-bold text-sm">
+                      <div className="flex items-center gap-1.5 text-xs sm:text-sm text-yellow-500 dark:text-yellow-400">
+                        <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current drop-shadow-sm" />
+                        <span className="font-bold">
                           {product.sellerStats.averageRating.toFixed(1)}
                         </span>
-                        <span className="text-slate-500 dark:text-slate-400 font-medium text-xs">
+                        <span className="text-slate-500 dark:text-slate-400 font-medium text-[10px] sm:text-xs">
                           ({product.sellerStats.ratingCount} ratings)
                         </span>
                       </div>
@@ -582,25 +582,25 @@ export default function ProductDetailsPage() {
                 </div>
 
                 {product.sellerId?.bio && (
-                  <p className="text-slate-600 dark:text-slate-300 text-xs mt-2 mb-4 line-clamp-2 leading-relaxed border-t border-slate-200 dark:border-white/10 pt-3">{product.sellerId.bio}</p>
+                  <p className="text-slate-600 dark:text-slate-300 text-[11px] sm:text-xs mt-2 mb-3 sm:mb-4 line-clamp-2 leading-relaxed border-t border-gray-200 dark:border-white/10 pt-2 sm:pt-3">{product.sellerId.bio}</p>
                 )}
 
-                <div className="grid grid-cols-3 gap-2 mt-4">
-                  <div className="bg-white dark:bg-[#1a1c26] border border-slate-200 dark:border-white/5 rounded-xl px-1 py-2 text-center shadow-sm">
-                    <div className="text-slate-500 dark:text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-0.5">Sales</div>
-                    <div className="font-black text-slate-900 dark:text-white text-sm">
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mt-3 sm:mt-4">
+                  <div className="bg-white dark:bg-[#1a1c26] border border-gray-100 dark:border-white/5 rounded-lg sm:rounded-xl px-1 py-1.5 sm:py-2 text-center shadow-sm">
+                    <div className="text-slate-500 dark:text-slate-400 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider mb-0.5">Sales</div>
+                    <div className="font-black text-slate-900 dark:text-white text-xs sm:text-sm">
                       {product.sellerStats?.totalSales ?? 0}
                     </div>
                   </div>
-                  <div className="bg-white dark:bg-[#1a1c26] border border-slate-200 dark:border-white/5 rounded-xl px-1 py-2 text-center shadow-sm">
-                    <div className="text-slate-500 dark:text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-0.5">Items</div>
-                    <div className="font-black text-slate-900 dark:text-white text-sm">
+                  <div className="bg-white dark:bg-[#1a1c26] border border-gray-100 dark:border-white/5 rounded-lg sm:rounded-xl px-1 py-1.5 sm:py-2 text-center shadow-sm">
+                    <div className="text-slate-500 dark:text-slate-400 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider mb-0.5">Items</div>
+                    <div className="font-black text-slate-900 dark:text-white text-xs sm:text-sm">
                       {product.sellerStats?.productCount ?? 1}
                     </div>
                   </div>
-                  <div className="bg-white dark:bg-[#1a1c26] border border-slate-200 dark:border-white/5 rounded-xl px-1 py-2 text-center shadow-sm">
-                    <div className="text-slate-500 dark:text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-0.5">Joined</div>
-                    <div className="font-bold text-slate-900 dark:text-white text-[11px] mt-0.5">
+                  <div className="bg-white dark:bg-[#1a1c26] border border-gray-100 dark:border-white/5 rounded-lg sm:rounded-xl px-1 py-1.5 sm:py-2 text-center shadow-sm">
+                    <div className="text-slate-500 dark:text-slate-400 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider mb-0.5">Joined</div>
+                    <div className="font-bold text-slate-900 dark:text-white text-[9px] sm:text-[11px] mt-0.5">
                       {(product.sellerStats?.memberSince || product.sellerId?.createdAt)
                         ? new Date(product.sellerStats?.memberSince || product.sellerId?.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
                         : '-'
@@ -609,7 +609,6 @@ export default function ProductDetailsPage() {
                   </div>
                 </div>
               </div>
-
             </div>
 
           </div>

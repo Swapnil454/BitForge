@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import CategoryShowcaseCard from "./CategoryShowcaseCard";
 import { ProductType } from "../product/ProductCard";
 
@@ -66,17 +69,28 @@ export default function CategoryShowcaseGrid({ products = [] }: { products?: Pro
     }
   ];
 
+  const [displayIndices, setDisplayIndices] = useState<number[]>([0, 1, 2, 3]);
+
+  useEffect(() => {
+    // On small screens, pick 2 random categories to display
+    if (window.innerWidth < 768) {
+      const shuffled = [0, 1, 2, 3].sort(() => 0.5 - Math.random());
+      setDisplayIndices(shuffled.slice(0, 2));
+    }
+  }, []);
+
   return (
-    <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mb-12">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mb-8 sm:mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {showcaseData.map((data, idx) => (
-          <CategoryShowcaseCard
-            key={idx}
-            title={data.title}
-            categoryId={data.categoryId}
-            linkText={data.linkText}
-            items={data.items}
-          />
+          <div key={idx} className={displayIndices.includes(idx) ? "block" : "hidden md:block"}>
+            <CategoryShowcaseCard
+              title={data.title}
+              categoryId={data.categoryId}
+              linkText={data.linkText}
+              items={data.items}
+            />
+          </div>
         ))}
       </div>
     </div>

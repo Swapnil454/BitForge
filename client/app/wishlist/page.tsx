@@ -6,7 +6,7 @@ import { marketplaceAPI, cartAPI } from "@/lib/api";
 import { getCookie } from "@/lib/cookies";
 import toast from "react-hot-toast";
 import PageHeader from "../dashboard/buyer/transactions/components/PageHeader";
-import { ShoppingCart, HeartCrack, Trash2, Package, Tag } from "lucide-react";
+import { ShoppingCart, HeartCrack, Trash2, Package, Sparkles } from "lucide-react";
 
 type Product = {
   _id: string;
@@ -105,17 +105,17 @@ export default function WishlistPage() {
 
   if (loading || !authChecked) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0A101D] text-slate-900 dark:text-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-slate-200 dark:border-white/10 border-t-indigo-500" />
-          <p className="text-slate-400 text-sm font-medium tracking-wide">Loading wishlist...</p>
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-slate-200 dark:border-white/10 border-t-indigo-600" />
+          <p className="text-slate-500 text-sm font-bold tracking-wide">Loading wishlist...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-20">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0A101D] text-slate-900 dark:text-white pb-20">
       <PageHeader
         backHref="/dashboard/buyer"
         backLabel="Back"
@@ -124,7 +124,7 @@ export default function WishlistPage() {
         rightSlot={
           <button
             onClick={() => router.push("/cart")}
-            className="flex items-center justify-center w-10 h-10 sm:w-auto sm:h-auto sm:px-4 sm:py-2.5 rounded-xl sm:rounded-lg bg-white hover:bg-slate-200 text-slate-950 text-xs sm:text-sm font-bold shadow-lg shadow-white/5 transition"
+            className="flex items-center justify-center w-10 h-10 sm:w-auto sm:h-auto sm:px-4 sm:py-2.5 rounded-xl bg-white dark:bg-[#12141c] hover:bg-slate-50 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs sm:text-sm font-bold shadow-sm transition"
             title="Go to Cart"
           >
             <ShoppingCart className="w-5 h-5 sm:w-4 sm:h-4" />
@@ -135,19 +135,19 @@ export default function WishlistPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8">
         {products.length === 0 ? (
-          <div className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-3xl p-10 sm:p-12 text-center max-w-lg mx-auto shadow-2xl mt-12 sm:mt-24">
-            <HeartCrack className="w-16 h-16 text-slate-300 dark:text-slate-700 mx-auto mb-6" />
+          <div className="bg-white dark:bg-[#12141c]/60 border border-gray-100 dark:border-white/5 rounded-3xl p-10 sm:p-12 text-center max-w-lg mx-auto shadow-sm mt-12 sm:mt-24">
+            <HeartCrack className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-6" />
             <p className="text-slate-900 dark:text-white text-xl font-bold tracking-tight mb-2">Your wishlist is empty</p>
             <p className="text-slate-500 dark:text-slate-400 text-sm mb-8">Start adding products you love</p>
             <button
               onClick={() => router.push("/marketplace")}
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-200 dark:text-slate-950 px-6 py-3.5 rounded-xl font-bold transition shadow-lg flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white px-6 py-3.5 rounded-xl font-bold transition shadow-lg hover:shadow-indigo-500/25 flex items-center justify-center gap-2"
             >
               Explore Marketplace
             </button>
           </div>
         ) : (
-          <div className="flex flex-col gap-3 sm:gap-4 max-w-4xl mx-auto">
+          <div className="flex flex-col gap-3 sm:gap-4 max-w-3xl mx-auto">
             {products.map((product) => {
               const finalPrice = product.discount > 0
                 ? Math.max(product.price - (product.price * product.discount) / 100, 0)
@@ -156,81 +156,80 @@ export default function WishlistPage() {
               return (
                 <div
                   key={product._id}
-                  className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-2xl shadow-xl hover:border-indigo-500/20 transition-all p-3 sm:p-5 flex flex-row gap-3 sm:gap-5 group"
+                  className="bg-white dark:bg-[#12141c]/80 border border-gray-100 dark:border-white/5 rounded-2xl shadow-sm hover:shadow-md transition-all p-3 sm:p-4 flex flex-row gap-3 sm:gap-4 group"
                 >
                   {/* Thumbnail */}
                   <div 
-                    className="w-24 h-24 sm:w-48 sm:h-auto sm:aspect-[16/9] shrink-0 bg-slate-100 dark:bg-[#05050a] rounded-xl border border-slate-200 dark:border-white/5 overflow-hidden relative cursor-pointer flex items-center justify-center" 
+                    className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 bg-[#F7F7F7] dark:bg-[#0B1221] rounded-xl border border-gray-100 dark:border-white/5 overflow-hidden relative cursor-pointer flex items-center justify-center" 
                     onClick={() => router.push(`/marketplace/${product._id}`)}
                   >
                     {product.thumbnailUrl ? (
                       <img
                         src={product.thumbnailUrl}
                         alt={product.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                        className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal p-2 group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
-                      <Package className="w-8 h-8 sm:w-12 sm:h-12 text-slate-700" />
+                      <Package className="w-8 h-8 sm:w-10 sm:h-10 text-slate-300 dark:text-white/10" />
                     )}
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 min-w-0 flex flex-col justify-between">
+                  <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
                     <div>
                       <div className="flex justify-between items-start gap-2">
-                        <h2 
-                          className="font-bold text-sm sm:text-lg text-slate-900 dark:text-white line-clamp-1 hover:text-indigo-400 cursor-pointer tracking-tight"
-                          onClick={() => router.push(`/marketplace/${product._id}`)}
-                        >
-                          {product.title}
-                        </h2>
+                        <div>
+                          <h2 
+                            className="font-bold text-sm sm:text-base text-slate-900 dark:text-white line-clamp-1 hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer tracking-tight"
+                            onClick={() => router.push(`/marketplace/${product._id}`)}
+                          >
+                            {product.title}
+                          </h2>
+                          {product.sellerId?.name && (
+                            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
+                              {product.sellerId.name}
+                            </p>
+                          )}
+                        </div>
                         <button
                           onClick={() => removeFromWishlist(product._id)}
-                          className="shrink-0 text-slate-500 hover:text-rose-400 p-1 -mr-1 -mt-1 transition"
+                          className="shrink-0 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 p-1.5 rounded-lg transition"
                           title="Remove from wishlist"
                         >
-                          <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-                      <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm line-clamp-1 sm:line-clamp-2 mt-0.5 sm:mt-1 leading-relaxed">
+                      <p className="text-slate-500 dark:text-slate-400 text-xs line-clamp-1 sm:line-clamp-2 mt-1.5 leading-relaxed hidden sm:block">
                         {product.description}
                       </p>
                     </div>
 
-                    <div className="mt-2 pt-2 sm:pt-0 sm:border-t-0 border-t border-slate-200 dark:border-white/5 flex flex-row items-end justify-between gap-3">
+                    <div className="flex flex-row items-center justify-between gap-2 mt-3 sm:mt-0 pt-2 sm:pt-0 sm:border-t-0 border-t border-gray-100 dark:border-white/5">
                       {/* Price Block */}
-                      <div>
-                        {product.discount > 0 ? (
-                          <div className="flex items-center gap-1.5 sm:gap-2">
-                            <span className="text-sm sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-                              ₹{finalPrice.toLocaleString()}
-                            </span>
-                            <span className="text-[10px] sm:text-xs text-slate-500 line-through font-mono">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">
+                          ₹{finalPrice.toLocaleString()}
+                        </span>
+                        {product.discount > 0 && (
+                          <>
+                            <span className="text-[10px] sm:text-xs text-slate-400 line-through font-medium">
                               ₹{product.price.toLocaleString()}
                             </span>
-                            <span className="px-1.5 py-0.5 bg-rose-500/10 text-rose-400 rounded text-[9px] sm:text-[10px] font-bold border border-rose-500/20 tracking-wider">
+                            <span className="px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-md text-[9px] sm:text-[10px] font-bold tracking-wider">
                               -{product.discount}%
                             </span>
-                          </div>
-                        ) : (
-                          <span className="text-sm sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-                            ₹{product.price.toLocaleString()}
-                          </span>
-                        )}
-                        {product.sellerId?.name && (
-                          <p className="text-[9px] sm:text-xs text-slate-500 uppercase tracking-wider mt-0.5 sm:mt-1 truncate max-w-[120px] sm:max-w-[200px]">
-                            By {product.sellerId.name}
-                          </p>
+                          </>
                         )}
                       </div>
 
                       {/* Action Button */}
                       <button
                         onClick={() => moveToCart(product)}
-                        className="bg-indigo-100/10 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white px-5 sm:px-6 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0"
+                        className="bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0 shadow-sm"
                       >
                         <ShoppingCart className="w-3.5 h-3.5" />
-                        <span>Move to Cart</span>
+                        <span className="hidden sm:inline">Move to Cart</span>
+                        <span className="sm:hidden">Move</span>
                       </button>
                     </div>
                   </div>
@@ -240,17 +239,6 @@ export default function WishlistPage() {
           </div>
         )}
       </main>
-
-      {/* Ensure Razorpay script is loaded */}
-      {typeof window !== "undefined" && !(window as any).Razorpay && (
-        <script
-          src="https://checkout.razorpay.com/v1/checkout.js"
-          async
-          onLoad={() => {
-            // Razorpay script loaded
-          }}
-        />
-      )}
     </div>
   );
 }

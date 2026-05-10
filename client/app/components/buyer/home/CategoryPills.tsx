@@ -19,7 +19,7 @@ export default function CategoryPills({ products = [] }: { products?: ProductTyp
   const getCount = (id: string) => products.filter((p) => p.category === id).length;
 
   return (
-    <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mt-4 mb-4">
+    <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mt-2 mb-2 sm:mb-4 sm:mt-4">
       <div className="flex overflow-x-auto gap-2.5 pb-1 scrollbar-hide snap-x">
         <button
           onClick={() => router.push(`/marketplace?collection=All`)}

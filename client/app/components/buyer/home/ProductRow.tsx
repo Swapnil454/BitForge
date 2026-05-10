@@ -28,8 +28,8 @@ export default function ProductRow({
   if (!isLoading && products.length === 0) return null;
 
   return (
-    <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mb-8">
-      <div className="bg-white dark:bg-[#0D1B2A] border border-gray-100 dark:border-slate-800/60 rounded-2xl shadow-sm p-4 md:p-5 relative group">
+    <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mb-6 sm:mb-8">
+      <div className="bg-white dark:bg-[#0B1221] border border-gray-100 dark:border-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 relative group transition-all duration-300 hover:bg-gray-50 dark:hover:bg-[#131F37] shadow-sm hover:shadow-md">
 
         {/* Header */}
         <div className="flex justify-between items-center mb-4">

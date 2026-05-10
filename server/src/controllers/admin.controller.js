@@ -32,7 +32,7 @@ export const approveSeller = async (req, res) => {
   if (seller) {
     await createNotification(
       seller._id,
-      'product_approved',
+      "seller_account_approved",
       'Seller Account Approved! 🎉',
       'Congratulations! Your seller account has been approved. You can now start listing and selling products on our platform.',
       seller._id,
@@ -57,7 +57,7 @@ export const rejectSeller = async (req, res) => {
   if (seller) {
     await createNotification(
       seller._id,
-      'product_rejected',
+      "seller_account_rejected",
       'Seller Account Not Approved',
       `Your seller account application was not approved. Reason: ${reason || 'Not specified'}`,
       seller._id,
@@ -763,12 +763,24 @@ export const approvePayout = async (req, res) => {
     payout.paidBy = req.user.id; // Admin who processed the payment
     payout.paidAt = new Date();
     payout.paymentMethod = paymentMethod;
-    payout.paymentReference = paymentReference; // UTR or transaction reference
-    payout.paymentNotes = paymentNotes;
-    await payout.save();
+      payout.paymentReference = paymentReference; // UTR or transaction reference
+      payout.paymentNotes = paymentNotes;
+      await payout.save();
 
-    res.json({
-      message: "Payout marked as paid successfully",
+      await createNotification(
+        seller._id,
+        "payout_sent",
+        "Payout processed",
+        `Your payout of Rs. ${Number(payout.netPayableAmount || payout.amount || 0).toFixed(2)} has been marked as paid.`,
+        payout._id,
+        "Payout",
+        {
+          audienceRole: "seller",
+        }
+      );
+
+      res.json({
+        message: "Payout marked as paid successfully",
       payout: {
         id: payout._id,
         seller: {
@@ -800,20 +812,34 @@ export const rejectPayout = async (req, res) => {
       return res.status(400).json({ message: "Rejection reason is required" });
     }
     
-    const payout = await Payout.findByIdAndUpdate(
-      req.params.id,
-      {
-        status: "rejected",
-        rejectionReason: reason,
-      },
-      { new: true }
-    );
+      const payout = await Payout.findByIdAndUpdate(
+        req.params.id,
+        {
+          status: "rejected",
+          rejectionReason: reason,
+        },
+        { new: true }
+      ).populate("sellerId", "name");
 
-    if (!payout) {
-      return res.status(404).json({ message: "Payout not found" });
-    }
+      if (!payout) {
+        return res.status(404).json({ message: "Payout not found" });
+      }
 
-    res.json({ message: "Payout rejected", payout });
+      if (payout.sellerId?._id) {
+        await createNotification(
+          payout.sellerId._id,
+          "payout_rejected",
+          "Payout rejected",
+          `Your payout request was rejected. Reason: ${reason}`,
+          payout._id,
+          "Payout",
+          {
+            audienceRole: "seller",
+          }
+        );
+      }
+
+      res.json({ message: "Payout rejected", payout });
   } catch (error) {
     console.error("Error rejecting payout:", error);
     res.status(500).json({ message: "Failed to reject payout" });

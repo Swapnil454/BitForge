@@ -167,6 +167,63 @@ const userSchema = new mongoose.Schema(
       }
     }],
 
+    lastActiveAt: {
+      type: Date,
+      default: Date.now,
+    },
+
+    pushSubscriptions: [
+      {
+        token: {
+          type: String,
+          required: true,
+        },
+        deviceId: String,
+        platform: String,
+        userAgent: String,
+        browserName: String,
+        isActive: {
+          type: Boolean,
+          default: true,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+        updatedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+
+    notificationSettings: {
+      browserPushEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      marketingEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      securityEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      transactionEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      chatEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      moderationEnabled: {
+        type: Boolean,
+        default: true,
+      },
+    },
+
   },
   { timestamps: true }
 );

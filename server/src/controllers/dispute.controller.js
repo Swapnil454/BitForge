@@ -1,5 +1,7 @@
 import Order from "../models/Order.js";
 import Dispute from "../models/Dispute.js";
+import User from "../models/User.js";
+import { createNotification } from "./notification.controller.js";
 
 export const createDispute = async (req, res) => {
   try {
@@ -49,13 +51,56 @@ export const createDispute = async (req, res) => {
       url: file.originalname,
     }));
 
-    await Dispute.create({
+    const dispute = await Dispute.create({
       orderId,
       buyerId: req.user.id,
       category,
       reason: reason.trim(),
       proofFiles,
     });
+
+    await createNotification(
+      req.user.id,
+      "dispute_created",
+      "Dispute submitted",
+      "Your dispute has been submitted and is now awaiting review by the admin team.",
+      dispute._id,
+      "Dispute",
+      {
+        audienceRole: "buyer",
+      }
+    );
+
+    if (order.sellerId) {
+      await createNotification(
+        order.sellerId,
+        "dispute_created",
+        "A buyer raised a dispute",
+        "One of your orders has a new dispute and may require admin review.",
+        dispute._id,
+        "Dispute",
+        {
+          audienceRole: "seller",
+        }
+      );
+    }
+
+    const admins = await User.find({ role: "admin" }).select("_id");
+    await Promise.all(
+      admins.map((admin) =>
+        createNotification(
+          admin._id,
+          "dispute_created",
+          "New dispute opened",
+          `A new dispute was raised for order ${order._id}.`,
+          dispute._id,
+          "Dispute",
+          {
+            audienceRole: "admin",
+          }
+        )
+      )
+    );
 
     res.json({ message: "Dispute submitted successfully" });
   } catch (error) {

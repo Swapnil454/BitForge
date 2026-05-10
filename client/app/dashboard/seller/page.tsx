@@ -204,6 +204,10 @@ export default function Dashboard() {
       }
     });
 
+    socket.on("notification:new", () => {
+      cacheInvalidator.invalidateNotifications();
+    });
+
     socket.on("connect_error", (err: any) => {
       console.error("Socket connect error (seller dashboard)", err?.message || err);
     });

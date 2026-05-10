@@ -68,155 +68,141 @@ export default function ProductCard({
 
   const rating = product.rating ? Number(product.rating).toFixed(1) : null;
   const badge  = getBadge(product, badgeProp);
-  const cat    = categoryColors[product.category] || defaultCat;
-
-  const BadgeEl = badge && (
-    <span className={`self-start inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full mb-1.5 ${
-      badge === "bestseller" ? "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400" :
-      badge === "trending"   ? "bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400" :
-                               "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-    }`}>
-      {badge === "bestseller" && <Award size={9} />}
-      {badge === "trending"   && <TrendingUp size={9} />}
-      {badge === "new"        && <Sparkles size={9} />}
-      {badge === "bestseller" ? "Bestseller" : badge === "trending" ? "Trending" : "New"}
-    </span>
-  );
 
   return (
     <div
       onClick={() => router.push(`/marketplace/${product._id}`)}
-      className={`w-full group flex flex-col cursor-pointer rounded-2xl bg-white dark:bg-[#080d19] border border-gray-100 dark:border-white/5 hover:border-cyan-400/40 dark:hover:border-cyan-500/30 shadow-sm hover:shadow-xl ${cat.glow} transition-all duration-300 overflow-hidden relative`}
+      className="w-full h-full group flex flex-col cursor-pointer bg-transparent"
     >
-      {/* ── Thumbnail ── */}
-      <div className="relative w-full aspect-[16/9] bg-gray-50 dark:bg-slate-900/50 overflow-hidden">
-        {/* Removed Wishlist & Discount overlay from thumbnail */}
+      {/* ── Thumbnail Area ── */}
+      <div className="relative w-full aspect-square bg-[#F7F7F7] dark:bg-[#0A101D] rounded-xl overflow-hidden flex items-center justify-center group-hover:shadow-md transition-shadow duration-300">
         {product.thumbnailUrl ? (
           <img
             src={product.thumbnailUrl}
             alt={product.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal group-hover:scale-105 transition-transform duration-500 p-2 sm:p-4"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20">
-            <span className="text-gray-400 dark:text-slate-500 text-xs font-medium">{product.category}</span>
+          <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-[#0A101D]">
+            <span className="text-gray-400 dark:text-slate-600 text-xs font-medium uppercase tracking-widest">{product.category}</span>
           </div>
+        )}
+
+        {/* Floating Wishlist Button (Matches the bottom-left icon in the reference) */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleWishlist(e, product._id); }}
+          className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 w-8 h-8 sm:w-10 sm:h-10 bg-white dark:bg-slate-800/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all active:scale-95 border border-gray-100 dark:border-white/10"
+        >
+          <Heart size={16} className={`${isInWishlist ? "fill-pink-500 text-pink-500" : "text-gray-700 dark:text-gray-300"}`} />
+        </button>
+
+        {/* Badge Overlay */}
+        {badge && (
+          <span className={`absolute top-2 left-2 sm:top-3 sm:left-3 px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold shadow-sm ${
+            badge === "bestseller" ? "bg-orange-500 text-white" :
+            badge === "trending"   ? "bg-cyan-500 text-white" :
+                                     "bg-green-500 text-white"
+          }`}>
+            {badge === "bestseller" ? "Bestseller" : badge === "trending" ? "Trending" : "New"}
+          </span>
         )}
       </div>
 
-      {/* ── Info ── */}
-      <div className="flex flex-col flex-grow p-3.5">
-        {/* Badge + Category row */}
-        <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-          {BadgeEl}
-          {!badge && (
-            <span className={`self-start text-[10px] font-semibold px-2 py-0.5 rounded-full ${cat.pill}`}>
-              {product.category}
-            </span>
-          )}
-        </div>
-
-        {/* Title */}
-        <h3 className="font-bold text-[13px] text-gray-900 dark:text-white line-clamp-2 leading-snug mb-1 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
-          {product.title}
-        </h3>
-
-        {/* Seller */}
-        <p className="text-[11px] text-gray-400 dark:text-slate-500 mb-1.5 truncate">
-          by <span className="text-gray-600 dark:text-slate-400 font-medium">{product.sellerId?.name || "Unknown Seller"}</span>
+      {/* ── Info Area ── */}
+      <div className="flex flex-col flex-grow pt-3 px-1">
+        {/* Category (Like "Sponsored") */}
+        <p className="text-[11px] sm:text-xs text-gray-500 dark:text-slate-400 font-medium mb-1 truncate">
+          {product.category}
         </p>
 
-        {/* Description */}
+        {/* Brand / Seller */}
+        <h3 className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white truncate">
+          {product.sellerId?.name || "Unknown Seller"}
+        </h3>
+
+        {/* Title */}
+        <p className="text-xs sm:text-sm text-gray-700 dark:text-slate-300 line-clamp-2 mt-0.5 leading-snug font-medium">
+          {product.title}
+        </p>
+
+        {/* Description (1-2 lines) */}
         {product.description && (
-          <p className="text-[11px] text-gray-500 dark:text-slate-400 line-clamp-2 mb-2 leading-relaxed">
+          <p className="text-[10px] sm:text-[11px] text-gray-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed">
             {product.description}
           </p>
         )}
 
-        {/* Discount badge moved below description */}
-        {product.discount && product.discount > 0 && (
-          <div className="mb-2.5 self-start px-2 py-0.5 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-[10px] font-bold rounded-md">
-            Save {product.discount}%
-          </div>
-        )}
-
         {/* Rating */}
-        <div className="flex items-center gap-1 mb-2.5">
+        <div className="flex items-center gap-1 mt-1.5 mb-1">
           {rating ? (
             <>
               <div className="flex items-center gap-0.5">
                 {[1,2,3,4,5].map((s) => (
-                  <Star key={s} size={10} className={
+                  <Star key={s} size={12} className={
                     s <= Math.round(Number(rating))
-                      ? "fill-yellow-400 text-yellow-400"
+                      ? "fill-[#FFA41C] text-[#FFA41C]"
                       : "fill-gray-200 text-gray-200 dark:fill-slate-700 dark:text-slate-700"
                   } />
                 ))}
               </div>
-              <span className="text-[11px] font-bold text-gray-800 dark:text-slate-200">{rating}</span>
-              {(product.buyers || 0) > 0 && (
-                <span className="text-[10px] text-gray-400 dark:text-slate-500">({product.buyers} buyers)</span>
-              )}
+              <span className="text-[11px] sm:text-xs text-[#007185] dark:text-cyan-400 hover:underline cursor-pointer ml-0.5">
+                ({product.buyers || 0})
+              </span>
             </>
           ) : (
-            <span className="text-[10px] text-gray-400 dark:text-slate-500 italic">No ratings yet</span>
+            <span className="text-[11px] sm:text-xs text-gray-400 dark:text-slate-500 italic">No ratings yet</span>
           )}
         </div>
 
-        {/* Spacer */}
+        {/* Spacer to push price and button to bottom */}
         <div className="flex-grow" />
 
-        {/* Price + Actions */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-3 border-t border-gray-100 dark:border-white/5 mt-auto gap-2.5 sm:gap-1">
-          <div className="flex flex-col leading-tight">
-            {product.discount && product.discount > 0 ? (
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white">₹{finalPrice.toLocaleString()}</span>
-                <span className="text-[10px] sm:text-xs text-gray-400 dark:text-slate-500 line-through">₹{product.price.toLocaleString()}</span>
-              </div>
-            ) : (
-              <span className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white">₹{product.price.toLocaleString()}</span>
+        {/* Price & Discounts */}
+        <div className="flex flex-col mt-2">
+          <div className="flex items-baseline gap-1.5 flex-wrap">
+            <span className="font-bold text-lg sm:text-2xl text-gray-900 dark:text-white tracking-tight">
+              <span className="text-sm sm:text-base mr-0.5 font-medium">₹</span>
+              {finalPrice.toLocaleString()}
+            </span>
+            {(product.discount ?? 0) > 0 && (
+              <span className="text-[10px] sm:text-xs text-gray-500 dark:text-slate-400 line-through decoration-gray-400">
+                M.R.P: ₹{product.price.toLocaleString()}
+              </span>
             )}
           </div>
-
-          <div className="flex items-center gap-1.5 w-full sm:w-auto shrink-0">
-            <button
-              onClick={(e) => { e.stopPropagation(); onToggleWishlist(e, product._id); }}
-              title={isInWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
-              className={`p-1.5 sm:p-2 rounded-xl transition-all duration-200 shadow-sm shrink-0 ${
-                isInWishlist
-                  ? "bg-pink-50 dark:bg-pink-500/10 text-pink-500 hover:bg-pink-100 dark:hover:bg-pink-500/20 border border-pink-200 dark:border-pink-500/20"
-                  : "bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-slate-300 hover:bg-pink-50 dark:hover:bg-pink-500/10 hover:text-pink-600 dark:hover:text-pink-400 border border-gray-100 dark:border-white/5 hover:border-pink-200 dark:hover:border-pink-500/30"
-              }`}
-            >
-              <Heart size={14} className={isInWishlist ? "fill-pink-500" : ""} />
-            </button>
-
-            <button
-              onClick={(e) => { e.stopPropagation(); onAddToCart(e, product._id); }}
-              disabled={isAddingToCart}
-              title={isInCart ? "Remove from Cart" : "Add to Cart"}
-              className={`p-1.5 sm:p-2 rounded-xl transition-all duration-200 shadow-sm border shrink-0 ${
-                isInCart
-                  ? "bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-500/20"
-                  : "bg-gray-50 dark:bg-white/5 border-gray-100 dark:border-white/5 text-gray-600 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 hover:text-cyan-600 dark:hover:text-cyan-400 hover:border-cyan-200 dark:hover:border-cyan-500/30"
-              }`}
-            >
-              {isAddingToCart
-                ? <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                : <ShoppingCart size={14} className={isInCart ? "fill-red-500" : ""} />
-              }
-            </button>
-
-            <button
-              onClick={(e) => { e.stopPropagation(); router.push(`/marketplace/${product._id}`); }}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-xs font-bold rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 whitespace-nowrap min-w-0"
-            >
-              <Zap size={12} className="shrink-0" />
-              <span className="truncate">Buy Now</span>
-            </button>
-          </div>
+          {(product.discount ?? 0) > 0 && (
+            <p className="text-[11px] sm:text-xs text-gray-700 dark:text-slate-300 mt-1 line-clamp-2">
+              <span className="bg-[#CC0C39] text-white px-1.5 py-0.5 rounded text-[10px] font-bold mr-1">
+                Save {product.discount}%
+              </span>
+              with selected offers
+            </p>
+          )}
         </div>
+
+        {/* Delivery info */}
+        <p className="text-[10px] sm:text-xs text-gray-500 dark:text-slate-400 mt-2">
+          FREE delivery <span className="font-bold text-gray-700 dark:text-slate-300">Tomorrow</span>
+        </p>
+
+        {/* Add to Cart Button */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onAddToCart(e, product._id); }}
+          disabled={isAddingToCart}
+          className={`w-full mt-3 py-2.5 sm:py-3 rounded-full font-bold text-[13px] sm:text-sm transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2 active:scale-95 ${
+            isInCart
+              ? "bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-200 border border-gray-300 dark:border-slate-600"
+              : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-blue-500/25"
+          }`}
+        >
+          {isAddingToCart ? (
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : isInCart ? (
+            "Added to cart"
+          ) : (
+            "Add to cart"
+          )}
+        </button>
       </div>
     </div>
   );

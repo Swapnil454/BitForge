@@ -163,7 +163,7 @@ export const verifyEmailOtp = async (req, res) => {
         for (const admin of admins) {
           await createNotification(
             admin._id,
-            'product_pending_review',
+            'new_seller_registration',
             'New Seller Registration',
             `${newUser.name} (${newUser.email}) has registered as a seller and is awaiting approval.`,
             newUser._id,
@@ -398,6 +398,19 @@ export const resetPassword = async (req, res) => {
     user.resetPasswordOtp = undefined;
     user.resetPasswordOtpExpires = undefined;
     await user.save();
+
+    await createNotification(
+      user._id,
+      "password_reset",
+      "Password reset completed",
+      "Your BitForge password was reset successfully. If this was not you, secure your account immediately.",
+      user._id,
+      "User",
+      {
+        audienceRole: user.role,
+        pushWhenInactiveOnly: false,
+      }
+    );
 
     res.status(200).json({ message: "Password reset successful! You can now login with your new password." });
 

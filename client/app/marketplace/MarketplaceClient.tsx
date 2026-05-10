@@ -224,7 +224,7 @@ function HomeView({
         <p className="text-sm text-gray-400 dark:text-slate-500">Showing a curated selection from our catalogue</p>
         <button
           onClick={() => router.push("/marketplace?collection=All")}
-          className="flex items-center gap-2 px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-slate-900 dark:text-white rounded-xl font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all duration-200"
+          className="flex items-center gap-2 px-8 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 shadow-lg shadow-indigo-500/25 hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 hover:shadow-xl hover:shadow-purple-500/30 hover:-translate-y-0.5 active:scale-95 transition-all duration-200"
         >
           Explore All Products
           <span className="text-lg">→</span>

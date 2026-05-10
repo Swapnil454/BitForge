@@ -6,6 +6,11 @@ import {
   markNotificationAsRead,
   markAllAsRead,
   deleteNotification,
+  getNotificationPreferences,
+  updateNotificationPreferences,
+  registerPushToken,
+  unregisterPushToken,
+  updateNotificationHeartbeat,
 } from "../controllers/notification.controller.js";
 
 const router = express.Router();
@@ -18,6 +23,13 @@ router.get("/", getUserNotifications);
 
 // Get unread count
 router.get("/unread-count", getUnreadCount);
+
+// Preferences / push sync
+router.get("/preferences", getNotificationPreferences);
+router.patch("/preferences", updateNotificationPreferences);
+router.post("/push-token", registerPushToken);
+router.delete("/push-token", unregisterPushToken);
+router.post("/heartbeat", updateNotificationHeartbeat);
 
 // Mark notification as read
 router.patch("/:notificationId/read", markNotificationAsRead);

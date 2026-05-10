@@ -1,5 +1,12 @@
-import { initializeApp, getApps } from "firebase/app";
-import { getMessaging, isSupported } from "firebase/messaging";
+import { getApps, initializeApp } from "firebase/app";
+import {
+  deleteToken,
+  getMessaging,
+  getToken,
+  isSupported,
+  MessagePayload,
+  onMessage,
+} from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -13,17 +20,53 @@ const firebaseConfig = {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 
+export const isFirebaseMessagingAvailable = async () => {
+  if (typeof window === "undefined") return false;
+  return isSupported();
+};
+
 export const getFirebaseMessaging = async () => {
-  if (typeof window === "undefined") return null;
-
-  const supported = await isSupported();
-
-  if (!supported) {
-    console.log("Firebase messaging is not supported in this browser");
+  if (!(await isFirebaseMessagingAvailable())) {
     return null;
   }
 
   return getMessaging(app);
+};
+
+export const registerMessagingServiceWorker = async () => {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+    return null;
+  }
+
+  return navigator.serviceWorker.register("/firebase-messaging-sw.js");
+};
+
+export const getFirebasePushToken = async () => {
+  const messaging = await getFirebaseMessaging();
+  if (!messaging) return null;
+
+  const registration = await registerMessagingServiceWorker();
+  const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+  if (!registration || !vapidKey) return null;
+
+  return getToken(messaging, {
+    vapidKey,
+    serviceWorkerRegistration: registration,
+  });
+};
+
+export const removeFirebasePushToken = async () => {
+  const messaging = await getFirebaseMessaging();
+  if (!messaging) return;
+  await deleteToken(messaging);
+};
+
+export const subscribeToForegroundMessages = async (
+  callback: (payload: MessagePayload) => void
+) => {
+  const messaging = await getFirebaseMessaging();
+  if (!messaging) return () => {};
+  return onMessage(messaging, callback);
 };
 
 export default app;

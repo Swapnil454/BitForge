@@ -7,6 +7,7 @@ import { getCookie, setCookie } from "@/lib/cookies";
 import QueryProvider from "./QueryProvider";
 import BannedModal from "@/app/components/BannedModal";
 import ReactivationModal from "@/app/components/ReactivationModal";
+import PushNotificationManager from "@/app/components/PushNotificationManager";
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -92,6 +93,7 @@ export default function AppProviders({ children }: AppProvidersProps) {
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       <QueryProvider>
         {children}
+        <PushNotificationManager />
       
       {showBannedModal && (
         <BannedModal 

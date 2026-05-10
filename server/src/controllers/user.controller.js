@@ -131,6 +131,19 @@ export const changePassword = async (req, res) => {
     user.password = hashedPassword;
     await user.save();
 
+    await createNotification(
+      user._id,
+      "password_changed",
+      "Password changed",
+      "Your BitForge password was changed successfully. If this was not you, contact support immediately.",
+      user._id,
+      "User",
+      {
+        audienceRole: user.role,
+        pushWhenInactiveOnly: false,
+      }
+    );
+
     res.json({ message: "Password changed successfully" });
   } catch (error) {
     console.error("Error changing password:", error);
@@ -225,6 +238,19 @@ export const resetPassword = async (req, res) => {
     user.resetPasswordOTP = undefined;
     user.resetPasswordExpire = undefined;
     await user.save();
+
+    await createNotification(
+      user._id,
+      "password_reset",
+      "Password reset completed",
+      "Your BitForge password was reset successfully. If this was not you, secure your account right away.",
+      user._id,
+      "User",
+      {
+        audienceRole: user.role,
+        pushWhenInactiveOnly: false,
+      }
+    );
 
     res.json({ message: "Password reset successfully" });
   } catch (error) {

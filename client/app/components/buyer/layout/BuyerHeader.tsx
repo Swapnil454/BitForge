@@ -89,7 +89,7 @@ export default function BuyerHeader({
                 </button>
               )}
               <button onClick={() => router.push('/marketplace')} className="flex items-center gap-2 group">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 relative flex-shrink-0">
+                <div className="w-26 h-26 -ml-8 sm:w-30 sm:h-30 relative flex-shrink-0">
                   <Image
                     src="/bitforge_logo1.png"
                     alt="Bitforge logo"
@@ -98,7 +98,7 @@ export default function BuyerHeader({
                     priority
                   />
                 </div>
-                <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-white hidden sm:block tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                <span className="text-lg sm:text-xl -ml-8 font-black text-slate-900 dark:text-white hidden sm:block tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                   BitForge
                 </span>
               </button>
@@ -189,7 +189,7 @@ export default function BuyerHeader({
               </button>
 
               {/* Notifications */}
-              {isAuthenticated && (
+              {mounted && isAuthenticated && (
                 <button 
                   onClick={() => router.push("/notifications")}
                   className="relative p-2.5 text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors hidden sm:flex"
