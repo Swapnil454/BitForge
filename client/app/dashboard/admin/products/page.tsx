@@ -214,20 +214,20 @@ export default function AdminProductsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#05050a]">
-        <div className="h-16 w-full border-b border-white/[0.05] bg-[#0a0a0f]" />
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a]">
+        <div className="h-16 w-full border-b border-slate-200 dark:border-white/[0.05] bg-slate-50 dark:bg-[#0a0a0f]" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6 animate-pulse">
           <div className="flex gap-3">
-            <div className="h-10 w-36 bg-[#16161e] rounded-xl" />
-            <div className="h-10 w-40 bg-[#16161e] rounded-xl" />
+            <div className="h-10 w-36 bg-white dark:bg-[#16161e] rounded-xl" />
+            <div className="h-10 w-40 bg-white dark:bg-[#16161e] rounded-xl" />
           </div>
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-[#16161e] border border-white/[0.05] rounded-2xl p-6 space-y-4">
+            <div key={i} className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.05] rounded-2xl p-6 space-y-4">
               <div className="flex justify-between">
                 <div className="space-y-2">
                   <div className="h-5 w-48 bg-white/[0.04] rounded-lg" />
-                  <div className="h-3 w-64 bg-white/[0.03] rounded-md" />
-                  <div className="h-3 w-40 bg-white/[0.03] rounded-md" />
+                  <div className="h-3 w-64 bg-slate-100 dark:bg-white/[0.03] rounded-md" />
+                  <div className="h-3 w-40 bg-slate-100 dark:bg-white/[0.03] rounded-md" />
                 </div>
                 <div className="flex gap-2">
                   <div className="h-9 w-20 bg-white/[0.04] rounded-lg" />
@@ -242,7 +242,7 @@ export default function AdminProductsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#05050a] text-white pb-24">
+    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-24">
       <PageHeader
         backHref="/dashboard/admin"
         backLabel="Back"
@@ -261,7 +261,7 @@ export default function AdminProductsPage() {
       <section className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 space-y-5">
 
         {/* Tabs */}
-        <div className="flex bg-[#16161e] rounded-2xl p-1 gap-1 border border-white/[0.05]">
+        <div className="flex bg-white dark:bg-[#16161e] rounded-2xl p-1 gap-1 border border-slate-200 dark:border-white/[0.05]">
           <button
             onClick={() => {
               setActiveTab("new");
@@ -269,15 +269,15 @@ export default function AdminProductsPage() {
             }}
             className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
               activeTab === "new"
-                ? "bg-gradient-to-r from-cyan-500 to-indigo-500 text-white shadow-lg"
-                : "text-white/30 hover:text-white/60"
+                ? "bg-gradient-to-r from-cyan-500 to-indigo-500 text-slate-900 dark:text-white shadow-lg"
+                : "text-slate-300 dark:text-white/30 hover:text-slate-500 dark:hover:text-white/60"
             }`}
           >
             <span className="inline-flex items-center gap-2">
               <span>New Products</span>
               <span
                 className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
-                  activeTab === "new" ? "bg-white/20 text-white" : "bg-white/10 text-white/70"
+                  activeTab === "new" ? "bg-white/20 text-slate-900 dark:text-white" : "bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-white/70"
                 }`}
               >
                 {products.length}
@@ -292,15 +292,15 @@ export default function AdminProductsPage() {
             }}
             className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
               activeTab === "changes"
-                ? "bg-gradient-to-r from-cyan-500 to-indigo-500 text-white shadow-lg"
-                : "text-white/30 hover:text-white/60"
+                ? "bg-gradient-to-r from-cyan-500 to-indigo-500 text-slate-900 dark:text-white shadow-lg"
+                : "text-slate-300 dark:text-white/30 hover:text-slate-500 dark:hover:text-white/60"
             }`}
           >
             <span className="inline-flex items-center gap-2">
               <span>Pending Changes</span>
               <span
                 className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
-                  activeTab === "changes" ? "bg-white/20 text-white" : "bg-white/10 text-white/70"
+                  activeTab === "changes" ? "bg-white/20 text-slate-900 dark:text-white" : "bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-white/70"
                 }`}
               >
                 {changes.length}
@@ -311,8 +311,8 @@ export default function AdminProductsPage() {
 
         {/* Bulk bar */}
         {activeTab === "changes" && selected.length > 0 && (
-          <div className="flex items-center justify-between gap-3 bg-[#16161e] border border-white/[0.06] rounded-xl p-3">
-            <span className="text-[10px] font-black uppercase tracking-widest text-white/50">
+          <div className="flex items-center justify-between gap-3 bg-white dark:bg-[#16161e] border border-white/[0.06] rounded-xl p-3">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-white/50">
               {selected.length} selected
             </span>
             <div className="flex gap-2">
@@ -337,7 +337,7 @@ export default function AdminProductsPage() {
           <div className="space-y-4">
             {products.length === 0 ? (
               <div className="min-h-[52vh] flex items-center justify-center">
-                <p className="text-lg font-semibold tracking-wide text-white/70 md:text-xl">
+                <p className="text-lg font-semibold tracking-wide text-slate-600 dark:text-white/70 md:text-xl">
                   No new products awaiting approval.
                 </p>
               </div>
@@ -345,16 +345,16 @@ export default function AdminProductsPage() {
               products.map(p => (
                 <div
                   key={p._id}
-                  className="bg-white/5 border border-white/10 rounded-2xl p-6"
+                  className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6"
                 >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="space-y-2">
                       <h3 className="font-semibold text-lg">{p.title}</h3>
-                      <p className="text-sm text-white/60 line-clamp-3">{p.description}</p>
-                      <p className="text-sm text-white/60">
+                      <p className="text-sm text-slate-500 dark:text-white/60 line-clamp-3">{p.description}</p>
+                      <p className="text-sm text-slate-500 dark:text-white/60">
                         Seller: <span className="font-medium">{p.sellerId?.email}</span>
                       </p>
-                      <div className="flex gap-3 text-sm text-white/80">
+                      <div className="flex gap-3 text-sm text-slate-700 dark:text-white/80">
                         <span>Price: ₹{p.price}</span>
                         {typeof p.discount === "number" && p.discount > 0 && (
                           <span>Discount: {p.discount}%</span>
@@ -391,7 +391,7 @@ export default function AdminProductsPage() {
             {changes.map(p => (
               <div
                 key={p._id}
-                className="bg-white/5 border border-white/10 rounded-2xl p-6"
+                className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6"
               >
                 <div className="flex gap-4">
                   <input
@@ -403,12 +403,12 @@ export default function AdminProductsPage() {
                   <div className="flex-1 space-y-4">
                     <div>
                       <h3 className="font-semibold">{p.title}</h3>
-                      <p className="text-sm text-white/60">
+                      <p className="text-sm text-slate-500 dark:text-white/60">
                         Seller: {p.sellerId.email}
                       </p>
                       {p.changeRequest && (
                         <div className="mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs
-                          border-white/15 bg-white/5 text-white/80">
+                          border-white/15 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white/80">
                           <span className="h-2 w-2 rounded-full bg-purple-400" />
                           <span>
                             {p.changeRequest === "pending_update"
@@ -423,7 +423,7 @@ export default function AdminProductsPage() {
 
                     {p.changeRequest === "pending_update" && p.pendingChanges && (
                       <div className="space-y-2">
-                        <p className="text-xs text-white/50 uppercase tracking-wide">
+                        <p className="text-xs text-slate-400 dark:text-white/50 uppercase tracking-wide">
                           Requested field changes
                         </p>
                         <DiffRow label="Title" oldValue={p.title} newValue={p.pendingChanges.title} />

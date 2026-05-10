@@ -236,7 +236,7 @@ export default function CartPage() {
 
   if (loading || !authChecked) {
     return (
-      <div className="min-h-screen bg-[#05050a] text-white pb-32 md:pb-8 overflow-x-hidden">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-32 md:pb-8 overflow-x-hidden">
         <PageHeader
           title="Shopping Cart"
           backHref="/dashboard/buyer"
@@ -245,17 +245,17 @@ export default function CartPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             <div className="lg:col-span-2 space-y-3 md:space-y-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-6 animate-pulse flex gap-3 md:gap-6">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-xl bg-white/10" />
+                <div key={i} className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-4 md:p-6 animate-pulse flex gap-3 md:gap-6">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-xl bg-slate-200 dark:bg-white/10" />
                   <div className="flex-1 space-y-3 py-2">
-                    <div className="h-5 bg-white/10 rounded w-3/4" />
-                    <div className="h-4 bg-white/10 rounded w-1/2" />
-                    <div className="h-4 bg-white/10 rounded w-1/3" />
+                    <div className="h-5 bg-slate-200 dark:bg-white/10 rounded w-3/4" />
+                    <div className="h-4 bg-slate-200 dark:bg-white/10 rounded w-1/2" />
+                    <div className="h-4 bg-slate-200 dark:bg-white/10 rounded w-1/3" />
                     <div className="pt-2 flex justify-between items-center">
-                      <div className="h-6 bg-white/10 rounded w-1/4" />
+                      <div className="h-6 bg-slate-200 dark:bg-white/10 rounded w-1/4" />
                       <div className="flex gap-2">
-                        <div className="h-8 w-24 bg-white/10 rounded" />
-                        <div className="h-8 w-10 bg-white/10 rounded" />
+                        <div className="h-8 w-24 bg-slate-200 dark:bg-white/10 rounded" />
+                        <div className="h-8 w-10 bg-slate-200 dark:bg-white/10 rounded" />
                       </div>
                     </div>
                   </div>
@@ -263,15 +263,15 @@ export default function CartPage() {
               ))}
             </div>
             <div className="hidden lg:block lg:col-span-1">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6 animate-pulse">
-                <div className="h-6 bg-white/10 rounded w-1/2 mb-6" />
+              <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 animate-pulse">
+                <div className="h-6 bg-slate-200 dark:bg-white/10 rounded w-1/2 mb-6" />
                 <div className="space-y-4 mb-6">
-                  <div className="h-4 bg-white/10 rounded" />
-                  <div className="h-4 bg-white/10 rounded" />
-                  <div className="h-4 bg-white/10 rounded" />
-                  <div className="h-4 bg-white/10 rounded pt-4 border-t border-white/10" />
+                  <div className="h-4 bg-slate-200 dark:bg-white/10 rounded" />
+                  <div className="h-4 bg-slate-200 dark:bg-white/10 rounded" />
+                  <div className="h-4 bg-slate-200 dark:bg-white/10 rounded" />
+                  <div className="h-4 bg-slate-200 dark:bg-white/10 rounded pt-4 border-t border-slate-200 dark:border-white/10" />
                 </div>
-                <div className="h-12 bg-white/10 rounded w-full" />
+                <div className="h-12 bg-slate-200 dark:bg-white/10 rounded w-full" />
               </div>
             </div>
           </div>
@@ -281,7 +281,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-slate-900 to-slate-800 pb-32 md:pb-8 overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-32 md:pb-8 overflow-x-hidden">
       {/* Header */}
       <PageHeader
         title="Shopping Cart"
@@ -305,14 +305,14 @@ export default function CartPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white/5 border border-white/10 rounded-xl p-8 md:p-12 text-center"
+            className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-3xl p-8 md:p-12 text-center"
           >
-            <ShoppingCart className="w-16 h-16 md:w-20 md:h-20 text-white/20 mx-auto mb-4" />
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-2">Your cart is empty</h2>
-            <p className="text-white/60 text-sm md:text-base mb-6">Add some amazing digital products to get started!</p>
+            <ShoppingCart className="w-16 h-16 md:w-20 md:h-20 text-slate-200 dark:text-white/20 mx-auto mb-4" />
+            <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">Your cart is empty</h2>
+            <p className="text-slate-500 dark:text-slate-400 text-sm md:text-base mb-6">Add some amazing digital products to get started!</p>
             <Link
               href="/marketplace"
-              className="inline-block px-6 md:px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 active:scale-95 text-white font-semibold rounded-lg transition-all text-sm md:text-base"
+              className="inline-block px-6 md:px-8 py-3.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-200 dark:text-slate-950 font-bold rounded-xl transition-all text-sm md:text-base shadow-lg"
             >
               Browse Marketplace
             </Link>
@@ -329,11 +329,11 @@ export default function CartPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: -100, height: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="bg-white/5 border border-white/10 rounded-xl p-4 md:p-6 hover:bg-white/[0.07] active:bg-white/[0.08] transition-all"
+                    className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-2xl p-4 md:p-6 hover:border-indigo-500/20 transition-all shadow-xl group"
                   >
                     <div className="flex gap-3 md:gap-6">
                       {/* Thumbnail */}
-                      <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 flex-shrink-0 rounded-xl overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-white/10 shadow-lg hover:border-purple-500/30 transition-all group">
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 flex-shrink-0 rounded-xl overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-slate-200 dark:border-white/10 shadow-lg hover:border-purple-500/30 transition-all group">
                         {item.productId?.thumbnailUrl ? (
                           <div className="relative w-full h-full">
                             <img
@@ -362,14 +362,14 @@ export default function CartPage() {
 
                       {/* Details */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-base md:text-xl font-bold text-white mb-1 md:mb-2 line-clamp-2">
+                        <h3 className="text-base md:text-xl font-bold text-slate-900 dark:text-white mb-1 md:mb-2 line-clamp-2">
                           {item.productId?.title || 'Unknown Product'}
                         </h3>
-                        <p className="text-white/60 text-xs md:text-sm mb-2 md:mb-3 line-clamp-2">
+                        <p className="text-slate-500 dark:text-white/60 text-xs md:text-sm mb-2 md:mb-3 line-clamp-2">
                           {item.productId?.description || 'No description available'}
                         </p>
                         <p className="text-white/50 text-xs md:text-sm mb-3 md:mb-4">
-                          Seller: <span className="text-white/70">{item.productId?.sellerId?.name || 'Unknown'}</span>
+                          Seller: <span className="text-slate-600 dark:text-white/70">{item.productId?.sellerId?.name || 'Unknown'}</span>
                         </p>
 
                         {/* Mobile Layout: Price and Controls Stacked */}
@@ -390,16 +390,16 @@ export default function CartPage() {
 
                           {/* Quantity Controls */}
                           <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-2 bg-white/10 rounded-lg p-1 border border-white/10">
+                            <div className="flex items-center gap-2 bg-slate-200 dark:bg-white/10 rounded-lg p-1 border border-slate-200 dark:border-white/10">
                               <button
                                 onClick={() => updateQuantity(item.productId._id, item.quantity - 1)}
                                 disabled={updating === item.productId._id || item.quantity <= 1}
-                                className="w-9 h-9 md:w-10 md:h-10 rounded bg-white/10 hover:bg-white/20 active:bg-white/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all active:scale-95"
+                                className="w-9 h-9 md:w-10 md:h-10 rounded bg-slate-200 dark:bg-white/10 hover:bg-white/20 active:bg-white/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all active:scale-95"
                                 aria-label="Decrease quantity"
                               >
-                                <Minus className="w-4 h-4 text-white" />
+                                <Minus className="w-4 h-4 text-slate-900 dark:text-white" />
                               </button>
-                              <span className="w-12 md:w-14 text-center text-white font-bold text-sm md:text-base">
+                              <span className="w-12 md:w-14 text-center text-slate-900 dark:text-white font-bold text-sm md:text-base">
                                 {updating === item.productId._id ? (
                                   <Loader className="w-4 h-4 animate-spin mx-auto" />
                                 ) : (
@@ -409,10 +409,10 @@ export default function CartPage() {
                               <button
                                 onClick={() => updateQuantity(item.productId._id, item.quantity + 1)}
                                 disabled={updating === item.productId._id}
-                                className="w-9 h-9 md:w-10 md:h-10 rounded bg-white/10 hover:bg-white/20 active:bg-white/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all active:scale-95"
+                                className="w-9 h-9 md:w-10 md:h-10 rounded bg-slate-200 dark:bg-white/10 hover:bg-white/20 active:bg-white/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-all active:scale-95"
                                 aria-label="Increase quantity"
                               >
-                                <Plus className="w-4 h-4 text-white" />
+                                <Plus className="w-4 h-4 text-slate-900 dark:text-white" />
                               </button>
                             </div>
 
@@ -442,11 +442,11 @@ export default function CartPage() {
 
             {/* Order Summary - Desktop */}
             <div className="hidden lg:block lg:col-span-1">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6 sticky top-24">
-                <h2 className="text-2xl font-bold text-white mb-6">Order Summary</h2>
+              <div className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 shadow-xl rounded-2xl p-6 sticky top-24">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Order Summary</h2>
 
                 <div className="space-y-3 mb-6">
-                  <div className="flex justify-between text-white/70 text-sm">
+                  <div className="flex justify-between text-slate-600 dark:text-white/70 text-sm">
                     <span>Original Price ({cart.totalItems} items)</span>
                     <span className="line-through">₹{calculateOriginalPrice().toFixed(2)}</span>
                   </div>
@@ -464,25 +464,25 @@ export default function CartPage() {
                     </>
                   )}
 
-                  <div className="border-t border-white/10 pt-3">
-                    <div className="flex justify-between text-white/70 text-sm">
+                  <div className="border-t border-slate-200 dark:border-white/10 pt-3">
+                    <div className="flex justify-between text-slate-600 dark:text-white/70 text-sm">
                       <span>Price After Discount</span>
                       <span>₹{calculatePriceAfterDiscount().toFixed(2)}</span>
                     </div>
                   </div>
 
-                  <div className="flex justify-between text-white/70 text-sm">
+                  <div className="flex justify-between text-slate-600 dark:text-white/70 text-sm">
                     <span>GST (5%)</span>
                     <span>+₹{calculateGST().toFixed(2)}</span>
                   </div>
 
-                  <div className="flex justify-between text-white/70 text-sm">
+                  <div className="flex justify-between text-slate-600 dark:text-white/70 text-sm">
                     <span>Platform Fee (2%)</span>
                     <span>+₹{calculatePlatformFee().toFixed(2)}</span>
                   </div>
 
-                  <div className="border-t border-white/10 pt-3">
-                    <div className="flex justify-between text-white text-lg font-bold">
+                  <div className="border-t border-slate-200 dark:border-white/10 pt-3">
+                    <div className="flex justify-between text-slate-900 dark:text-white text-lg font-bold">
                       <span>Final Total</span>
                       <span className="text-green-400">₹{calculateFinalTotal().toFixed(2)}</span>
                     </div>
@@ -492,7 +492,7 @@ export default function CartPage() {
                 <button
                   onClick={handleCheckout}
                   disabled={checkingOut}
-                  className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 active:scale-[0.98] text-white font-bold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-lg shadow-lg hover:shadow-purple-500/50"
+                  className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 active:scale-[0.98] text-slate-900 dark:text-white font-bold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-lg shadow-lg hover:shadow-purple-500/50"
                 >
                   {checkingOut ? (
                     <span className="flex items-center justify-center gap-2">
@@ -517,7 +517,7 @@ export default function CartPage() {
             <motion.div
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-slate-900 via-slate-900/98 to-slate-900/95 backdrop-blur-xl border-t border-white/10 shadow-2xl w-screen"
+              className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gradient-to-t dark:from-slate-900 dark:via-slate-900/98 dark:to-slate-900/95 backdrop-blur-xl border-t border-slate-200 dark:border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] dark:shadow-2xl w-screen"
               style={{ maxWidth: '100vw' }}
             >
               <div className="p-4 space-y-3">
@@ -525,7 +525,7 @@ export default function CartPage() {
                 <details className="group">
                   <summary className="flex items-center justify-between cursor-pointer list-none">
                     <div>
-                      <div className="text-xs text-white/60 mb-1">Total Amount</div>
+                      <div className="text-xs text-slate-500 dark:text-white/60 mb-1">Total Amount</div>
                       <div className="text-2xl font-bold text-green-400">
                         ₹{calculateFinalTotal().toFixed(2)}
                       </div>
@@ -546,8 +546,8 @@ export default function CartPage() {
                     </div>
                   </summary>
 
-                  <div className="mt-4 pt-4 border-t border-white/10 space-y-2 text-sm">
-                    <div className="flex justify-between text-white/70">
+                  <div className="mt-4 pt-4 border-t border-slate-200 dark:border-white/10 space-y-2 text-sm">
+                    <div className="flex justify-between text-slate-600 dark:text-white/70">
                       <span>Original Price ({cart.totalItems} items)</span>
                       <span className="line-through">₹{calculateOriginalPrice().toFixed(2)}</span>
                     </div>
@@ -559,17 +559,17 @@ export default function CartPage() {
                       </div>
                     )}
 
-                    <div className="flex justify-between text-white/70">
+                    <div className="flex justify-between text-slate-600 dark:text-white/70">
                       <span>Price After Discount</span>
                       <span>₹{calculatePriceAfterDiscount().toFixed(2)}</span>
                     </div>
 
-                    <div className="flex justify-between text-white/70">
+                    <div className="flex justify-between text-slate-600 dark:text-white/70">
                       <span>GST (5%)</span>
                       <span>+₹{calculateGST().toFixed(2)}</span>
                     </div>
 
-                    <div className="flex justify-between text-white/70">
+                    <div className="flex justify-between text-slate-600 dark:text-white/70">
                       <span>Platform Fee (2%)</span>
                       <span>+₹{calculatePlatformFee().toFixed(2)}</span>
                     </div>
@@ -579,7 +579,7 @@ export default function CartPage() {
                 <button
                   onClick={handleCheckout}
                   disabled={checkingOut}
-                  className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 active:scale-[0.98] text-white font-bold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-base shadow-lg"
+                  className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 active:scale-[0.98] text-slate-900 dark:text-white font-bold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-base shadow-lg"
                 >
                   {checkingOut ? (
                     <span className="flex items-center justify-center gap-2">

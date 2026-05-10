@@ -41,17 +41,17 @@ export default function BuyerDebugPage() {
         <div className="mb-8">
           <button
             onClick={() => router.push('/dashboard/buyer')}
-            className="mb-4 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition"
+            className="mb-4 px-4 py-2 bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white rounded-lg transition"
           >
             ← Back to Dashboard
           </button>
-          <h1 className="text-4xl font-bold text-white mb-2"> Debug Orders</h1>
-          <p className="text-white/60">Diagnose webhook and payment issues</p>
+          <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2"> Debug Orders</h1>
+          <p className="text-slate-500 dark:text-white/60">Diagnose webhook and payment issues</p>
         </div>
 
         {/* Status Summary */}
-        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-6">
-          <h2 className="text-2xl font-bold text-white mb-4">Status Summary</h2>
+        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl p-6 mb-6">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Status Summary</h2>
 
           {data?.webhookIssue ? (
             <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 mb-4">
@@ -90,7 +90,7 @@ export default function BuyerDebugPage() {
             <ol className="text-yellow-100 space-y-2 list-decimal list-inside">
               <li>Go to: <a href="https://dashboard.razorpay.com" target="_blank" className="text-cyan-400 underline">Razorpay Dashboard</a></li>
               <li>Navigate to: Settings → Webhooks</li>
-              <li>Verify webhook URL is: <code className="bg-black/30 px-2 py-1 rounded">https://api.bittforge.in/api/webhooks/razorpay</code></li>
+              <li>Verify webhook URL is: <code className="bg-white dark:bg-black/30 px-2 py-1 rounded">https://api.bittforge.in/api/webhooks/razorpay</code></li>
               <li>Ensure "payment.captured" event is selected</li>
               <li>Copy the webhook secret and update it in Render environment variables</li>
               <li>Redeploy the server</li>
@@ -99,31 +99,31 @@ export default function BuyerDebugPage() {
         )}
 
         {/* All Orders Table */}
-        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-          <h2 className="text-2xl font-bold text-white mb-4">All Orders ({data?.orders?.length || 0})</h2>
+        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl p-6">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">All Orders ({data?.orders?.length || 0})</h2>
 
           {data?.orders?.length === 0 ? (
-            <p className="text-white/60 text-center py-8">No orders found</p>
+            <p className="text-slate-500 dark:text-white/60 text-center py-8">No orders found</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="text-left text-white/80 py-3 px-2">Product</th>
-                    <th className="text-left text-white/80 py-3 px-2">Amount</th>
-                    <th className="text-left text-white/80 py-3 px-2">Status</th>
-                    <th className="text-left text-white/80 py-3 px-2">Order ID</th>
-                    <th className="text-left text-white/80 py-3 px-2">Date</th>
+                  <tr className="border-b border-slate-200 dark:border-white/10">
+                    <th className="text-left text-slate-700 dark:text-white/80 py-3 px-2">Product</th>
+                    <th className="text-left text-slate-700 dark:text-white/80 py-3 px-2">Amount</th>
+                    <th className="text-left text-slate-700 dark:text-white/80 py-3 px-2">Status</th>
+                    <th className="text-left text-slate-700 dark:text-white/80 py-3 px-2">Order ID</th>
+                    <th className="text-left text-slate-700 dark:text-white/80 py-3 px-2">Date</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data?.orders?.map((order: any) => (
-                    <tr key={order._id} className="border-b border-white/5 hover:bg-white/5">
+                    <tr key={order._id} className="border-b border-slate-200 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/5">
                       <td className="py-3 px-2">
-                        <p className="text-white font-medium">{order.productId?.title || 'Unknown'}</p>
+                        <p className="text-slate-900 dark:text-white font-medium">{order.productId?.title || 'Unknown'}</p>
                       </td>
                       <td className="py-3 px-2">
-                        <p className="text-white">₹{order.amount}</p>
+                        <p className="text-slate-900 dark:text-white">₹{order.amount}</p>
                       </td>
                       <td className="py-3 px-2">
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${order.status === 'paid'
@@ -136,10 +136,10 @@ export default function BuyerDebugPage() {
                         </span>
                       </td>
                       <td className="py-3 px-2">
-                        <code className="text-white/60 text-xs">{order.razorpayOrderId?.substring(0, 20)}...</code>
+                        <code className="text-slate-500 dark:text-white/60 text-xs">{order.razorpayOrderId?.substring(0, 20)}...</code>
                       </td>
                       <td className="py-3 px-2">
-                        <p className="text-white/60 text-sm">
+                        <p className="text-slate-500 dark:text-white/60 text-sm">
                           {new Date(order.createdAt).toLocaleDateString()} {new Date(order.createdAt).toLocaleTimeString()}
                         </p>
                       </td>
@@ -158,7 +158,7 @@ export default function BuyerDebugPage() {
               setLoading(true);
               fetchDebugData();
             }}
-            className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white rounded-xl font-semibold transition shadow-lg"
+            className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-900 dark:text-white rounded-xl font-semibold transition shadow-lg"
           >
             🔄 Refresh Data
           </button>

@@ -2,7 +2,7 @@
 
 ## 📌 Summary
 
-Your contentSellify platform now supports **manual payouts** with automatic commission and GST calculation. RazorpayX has been temporarily disabled and can be re-enabled in the future when you're ready for automated payouts.
+Your Bitforge platform now supports **manual payouts** with automatic commission and GST calculation. RazorpayX has been temporarily disabled and can be re-enabled in the future when you're ready for automated payouts.
 
 ---
 

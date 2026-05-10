@@ -106,24 +106,24 @@ export default function ProductReviews({ productId }: { productId: string }) {
 
   if (loading) {
     return (
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+      <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-white/10 rounded w-1/3"></div>
-          <div className="h-20 bg-white/10 rounded"></div>
+          <div className="h-6 bg-slate-200 dark:bg-white/10 rounded w-1/3"></div>
+          <div className="h-20 bg-slate-200 dark:bg-white/10 rounded"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-6">
+    <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-white">Reviews & Ratings</h2>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Reviews & Ratings</h2>
         {canReview && !showReviewForm && (
           <button
             onClick={() => setShowReviewForm(true)}
-            className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white rounded-lg font-semibold text-sm transition"
+            className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-900 dark:text-white rounded-lg font-semibold text-sm transition"
           >
             Write a Review
           </button>
@@ -132,27 +132,27 @@ export default function ProductReviews({ productId }: { productId: string }) {
 
       {/* Stats Summary */}
       {stats && stats.totalReviews > 0 && (
-        <div className="flex items-center gap-8 pb-6 border-b border-white/10">
+        <div className="flex items-center gap-8 pb-6 border-b border-slate-200 dark:border-white/10">
           <div className="text-center">
-            <div className="text-5xl font-bold text-white mb-2">
+            <div className="text-5xl font-bold text-slate-900 dark:text-white mb-2">
               {stats.averageRating.toFixed(1)}
             </div>
             <div className="flex gap-0.5 justify-center mb-1">
               {[1, 2, 3, 4, 5].map((star) => (
-                <span key={star} className={star <= Math.round(stats.averageRating) ? "text-yellow-400" : "text-white/20"}>
+                <span key={star} className={star <= Math.round(stats.averageRating) ? "text-yellow-400" : "text-slate-200 dark:text-white/20"}>
                   ⭐
                 </span>
               ))}
             </div>
-            <div className="text-sm text-white/60">{stats.totalReviews} reviews</div>
+            <div className="text-sm text-slate-500 dark:text-white/60">{stats.totalReviews} reviews</div>
           </div>
 
           {/* Rating Distribution */}
           <div className="flex-1 space-y-2">
             {[5, 4, 3, 2, 1].map((star) => (
               <div key={star} className="flex items-center gap-3 text-sm">
-                <span className="text-white/70 w-6">{star}★</span>
-                <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                <span className="text-slate-600 dark:text-white/70 w-6">{star}★</span>
+                <div className="flex-1 h-2 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-yellow-400"
                     style={{
@@ -160,7 +160,7 @@ export default function ProductReviews({ productId }: { productId: string }) {
                     }}
                   />
                 </div>
-                <span className="text-white/60 w-8 text-right">{stats.distribution[star] || 0}</span>
+                <span className="text-slate-500 dark:text-white/60 w-8 text-right">{stats.distribution[star] || 0}</span>
               </div>
             ))}
           </div>
@@ -169,12 +169,12 @@ export default function ProductReviews({ productId }: { productId: string }) {
 
       {/* Review Form */}
       {showReviewForm && (
-        <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
-          <h3 className="text-lg font-semibold text-white">Write Your Review</h3>
+        <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 space-y-4">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Write Your Review</h3>
           
           {/* Star Rating */}
           <div>
-            <label className="block text-sm text-white/70 mb-2">Rating</label>
+            <label className="block text-sm text-slate-600 dark:text-white/70 mb-2">Rating</label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
@@ -190,14 +190,14 @@ export default function ProductReviews({ productId }: { productId: string }) {
 
           {/* Comment */}
           <div>
-            <label className="block text-sm text-white/70 mb-2">Comment (Optional)</label>
+            <label className="block text-sm text-slate-600 dark:text-white/70 mb-2">Comment (Optional)</label>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Share your experience with this product..."
               rows={4}
               maxLength={1000}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
+              className="w-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
             />
             <div className="text-xs text-white/50 mt-1 text-right">{comment.length}/1000</div>
           </div>
@@ -206,14 +206,14 @@ export default function ProductReviews({ productId }: { productId: string }) {
           <div className="flex gap-3">
             <button
               onClick={() => setShowReviewForm(false)}
-              className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg font-semibold transition"
+              className="flex-1 px-4 py-2 bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white rounded-lg font-semibold transition"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmitReview}
               disabled={submitting}
-              className="flex-1 px-4 py-2 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white rounded-lg font-semibold transition disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-900 dark:text-white rounded-lg font-semibold transition disabled:opacity-50"
             >
               {submitting ? "Submitting..." : "Submit Review"}
             </button>
@@ -225,21 +225,21 @@ export default function ProductReviews({ productId }: { productId: string }) {
       <div className="space-y-4">
         {reviews.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-white/60">No reviews yet. Be the first to review!</p>
+            <p className="text-slate-500 dark:text-white/60">No reviews yet. Be the first to review!</p>
           </div>
         ) : (
           reviews.map((review) => (
-            <div key={review._id} className="bg-white/5 border border-white/10 rounded-xl p-5">
+            <div key={review._id} className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <div className="flex items-start gap-4">
                 {/* Avatar */}
                 {review.buyerId.profilePictureUrl ? (
                   <img
                     src={review.buyerId.profilePictureUrl}
                     alt={review.buyerId.name}
-                    className="w-12 h-12 rounded-full border-2 border-white/20 object-cover"
+                    className="w-12 h-12 rounded-full border-2 border-slate-300 dark:border-white/20 object-cover"
                   />
                 ) : (
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500/30 to-purple-500/30 border-2 border-white/20 flex items-center justify-center text-lg font-bold text-white">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500/30 to-purple-500/30 border-2 border-slate-300 dark:border-white/20 flex items-center justify-center text-lg font-bold text-slate-900 dark:text-white">
                     {review.buyerId.name?.charAt(0) || "?"}
                   </div>
                 )}
@@ -247,10 +247,10 @@ export default function ProductReviews({ productId }: { productId: string }) {
                 {/* Content */}
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="font-semibold text-white">{review.buyerId.name}</div>
+                    <div className="font-semibold text-slate-900 dark:text-white">{review.buyerId.name}</div>
                     <div className="flex gap-0.5">
                       {[1, 2, 3, 4, 5].map((star) => (
-                        <span key={star} className={star <= review.rating ? "text-yellow-400" : "text-white/20"}>
+                        <span key={star} className={star <= review.rating ? "text-yellow-400" : "text-slate-200 dark:text-white/20"}>
                           ⭐
                         </span>
                       ))}
@@ -258,7 +258,7 @@ export default function ProductReviews({ productId }: { productId: string }) {
                   </div>
 
                   {review.comment && (
-                    <p className="text-white/80 mb-2">{review.comment}</p>
+                    <p className="text-slate-700 dark:text-white/80 mb-2">{review.comment}</p>
                   )}
 
                   <div className="text-xs text-white/50">
@@ -276,7 +276,7 @@ export default function ProductReviews({ productId }: { productId: string }) {
                         <span>💬</span>
                         <span>Seller Response</span>
                       </div>
-                      <p className="text-sm text-white/80">{review.sellerResponse.text}</p>
+                      <p className="text-sm text-slate-700 dark:text-white/80">{review.sellerResponse.text}</p>
                       <div className="text-xs text-white/50 mt-2">
                         {new Date(review.sellerResponse.respondedAt).toLocaleDateString()}
                       </div>

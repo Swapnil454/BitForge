@@ -80,23 +80,23 @@ export default function ReviewModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white dark:bg-black/70 backdrop-blur-sm">
+      <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-purple-600/20 via-indigo-600/20 to-cyan-600/20 backdrop-blur-md border-b border-white/10 p-6">
+        <div className="sticky top-0 bg-gradient-to-r from-purple-600/20 via-indigo-600/20 to-cyan-600/20 backdrop-blur-md border-b border-slate-200 dark:border-white/10 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <PenLine className="w-6 h-6 text-cyan-400" />
                 Write a Review
               </h2>
-              <p className="text-white/60 mt-1 line-clamp-1">{productTitle}</p>
+              <p className="text-slate-500 dark:text-white/60 mt-1 line-clamp-1">{productTitle}</p>
             </div>
             <button
               onClick={onClose}
-              className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition"
+              className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 flex items-center justify-center transition"
             >
-              <X className="w-5 h-5 text-white/80" />
+              <X className="w-5 h-5 text-slate-700 dark:text-white/80" />
             </button>
           </div>
         </div>
@@ -106,15 +106,15 @@ export default function ReviewModal({
           {checkingEligibility ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
-              <p className="text-white/60">Checking eligibility...</p>
+              <p className="text-slate-500 dark:text-white/60">Checking eligibility...</p>
             </div>
           ) : !canReview ? (
             <div className="text-center py-8">
               <AlertTriangle className="w-16 h-16 text-amber-400 mx-auto mb-4" />
-              <p className="text-white/60">You cannot review this product at this time.</p>
+              <p className="text-slate-500 dark:text-white/60">You cannot review this product at this time.</p>
               <button
                 onClick={onClose}
-                className="mt-4 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition"
+                className="mt-4 px-6 py-2 bg-slate-200 dark:bg-white/10 hover:bg-white/20 rounded-lg text-slate-900 dark:text-white transition"
               >
                 Close
               </button>
@@ -123,7 +123,7 @@ export default function ReviewModal({
             <>
               {/* Star Rating */}
               <div>
-                <label className="block text-white font-semibold mb-3">
+                <label className="block text-slate-900 dark:text-white font-semibold mb-3">
                   Your Rating <span className="text-red-400">*</span>
                 </label>
                 <div className="flex items-center gap-2">
@@ -139,12 +139,12 @@ export default function ReviewModal({
                       {star <= (hoverRating || rating) ? (
                         <Star className="w-9 h-9 text-yellow-400 fill-yellow-400 drop-shadow-sm" />
                       ) : (
-                        <Star className="w-9 h-9 text-white/20" />
+                        <Star className="w-9 h-9 text-slate-200 dark:text-white/20" />
                       )}
                     </button>
                   ))}
                   {rating > 0 && (
-                    <span className="ml-3 text-white/60">
+                    <span className="ml-3 text-slate-500 dark:text-white/60">
                       {rating === 1 && "Poor"}
                       {rating === 2 && "Fair"}
                       {rating === 3 && "Good"}
@@ -157,7 +157,7 @@ export default function ReviewModal({
 
               {/* Comment */}
               <div>
-                <label className="block text-white font-semibold mb-3">
+                <label className="block text-slate-900 dark:text-white font-semibold mb-3">
                   Your Review (Optional)
                 </label>
                 <textarea
@@ -168,14 +168,14 @@ export default function ReviewModal({
                     }
                   }}
                   placeholder="Share your experience with this product... What did you like? How was the quality? Would you recommend it?"
-                  className="w-full h-32 px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 resize-none"
+                  className="w-full h-32 px-4 py-3 bg-white dark:bg-black/30 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 resize-none"
                 />
                 <div className="flex justify-between items-center mt-2">
-                  <p className="text-sm text-white/40 flex items-center gap-1.5">
+                  <p className="text-sm text-slate-400 dark:text-white/40 flex items-center gap-1.5">
                     <Lightbulb className="w-4 h-4 text-cyan-400" />
                     Tip: Mention quality, accuracy, and value for money
                   </p>
-                  <p className="text-sm text-white/60">
+                  <p className="text-sm text-slate-500 dark:text-white/60">
                     {comment.length}/1000
                   </p>
                 </div>
@@ -187,7 +187,7 @@ export default function ReviewModal({
                   <Info className="w-5 h-5" />
                   Review Guidelines
                 </h3>
-                <ul className="text-sm text-white/70 space-y-1 ml-7">
+                <ul className="text-sm text-slate-600 dark:text-white/70 space-y-1 ml-7">
                   <li>• Be honest and constructive</li>
                   <li>• Focus on product quality and value</li>
                   <li>• No offensive language or personal attacks</li>
@@ -196,10 +196,10 @@ export default function ReviewModal({
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-3 pt-6 mt-2 border-t border-white/5">
+              <div className="flex items-center justify-end gap-3 pt-6 mt-2 border-t border-slate-200 dark:border-white/5">
                 <button
                   onClick={onClose}
-                  className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm rounded-lg font-medium transition"
+                  className="px-5 py-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm rounded-lg font-medium transition"
                   disabled={submitting}
                 >
                   Cancel
@@ -207,7 +207,7 @@ export default function ReviewModal({
                 <button
                   onClick={handleSubmit}
                   disabled={rating === 0 || submitting}
-                  className="px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white text-sm rounded-lg font-medium transition shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-900 dark:text-white text-sm rounded-lg font-medium transition shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {submitting ? (
                     <>

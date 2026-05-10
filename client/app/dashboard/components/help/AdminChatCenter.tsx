@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTheme } from "next-themes";
 import { io, Socket } from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { adminAPI, chatAPI } from "@/lib/api";
@@ -99,6 +100,8 @@ const handleDownload = async (url: string, filename: string, e?: React.MouseEven
 };
 
 export default function AdminChatCenter() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -608,7 +611,7 @@ export default function AdminChatCenter() {
   const isSelectionMode = selectedMessageIds.length > 0;
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#05050a] text-white overflow-hidden">
+    <div className={`w-full h-full flex flex-col overflow-hidden ${isDark ? "bg-[#05050a] text-white" : "bg-slate-50 text-slate-900"}`}>
       <PageHeader
         backHref="/dashboard/admin"
         backLabel="Dashboard"
@@ -624,7 +627,7 @@ export default function AdminChatCenter() {
       />
 
       <div className="flex-1 min-h-0">
-        <div className="w-full h-full flex flex-col md:flex-row bg-[#0B141A] overflow-hidden max-w-6xl mx-auto shadow-2xl md:border-x border-white/10 md:rounded-t-2xl relative">
+        <div className={`w-full h-full flex flex-col md:flex-row overflow-hidden max-w-6xl mx-auto shadow-2xl md:border-x md:rounded-t-2xl relative ${isDark ? "bg-[#0B141A] border-white/10" : "bg-white border-slate-200"}`}>
           {previewImage && (
             <div
               className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
@@ -688,14 +691,14 @@ export default function AdminChatCenter() {
 
           {/* Left: conversations list */}
           <div
-            className={`w-full md:w-80 border-b md:border-b-0 md:border-r border-white/10 bg-linear-to-b from-[#111B21] via-[#101A2C] to-[#0A1421] flex-col ${
+            className={`w-full md:w-80 border-b md:border-b-0 md:border-r flex-col ${
               isMobileThreadView && selectedUserId ? "hidden" : "flex"
-            }`}
+            } ${isDark ? "border-white/10 bg-gradient-to-b from-[#111B21] via-[#101A2C] to-[#0A1421]" : "border-slate-200 bg-white"}`}
           >
-            <div className="px-4 py-3 bg-black/25 backdrop-blur-xl flex items-center justify-between border-b border-white/10 h-16">
+            <div className={`px-4 py-3 backdrop-blur-xl flex items-center justify-between border-b h-16 ${isDark ? "bg-black/25 border-white/10" : "bg-white border-slate-200"}`}>
               <div className="min-w-0">
-                <h2 className="text-base font-semibold text-white tracking-tight">Support Chats</h2>
-                <p className="text-[11px] text-white/55 truncate">Centralized inbox for buyer and seller support</p>
+                <h2 className={`text-base font-semibold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Support Chats</h2>
+                <p className={`text-[11px] truncate ${isDark ? "text-white/55" : "text-slate-400"}`}>Centralized inbox for buyer and seller support</p>
               </div>
               <span className="text-[10px] uppercase tracking-wider font-semibold text-cyan-200/90 bg-cyan-500/15 border border-cyan-500/30 rounded-full px-2 py-1">
                 Live
@@ -703,8 +706,8 @@ export default function AdminChatCenter() {
             </div>
 
             {/* Role filter tabs */}
-            <div className="px-4 py-3 border-b border-white/10 bg-black/20 backdrop-blur-xl space-y-2">
-              <div className="grid grid-cols-2 gap-3 rounded-xl border border-white/10 bg-black/40 p-2">
+            <div className={`px-4 py-3 border-b backdrop-blur-xl space-y-2 ${isDark ? "border-white/10 bg-black/20" : "border-slate-200 bg-white"}`}>
+              <div className={`grid grid-cols-2 gap-3 rounded-xl border p-2 ${isDark ? "border-white/10 bg-black/40" : "border-slate-200 bg-slate-50"}`}>
                 {["seller", "buyer"].map((role) => {
                   const unreadForRole = role === "seller" ? unreadByRole.seller : unreadByRole.buyer;
 
@@ -714,8 +717,10 @@ export default function AdminChatCenter() {
                       onClick={() => setRoleFilter(role as "seller" | "buyer")}
                       className={`flex-1 py-2.5 uppercase tracking-widest font-black transition text-center rounded-lg text-[10px] relative group ${
                         roleFilter === role
-                          ? "text-white bg-linear-to-r from-indigo-600 to-cyan-600 border border-indigo-400/60 shadow-lg shadow-indigo-900/40"
-                          : "text-white/60 hover:text-white hover:bg-white/5 border border-transparent"
+                          ? `text-white bg-gradient-to-r from-indigo-600 to-cyan-600 border border-indigo-400/60 shadow-lg shadow-indigo-900/40`
+                          : isDark
+                            ? "text-white/60 hover:text-white hover:bg-white/5 border border-transparent"
+                            : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-transparent"
                       }`}
                     >
                       <span className="inline-flex items-center gap-1.5">
@@ -773,8 +778,10 @@ export default function AdminChatCenter() {
                     }}
                     className={`w-full text-left px-4 py-3.5 rounded-xl border transition flex items-center gap-3.5 ${
                       selectedUserId === c.userId
-                        ? "bg-linear-to-r from-indigo-600/25 to-cyan-600/25 border-indigo-400/40 shadow-lg shadow-indigo-900/30"
-                        : "bg-white/[0.02] border-white/8 hover:bg-white/[0.06] hover:border-white/20"
+                        ? "bg-gradient-to-r from-indigo-600/25 to-cyan-600/25 border-indigo-400/40 shadow-lg shadow-indigo-900/30"
+                        : isDark
+                          ? "bg-white/[0.02] border-white/8 hover:bg-white/[0.06] hover:border-white/20"
+                          : "bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300"
                     }`}
                   >
                     <div className={`w-12 h-12 rounded-xl border flex items-center justify-center shrink-0 overflow-hidden ${
@@ -787,7 +794,9 @@ export default function AdminChatCenter() {
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-baseline gap-2 mb-1">
                         <span className={`font-extrabold truncate max-w-[150px] text-[15px] leading-tight ${
-                          c.role === "seller" ? "text-fuchsia-100" : "text-cyan-100"
+                          isDark
+                            ? (c.role === "seller" ? "text-fuchsia-100" : "text-cyan-100")
+                            : "text-slate-800"
                         }`}>
                           {c.name}
                         </span>
@@ -824,13 +833,11 @@ export default function AdminChatCenter() {
                               </div>
                               <span
                                 className={`text-[12px] tracking-wide font-medium truncate max-w-[110px] ${
-                                  isRole
-                                    ? c.role === "seller"
-                                      ? "text-fuchsia-300/60"
-                                      : "text-cyan-300/60"
-                                    : c.role === "seller"
-                                    ? "text-fuchsia-200"
-                                    : "text-cyan-100"
+                                  isDark
+                                    ? isRole
+                                      ? (c.role === "seller" ? "text-fuchsia-300/60" : "text-cyan-300/60")
+                                      : (c.role === "seller" ? "text-fuchsia-200" : "text-cyan-100")
+                                    : "text-slate-500"
                                 }`}
                                 title={previewData.text}
                               >
@@ -854,7 +861,7 @@ export default function AdminChatCenter() {
           </div>
 
       {/* Right: thread */}
-      <div className={`flex-1 min-h-0 flex flex-col bg-linear-to-br from-[#070a12] via-[#0a1020] to-[#0d1326] relative ${isMobileThreadView && selectedUserId ? "flex" : "hidden md:flex"}`}>
+      <div className={`flex-1 min-h-0 flex flex-col relative ${isMobileThreadView && selectedUserId ? "flex" : "hidden md:flex"} ${isDark ? "bg-gradient-to-br from-[#070a12] via-[#0a1020] to-[#0d1326]" : "bg-gradient-to-br from-slate-100 via-slate-50 to-white"}`}>
         {selectedUserId ? (
           <>
             {/* Thread Header */}
@@ -892,14 +899,18 @@ export default function AdminChatCenter() {
                     <div>
                       <h1
                         className={`text-[17px] font-extrabold leading-tight ${
-                          selectedUser?.role === "seller" ? "text-fuchsia-100" : "text-cyan-100"
+                          isDark
+                            ? (selectedUser?.role === "seller" ? "text-fuchsia-100" : "text-cyan-100")
+                            : "text-slate-800"
                         }`}
                       >
                         {selectedUser ? selectedUser.name : "User"}
                       </h1>
                       <p
                         className={`text-[10px] font-semibold uppercase tracking-wide ${
-                          selectedUser?.role === "seller" ? "text-fuchsia-300/80" : "text-cyan-300/80"
+                          isDark
+                            ? (selectedUser?.role === "seller" ? "text-fuchsia-300/80" : "text-cyan-300/80")
+                            : (selectedUser?.role === "seller" ? "text-fuchsia-600" : "text-cyan-600")
                         }`}
                       >
                         {selectedUser?.role === "seller" ? "Seller" : "Buyer"}
@@ -915,9 +926,9 @@ export default function AdminChatCenter() {
                       <MoreVertical className="w-5 h-5" />
                     </button>
                     {actionsOpen && (
-                      <div className="absolute right-0 top-full mt-2 w-48 bg-slate-900/95 rounded-lg shadow-xl border border-white/10 py-1 z-50 backdrop-blur-xl">
+                      <div className={`absolute right-0 top-full mt-2 w-48 rounded-lg shadow-xl border py-1 z-50 backdrop-blur-xl ${isDark ? "bg-slate-900/95 border-white/10" : "bg-white border-slate-200"}`}>
                         <button
-                          className="w-full text-left px-4 py-2.5 text-sm text-white/85 hover:bg-white/10 transition rounded-md mx-1 my-0.5"
+                          className={`w-full text-left px-4 py-2.5 text-sm transition rounded-md mx-1 my-0.5 ${isDark ? "text-white/85 hover:bg-white/10" : "text-slate-700 hover:bg-slate-100"}`}
                           onClick={() => {
                             handleClearThread();
                             setActionsOpen(false);
@@ -926,7 +937,7 @@ export default function AdminChatCenter() {
                           Clear thread
                         </button>
                         <button
-                          className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-white/10 transition rounded-md mx-1 my-0.5"
+                          className={`w-full text-left px-4 py-2.5 text-sm transition rounded-md mx-1 my-0.5 ${isDark ? "text-red-400 hover:bg-white/10" : "text-red-500 hover:bg-red-50"}`}
                           onClick={() => {
                             handleClearAllChats();
                             setActionsOpen(false);
@@ -945,7 +956,7 @@ export default function AdminChatCenter() {
             <div 
               ref={messagesContainerRef}
               onScroll={handleMessagesScroll}
-              className="flex-1 overflow-y-auto px-5 py-5 space-y-3 bg-gradient-to-br from-[#05050a] via-[#0a0a14] to-[#0f1123] relative"
+              className={`flex-1 overflow-y-auto px-5 py-5 space-y-3 relative ${isDark ? "bg-gradient-to-br from-[#05050a] via-[#0a0a14] to-[#0f1123]" : "bg-gradient-to-br from-slate-100 via-slate-50 to-white"}`}
             >
               {loadingThread ? (
                 <div className="flex flex-col gap-4 animate-pulse px-2 py-4">
@@ -987,14 +998,18 @@ export default function AdminChatCenter() {
 
                       <div 
                         className={`relative max-w-[85%] md:max-w-[65%] rounded-2xl px-4 py-2.5 shadow-lg select-none ${
-                          isFromAdmin 
-                            ? "bg-slate-700/85 text-white rounded-tr-sm border border-slate-600/80" 
-                            : "bg-white/6 backdrop-blur-md text-white rounded-tl-sm border border-white/12"
+                          isFromAdmin
+                            ? isDark
+                              ? "bg-slate-700/85 text-white rounded-tr-sm border border-slate-600/80"
+                              : "bg-indigo-600 text-white rounded-tr-sm border border-indigo-500/50"
+                            : isDark
+                              ? "bg-white/6 backdrop-blur-md text-white rounded-tl-sm border border-white/12"
+                              : "bg-white text-slate-900 rounded-tl-sm border border-slate-200 shadow-sm"
                         }`}
                         style={{ WebkitUserSelect: 'none', userSelect: 'none' }}
                       >
                         {!isFromAdmin && (
-                          <p className="text-[10px] font-bold text-blue-300 mb-1 leading-tight uppercase tracking-wide">
+                          <p className={`text-[10px] font-bold mb-1 leading-tight uppercase tracking-wide ${isDark ? "text-blue-300" : "text-blue-600"}`}>
                             {m.from.name}
                           </p>
                         )}
@@ -1066,7 +1081,7 @@ export default function AdminChatCenter() {
             </div>
 
             {/* Input Area */}
-            <div className="px-3 md:px-5 py-3 flex flex-col gap-2.5 relative z-10 bg-[#05050a] shrink-0 border-t border-white/10">
+            <div className={`px-3 md:px-5 py-3 flex flex-col gap-2.5 relative z-10 shrink-0 border-t ${isDark ? "bg-[#05050a] border-white/10" : "bg-white border-slate-200"}`}>
               
               {attachment && (
                 <div className="flex items-center gap-3 p-3.5 bg-white/6 backdrop-blur-xl border border-white/12 rounded-lg mb-1.5 mx-1">
@@ -1088,7 +1103,7 @@ export default function AdminChatCenter() {
               )}
 
               <div className="flex items-end gap-2.5 max-w-4xl mx-auto w-full">
-                <div className="flex-1 bg-white/6 backdrop-blur-xl rounded-xl flex items-end min-h-[42px] px-2 md:px-3.5 border border-white/12 focus-within:border-indigo-500/60 focus-within:bg-white/8 transition-all shadow-lg hover:border-white/15">
+                <div className={`flex-1 rounded-xl flex items-end min-h-[42px] px-2 md:px-3.5 border transition-all ${isDark ? "bg-white/6 backdrop-blur-xl border-white/12 focus-within:border-indigo-500/60 focus-within:bg-white/8 shadow-lg hover:border-white/15" : "bg-white border-slate-200 focus-within:border-indigo-400 shadow-sm hover:border-slate-300"}`}>
                   
                   <button 
                     onClick={() => fileInputRef.current?.click()}
@@ -1113,7 +1128,7 @@ export default function AdminChatCenter() {
                     }}
                     onKeyDown={handleKeyDown}
                     placeholder="Type a message..."
-                    className="flex-1 bg-transparent text-white text-[14px] placeholder-white/40 py-2.5 px-2 resize-none max-h-[120px] focus:outline-none custom-scrollbar leading-relaxed"
+                    className={`flex-1 bg-transparent text-[14px] py-2.5 px-2 resize-none max-h-[120px] focus:outline-none custom-scrollbar leading-relaxed ${isDark ? "text-white placeholder-white/40" : "text-slate-900 placeholder-slate-400"}`}
                     rows={1}
                   />
 
@@ -1155,25 +1170,25 @@ export default function AdminChatCenter() {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-[#05050a] via-[#0a0a14] to-[#0f1123] p-6 md:p-10">
-            <div className="w-full max-w-xl rounded-3xl border border-white/10 bg-linear-to-b from-white/[0.05] to-white/[0.02] px-8 py-10 text-center shadow-2xl shadow-indigo-950/30 backdrop-blur-xl">
-              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-linear-to-br from-indigo-500/30 via-violet-500/25 to-cyan-500/30 border border-indigo-300/25 shadow-lg shadow-indigo-900/40">
-                <MessageCircle className="h-10 w-10 text-cyan-200" />
+          <div className={`flex-1 flex items-center justify-center p-6 md:p-10 ${isDark ? "bg-gradient-to-br from-[#05050a] via-[#0a0a14] to-[#0f1123]" : "bg-gradient-to-br from-slate-100 via-slate-50 to-white"}`}>
+            <div className={`w-full max-w-xl rounded-3xl border px-8 py-10 text-center backdrop-blur-xl ${isDark ? "border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.02] shadow-2xl shadow-indigo-950/30" : "border-slate-200 bg-white shadow-xl"}`}>
+              <div className={`mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border shadow-lg ${isDark ? "bg-gradient-to-br from-indigo-500/30 via-violet-500/25 to-cyan-500/30 border-indigo-300/25 shadow-indigo-900/40" : "bg-gradient-to-br from-indigo-50 via-violet-50 to-cyan-50 border-indigo-200 shadow-indigo-200/50"}`}>
+                <MessageCircle className={`h-10 w-10 ${isDark ? "text-cyan-200" : "text-indigo-500"}`} />
               </div>
-              <h3 className="text-3xl font-semibold tracking-tight text-white">Bitforge Help Center</h3>
-              <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-300">
+              <h3 className={`text-3xl font-semibold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Bitforge Help Center</h3>
+              <p className={`mx-auto mt-3 max-w-md text-sm leading-relaxed ${isDark ? "text-slate-300" : "text-slate-500"}`}>
                 Select a chat to start responding to buyers and sellers with secure, real-time messaging.
               </p>
               <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/25 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-200">
+                <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${isDark ? "border-cyan-400/25 bg-cyan-500/10 text-cyan-200" : "border-cyan-400/30 bg-cyan-50 text-cyan-700"}`}>
                   <MessageCircle className="h-3.5 w-3.5" />
                   Live replies
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-400/25 bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-200">
+                <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${isDark ? "border-violet-400/25 bg-violet-500/10 text-violet-200" : "border-violet-400/30 bg-violet-50 text-violet-700"}`}>
                   <ImageIcon className="h-3.5 w-3.5" />
                   Image support
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/25 bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-200">
+                <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${isDark ? "border-indigo-400/25 bg-indigo-500/10 text-indigo-200" : "border-indigo-400/30 bg-indigo-50 text-indigo-700"}`}>
                   <Paperclip className="h-3.5 w-3.5" />
                   File sharing
                 </span>

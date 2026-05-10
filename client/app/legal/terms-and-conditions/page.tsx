@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function TermsAndConditionsPage() {
   return (
-    <main className="relative min-h-screen bg-[#05050a] text-white overflow-x-hidden">
+    <main className="relative min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white overflow-x-hidden">
       {/* HEADER */}
       <DynamicHeader title="Terms & Conditions" />
 
@@ -21,19 +21,19 @@ export default function TermsAndConditionsPage() {
 
       <div className="relative z-10 mx-auto max-w-4xl px-5 pb-20 pt-24 sm:pt-28 md:pt-32 md:pb-28">
         {/* HEADER */}
-        <section className="mb-10 border-b border-white/10 pb-8">
+        <section className="mb-10 border-b border-slate-200 dark:border-white/10 pb-8">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300/80">
             Legal
           </p>
           <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl md:text-[42px]">
             Terms &amp; Conditions
           </h1>
-          <p className="mt-4 text-sm text-white/60">
-            <strong className="text-white/80">Effective Date:</strong> January 1, 2026
+          <p className="mt-4 text-sm text-slate-500 dark:text-white/60">
+            <strong className="text-slate-700 dark:text-white/80">Effective Date:</strong> January 1, 2026
             <span className="mx-3">·</span>
-            <strong className="text-white/80">Last Updated:</strong> February 1, 2026
+            <strong className="text-slate-700 dark:text-white/80">Last Updated:</strong> February 1, 2026
           </p>
-          <p className="mt-3 text-sm text-white/70">
+          <p className="mt-3 text-sm text-slate-600 dark:text-white/70">
             These Terms and Conditions (&quot;Terms&quot;) govern your access to and use of the BitForge
             platform, including our website, services, and applications (collectively, the
             &quot;Platform&quot;). By accessing or using the Platform, you agree to be bound by these Terms.
@@ -41,11 +41,11 @@ export default function TermsAndConditionsPage() {
         </section>
 
         {/* TABLE OF CONTENTS */}
-        <section className="mb-10 rounded-2xl border border-white/10 bg-white/5 p-5">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-white/80">
+        <section className="mb-10 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-5">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-700 dark:text-white/80">
             Table of Contents
           </h2>
-          <nav className="grid gap-2 text-sm text-white/70 sm:grid-cols-2">
+          <nav className="grid gap-2 text-sm text-slate-600 dark:text-white/70 sm:grid-cols-2">
             <a href="#acceptance" className="hover:text-cyan-300">1. Acceptance of Terms</a>
             <a href="#definitions" className="hover:text-cyan-300">2. Definitions</a>
             <a href="#accounts" className="hover:text-cyan-300">3. User Accounts</a>
@@ -67,10 +67,10 @@ export default function TermsAndConditionsPage() {
         </section>
 
         {/* CONTENT */}
-        <div className="prose prose-invert max-w-none space-y-10 text-sm text-white/70">
+        <div className="prose prose-invert max-w-none space-y-10 text-sm text-slate-600 dark:text-white/70">
           {/* 1. Acceptance */}
           <section id="acceptance">
-            <h2 className="mb-3 text-xl font-semibold text-white">1. Acceptance of Terms</h2>
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">1. Acceptance of Terms</h2>
             <p className="mb-3">
               By creating an account, accessing, or using the BitForge Platform, you acknowledge that
               you have read, understood, and agree to be bound by these Terms and all applicable laws
@@ -90,33 +90,33 @@ export default function TermsAndConditionsPage() {
 
           {/* 2. Definitions */}
           <section id="definitions">
-            <h2 className="mb-3 text-xl font-semibold text-white">2. Definitions</h2>
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">2. Definitions</h2>
             <p className="mb-3">For the purposes of these Terms:</p>
             <ul className="ml-6 list-disc space-y-2">
               <li>
-                <strong className="text-white/90">&quot;Platform&quot;</strong> refers to the BitForge
+                <strong className="text-slate-800 dark:text-white/90">&quot;Platform&quot;</strong> refers to the BitForge
                 website, applications, services, and related infrastructure.
               </li>
               <li>
-                <strong className="text-white/90">&quot;Seller&quot;</strong> refers to any user who lists,
+                <strong className="text-slate-800 dark:text-white/90">&quot;Seller&quot;</strong> refers to any user who lists,
                 offers, or sells digital products on the Platform.
               </li>
               <li>
-                <strong className="text-white/90">&quot;Buyer&quot;</strong> refers to any user who browses,
+                <strong className="text-slate-800 dark:text-white/90">&quot;Buyer&quot;</strong> refers to any user who browses,
                 purchases, or downloads digital products from the Platform.
               </li>
               <li>
-                <strong className="text-white/90">&quot;Digital Product&quot;</strong> refers to any
+                <strong className="text-slate-800 dark:text-white/90">&quot;Digital Product&quot;</strong> refers to any
                 software, digital content, licenses, access keys, or other intangible goods offered for
                 sale on the Platform.
               </li>
               <li>
-                <strong className="text-white/90">&quot;Content&quot;</strong> refers to any text, images,
+                <strong className="text-slate-800 dark:text-white/90">&quot;Content&quot;</strong> refers to any text, images,
                 videos, software, data, or other materials uploaded, posted, or transmitted through the
                 Platform.
               </li>
               <li>
-                <strong className="text-white/90">&quot;We,&quot; &quot;Us,&quot; or &quot;BitForge&quot;</strong> refers
+                <strong className="text-slate-800 dark:text-white/90">&quot;We,&quot; &quot;Us,&quot; or &quot;BitForge&quot;</strong> refers
                 to the company operating the Platform.
               </li>
             </ul>
@@ -124,16 +124,16 @@ export default function TermsAndConditionsPage() {
 
           {/* 3. User Accounts */}
           <section id="accounts">
-            <h2 className="mb-3 text-xl font-semibold text-white">3. User Accounts and Registration</h2>
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">3. User Accounts and Registration</h2>
             
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">3.1 Account Creation</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">3.1 Account Creation</h3>
             <p className="mb-3">
               To access certain features of the Platform, you must create an account. You agree to
               provide accurate, current, and complete information during registration and to update
               such information to keep it accurate, current, and complete.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">3.2 Account Security</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">3.2 Account Security</h3>
             <p className="mb-3">
               You are responsible for maintaining the confidentiality of your account credentials and
               for all activities that occur under your account. You agree to:
@@ -145,7 +145,7 @@ export default function TermsAndConditionsPage() {
               <li>Log out of your account at the end of each session when using a shared device.</li>
             </ul>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">3.3 Account Types</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">3.3 Account Types</h3>
             <p className="mb-3">
               BitForge offers different account types, including Buyer accounts and Seller accounts.
               Each account type may have different rights, privileges, and obligations as outlined in
@@ -156,16 +156,16 @@ export default function TermsAndConditionsPage() {
 
           {/* 4. Buyer Terms */}
           <section id="buyer-terms">
-            <h2 className="mb-3 text-xl font-semibold text-white">4. Buyer Terms</h2>
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">4. Buyer Terms</h2>
             
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">4.1 Purchases</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">4.1 Purchases</h3>
             <p className="mb-3">
               When you purchase a Digital Product through the Platform, you are entering into a direct
               transaction with the Seller. BitForge acts as a payment processor and platform provider
               but is not a party to the transaction between you and the Seller.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">4.2 Payment</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">4.2 Payment</h3>
             <p className="mb-3">
               By providing payment information, you represent and warrant that you are authorized to
               use the payment method provided. All transactions are processed through secure,
@@ -173,14 +173,14 @@ export default function TermsAndConditionsPage() {
               behalf through the Platform, including applicable taxes and fees.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">4.3 Access and Downloads</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">4.3 Access and Downloads</h3>
             <p className="mb-3">
               Upon successful payment, you will receive access to download or use the purchased Digital
               Product. Access is typically provided immediately, and download links may expire after a
               certain period. You are responsible for downloading and storing your purchased products.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">4.4 License and Usage Rights</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">4.4 License and Usage Rights</h3>
             <p className="mb-3">
               Your purchase of a Digital Product grants you a limited, non-exclusive,
               non-transferable license to use the product in accordance with the license terms
@@ -188,7 +188,7 @@ export default function TermsAndConditionsPage() {
               property unless explicitly stated by the Seller.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">4.5 Refunds and Returns</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">4.5 Refunds and Returns</h3>
             <p className="mb-3">
               Due to the nature of digital products, all sales are generally final. However, refunds
               may be issued in cases of technical defects, non-delivery, or material misrepresentation
@@ -200,16 +200,16 @@ export default function TermsAndConditionsPage() {
 
           {/* 5. Seller Terms */}
           <section id="seller-terms">
-            <h2 className="mb-3 text-xl font-semibold text-white">5. Seller Terms</h2>
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">5. Seller Terms</h2>
             
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">5.1 Seller Eligibility</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">5.1 Seller Eligibility</h3>
             <p className="mb-3">
               To become a Seller, you must complete our verification process, provide accurate business
               or individual information, and comply with all applicable laws and regulations. We reserve
               the right to reject or terminate any Seller account at our discretion.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">5.2 Product Listings</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">5.2 Product Listings</h3>
             <p className="mb-3">
               As a Seller, you are responsible for the accuracy and completeness of your product listings.
               You represent and warrant that:
@@ -222,7 +222,7 @@ export default function TermsAndConditionsPage() {
               <li>You will honor all licenses and usage terms you specify for your products.</li>
             </ul>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">5.3 Pricing and Discounts</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">5.3 Pricing and Discounts</h3>
             <p className="mb-3">
               You have full control over the pricing of your Digital Products. Prices must be set in
               Indian Rupees (INR) and should include any applicable taxes. You may offer discounts and
@@ -230,7 +230,7 @@ export default function TermsAndConditionsPage() {
               of purchase.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">5.4 Seller Obligations</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">5.4 Seller Obligations</h3>
             <p className="mb-3">
               As a Seller, you agree to:
             </p>
@@ -243,14 +243,14 @@ export default function TermsAndConditionsPage() {
               <li>Keep your product files and access mechanisms functional and accessible.</li>
             </ul>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">5.5 Seller Payouts</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">5.5 Seller Payouts</h3>
             <p className="mb-3">
               BitForge processes payments on behalf of Sellers. Payout schedules, methods, and
               requirements are detailed separately in our Seller Payout Terms. You must provide valid
               banking information and complete any required verification before receiving payouts.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">5.6 Product Removal</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">5.6 Product Removal</h3>
             <p className="mb-3">
               We reserve the right to remove any product listing that violates these Terms, applicable
               laws, or our content policies. We may also remove products in response to intellectual
@@ -260,9 +260,9 @@ export default function TermsAndConditionsPage() {
 
           {/* 6. Payments and Fees */}
           <section id="payments">
-            <h2 className="mb-3 text-xl font-semibold text-white">6. Payments and Fees</h2>
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">6. Payments and Fees</h2>
             
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">6.1 Platform Fees</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">6.1 Platform Fees</h3>
             <p className="mb-3">
               BitForge charges Sellers a commission on each successful transaction. The current fee
               structure is:
@@ -276,7 +276,7 @@ export default function TermsAndConditionsPage() {
               right to modify our fee structure with 30 days&apos; notice to Sellers.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">6.2 Taxes</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">6.2 Taxes</h3>
             <p className="mb-3">
               You are responsible for determining and paying any applicable taxes arising from your use
               of the Platform. Sellers are responsible for collecting and remitting any applicable
@@ -285,14 +285,14 @@ export default function TermsAndConditionsPage() {
               information from users as required by law.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">6.3 Currency</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">6.3 Currency</h3>
             <p className="mb-3">
               All transactions on the Platform are conducted in Indian Rupees (INR) unless otherwise
               specified. Currency conversion, if applicable, will be handled by your payment provider
               and may incur additional fees.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">6.4 Payment Disputes</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">6.4 Payment Disputes</h3>
             <p className="mb-3">
               In the event of a payment dispute, chargeback, refund request, fraud investigation, or
               legal requests, we may withhold payouts and investigate the matter. You agree to cooperate
@@ -302,9 +302,9 @@ export default function TermsAndConditionsPage() {
 
           {/* 7. Intellectual Property */}
           <section id="intellectual-property">
-            <h2 className="mb-3 text-xl font-semibold text-white">7. Intellectual Property Rights</h2>
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">7. Intellectual Property Rights</h2>
             
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">7.1 Platform Ownership</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">7.1 Platform Ownership</h3>
             <p className="mb-3">
               The Platform and its original content, features, and functionality are owned by BitForge
               and are protected by international copyright, trademark, patent, trade secret, and other
@@ -312,7 +312,7 @@ export default function TermsAndConditionsPage() {
               prior written permission.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">7.2 User Content Ownership</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">7.2 User Content Ownership</h3>
             <p className="mb-3">
               You retain ownership of all intellectual property rights in the Content you upload or
               submit to the Platform. However, by uploading Content, you grant BitForge a worldwide,
@@ -320,7 +320,7 @@ export default function TermsAndConditionsPage() {
               solely for the purpose of operating and promoting the Platform.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">7.3 DMCA and Copyright Complaints</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">7.3 DMCA and Copyright Complaints</h3>
             <p className="mb-3">
               BitForge respects the intellectual property rights of others. If you believe that your
               copyrighted work has been copied in a way that constitutes copyright infringement, please
@@ -338,7 +338,7 @@ export default function TermsAndConditionsPage() {
 
           {/* 8. Prohibited Activities */}
           <section id="prohibited">
-            <h2 className="mb-3 text-xl font-semibold text-white">8. Prohibited Activities</h2>
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">8. Prohibited Activities</h2>
             <p className="mb-3">
               You agree not to engage in any of the following prohibited activities:
             </p>
@@ -362,15 +362,15 @@ export default function TermsAndConditionsPage() {
 
           {/* 9. Content Standards */}
           <section id="content">
-            <h2 className="mb-3 text-xl font-semibold text-white">9. Content Standards and Moderation</h2>
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">9. Content Standards and Moderation</h2>
             
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">9.1 User Content Responsibility</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">9.1 User Content Responsibility</h3>
             <p className="mb-3">
               You are solely responsible for all Content you upload, post, or transmit through the
               Platform. All Content must comply with these Terms and applicable laws.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">9.2 Prohibited Content</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">9.2 Prohibited Content</h3>
             <p className="mb-3">
               Content must not:
             </p>
@@ -384,7 +384,7 @@ export default function TermsAndConditionsPage() {
               <li>Promote illegal activities or facilitate criminal conduct.</li>
             </ul>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">9.3 Content Moderation</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">9.3 Content Moderation</h3>
             <p className="mb-3">
               We reserve the right, but are not obligated, to monitor, review, and remove any Content
               that violates these Terms or is otherwise objectionable. We may employ automated tools
@@ -394,9 +394,9 @@ export default function TermsAndConditionsPage() {
 
           {/* 10. Dispute Resolution */}
           <section id="disputes">
-            <h2 className="mb-3 text-xl font-semibold text-white">10. Dispute Resolution</h2>
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">10. Dispute Resolution</h2>
             
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">10.1 User Disputes</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">10.1 User Disputes</h3>
             <p className="mb-3">
               Disputes between Buyers and Sellers should first be attempted to be resolved directly
               between the parties. If direct resolution fails, either party may contact BitForge
@@ -405,7 +405,7 @@ export default function TermsAndConditionsPage() {
               either party&apos;s right to binding arbitration under Section 16 of these Terms.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">10.2 Dispute Process</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">10.2 Dispute Process</h3>
             <p className="mb-3">
               Our dispute resolution process typically involves:
             </p>
@@ -421,7 +421,7 @@ export default function TermsAndConditionsPage() {
               resolve disputes between users and our decisions are final and binding.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">10.3 Disputes with BitForge</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">10.3 Disputes with BitForge</h3>
             <p className="mb-3">
               Any disputes arising between you and BitForge shall be governed by the arbitration and
               governing law provisions set forth in Section 16 of these Terms.
@@ -430,16 +430,16 @@ export default function TermsAndConditionsPage() {
 
           {/* 11. Disclaimers */}
           <section id="disclaimers">
-            <h2 className="mb-3 text-xl font-semibold text-white">11. Disclaimers and Limitations of Liability</h2>
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">11. Disclaimers and Limitations of Liability</h2>
             
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">11.1 Platform &quot;As Is&quot;</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">11.1 Platform &quot;As Is&quot;</h3>
             <p className="mb-3 uppercase">
               THE PLATFORM IS PROVIDED ON AN &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; BASIS WITHOUT WARRANTIES OF
               ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF
               MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">11.2 No Warranty on Products</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">11.2 No Warranty on Products</h3>
             <p className="mb-3">
               BitForge does not warrant or guarantee the quality, accuracy, reliability, or
               completeness of any Digital Products sold through the Platform. We are not responsible
@@ -447,7 +447,7 @@ export default function TermsAndConditionsPage() {
               listed by Sellers.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">11.3 Limitation of Liability</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">11.3 Limitation of Liability</h3>
             <p className="mb-3 uppercase">
               TO THE MAXIMUM EXTENT PERMITTED BY LAW, BITFORGE SHALL NOT BE LIABLE FOR ANY INDIRECT,
               INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR
@@ -468,7 +468,7 @@ export default function TermsAndConditionsPage() {
 
           {/* 12. Indemnification */}
           <section id="indemnification">
-            <h2 className="mb-3 text-xl font-semibold text-white">12. Indemnification</h2>
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">12. Indemnification</h2>
             <p className="mb-3">
               You agree to indemnify, defend, and hold harmless BitForge, its affiliates, officers,
               directors, employees, agents, and licensors from and against any and all claims,
@@ -491,9 +491,9 @@ export default function TermsAndConditionsPage() {
 
           {/* 13. Termination */}
           <section id="termination">
-            <h2 className="mb-3 text-xl font-semibold text-white">13. Account Termination and Suspension</h2>
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">13. Account Termination and Suspension</h2>
             
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">13.1 Termination by You</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">13.1 Termination by You</h3>
             <p className="mb-3">
               You may terminate your account at any time by contacting our support team at
               <span className="text-cyan-300"> support@bittforge.in</span>. Upon termination, you will no
@@ -501,7 +501,7 @@ export default function TermsAndConditionsPage() {
               purchased as a Buyer.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">13.2 Termination by BitForge</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">13.2 Termination by BitForge</h3>
             <p className="mb-3">
               We reserve the right to suspend or terminate your account at any time, with or without
               notice, for any reason, including but not limited to:
@@ -515,7 +515,7 @@ export default function TermsAndConditionsPage() {
               <li>Discontinuation of the Platform or modifications to services.</li>
             </ul>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">13.3 Effect of Termination</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">13.3 Effect of Termination</h3>
             <p className="mb-3">
               Upon termination:
             </p>
@@ -530,7 +530,7 @@ export default function TermsAndConditionsPage() {
 
           {/* 14. Privacy */}
           <section id="privacy">
-            <h2 className="mb-3 text-xl font-semibold text-white">14. Privacy and Data Protection</h2>
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">14. Privacy and Data Protection</h2>
             <p className="mb-3">
               Your privacy is important to us. Our collection, use, and disclosure of your personal
               information is governed by our Privacy Policy, which is incorporated into these Terms by
@@ -550,7 +550,7 @@ export default function TermsAndConditionsPage() {
 
           {/* 15. Changes to Terms */}
           <section id="changes">
-            <h2 className="mb-3 text-xl font-semibold text-white">15. Changes to These Terms</h2>
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">15. Changes to These Terms</h2>
             <p className="mb-3">
               We reserve the right to modify or replace these Terms at any time at our sole discretion.
               If we make material changes to these Terms, we will provide notice by:
@@ -569,16 +569,16 @@ export default function TermsAndConditionsPage() {
 
           {/* 16. Governing Law */}
           <section id="governing-law">
-            <h2 className="mb-3 text-xl font-semibold text-white">16. Governing Law and Jurisdiction</h2>
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">16. Governing Law and Jurisdiction</h2>
             
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">16.1 Governing Law</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">16.1 Governing Law</h3>
             <p className="mb-3">
               These Terms shall be governed by and construed in accordance with the laws of India,
               without regard to its conflict of law provisions. The United Nations Convention on
               Contracts for the International Sale of Goods does not apply to these Terms.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">16.2 Dispute Resolution and Arbitration</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">16.2 Dispute Resolution and Arbitration</h3>
             <p className="mb-3">
               Any dispute, controversy, or claim arising out of or relating to these Terms, including
               the breach, termination, or validity thereof, shall be resolved through binding
@@ -594,13 +594,13 @@ export default function TermsAndConditionsPage() {
               <li>Result in a binding award that may be entered as a judgment in any court of competent jurisdiction.</li>
             </ul>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">16.3 Exception for Small Claims</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">16.3 Exception for Small Claims</h3>
             <p className="mb-3">
               Either party may bring an action in small claims court if the claim qualifies and remains
               in small claims court.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">16.4 Jurisdiction</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">16.4 Jurisdiction</h3>
             <p className="mb-3">
               Subject to the arbitration provisions above, you agree to submit to the exclusive
               jurisdiction of the courts located in Pune, India for the resolution of any disputes.
@@ -609,51 +609,51 @@ export default function TermsAndConditionsPage() {
 
           {/* 17. Contact */}
           <section id="contact">
-            <h2 className="mb-3 text-xl font-semibold text-white">17. Contact Information</h2>
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">17. Contact Information</h2>
             <p className="mb-3">
               If you have any questions, concerns, or complaints about these Terms, please contact us at:
             </p>
-            <div className="rounded-2xl border border-white/12 bg-white/5 p-5">
-              <p className="mb-2 font-semibold text-white">BitForge Technologies Pvt. Ltd.</p>
-              <p className="mb-1 text-white/80">Email: <span className="text-cyan-300">legal@bittforge.in</span></p>
-              <p className="mb-1 text-white/80">Support: <span className="text-cyan-300">support@bittforge.in</span></p>
-              <p className="mb-1 text-white/80">Address: Pune, Maharashtra, India</p>
-              <p className="text-white/80">Business Hours: Monday - Friday, 9:00 AM - 6:00 PM IST</p>
+            <div className="rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-5">
+              <p className="mb-2 font-semibold text-slate-900 dark:text-white">BitForge Technologies Pvt. Ltd.</p>
+              <p className="mb-1 text-slate-700 dark:text-white/80">Email: <span className="text-cyan-300">legal@bittforge.in</span></p>
+              <p className="mb-1 text-slate-700 dark:text-white/80">Support: <span className="text-cyan-300">support@bittforge.in</span></p>
+              <p className="mb-1 text-slate-700 dark:text-white/80">Address: Pune, Maharashtra, India</p>
+              <p className="text-slate-700 dark:text-white/80">Business Hours: Monday - Friday, 9:00 AM - 6:00 PM IST</p>
             </div>
           </section>
 
           {/* Additional Provisions */}
-          <section className="mt-10 border-t border-white/10 pt-8">
-            <h2 className="mb-3 text-xl font-semibold text-white">Additional Provisions</h2>
+          <section className="mt-10 border-t border-slate-200 dark:border-white/10 pt-8">
+            <h2 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">Additional Provisions</h2>
             
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">Severability</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">Severability</h3>
             <p className="mb-3">
               If any provision of these Terms is found to be unenforceable or invalid, that provision
               will be limited or eliminated to the minimum extent necessary so that these Terms will
               otherwise remain in full force and effect.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">Waiver</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">Waiver</h3>
             <p className="mb-3">
               Our failure to enforce any right or provision of these Terms will not be considered a
               waiver of those rights. Any waiver must be in writing and signed by an authorized
               representative of BitForge.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">Assignment</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">Assignment</h3>
             <p className="mb-3">
               You may not assign or transfer these Terms or your account without our prior written
               consent. We may assign these Terms at any time without notice to you.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">Entire Agreement</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">Entire Agreement</h3>
             <p className="mb-3">
               These Terms, together with our Privacy Policy, Refund &amp; Cancellation Policy, and any
               other legal notices or policies published by us on the Platform, constitute the entire
               agreement between you and BitForge regarding the use of the Platform.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">Force Majeure</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">Force Majeure</h3>
             <p className="mb-3">
               BitForge shall not be liable for any failure or delay in performance due to circumstances
               beyond our reasonable control, including acts of God, war, terrorism, riots, embargoes,
@@ -662,7 +662,7 @@ export default function TermsAndConditionsPage() {
               materials.
             </p>
 
-            <h3 className="mb-2 mt-4 text-base font-semibold text-white/90">Notices</h3>
+            <h3 className="mb-2 mt-4 text-base font-semibold text-slate-800 dark:text-white/90">Notices</h3>
             <p className="mb-3">
               We may provide notices to you via email, regular mail, or postings on the Platform.
               Notices to BitForge should be sent to <span className="text-cyan-300">legal@bittforge.in</span>.
@@ -671,22 +671,22 @@ export default function TermsAndConditionsPage() {
         </div>
 
         {/* Footer navigation */}
-        <section className="mt-14 border-t border-white/10 pt-8">
+        <section className="mt-14 border-t border-slate-200 dark:border-white/10 pt-8">
           <div className="flex flex-wrap items-center justify-between gap-4 text-sm">
             <Link
               href="/"
-              className="text-white/70 hover:text-white"
+              className="text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
             >
               ← Back to BitForge
             </Link>
-            <div className="flex flex-wrap gap-4 text-white/70">
-              <Link href="/legal/privacy-policy" className="hover:text-white">
+            <div className="flex flex-wrap gap-4 text-slate-600 dark:text-white/70">
+              <Link href="/legal/privacy-policy" className="hover:text-slate-900 dark:hover:text-white">
                 Privacy Policy
               </Link>
-              <Link href="/legal/refund-cancellation-policy" className="hover:text-white">
+              <Link href="/legal/refund-cancellation-policy" className="hover:text-slate-900 dark:hover:text-white">
                 Refund Policy
               </Link>
-              <Link href="/contact" className="hover:text-white">
+              <Link href="/contact" className="hover:text-slate-900 dark:hover:text-white">
                 Contact Support
               </Link>
             </div>

@@ -176,7 +176,7 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white scroll-smooth">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white scroll-smooth">
       <PageHeader
         backHref="/dashboard/buyer"
         backLabel="Dashboard"
@@ -186,10 +186,10 @@ export default function TransactionsPage() {
           <div className="relative shrink-0" ref={headerMenuRef}>
             <button
               onClick={() => setHeaderMenuOpen((prev) => !prev)}
-              className="h-10 w-10 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 hover:border-white/30 inline-flex items-center justify-center transition"
+              className="h-10 w-10 rounded-xl border border-white/15 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 hover:border-white/30 inline-flex items-center justify-center transition"
               aria-label="Open actions"
             >
-              <MoreVertical className="h-5 w-5 text-white/80" />
+              <MoreVertical className="h-5 w-5 text-slate-700 dark:text-white/80" />
             </button>
 
             <AnimatePresence>
@@ -198,14 +198,14 @@ export default function TransactionsPage() {
                   initial={{ opacity: 0, y: 8, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                  className="absolute right-0 top-11 w-44 rounded-xl border border-white/15 bg-slate-900/95 backdrop-blur-xl p-1.5 shadow-xl shadow-black/40"
+                  className="absolute right-0 top-11 w-44 rounded-xl border border-slate-200 dark:border-white/15 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl p-1.5 shadow-xl shadow-slate-200 dark:shadow-black/40"
                 >
                   <button
                     onClick={() => {
                       setHeaderMenuOpen(false);
                       router.push("/dashboard/buyer/transactions/analytics");
                     }}
-                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-white/85 hover:text-white hover:bg-white/10 transition"
+                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-white/85 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition"
                   >
                     Analytics
                   </button>
@@ -237,17 +237,17 @@ export default function TransactionsPage() {
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className="rounded-2xl border border-white/5 bg-[#12141c] p-4 sm:p-5 shadow-lg overflow-hidden animate-pulse"
+                  className="rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c] p-4 sm:p-5 shadow-sm dark:shadow-lg overflow-hidden animate-pulse"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 space-y-3">
-                      <div className="h-5 w-48 bg-white/10 rounded-lg" />
-                      <div className="h-4 w-32 bg-white/5 rounded-lg" />
-                      <div className="h-4 w-24 bg-white/5 rounded-lg" />
+                      <div className="h-5 w-48 bg-slate-200 dark:bg-white/10 rounded-lg" />
+                      <div className="h-4 w-32 bg-slate-100 dark:bg-white/5 rounded-lg" />
+                      <div className="h-4 w-24 bg-slate-100 dark:bg-white/5 rounded-lg" />
                     </div>
                     <div className="text-right space-y-2">
-                      <div className="h-7 w-20 bg-white/10 rounded-lg ml-auto" />
-                      <div className="h-6 w-16 bg-white/5 rounded-full ml-auto" />
+                      <div className="h-7 w-20 bg-slate-200 dark:bg-white/10 rounded-lg ml-auto" />
+                      <div className="h-6 w-16 bg-slate-100 dark:bg-white/5 rounded-full ml-auto" />
                     </div>
                   </div>
                 </div>
@@ -257,10 +257,10 @@ export default function TransactionsPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center shadow-lg"
+              className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/[0.03] p-10 text-center shadow-lg"
             >
-              <h3 className="text-lg sm:text-xl font-bold text-white mb-2">No Transactions Found</h3>
-              <p className="text-white/60 mb-5 text-sm sm:text-base">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-2">No Transactions Found</h3>
+              <p className="text-slate-500 dark:text-white/60 mb-5 text-sm sm:text-base">
                 {searchQuery || filterBy !== "all"
                   ? "No transactions match your filters. Try a different status or sort."
                   : "You have no transactions yet. Explore marketplace to get started."}
@@ -268,7 +268,7 @@ export default function TransactionsPage() {
               {!searchQuery && filterBy === "all" && (
                 <button
                   onClick={() => router.push("/marketplace")}
-                  className="px-5 py-2.5 rounded-xl bg-linear-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white font-semibold transition"
+                  className="px-5 py-2.5 rounded-xl bg-linear-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-slate-900 dark:text-white font-semibold transition"
                 >
                   Browse Marketplace
                 </button>
@@ -287,19 +287,19 @@ export default function TransactionsPage() {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ delay: index * 0.02 }}
                     onClick={() => router.push(`/dashboard/buyer/transactions/${transaction._id}`)}
-                    className="relative overflow-hidden cursor-pointer rounded-2xl border border-white/5 bg-[#12141c] p-4 sm:p-5 text-left transition-all duration-300 hover:bg-[#181a25] hover:border-white/10 hover:shadow-xl hover:shadow-black/50 group"
+                    className="relative overflow-hidden cursor-pointer rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c] p-4 sm:p-5 text-left transition-all duration-300 hover:bg-slate-50 dark:hover:bg-[#181a25] hover:border-slate-300 dark:hover:border-white/10 hover:shadow-lg dark:hover:shadow-xl dark:hover:shadow-black/50 group"
                   >
 
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-xl leading-tight font-semibold text-white group-hover:text-violet-200 transition-colors truncate">
+                        <h3 className="text-xl leading-tight font-semibold text-slate-900 dark:text-white group-hover:text-violet-700 dark:group-hover:text-violet-200 transition-colors truncate">
                           {transaction.productName}
                         </h3>
-                        <p className="text-sm text-white/65 mt-1.5">
-                          Sold by <span className="text-white/90 font-semibold">{transaction.sellerName}</span>
+                        <p className="text-sm text-slate-500 dark:text-white/65 mt-1.5">
+                          Sold by <span className="text-slate-800 dark:text-white/90 font-semibold">{transaction.sellerName}</span>
                         </p>
 
-                        <div className="mt-3 flex flex-wrap items-center gap-2.5 text-xs text-white/50">
+                        <div className="mt-3 flex flex-wrap items-center gap-2.5 text-xs text-slate-500 dark:text-white/50">
                           <span className="inline-flex items-center gap-1.5">
                             <CalendarDays className="h-3.5 w-3.5" />
                             {new Date(transaction.date).toLocaleDateString("en-IN", {
@@ -314,13 +314,13 @@ export default function TransactionsPage() {
                             <button
                               type="button"
                               onClick={(e) => handleCopyOrderId(e, transaction.orderId)}
-                              className="p-1 rounded hover:bg-white/10 transition"
+                              className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10 transition"
                               title="Copy Order ID"
                             >
                               {copiedId === transaction.orderId ? (
-                                <Check className="h-3.5 w-3.5 text-emerald-400" />
+                                <Check className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" />
                               ) : (
-                                <Copy className="h-3.5 w-3.5 text-white/65" />
+                                <Copy className="h-3.5 w-3.5 text-slate-400 dark:text-white/65" />
                               )}
                             </button>
                           </span>
@@ -328,7 +328,7 @@ export default function TransactionsPage() {
                       </div>
 
                       <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2.5">
-                        <p className="text-3xl font-bold tracking-tight text-white">₹{transaction.amount.toLocaleString()}</p>
+                        <p className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">₹{transaction.amount.toLocaleString()}</p>
                         <span
                           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${statusConfig.badgeClass}`}
                         >
@@ -338,11 +338,11 @@ export default function TransactionsPage() {
                       </div>
                     </div>
 
-                    <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">
-                      <span className="text-violet-300 text-sm font-medium group-hover:text-violet-200 transition-colors">
+                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
+                      <span className="text-violet-600 dark:text-violet-300 text-sm font-medium group-hover:text-violet-700 dark:group-hover:text-violet-200 transition-colors">
                         View Details
                       </span>
-                      <span className="text-xs text-white/35">#{transaction._id.slice(-6)}</span>
+                      <span className="text-xs text-slate-400 dark:text-white/35">#{transaction._id.slice(-6)}</span>
                     </div>
                   </motion.article>
                 );
@@ -353,7 +353,7 @@ export default function TransactionsPage() {
 
         {!loading && pagination.totalRecords > 0 && (
           <div className="mt-2 space-y-3">
-            <p className="text-center text-white/40 text-sm">
+            <p className="text-center text-slate-400 dark:text-white/40 text-sm">
               Showing page {pagination.page} of {pagination.totalPages} • {pagination.totalRecords} total
             </p>
 
@@ -361,19 +361,19 @@ export default function TransactionsPage() {
               <button
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                 disabled={!pagination.hasPrevPage}
-                className="px-4 py-2 rounded-xl border border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="px-4 py-2 rounded-xl border border-white/15 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white/80 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
               >
                 Previous
               </button>
 
-              <span className="px-4 py-2 rounded-xl border border-violet-400/30 bg-violet-500/15 text-violet-200 text-sm font-semibold min-w-16 text-center">
+              <span className="px-4 py-2 rounded-xl border border-violet-200 dark:border-violet-400/30 bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-200 text-sm font-semibold min-w-16 text-center">
                 {pagination.page}
               </span>
 
               <button
                 onClick={() => setPage((prev) => prev + 1)}
                 disabled={!pagination.hasNextPage}
-                className="px-4 py-2 rounded-xl border border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="px-4 py-2 rounded-xl border border-white/15 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white/80 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
               >
                 Next
               </button>

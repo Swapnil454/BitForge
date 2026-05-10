@@ -41,9 +41,9 @@ interface Payout {
 type Tab = "pending" | "history";
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: "bg-amber-500/10 text-amber-400 border-amber-500/25",
-  paid: "bg-emerald-500/10 text-emerald-400 border-emerald-500/25",
-  rejected: "bg-red-500/10 text-red-400 border-red-500/25",
+  pending: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25",
+  paid: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25",
+  rejected: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/25",
 };
 
 const PRESETS = [
@@ -175,18 +175,18 @@ export default function AdminPayoutsPage() {
 
   /* ─── Skeleton ─── */
   if (loading) return (
-    <main className="min-h-screen bg-[#05050a] text-white">
-      <div className="h-16 border-b border-white/[0.05] bg-[#0a0a0f]" />
+    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
+      <div className="h-16 border-b border-slate-200 dark:border-white/[0.05] bg-slate-50 dark:bg-[#0a0a0f]" />
       <section className="max-w-4xl mx-auto px-4 py-8 space-y-4 animate-pulse">
         {[1, 2, 3].map(i => (
-          <div key={i} className="h-40 bg-[#16161e] rounded-2xl border border-white/[0.05]" />
+          <div key={i} className="h-40 bg-white dark:bg-[#16161e] rounded-2xl border border-slate-200 dark:border-white/[0.05]" />
         ))}
       </section>
     </main>
   );
 
   return (
-    <main className="min-h-screen bg-[#05050a] text-white pb-24">
+    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-24">
 
       {/* ── Header ── */}
       <PageHeader
@@ -198,7 +198,7 @@ export default function AdminPayoutsPage() {
           <button
             onClick={() => fetchData(true)}
             disabled={refreshing}
-            className="h-9 w-9 flex items-center justify-center rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-all"
+            className="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-200/50 dark:bg-white/[0.04] hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.06] transition-all"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
           </button>
@@ -208,14 +208,14 @@ export default function AdminPayoutsPage() {
       <section className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 space-y-5">
 
         {/* ── Tabs ── */}
-        <div className="flex bg-[#16161e] rounded-2xl p-1 gap-1 border border-white/[0.05]">
+        <div className="flex bg-white dark:bg-[#16161e] rounded-2xl p-1 gap-1 border border-slate-200 dark:border-white/[0.05]">
           {(["pending", "history"] as Tab[]).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${tab === t
                   ? "bg-gradient-to-r from-cyan-500 to-indigo-500 text-white shadow-lg"
-                  : "text-white/30 hover:text-white/60"
+                  : "text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/60"
                 }`}
             >
               {t === "pending" ? " Pending" : "History"}
@@ -228,20 +228,20 @@ export default function AdminPayoutsPage() {
           <div className="flex gap-2">
             {/* Search input */}
             <div className="relative flex-1">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30" />
               <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search by seller name or email…"
-                className="w-full h-10 pl-9 pr-3 bg-[#16161e] border border-white/[0.06] rounded-xl text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-cyan-500/40 focus:ring-1 focus:ring-cyan-500/20 transition-all"
+                className="w-full h-10 pl-9 pr-3 bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.06] rounded-xl text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/20 focus:outline-none focus:border-cyan-500/40 focus:ring-1 focus:ring-cyan-500/20 transition-all"
               />
             </div>
             {/* Filter toggle */}
             <button
               onClick={() => setShowFilterBar(v => !v)}
               className={`h-10 px-3 rounded-xl border text-xs font-black uppercase tracking-widest flex items-center gap-1.5 transition-all ${showFilterBar || activePreset || fromDate
-                  ? "bg-cyan-500/15 border-cyan-500/30 text-cyan-400"
-                  : "bg-[#16161e] border-white/[0.06] text-white/40 hover:text-white"
+                  ? "bg-cyan-500/15 border-cyan-500/30 text-cyan-600 dark:text-cyan-400"
+                  : "bg-white dark:bg-[#16161e] border-slate-200 dark:border-white/[0.06] text-slate-500 dark:text-white/40 hover:text-slate-900 dark:hover:text-white"
                 }`}
             >
               <Filter className="w-3.5 h-3.5" />
@@ -251,7 +251,7 @@ export default function AdminPayoutsPage() {
 
           {/* Expanded filter bar */}
           {showFilterBar && (
-            <div className="bg-[#16161e] border border-white/[0.06] rounded-xl p-3 space-y-3">
+            <div className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.06] rounded-xl p-3 space-y-3">
               {/* Presets */}
               <div className="flex gap-2 flex-wrap">
                 {PRESETS.map(p => (
@@ -259,8 +259,8 @@ export default function AdminPayoutsPage() {
                     key={p.key}
                     onClick={() => applyPreset(p.key)}
                     className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border transition-all ${activePreset === p.key
-                        ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-400"
-                        : "bg-white/[0.04] border-white/[0.06] text-white/40 hover:text-white"
+                        ? "bg-cyan-500/20 border-cyan-500/40 text-cyan-600 dark:text-cyan-400"
+                        : "bg-slate-100 dark:bg-white/[0.04] border-slate-200 dark:border-white/[0.06] text-slate-500 dark:text-white/40 hover:text-slate-900 dark:hover:text-white"
                       }`}
                   >
                     {p.label}
@@ -278,28 +278,26 @@ export default function AdminPayoutsPage() {
               {/* Date range */}
               <div className="flex gap-2">
                 <input type="date" value={fromDate} onChange={e => { setFromDate(e.target.value); setActivePreset(null); }}
-                  style={{ colorScheme: "dark" }}
-                  className="flex-1 h-9 px-3 bg-[#0f0f17] border border-white/[0.06] rounded-lg text-xs text-white focus:outline-none focus:border-cyan-500/40 transition-all" />
-                <span className="text-white/20 self-center text-xs">to</span>
+                  className="flex-1 h-9 px-3 bg-slate-50 dark:bg-[#0f0f17] border border-slate-200 dark:border-white/[0.06] rounded-lg text-xs text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500/40 transition-all dark:color-scheme-dark" />
+                <span className="text-slate-400 dark:text-white/20 self-center text-xs">to</span>
                 <input type="date" value={toDate} onChange={e => { setToDate(e.target.value); setActivePreset(null); }}
-                  style={{ colorScheme: "dark" }}
-                  className="flex-1 h-9 px-3 bg-[#0f0f17] border border-white/[0.06] rounded-lg text-xs text-white focus:outline-none focus:border-cyan-500/40 transition-all" />
+                  className="flex-1 h-9 px-3 bg-slate-50 dark:bg-[#0f0f17] border border-slate-200 dark:border-white/[0.06] rounded-lg text-xs text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500/40 transition-all dark:color-scheme-dark" />
               </div>
             </div>
           )}
         </div>
 
         {/* ── Result count ── */}
-        <p className="text-[10px] font-black uppercase tracking-widest text-white/20 px-1">
+        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/20 px-1">
           {filtered.length} {tab === "pending" ? "pending" : "total"} payout{filtered.length !== 1 ? "s" : ""}
         </p>
 
         {/* ── Cards ── */}
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 border border-dashed border-white/[0.06] rounded-3xl bg-[#16161e]/30">
-            <Banknote className="w-10 h-10 text-white/10 mb-3" />
-            <p className="text-sm font-black text-white/20">No payouts found</p>
-            <p className="text-xs text-white/10 mt-1">Try changing your filters</p>
+          <div className="flex flex-col items-center justify-center py-16 border border-dashed border-slate-300 dark:border-white/[0.06] rounded-3xl bg-white dark:bg-[#16161e]/30">
+            <Banknote className="w-10 h-10 text-slate-300 dark:text-white/10 mb-3" />
+            <p className="text-sm font-black text-slate-500 dark:text-white/20">No payouts found</p>
+            <p className="text-xs text-slate-400 dark:text-white/10 mt-1">Try changing your filters</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -325,47 +323,47 @@ export default function AdminPayoutsPage() {
             </div>
             <div>
               <h2 className="text-sm font-black">Confirm Payment</h2>
-              <p className="text-xs text-white/40">{payModal.sellerId?.name}</p>
+              <p className="text-xs text-slate-400 dark:text-white/40">{payModal.sellerId?.name}</p>
             </div>
             <div className="ml-auto text-right">
               <p className="text-lg font-black text-emerald-400">
                 ₹{(payModal.financialBreakdown?.netPayableAmount ?? payModal.amount).toLocaleString()}
               </p>
-              <p className="text-[10px] text-white/30">Net Payable</p>
+              <p className="text-[10px] text-slate-300 dark:text-white/30">Net Payable</p>
             </div>
           </div>
 
           {payModal.primaryBankAccount && (
-            <div className="bg-[#1c1c24] border border-white/[0.05] rounded-xl p-3 mb-4 text-xs space-y-1.5">
-              <p className="text-[10px] font-black uppercase tracking-widest text-white/20 mb-2">Bank Details</p>
-              <div className="flex justify-between"><span className="text-white/40">Account</span><span className="font-mono text-white/80">{payModal.primaryBankAccount.accountNumber}</span></div>
-              <div className="flex justify-between"><span className="text-white/40">IFSC</span><span className="font-mono text-white/80">{payModal.primaryBankAccount.ifscCode}</span></div>
-              <div className="flex justify-between"><span className="text-white/40">Bank</span><span className="text-white/80">{payModal.primaryBankAccount.bankName}</span></div>
+            <div className="bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.05] rounded-xl p-3 mb-4 text-xs space-y-1.5">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/20 mb-2">Bank Details</p>
+              <div className="flex justify-between"><span className="text-slate-400 dark:text-white/40">Account</span><span className="font-mono text-slate-700 dark:text-white/80">{payModal.primaryBankAccount.accountNumber}</span></div>
+              <div className="flex justify-between"><span className="text-slate-400 dark:text-white/40">IFSC</span><span className="font-mono text-slate-700 dark:text-white/80">{payModal.primaryBankAccount.ifscCode}</span></div>
+              <div className="flex justify-between"><span className="text-slate-400 dark:text-white/40">Bank</span><span className="text-slate-700 dark:text-white/80">{payModal.primaryBankAccount.bankName}</span></div>
             </div>
           )}
 
           <div className="space-y-3">
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-1.5">UTR / Transaction Reference *</label>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30 mb-1.5">UTR / Transaction Reference *</label>
               <input value={payRef} onChange={e => setPayRef(e.target.value)}
                 placeholder="Enter UTR or reference number"
-                className="w-full bg-[#1c1c24] border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-emerald-500/40 transition-all" />
+                className="w-full bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.06] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/20 focus:outline-none focus:border-emerald-500/40 transition-all" />
             </div>
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-1.5">Notes (optional)</label>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30 mb-1.5">Notes (optional)</label>
               <textarea value={payNotes} onChange={e => setPayNotes(e.target.value)} rows={2}
                 placeholder="Any notes about this payment…"
-                className="w-full bg-[#1c1c24] border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-emerald-500/40 transition-all resize-none" />
+                className="w-full bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.06] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/20 focus:outline-none focus:border-emerald-500/40 transition-all resize-none" />
             </div>
           </div>
 
           <div className="flex gap-2 mt-5">
             <button onClick={handleApprove} disabled={payProcessing || !payRef.trim()}
-              className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+              className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-xs text-white font-black uppercase tracking-widest transition-all">
               {payProcessing ? "Processing…" : "✓ Confirm Payment"}
             </button>
             <button onClick={() => { setPayModal(null); setPayRef(""); setPayNotes(""); }}
-              className="px-5 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+              className="px-5 py-2.5 bg-slate-200/50 dark:bg-white/[0.04] hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.06] rounded-xl text-xs font-black uppercase tracking-widest transition-all">
               Cancel
             </button>
           </div>
@@ -381,22 +379,22 @@ export default function AdminPayoutsPage() {
             </div>
             <div>
               <h2 className="text-sm font-black">Reject Payout</h2>
-              <p className="text-xs text-white/40">{rejectModal.sellerId?.name} · ₹{rejectModal.amount.toLocaleString()}</p>
+              <p className="text-xs text-slate-400 dark:text-white/40">{rejectModal.sellerId?.name} · ₹{rejectModal.amount.toLocaleString()}</p>
             </div>
           </div>
           <div>
-            <label className="block text-[10px] font-black uppercase tracking-widest text-white/30 mb-1.5">Rejection Reason *</label>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30 mb-1.5">Rejection Reason *</label>
             <textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={3}
               placeholder="Enter the reason for rejecting this payout…"
-              className="w-full bg-[#1c1c24] border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-red-500/40 transition-all resize-none" />
+              className="w-full bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.06] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/20 focus:outline-none focus:border-red-500/40 transition-all resize-none" />
           </div>
           <div className="flex gap-2 mt-5">
             <button onClick={handleReject} disabled={rejectProcessing || !rejectReason.trim()}
-              className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+              className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-xs text-white font-black uppercase tracking-widest transition-all">
               {rejectProcessing ? "Rejecting…" : "✗ Reject Payout"}
             </button>
             <button onClick={() => { setRejectModal(null); setRejectReason(""); }}
-              className="px-5 py-2.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+              className="px-5 py-2.5 bg-slate-200/50 dark:bg-white/[0.04] hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.06] rounded-xl text-xs font-black uppercase tracking-widest transition-all">
               Cancel
             </button>
           </div>
@@ -415,23 +413,23 @@ function PayoutCard({ payout: p, tab, onMarkPaid, onReject }: {
   const status = p.status as string;
 
   return (
-    <div className={`bg-[#16161e] border rounded-2xl overflow-hidden transition-all ${status === "pending" ? "border-amber-500/15" :
+    <div className={`bg-white dark:bg-[#16161e] border rounded-2xl overflow-hidden transition-all ${status === "pending" ? "border-amber-500/15" :
         status === "paid" ? "border-emerald-500/15" :
           "border-red-500/15"
       }`}>
       {/* Card header */}
       <button onClick={() => setExpanded(v => !v)}
-        className="w-full flex items-start justify-between gap-3 p-5 text-left hover:bg-white/[0.02] transition-all">
+        className="w-full flex items-start justify-between gap-3 p-5 text-left hover:bg-slate-50 dark:bg-white/[0.02] transition-all">
         <div className="min-w-0">
-          <p className="font-black text-white text-sm leading-tight truncate">{p.sellerId?.name || "Deleted Seller"}</p>
-          <p className="text-xs text-white/40 mt-0.5 truncate">{p.sellerId?.email || "N/A"}</p>
-          <p className="text-[10px] text-white/25 mt-1">{new Date(p.createdAt).toLocaleString()}</p>
+          <p className="font-black text-slate-900 dark:text-white text-sm leading-tight truncate">{p.sellerId?.name || "Deleted Seller"}</p>
+          <p className="text-xs text-slate-500 dark:text-white/40 mt-0.5 truncate">{p.sellerId?.email || "N/A"}</p>
+          <p className="text-[10px] text-slate-400 dark:text-white/25 mt-1">{new Date(p.createdAt).toLocaleString()}</p>
         </div>
         <div className="text-right shrink-0">
-          <p className={`text-xl font-black ${status === "paid" ? "text-emerald-400" : status === "rejected" ? "text-red-400" : "text-white"}`}>
+          <p className={`text-xl font-black ${status === "paid" ? "text-emerald-600 dark:text-emerald-400" : status === "rejected" ? "text-red-600 dark:text-red-400" : "text-slate-900 dark:text-white"}`}>
             ₹{p.amount.toLocaleString()}
           </p>
-          <span className={`inline-block mt-1 px-2 py-0.5 rounded-lg text-[10px] font-black border uppercase tracking-widest ${STATUS_COLORS[status] || "bg-white/5 text-white/40 border-white/10"}`}>
+          <span className={`inline-block mt-1 px-2 py-0.5 rounded-lg text-[10px] font-black border uppercase tracking-widest ${STATUS_COLORS[status] || "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-white/40 border-slate-200 dark:border-white/10"}`}>
             {status}
           </span>
         </div>
@@ -439,43 +437,43 @@ function PayoutCard({ payout: p, tab, onMarkPaid, onReject }: {
 
       {/* Expanded details */}
       {expanded && (
-        <div className="px-5 pb-5 space-y-3 border-t border-white/[0.04]">
+        <div className="px-5 pb-5 space-y-3 border-t border-slate-200 dark:border-white/[0.04]">
           {/* Bank */}
           {p.primaryBankAccount && (
-            <div className="bg-[#1c1c24] border border-white/[0.04] rounded-xl p-3 text-xs space-y-1.5 mt-3">
-              <p className="text-[10px] font-black uppercase tracking-widest text-white/20 mb-1.5 flex items-center gap-1.5">
+            <div className="bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.04] rounded-xl p-3 text-xs space-y-1.5 mt-3">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/20 mb-1.5 flex items-center gap-1.5">
                 <Building2 className="w-3 h-3" /> Bank Account Details
               </p>
-              <div className="flex justify-between"><span className="text-white/40">Holder</span><span className="font-mono text-white/80">{p.primaryBankAccount.accountHolderName}</span></div>
-              <div className="flex justify-between"><span className="text-white/40">Account</span><span className="font-mono text-white/80">{p.primaryBankAccount.accountNumber}</span></div>
-              <div className="flex justify-between"><span className="text-white/40">IFSC</span><span className="font-mono text-white/80">{p.primaryBankAccount.ifscCode}</span></div>
-              <div className="flex justify-between"><span className="text-white/40">Bank</span><span className="text-white/80">{p.primaryBankAccount.bankName}</span></div>
+              <div className="flex justify-between"><span className="text-slate-400 dark:text-white/40">Holder</span><span className="font-mono text-slate-700 dark:text-white/80">{p.primaryBankAccount.accountHolderName}</span></div>
+              <div className="flex justify-between"><span className="text-slate-400 dark:text-white/40">Account</span><span className="font-mono text-slate-700 dark:text-white/80">{p.primaryBankAccount.accountNumber}</span></div>
+              <div className="flex justify-between"><span className="text-slate-400 dark:text-white/40">IFSC</span><span className="font-mono text-slate-700 dark:text-white/80">{p.primaryBankAccount.ifscCode}</span></div>
+              <div className="flex justify-between"><span className="text-slate-400 dark:text-white/40">Bank</span><span className="text-slate-700 dark:text-white/80">{p.primaryBankAccount.bankName}</span></div>
             </div>
           )}
 
           {/* Financial breakdown */}
           {p.financialBreakdown && (
-            <div className="bg-[#1c1c24] border border-white/[0.04] rounded-xl p-3 text-xs space-y-1.5">
-              <p className="text-[10px] font-black uppercase tracking-widest text-white/20 mb-1.5">Financial Breakdown</p>
-              <div className="flex justify-between"><span className="text-white/40">Requested</span><span className="text-white/80">₹{p.financialBreakdown.requestedAmount.toLocaleString()}</span></div>
+            <div className="bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.04] rounded-xl p-3 text-xs space-y-1.5">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/20 mb-1.5">Financial Breakdown</p>
+              <div className="flex justify-between"><span className="text-slate-400 dark:text-white/40">Requested</span><span className="text-slate-700 dark:text-white/80">₹{p.financialBreakdown.requestedAmount.toLocaleString()}</span></div>
               {p.financialBreakdown.gstOnCommission > 0 && (
-                <div className="flex justify-between"><span className="text-white/40">GST (18%)</span><span className="text-red-400">-₹{p.financialBreakdown.gstOnCommission.toLocaleString()}</span></div>
+                <div className="flex justify-between"><span className="text-slate-400 dark:text-white/40">GST (18%)</span><span className="text-red-400">-₹{p.financialBreakdown.gstOnCommission.toLocaleString()}</span></div>
               )}
-              <div className="flex justify-between pt-1.5 border-t border-white/[0.04] font-black">
+              <div className="flex justify-between pt-1.5 border-t border-slate-200 dark:border-white/[0.04] font-black">
                 <span>Net Payable</span>
-                <span className="text-emerald-400">₹{p.financialBreakdown.netPayableAmount.toLocaleString()}</span>
+                <span className="text-emerald-600 dark:text-emerald-400">₹{p.financialBreakdown.netPayableAmount.toLocaleString()}</span>
               </div>
             </div>
           )}
 
           {/* History extra info */}
           {tab === "history" && (
-            <div className="bg-[#1c1c24] border border-white/[0.04] rounded-xl p-3 text-xs space-y-1.5">
-              <p className="text-[10px] font-black uppercase tracking-widest text-white/20 mb-1.5">Resolution</p>
-              {p.paidAt && <div className="flex justify-between"><span className="text-white/40">Paid At</span><span className="text-white/80">{new Date(p.paidAt).toLocaleString()}</span></div>}
-              {p.paymentReference && <div className="flex justify-between"><span className="text-white/40">UTR Ref</span><span className="font-mono text-white/80">{p.paymentReference}</span></div>}
-              {p.paidBy && <div className="flex justify-between"><span className="text-white/40">Processed By</span><span className="text-white/80">{p.paidBy.name}</span></div>}
-              {p.rejectionReason && <div className="flex justify-between"><span className="text-white/40">Reason</span><span className="text-red-400 text-right max-w-[60%]">{p.rejectionReason}</span></div>}
+            <div className="bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.04] rounded-xl p-3 text-xs space-y-1.5">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/20 mb-1.5">Resolution</p>
+              {p.paidAt && <div className="flex justify-between"><span className="text-slate-400 dark:text-white/40">Paid At</span><span className="text-slate-700 dark:text-white/80">{new Date(p.paidAt).toLocaleString()}</span></div>}
+              {p.paymentReference && <div className="flex justify-between"><span className="text-slate-400 dark:text-white/40">UTR Ref</span><span className="font-mono text-slate-700 dark:text-white/80">{p.paymentReference}</span></div>}
+              {p.paidBy && <div className="flex justify-between"><span className="text-slate-400 dark:text-white/40">Processed By</span><span className="text-slate-700 dark:text-white/80">{p.paidBy.name}</span></div>}
+              {p.rejectionReason && <div className="flex justify-between"><span className="text-slate-400 dark:text-white/40">Reason</span><span className="text-red-400 text-right max-w-[60%]">{p.rejectionReason}</span></div>}
             </div>
           )}
 
@@ -483,11 +481,11 @@ function PayoutCard({ payout: p, tab, onMarkPaid, onReject }: {
           {tab === "pending" && p.status === "pending" && (
             <div className="flex gap-2 pt-1">
               <button onClick={onMarkPaid}
-                className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-600/20">
                 ✓ Mark as Paid
               </button>
               <button onClick={onReject}
-                className="flex-1 py-2.5 bg-red-600/80 hover:bg-red-500 rounded-xl text-xs font-black uppercase tracking-widest transition-all">
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all">
                 ✗ Reject
               </button>
             </div>
@@ -501,8 +499,8 @@ function PayoutCard({ payout: p, tab, onMarkPaid, onReject }: {
 /* ─── Modal wrapper ─── */
 function Modal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-[#16161e] border border-white/[0.08] rounded-3xl w-full max-w-md shadow-2xl p-6"
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/50 dark:bg-black/70 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.08] rounded-3xl w-full max-w-md shadow-2xl p-6"
         onClick={e => e.stopPropagation()}>
         {children}
       </div>

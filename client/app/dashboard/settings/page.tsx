@@ -254,7 +254,7 @@ function SettingsContent() {
 
   if (loading || !user) {
     return (
-      <main className="min-h-screen bg-[#05050a] text-white">
+      <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
         <PageHeader 
           title="Settings" 
           subtitle="Manage your account preferences" 
@@ -262,13 +262,13 @@ function SettingsContent() {
         />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 md:py-8 space-y-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="w-full flex items-center gap-4 p-4 md:p-5 rounded-2xl border border-white/5 bg-white/5 animate-pulse">
-              <div className="w-6 h-6 rounded-md bg-white/10 shrink-0"></div>
+            <div key={i} className="w-full flex items-center gap-4 p-4 md:p-5 rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-100 dark:bg-white/5 animate-pulse">
+              <div className="w-6 h-6 rounded-md bg-slate-200 dark:bg-white/10 shrink-0"></div>
               <div className="flex-1 space-y-2">
-                <div className="h-5 bg-white/10 rounded w-1/3"></div>
-                <div className="h-3 bg-white/5 rounded w-1/2"></div>
+                <div className="h-5 bg-slate-200 dark:bg-white/10 rounded w-1/3"></div>
+                <div className="h-3 bg-slate-100 dark:bg-white/5 rounded w-1/2"></div>
               </div>
-              <div className="w-5 h-5 rounded bg-white/5 shrink-0"></div>
+              <div className="w-5 h-5 rounded bg-slate-100 dark:bg-white/5 shrink-0"></div>
             </div>
           ))}
         </div>
@@ -302,7 +302,7 @@ function SettingsContent() {
     : "";
 
   return (
-    <main className="min-h-screen bg-[#05050a] text-white">
+    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
       <PageHeader 
         title={title} 
         subtitle={subtitle} 
@@ -336,21 +336,21 @@ function SettingsContent() {
                   className={`w-full flex items-center gap-4 p-4 md:p-5 rounded-2xl transition-all duration-300 text-left group border backdrop-blur-sm shadow-lg ${
                     item.isDanger
                       ? "bg-red-500/5 hover:bg-red-500/10 border-red-500/20 hover:border-red-500/40 hover:shadow-red-500/10"
-                      : "bg-white/5 hover:bg-white/10 border-white/10 hover:border-white/20 hover:shadow-indigo-500/5"
+                      : "bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 hover:shadow-indigo-500/5"
                   }`}
                 >
                   <div className={`grid place-items-center transition-transform group-hover:scale-110 shrink-0 ${item.color}`}>
                     <item.icon className="w-[26px] h-[26px]" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className={`font-bold md:text-lg truncate ${item.isDanger ? "text-red-400" : "text-white"}`}>
+                    <h3 className={`font-bold md:text-lg truncate ${item.isDanger ? "text-red-400" : "text-slate-900 dark:text-white"}`}>
                       {item.label}
                     </h3>
-                    <p className={`text-xs md:text-sm truncate ${item.isDanger ? "text-red-400/60" : "text-white/50"}`}>
+                    <p className={`text-xs md:text-sm truncate ${item.isDanger ? "text-red-400/60" : "text-slate-400 dark:text-white/50"}`}>
                       {item.desc}
                     </p>
                   </div>
-                  <ChevronRight className={`w-5 h-5 shrink-0 transition-transform group-hover:translate-x-1 ${item.isDanger ? "text-red-400/60" : "text-white/30"}`} />
+                  <ChevronRight className={`w-5 h-5 shrink-0 transition-transform group-hover:translate-x-1 ${item.isDanger ? "text-red-400/60" : "text-slate-300 dark:text-white/30"}`} />
                 </button>
               ))}
             </motion.div>
@@ -369,13 +369,13 @@ function SettingsContent() {
               <div className="space-y-8">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-2xl font-bold text-white mb-1">Your Profile</h2>
-                    <p className="text-white/60 text-sm">Manage your personal information</p>
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">Your Profile</h2>
+                    <p className="text-slate-500 dark:text-white/60 text-sm">Manage your personal information</p>
                   </div>
                   {!isEditingProfile && (
                     <button
                       onClick={() => setIsEditingProfile(true)}
-                      className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl transition flex items-center gap-2 text-sm font-semibold"
+                      className="px-4 py-2 bg-slate-200 dark:bg-white/10 hover:bg-white/20 border border-slate-300 dark:border-white/20 text-slate-900 dark:text-white rounded-xl transition flex items-center gap-2 text-sm font-semibold"
                     >
                       <UserRound className="w-4 h-4" /> Edit
                     </button>
@@ -383,70 +383,86 @@ function SettingsContent() {
                 </div>
 
                 {!isEditingProfile ? (
-                  <div className="space-y-6 max-w-xl">
-                    <div className="flex items-center gap-6">
-                      <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-linear-to-r from-cyan-400 to-indigo-500 flex items-center justify-center text-4xl md:text-5xl overflow-hidden shadow-lg shadow-indigo-500/20 shrink-0">
+                  <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-2xl p-6 md:p-8 shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8 mb-8 pb-8 border-b border-slate-100 dark:border-white/10">
+                      <div className="w-28 h-28 md:w-32 md:h-32 rounded-full bg-linear-to-br from-cyan-400 to-indigo-500 flex items-center justify-center text-4xl md:text-5xl overflow-hidden shadow-xl shadow-indigo-500/20 shrink-0 border-4 border-white dark:border-slate-800">
                         {user.profilePictureUrl ? (
                           <img src={user.profilePictureUrl} alt={user.name} className="w-full h-full object-cover" />
-                        ) : ""}
+                        ) : (
+                          <span className="text-white font-bold opacity-80">{user.name.charAt(0).toUpperCase()}</span>
+                        )}
                       </div>
-                      <div>
-                        <h3 className="text-xl md:text-2xl font-bold text-white mb-1">{user.name}</h3>
-                        <p className="text-white/60 capitalize text-sm">{user.role}</p>
+                      <div className="text-center sm:text-left mt-2 sm:mt-6">
+                        <h3 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-2">{user.name}</h3>
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-widest">
+                          {user.role}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="space-y-0">
-                      <div className="py-5 border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-1">
-                        <label className="text-sm font-medium text-white/50">Full Name</label>
-                        <div className="text-white font-semibold text-lg tracking-wide">
+                    <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
+                      <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-5 border border-slate-100 dark:border-transparent">
+                        <label className="text-xs font-bold text-slate-400 dark:text-white/50 uppercase tracking-wider mb-2 block">Full Name</label>
+                        <div className="text-slate-900 dark:text-white font-semibold text-lg">
                           {user.name}
                         </div>
                       </div>
-                      <div className="py-5 border-b border-white/10 flex flex-col md:flex-row justify-between gap-1">
-                        <label className="text-sm font-medium text-white/50">Email Address</label>
-                        <div className="text-right">
-                          <div className="text-white/80 font-medium tracking-wide">
-                            {user.email}
-                          </div>
-                          <p className="text-xs text-indigo-300/70 mt-1">Email cannot be changed.</p>
+                      <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-5 border border-slate-100 dark:border-transparent">
+                        <label className="text-xs font-bold text-slate-400 dark:text-white/50 uppercase tracking-wider mb-2 block">Email Address</label>
+                        <div className="text-slate-900 dark:text-white font-semibold text-base sm:text-lg truncate">
+                          {user.email}
                         </div>
+                        <p className="text-xs text-slate-500 dark:text-indigo-300/70 mt-2 flex items-center gap-1.5 font-medium">
+                          <Info className="w-3.5 h-3.5 shrink-0" /> Email cannot be changed.
+                        </p>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-6 max-w-xl">
+                  <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-2xl p-6 md:p-8 shadow-sm space-y-8">
                     <div>
-                      <label className="block text-sm font-medium text-white/80 mb-3">Profile Picture</label>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-                        <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-linear-to-r from-cyan-400 to-indigo-500 flex items-center justify-center text-4xl overflow-hidden shadow-lg shrink-0">
+                      <label className="block text-sm font-bold text-slate-700 dark:text-white/80 uppercase tracking-wider mb-4">Profile Picture</label>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                        <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-linear-to-br from-cyan-400 to-indigo-500 flex items-center justify-center text-4xl overflow-hidden shadow-xl shadow-indigo-500/20 shrink-0 border-4 border-white dark:border-slate-800">
                           {preview ? (
                             <img src={preview} alt="preview" className="w-full h-full object-cover" />
                           ) : user.profilePictureUrl ? (
                             <img src={user.profilePictureUrl} alt={user.name} className="w-full h-full object-cover" />
-                          ) : ""}
+                          ) : (
+                            <span className="text-white font-bold opacity-80">{user.name.charAt(0).toUpperCase()}</span>
+                          )}
                         </div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          className="text-sm text-white/80 file:mr-4 file:bg-white/10 file:hover:bg-white/20 file:border file:border-white/20 file:rounded-xl file:px-4 file:py-2 file:text-white file:cursor-pointer transition file:font-semibold w-full sm:w-auto"
-                        />
+                        <div className="flex-1">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="text-sm text-slate-700 dark:text-white/80 file:mr-4 file:bg-indigo-50 dark:file:bg-white/10 file:hover:bg-indigo-100 dark:file:hover:bg-white/20 file:border-0 file:rounded-xl file:px-5 file:py-2.5 file:text-indigo-700 dark:file:text-white file:cursor-pointer transition file:font-semibold w-full sm:w-auto"
+                          />
+                          <p className="text-xs text-slate-400 dark:text-white/40 mt-3">Recommended size: 256x256px. Max 2MB.</p>
+                        </div>
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-white/80 mb-2">Full Name</label>
+                    <div className="border-t border-slate-100 dark:border-white/10 pt-6">
+                      <label className="block text-sm font-bold text-slate-700 dark:text-white/80 uppercase tracking-wider mb-3">Full Name</label>
                       <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full px-4 py-3 md:py-4 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 transition"
+                        className="w-full px-4 py-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/20 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:border-indigo-500 focus:bg-white dark:focus:bg-white/5 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition font-medium"
                         placeholder="Your name"
                       />
                     </div>
 
-                    <div className="flex gap-3 pt-4">
+                    <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-100 dark:border-white/10">
+                      <button
+                        onClick={handleUpdateProfile}
+                        disabled={profileLoading}
+                        className="px-8 py-3.5 bg-linear-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white rounded-xl transition font-bold shadow-lg shadow-indigo-500/25 flex-1 disabled:opacity-50 text-center"
+                      >
+                        {profileLoading ? "Saving..." : "Save Changes"}
+                      </button>
                       <button
                          onClick={() => {
                           setIsEditingProfile(false);
@@ -454,16 +470,9 @@ function SettingsContent() {
                           setProfilePic(null);
                           setPreview(null);
                         }}
-                        className="px-6 py-3 bg-white/10 hover:bg-white/15 border border-white/10 text-white rounded-xl transition font-semibold"
+                        className="px-8 py-3.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white rounded-xl transition font-semibold text-center"
                       >
                         Cancel
-                      </button>
-                      <button
-                        onClick={handleUpdateProfile}
-                        disabled={profileLoading}
-                        className="px-6 py-3 bg-linear-to-r from-indigo-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-white rounded-xl transition font-semibold shadow-lg shadow-cyan-500/25 flex-1 disabled:opacity-50"
-                      >
-                        {profileLoading ? "Saving..." : "Save Changes"}
                       </button>
                     </div>
                   </div>
@@ -484,80 +493,80 @@ function SettingsContent() {
             >
               <div className="space-y-8">
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-1">Security Settings</h2>
-                  <p className="text-white/60 text-sm">Update your password and secure your account</p>
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">Security Settings</h2>
+                  <p className="text-slate-500 dark:text-white/60 text-sm">Update your password and secure your account</p>
                 </div>
 
                 {securityTab === "menu" && (
                   <div className="flex flex-col">
                     <button
                       onClick={() => setSecurityTab("password")}
-                      className="py-6 border-b border-white/10 hover:bg-white/5 px-4 -mx-4 rounded-xl transition-all text-left group flex items-center justify-between"
+                      className="py-6 border-b border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 px-4 -mx-4 rounded-xl transition-all text-left group flex items-center justify-between"
                     >
                       <div className="flex items-center gap-4">
                         <ShieldCheck className="w-6 h-6 text-cyan-400 group-hover:scale-110 transition shrink-0" />
                         <div>
-                          <h3 className="font-bold text-lg text-white mb-0.5 group-hover:text-cyan-400 transition-colors">Change Password</h3>
-                          <p className="text-sm text-white/50">Update your current password if you remember it.</p>
+                          <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-0.5 group-hover:text-cyan-400 transition-colors">Change Password</h3>
+                          <p className="text-sm text-slate-400 dark:text-white/50">Update your current password if you remember it.</p>
                         </div>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-white/30 group-hover:text-cyan-400 transition-colors" />
+                      <ChevronRight className="w-5 h-5 text-slate-300 dark:text-white/30 group-hover:text-cyan-400 transition-colors" />
                     </button>
                     <button
                       onClick={() => setSecurityTab("reset")}
-                      className="py-6 border-b border-white/10 hover:bg-white/5 px-4 -mx-4 rounded-xl transition-all text-left group flex items-center justify-between"
+                      className="py-6 border-b border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 px-4 -mx-4 rounded-xl transition-all text-left group flex items-center justify-between"
                     >
                       <div className="flex items-center gap-4">
                         <Mail className="w-6 h-6 text-indigo-400 group-hover:scale-110 transition shrink-0" />
                         <div>
-                          <h3 className="font-bold text-lg text-white mb-0.5 group-hover:text-indigo-400 transition-colors">Reset Password</h3>
-                          <p className="text-sm text-white/50">Use an email verification code if you forgot it.</p>
+                          <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-0.5 group-hover:text-indigo-400 transition-colors">Reset Password</h3>
+                          <p className="text-sm text-slate-400 dark:text-white/50">Use an email verification code if you forgot it.</p>
                         </div>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-white/30 group-hover:text-indigo-400 transition-colors" />
+                      <ChevronRight className="w-5 h-5 text-slate-300 dark:text-white/30 group-hover:text-indigo-400 transition-colors" />
                     </button>
                   </div>
                 )}
 
                 {securityTab === "password" && (
                   <div className="max-w-xl space-y-5">
-                    <button onClick={() => setSecurityTab("menu")} className="text-sm text-white/50 hover:text-white mb-4 inline-flex items-center gap-2 transition bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
+                    <button onClick={() => setSecurityTab("menu")} className="text-sm text-slate-400 dark:text-white/50 hover:text-slate-900 dark:hover:text-white mb-4 inline-flex items-center gap-2 transition bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10">
                       <ChevronLeft className="w-5 h-5" /> Back to Security
                     </button>
                     <div>
-                      <label className="block text-sm font-medium text-white/80 mb-2">Old Password</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">Old Password</label>
                       <input
                         type="password"
                         value={oldPassword}
                         onChange={(e) => setOldPassword(e.target.value)}
-                        className="w-full px-4 py-3 md:py-4 bg-white/5 border border-white/20 rounded-xl text-white focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                        className="w-full px-4 py-3 md:py-4 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 rounded-xl text-slate-900 dark:text-white focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
                         placeholder="••••••••"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-white/80 mb-2">New Password</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">New Password</label>
                       <input
                         type="password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full px-4 py-3 md:py-4 bg-white/5 border border-white/20 rounded-xl text-white focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                        className="w-full px-4 py-3 md:py-4 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 rounded-xl text-slate-900 dark:text-white focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
                         placeholder="••••••••"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-white/80 mb-2">Confirm New Password</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">Confirm New Password</label>
                       <input
                         type="password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="w-full px-4 py-3 md:py-4 bg-white/5 border border-white/20 rounded-xl text-white focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                        className="w-full px-4 py-3 md:py-4 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 rounded-xl text-slate-900 dark:text-white focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
                         placeholder="••••••••"
                       />
                     </div>
                     <button
                       onClick={handleUpdatePassword}
                       disabled={securityLoading}
-                      className="w-full py-4 bg-linear-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-xl font-bold shadow-lg shadow-cyan-500/25 transition disabled:opacity-50 mt-4 text-lg"
+                      className="w-full py-4 bg-linear-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-slate-900 dark:text-white rounded-xl font-bold shadow-lg shadow-cyan-500/25 transition disabled:opacity-50 mt-4 text-lg"
                     >
                       {securityLoading ? "Updating..." : "Update Password"}
                     </button>
@@ -566,23 +575,23 @@ function SettingsContent() {
 
                 {securityTab === "reset" && (
                   <div className="max-w-xl space-y-5">
-                    <button onClick={() => setSecurityTab("menu")} className="text-sm text-white/50 hover:text-white mb-4 inline-flex items-center gap-2 transition bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
+                    <button onClick={() => setSecurityTab("menu")} className="text-sm text-slate-400 dark:text-white/50 hover:text-slate-900 dark:hover:text-white mb-4 inline-flex items-center gap-2 transition bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10">
                      <ChevronLeft className="w-5 h-5" /> Back to Security
                     </button>
                     
                     {!showOtpField ? (
-                      <div className="space-y-6 bg-white/5 p-6 md:p-8 rounded-2xl border border-white/10 text-center">
+                      <div className="space-y-6 bg-slate-100 dark:bg-white/5 p-6 md:p-8 rounded-2xl border border-slate-200 dark:border-white/10 text-center">
                         <div className="w-16 h-16 bg-indigo-500/20 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
                            <Mail className="w-8 h-8" />
                         </div>
-                        <p className="text-white/80 leading-relaxed text-lg">
-                          We will send a 6-digit verification code to <br className="hidden md:block" /><strong className="text-white">{user.email}</strong>.
+                        <p className="text-slate-700 dark:text-white/80 leading-relaxed text-lg">
+                          We will send a 6-digit verification code to <br className="hidden md:block" /><strong className="text-slate-900 dark:text-white">{user.email}</strong>.
                         </p>
-                        <p className="text-sm text-white/40">This code will be valid for 15 minutes.</p>
+                        <p className="text-sm text-slate-400 dark:text-white/40">This code will be valid for 15 minutes.</p>
                         <button
                           onClick={handleSendOtp}
                           disabled={securityLoading}
-                          className="w-full py-4 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/25 transition disabled:opacity-50 text-lg"
+                          className="w-full py-4 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-slate-900 dark:text-white rounded-xl font-bold shadow-lg shadow-indigo-500/25 transition disabled:opacity-50 text-lg"
                         >
                           {securityLoading ? "Sending Code..." : "Send Verification Code"}
                         </button>
@@ -590,39 +599,39 @@ function SettingsContent() {
                     ) : (
                       <div className="space-y-5">
                         <div>
-                          <label className="block text-sm font-medium text-white/80 mb-2">Verification Code</label>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">Verification Code</label>
                           <input
                             type="text"
                             value={otp}
                             onChange={(e) => setOtp(e.target.value)}
-                            className="w-full px-4 py-3 md:py-4 bg-white/5 border border-white/20 rounded-xl text-white focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20"
+                            className="w-full px-4 py-3 md:py-4 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 rounded-xl text-slate-900 dark:text-white focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20"
                             placeholder="Enter 6-digit code"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-white/80 mb-2">New Password</label>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">New Password</label>
                           <input
                             type="password"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            className="w-full px-4 py-3 md:py-4 bg-white/5 border border-white/20 rounded-xl text-white focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20"
+                            className="w-full px-4 py-3 md:py-4 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 rounded-xl text-slate-900 dark:text-white focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20"
                             placeholder="••••••••"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-white/80 mb-2">Confirm New Password</label>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">Confirm New Password</label>
                           <input
                             type="password"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full px-4 py-3 md:py-4 bg-white/5 border border-white/20 rounded-xl text-white focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20"
+                            className="w-full px-4 py-3 md:py-4 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 rounded-xl text-slate-900 dark:text-white focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20"
                             placeholder="••••••••"
                           />
                         </div>
                         <button
                           onClick={handleResetPassword}
                           disabled={securityLoading}
-                          className="w-full py-4 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/25 transition disabled:opacity-50 mt-4 text-lg"
+                          className="w-full py-4 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-slate-900 dark:text-white rounded-xl font-bold shadow-lg shadow-indigo-500/25 transition disabled:opacity-50 mt-4 text-lg"
                         >
                           {securityLoading ? "Resetting..." : "Reset Password"}
                         </button>
@@ -642,23 +651,23 @@ function SettingsContent() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.2 }}
-              className="bg-linear-to-br from-red-500/5 to-transparent border border-red-500/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl shadow-2xl"
+              className="bg-white dark:bg-[#0d0505] border border-red-200 dark:border-red-500/20 rounded-3xl p-6 md:p-8 shadow-sm dark:shadow-2xl"
             >
               <div className="space-y-8">
                 <div>
-                  <h2 className="text-2xl font-bold text-red-400 mb-1">Danger Zone</h2>
-                  <p className="text-white/60 text-sm">Permanent actions regarding your account</p>
+                  <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-1">Danger Zone</h2>
+                  <p className="text-slate-500 dark:text-white/60 text-sm">Permanent actions regarding your account</p>
                 </div>
 
                 <div className="max-w-xl space-y-6">
-                  <div className="p-6 rounded-2xl border border-red-500/30 bg-red-500/10">
+                  <div className="p-6 rounded-2xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-950/40">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                      <div className="w-16 h-16 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center shrink-0">
+                      <div className="w-16 h-16 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center shrink-0">
                          <ShieldAlert className="w-8 h-8" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-red-200 text-lg mb-1">Delete Account</h3>
-                        <p className="text-sm text-red-200/70 leading-relaxed">
+                        <h3 className="font-bold text-red-700 dark:text-red-300 text-lg mb-1">Delete Account</h3>
+                        <p className="text-sm text-red-700/80 dark:text-red-200/70 leading-relaxed">
                           Deleting your account is permanent. All your data, purchases, and settings will be permanently removed. This action cannot be undone.
                         </p>
                       </div>
@@ -669,36 +678,36 @@ function SettingsContent() {
                     <button
                       onClick={handleRequestDeletion}
                       disabled={accountLoading}
-                      className="w-full py-4 bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 border border-red-500/30 rounded-xl font-bold transition disabled:opacity-50 text-lg"
+                      className="w-full py-4 bg-red-600 hover:bg-red-700 dark:bg-red-500/15 dark:hover:bg-red-500/25 text-white dark:text-red-400 dark:hover:text-red-300 border border-red-600 dark:border-red-500/30 rounded-xl font-bold transition disabled:opacity-50 text-base shadow-md shadow-red-500/20"
                     >
                       {accountLoading ? "Requesting..." : "I understand, request deletion"}
                     </button>
                   ) : (
-                    <div className="space-y-6 bg-black/40 p-6 rounded-2xl border border-red-500/20">
+                    <div className="space-y-6 bg-white dark:bg-black/40 p-6 rounded-2xl border border-red-500/20">
                       <div>
-                        <label className="block text-sm font-medium text-white/80 mb-2">Verification Code</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">Verification Code</label>
                         <input
                           type="text"
                           value={delOtp}
                           onChange={(e) => setDelOtp(e.target.value)}
-                          className="w-full px-4 py-4 bg-white/5 border border-red-500/30 rounded-xl text-white focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/20"
+                          className="w-full px-4 py-4 bg-slate-100 dark:bg-white/5 border border-red-500/30 rounded-xl text-slate-900 dark:text-white focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/20"
                           placeholder="Enter 6-digit code sent to email"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-white/80 mb-2">Reason for leaving (Required)</label>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">Reason for leaving (Required)</label>
                         <textarea
                           value={delReason}
                           onChange={(e) => setDelReason(e.target.value)}
                           rows={4}
-                          className="w-full px-4 py-4 bg-white/5 border border-red-500/30 rounded-xl text-white focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/20 resize-none"
+                          className="w-full px-4 py-4 bg-slate-100 dark:bg-white/5 border border-red-500/30 rounded-xl text-slate-900 dark:text-white focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/20 resize-none"
                           placeholder="We're sad to see you go. Please let us know why."
                         />
                       </div>
                       <button
                         onClick={handleConfirmDeletion}
                         disabled={accountLoading}
-                        className="w-full py-4 bg-red-600 hover:bg-red-500 text-white rounded-xl font-bold shadow-lg shadow-red-500/25 transition disabled:opacity-50 text-lg"
+                        className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-lg shadow-red-500/25 transition disabled:opacity-50 text-base"
                       >
                         {accountLoading ? "Processing..." : "Permanently Delete Account"}
                       </button>
@@ -718,7 +727,7 @@ function SettingsContent() {
 export default function SettingsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#05050a] flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
       </div>
     }>

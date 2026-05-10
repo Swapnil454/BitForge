@@ -307,7 +307,7 @@ Our system matches how TOP marketplaces handle previews:
 | **Envato** | Watermarked demos |
 | **Amazon Books** | "Look Inside" preview pages |
 | **Scribd** | Limited page preview |
-| **⭐ ContentSellify** | **Auto-generated watermarked preview** |
+| **⭐ Bitforge** | **Auto-generated watermarked preview** |
 
 ---
 
@@ -471,4 +471,4 @@ Questions? Issues with preview generation?
 ---
 
 *Last Updated: February 11, 2026*
-*System: ContentSellify - Automatic PDF Preview Generation v1.0*
+*System: Bitforge - Automatic PDF Preview Generation v1.0*

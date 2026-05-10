@@ -52,9 +52,9 @@ export default function CareersPage() {
   const latestCareers = careers.slice(0, 2);
 
   return (
-    <main className="relative min-h-screen bg-[#05050a] text-white overflow-x-hidden">
+    <main className="relative min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white overflow-x-hidden">
       {/* HEADER */}
-      <header className="fixed top-0 left-0 right-0 z-40 h-16 sm:h-20 border-b border-white/10 bg-[#05050a]/80 backdrop-blur-xl">
+      <header className="fixed top-0 left-0 right-0 z-40 h-16 sm:h-20 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#05050a]/80 backdrop-blur-xl">
         <nav className="mx-auto flex h-full max-w-7xl items-center justify-between px-5 md:px-6">
           <div className="flex items-center">
             <Image
@@ -73,7 +73,7 @@ export default function CareersPage() {
           <div className="flex items-center gap-4 text-sm">
             <Link
               href="/login"
-              className="rounded-lg border border-white/20 px-3 py-1.5 text-white/80 hover:border-cyan-400 hover:text-white"
+              className="rounded-lg border border-slate-300 dark:border-white/20 px-3 py-1.5 text-slate-700 dark:text-white/80 hover:border-cyan-400 hover:text-slate-900 dark:hover:text-white"
             >
               Sign in
             </Link>
@@ -105,13 +105,13 @@ export default function CareersPage() {
               for modern digital commerce
             </span>
           </h1>
-          <p className="mt-4 max-w-2xl text-sm text-white/70 sm:text-base">
+          <p className="mt-4 max-w-2xl text-sm text-slate-600 dark:text-white/70 sm:text-base">
             BitForge is where product, engineering, and operations teams come together to
             reinvent how digital products are launched, sold, and supported. Join a fast-moving,
             remote-first team that ships globally and obsesses over customer trust.
           </p>
 
-          <p className="mt-4 text-sm italic text-white/60">
+          <p className="mt-4 text-sm italic text-slate-500 dark:text-white/60">
             We're small, opinionated, and shipping fast.
           </p>
 
@@ -119,18 +119,18 @@ export default function CareersPage() {
             <span className="rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 font-medium text-emerald-200/90">
               Remote-first · India time zone friendly
             </span>
-            <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1">
+            <span className="rounded-full border border-white/15 bg-slate-100 dark:bg-white/5 px-3 py-1">
               Early-stage, well-funded product company
             </span>
           </div>
         </section>
 
         {/* OPEN ROLES (LATEST TWO ONLY) */}
-        <section className="mt-14 border-t border-white/10 pt-10">
+        <section className="mt-14 border-t border-slate-200 dark:border-white/10 pt-10">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-xl font-semibold sm:text-2xl">Latest Open Roles</h2>
-              <p className="mt-2 max-w-xl text-sm text-white/70 sm:text-base">
+              <p className="mt-2 max-w-xl text-sm text-slate-600 dark:text-white/70 sm:text-base">
                 Here are the most recently opened positions at BitForge. For the full list of roles,
                 you can browse all openings on the next page.
               </p>
@@ -141,13 +141,13 @@ export default function CareersPage() {
           </div>
 
           {loading ? (
-            <div className="mt-6 text-center py-12 bg-white/5 border border-white/10 rounded-2xl">
-              <div className="text-white/60">Loading open positions...</div>
+            <div className="mt-6 text-center py-12 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
+              <div className="text-slate-500 dark:text-white/60">Loading open positions...</div>
             </div>
           ) : careers.length === 0 ? (
-            <div className="mt-6 text-center py-12 bg-white/5 border border-white/10 rounded-2xl">
+            <div className="mt-6 text-center py-12 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
               <div className="text-4xl mb-4">💼</div>
-              <p className="text-white/60 mb-2">No open positions at the moment.</p>
+              <p className="text-slate-500 dark:text-white/60 mb-2">No open positions at the moment.</p>
               <p className="text-white/50 text-sm">
                 Check back soon or reach out at careers@bitforge.in.
               </p>
@@ -165,14 +165,14 @@ export default function CareersPage() {
                     <Link
                       key={career._id}
                       href={`/careers/${slug}`}
-                      className="block rounded-2xl border border-white/12 bg-white/5 p-4 hover:bg-white/[0.07] transition-colors group"
+                      className="block rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-4 hover:bg-white/[0.07] transition-colors group"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div>
                           <h3 className="text-sm font-semibold group-hover:text-cyan-300 transition-colors">
                             {career.title}
                           </h3>
-                          <p className="mt-1 text-[11px] text-white/60">
+                          <p className="mt-1 text-[11px] text-slate-500 dark:text-white/60">
                             {career.location} · {career.department}
                           </p>
                         </div>
@@ -180,13 +180,13 @@ export default function CareersPage() {
                           {career.featured ? "⭐ Featured" : "Open"}
                         </span>
                       </div>
-                      <p className="mt-3 text-xs text-white/70 line-clamp-2">
+                      <p className="mt-3 text-xs text-slate-600 dark:text-white/70 line-clamp-2">
                         {career.description}
                       </p>
                       {career.requirements && career.requirements.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-white/60">
+                        <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-slate-500 dark:text-white/60">
                           {career.requirements.slice(0, 3).map((req, idx) => (
-                            <span key={idx} className="rounded-full bg-black/40 px-2.5 py-1">
+                            <span key={idx} className="rounded-full bg-white dark:bg-black/40 px-2.5 py-1">
                               {req.length > 30 ? req.substring(0, 30) + "..." : req}
                             </span>
                           ))}
@@ -224,7 +224,7 @@ export default function CareersPage() {
             </>
           )}
 
-          <div className="mt-6 rounded-2xl border border-dashed border-white/25 bg-black/40 p-4 text-xs text-white/70 sm:text-[13px]">
+          <div className="mt-6 rounded-2xl border border-dashed border-white/25 bg-white dark:bg-black/40 p-4 text-xs text-slate-600 dark:text-white/70 sm:text-[13px]">
             Don&apos;t see a role that matches you? We&apos;re always happy to hear from exceptional
             people across product, engineering, design, and operations. Share your portfolio and a
             short note about what you&apos;d like to work on at
@@ -236,36 +236,36 @@ export default function CareersPage() {
         <section className="mt-12 grid gap-10 md:grid-cols-[1.1fr,0.9fr] md:items-start">
           <div>
             <h2 className="text-xl font-semibold sm:text-2xl">Why work at BitForge</h2>
-            <p className="mt-3 text-sm text-white/70 sm:text-base">
+            <p className="mt-3 text-sm text-slate-600 dark:text-white/70 sm:text-base">
               We are building critical payment and fulfillment infrastructure for creators and
               businesses selling digital products. The work you do here will ship to thousands of
               buyers and sellers, and you will see the impact of your decisions in real-time.
             </p>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/12 bg-white/5 p-4">
+              <div className="rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-4">
                 <h3 className="text-sm font-semibold">Ownership from day one</h3>
-                <p className="mt-2 text-xs text-white/70">
+                <p className="mt-2 text-xs text-slate-600 dark:text-white/70">
                   Small, senior teams with clear problem areas. You&apos;ll own meaningful pieces of
                   product from week one and work directly with founders.
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/12 bg-white/5 p-4">
+              <div className="rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-4">
                 <h3 className="text-sm font-semibold">Product-first culture</h3>
-                <p className="mt-2 text-xs text-white/70">
+                <p className="mt-2 text-xs text-slate-600 dark:text-white/70">
                   We ship fast, talk to customers weekly, and measure ourselves against real
                   adoption, not vanity metrics.
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/12 bg-white/5 p-4">
+              <div className="rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-4">
                 <h3 className="text-sm font-semibold">Remote, but not alone</h3>
-                <p className="mt-2 text-xs text-white/70">
+                <p className="mt-2 text-xs text-slate-600 dark:text-white/70">
                   Remote-first with structured rituals — virtual standups, deep work blocks, and
                   quarterly in-person meetups for strategy and team-building.
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/12 bg-white/5 p-4">
+              <div className="rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-4">
                 <h3 className="text-sm font-semibold">Real impact, no bureaucracy</h3>
-                <p className="mt-2 text-xs text-white/70">
+                <p className="mt-2 text-xs text-slate-600 dark:text-white/70">
                   Minimal layers and lean processes. If you see a better way to serve customers,
                   you are empowered to ship it.
                 </p>
@@ -289,30 +289,30 @@ export default function CareersPage() {
         </section>
 
         {/* TEAMS */}
-        <section className="mt-14 border-t border-white/10 pt-10">
+        <section className="mt-14 border-t border-slate-200 dark:border-white/10 pt-10">
           <h2 className="text-xl font-semibold sm:text-2xl">Teams at BitForge</h2>
-          <p className="mt-3 max-w-2xl text-sm text-white/70 sm:text-base">
+          <p className="mt-3 max-w-2xl text-sm text-slate-600 dark:text-white/70 sm:text-base">
             We bring together people from product, engineering, design, operations, and customer
             success — all focused on making digital commerce feel simple and trustworthy.
           </p>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
-            <div className="rounded-2xl border border-white/12 bg-white/5 p-4">
+            <div className="rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-4">
               <h3 className="text-sm font-semibold">Product &amp; Engineering</h3>
-              <p className="mt-2 text-xs text-white/70">
+              <p className="mt-2 text-xs text-slate-600 dark:text-white/70">
                 Build the marketplace, payments, and trust tooling that power creators and buyers
                 globally.
               </p>
             </div>
-            <div className="rounded-2xl border border-white/12 bg-white/5 p-4">
+            <div className="rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-4">
               <h3 className="text-sm font-semibold">Design &amp; Research</h3>
-              <p className="mt-2 text-xs text-white/70">
+              <p className="mt-2 text-xs text-slate-600 dark:text-white/70">
                 Craft interfaces that make complex financial flows feel simple, transparent, and
                 safe.
               </p>
             </div>
-            <div className="rounded-2xl border border-white/12 bg-white/5 p-4">
+            <div className="rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-4">
               <h3 className="text-sm font-semibold">Operations &amp; Customer Experience</h3>
-              <p className="mt-2 text-xs text-white/70">
+              <p className="mt-2 text-xs text-slate-600 dark:text-white/70">
                 Ensure payouts, compliance, and customer support run like clockwork for every
                 transaction.
               </p>
@@ -321,7 +321,7 @@ export default function CareersPage() {
         </section>
 
         {/* CTA */}
-        <section className="mt-14 border-t border-white/10 pt-10">
+        <section className="mt-14 border-t border-slate-200 dark:border-white/10 pt-10">
           <div className="flex flex-col gap-4 rounded-2xl border border-cyan-500/40 bg-gradient-to-r from-cyan-500/15 to-indigo-500/15 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold sm:text-xl">Ready to build what powers creators?</h2>
@@ -337,7 +337,7 @@ export default function CareersPage() {
               >
                 Email the hiring team →
               </Link>
-              <span className="text-[11px] text-white/60">
+              <span className="text-[11px] text-slate-500 dark:text-white/60">
                 Typical response time: within 3–5 business days.
               </span>
             </div>

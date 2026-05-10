@@ -14,10 +14,15 @@ import {
   Shield,
   TriangleAlert,
   University,
-  UserRound,
   Users,
   Wallet,
+  Moon,
+  Sun,
+  UserRound,
+  Menu,
+  X,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { clearAuthStorage, getStoredUser, setCookie, getCookie } from "@/lib/cookies";
 import { notificationAPI, userAPI, adminAPI, chatAPI } from "@/lib/api";
 import { useAdminDashboard, useInvalidateAdminCache, adminQueryKeys } from "@/lib/hooks";
@@ -68,6 +73,11 @@ export default function AdminDashboard() {
   const [loadingNotifs, setLoadingNotifs] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const socketRef = useRef<Socket | null>(null);
+
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   // React Query hooks for cached data
   const { stats, notifications, unreadCount, chatUnread: chatUnreadCount, isInitialLoading, queries } = useAdminDashboard();
@@ -240,9 +250,9 @@ export default function AdminDashboard() {
   };
 
   return (
-    <main className="min-h-screen bg-[#05050a] text-white">
+    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
       {/* ================= HEADER ================= */}
-      <header className="sticky top-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/10">
+      <header className="sticky top-0 z-50 bg-white dark:bg-black/60 backdrop-blur-xl border-b border-slate-200 dark:border-white/10">
         <div className="max-w-7xl mx-auto h-16 px-4 flex items-center justify-between">
           <BitForgeBrand role="Admin" />
           <div className="flex items-center gap-3">
@@ -263,15 +273,19 @@ export default function AdminDashboard() {
                   setProfileOpen(v => !v);
                   setNotifOpen(false);
                 }}
-                className={`h-10 w-10 md:h-11 md:w-11 rounded-xl bg-linear-to-br from-white/10 to-white/5 border border-white/20 hover:border-indigo-500/50 hover:from-indigo-500/20 hover:to-indigo-600/20 flex flex-col items-center justify-center gap-1.5 transition-all duration-300 group hover:scale-105 shadow-lg hover:shadow-indigo-500/50 ${profileOpen ? 'border-indigo-500 from-indigo-500/20 to-indigo-600/20 shadow-indigo-500/50' : ''}`}
+                className={`relative p-2 rounded-full text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors grid place-items-center ${
+                  profileOpen ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white' : ''
+                }`}
                 title="Menu"
               >
                 {chatUnreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-red-500 shadow-sm shadow-red-500" />
+                  <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#05050a]" />
                 )}
-                <span className={`w-4 h-0.5 bg-white group-hover:bg-indigo-300 transition-all origin-center ${profileOpen ? 'rotate-45 translate-y-2 bg-indigo-300' : ''}`}></span>
-                <span className={`w-4 h-0.5 bg-white group-hover:bg-indigo-300 transition-all ${profileOpen ? 'opacity-0' : ''}`}></span>
-                <span className={`w-4 h-0.5 bg-white group-hover:bg-indigo-300 transition-all origin-center ${profileOpen ? '-rotate-45 -translate-y-2 bg-indigo-300' : ''}`}></span>
+                {profileOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
               </button>
 
               <AnimatePresence>
@@ -281,9 +295,9 @@ export default function AdminDashboard() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 6, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 mt-3 w-56 rounded-2xl bg-linear-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl border-2 border-indigo-500/20 shadow-2xl shadow-indigo-500/20"
+                    className="absolute right-0 mt-3 w-56 rounded-2xl bg-white dark:bg-transparent dark:bg-linear-to-br dark:from-slate-900/95 dark:via-slate-800/95 dark:to-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-indigo-500/20 shadow-2xl shadow-gray-200 dark:shadow-indigo-500/20 overflow-hidden"
                   >
-                    <div className="px-4 py-3 border-b border-white/10 bg-linear-to-r from-indigo-500/10 to-purple-500/10 rounded-t-2xl">
+                    <div className="px-4 py-3 border-b border-slate-200 dark:border-white/10 bg-linear-to-r from-indigo-500/10 to-purple-500/10 rounded-t-2xl">
                       <p className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Menu</p>
                     </div>
                     <MenuItem 
@@ -323,6 +337,13 @@ export default function AdminDashboard() {
                         setProfileOpen(false);
                       }} 
                     />
+                    {mounted && (
+                      <MenuItem 
+                        label={theme === 'dark' ? "Light Mode" : "Dark Mode"} 
+                        icon={theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
+                      />
+                    )}
                     <div className="h-px bg-linear-to-r from-transparent via-indigo-500/20 to-transparent" />
                     <MenuItem label="Logout" icon={<LogOut className="h-4 w-4" />} danger onClick={() => { setIsLogoutModalOpen(true); setProfileOpen(false); }} />
                   </motion.div>
@@ -369,112 +390,112 @@ export default function AdminDashboard() {
             variant="buyer"
             title="All Users"
             description="Manage platform users"
-            icon={<Users className="h-8 w-8 md:h-9 md:w-9 text-cyan-200" strokeWidth={2} />}
+            icon={<Users className="h-8 w-8 md:h-9 md:w-9 text-cyan-600 dark:text-cyan-200" strokeWidth={2} />}
             href="/dashboard/admin/users"
             gradientFrom="from-cyan-600/20"
             gradientTo="to-blue-600/20"
             borderColor="border-cyan-500/40"
             hoverBorderColor="border-cyan-400/60"
             hoverShadow="hover:shadow-cyan-500/30"
-            hoverTextColor="text-cyan-200"
+            hoverTextColor="text-cyan-700 dark:text-cyan-200"
           />
 
           <DashboardActionCard
             variant="buyer"
             title="Pending Sellers"
             description="Review seller requests"
-            icon={<BriefcaseBusiness className="h-8 w-8 md:h-9 md:w-9 text-purple-200" strokeWidth={2} />}
+            icon={<BriefcaseBusiness className="h-8 w-8 md:h-9 md:w-9 text-purple-600 dark:text-purple-200" strokeWidth={2} />}
             href="/dashboard/admin/sellers"
             gradientFrom="from-purple-600/20"
             gradientTo="to-indigo-600/20"
             borderColor="border-purple-500/40"
             hoverBorderColor="border-purple-400/60"
             hoverShadow="hover:shadow-purple-500/30"
-            hoverTextColor="text-purple-200"
+            hoverTextColor="text-purple-700 dark:text-purple-200"
           />
 
           <DashboardActionCard
             variant="buyer"
             title="Pending Products"
             description="Approve new listings"
-            icon={<Package className="h-8 w-8 md:h-9 md:w-9 text-blue-200" strokeWidth={2} />}
+            icon={<Package className="h-8 w-8 md:h-9 md:w-9 text-blue-600 dark:text-blue-200" strokeWidth={2} />}
             href="/dashboard/admin/products"
             gradientFrom="from-blue-600/20"
             gradientTo="to-sky-600/20"
             borderColor="border-blue-500/40"
             hoverBorderColor="border-blue-400/60"
             hoverShadow="hover:shadow-blue-500/30"
-            hoverTextColor="text-blue-200"
+            hoverTextColor="text-blue-700 dark:text-blue-200"
           />
 
           <DashboardActionCard
             variant="buyer"
             title="Open Disputes"
             description="Resolve user issues"
-            icon={<TriangleAlert className="h-8 w-8 md:h-9 md:w-9 text-red-200" strokeWidth={2} />}
+            icon={<TriangleAlert className="h-8 w-8 md:h-9 md:w-9 text-red-600 dark:text-red-200" strokeWidth={2} />}
             href="/dashboard/admin/disputes"
             gradientFrom="from-red-600/20"
             gradientTo="to-rose-600/20"
             borderColor="border-red-500/40"
             hoverBorderColor="border-red-400/60"
             hoverShadow="hover:shadow-red-500/30"
-            hoverTextColor="text-red-200"
+            hoverTextColor="text-red-700 dark:text-red-200"
           />
 
           <DashboardActionCard
             variant="buyer"
             title="Pending Payouts"
             description="Approve withdrawals"
-            icon={<Wallet className="h-8 w-8 md:h-9 md:w-9 text-emerald-200" strokeWidth={2} />}
+            icon={<Wallet className="h-8 w-8 md:h-9 md:w-9 text-emerald-600 dark:text-emerald-200" strokeWidth={2} />}
             href="/dashboard/admin/payouts"
             gradientFrom="from-emerald-600/20"
             gradientTo="to-green-600/20"
             borderColor="border-emerald-500/40"
             hoverBorderColor="border-emerald-400/60"
             hoverShadow="hover:shadow-emerald-500/30"
-            hoverTextColor="text-emerald-200"
+            hoverTextColor="text-emerald-700 dark:text-emerald-200"
           />
 
           <DashboardActionCard
             variant="buyer"
             title="Bank Accounts"
             description="Manage payout banks"
-            icon={<University className="h-8 w-8 md:h-9 md:w-9 text-yellow-200" strokeWidth={2} />}
+            icon={<University className="h-8 w-8 md:h-9 md:w-9 text-yellow-600 dark:text-yellow-200" strokeWidth={2} />}
             href="/dashboard/admin/bank-account"
             gradientFrom="from-yellow-600/20"
             gradientTo="to-amber-600/20"
             borderColor="border-yellow-500/40"
             hoverBorderColor="border-yellow-400/60"
             hoverShadow="hover:shadow-yellow-500/30"
-            hoverTextColor="text-yellow-200"
+            hoverTextColor="text-yellow-700 dark:text-yellow-200"
           />
 
           <DashboardActionCard
             variant="buyer"
             title="Trust & Security"
             description="Malware, reviews & identity"
-            icon={<Shield className="h-8 w-8 md:h-9 md:w-9 text-red-200" strokeWidth={2} />}
+            icon={<Shield className="h-8 w-8 md:h-9 md:w-9 text-red-600 dark:text-red-200" strokeWidth={2} />}
             href="/dashboard/admin/security"
             gradientFrom="from-red-600/20"
             gradientTo="to-orange-600/20"
             borderColor="border-red-500/40"
             hoverBorderColor="border-red-400/60"
             hoverShadow="hover:shadow-red-500/30"
-            hoverTextColor="text-red-200"
+            hoverTextColor="text-red-700 dark:text-red-200"
           />
 
           <DashboardActionCard
             variant="buyer"
             title="Help Center"
             description="Guides and support docs"
-            icon={<CircleHelp className="h-8 w-8 md:h-9 md:w-9 text-indigo-200" strokeWidth={2} />}
+            icon={<CircleHelp className="h-8 w-8 md:h-9 md:w-9 text-indigo-600 dark:text-indigo-200" strokeWidth={2} />}
             href="/dashboard/admin/help-center"
             gradientFrom="from-indigo-600/20"
             gradientTo="to-violet-600/20"
             borderColor="border-indigo-500/40"
             hoverBorderColor="border-indigo-400/60"
             hoverShadow="hover:shadow-indigo-500/30"
-            hoverTextColor="text-indigo-200"
+            hoverTextColor="text-indigo-700 dark:text-indigo-200"
           />
 
         </div>
@@ -483,26 +504,26 @@ export default function AdminDashboard() {
           onClick={() => router.push("/dashboard/admin/transactions")}
           className="w-full text-left group cursor-pointer"
         >
-          <Glass title={<span className="inline-flex items-center gap-2"><ClipboardList className="h-4 w-4 text-cyan-300" /> Recent Transactions</span>}>
+          <Glass title={<span className="inline-flex items-center gap-2"><ClipboardList className="h-4 w-4 text-cyan-600 dark:text-cyan-300" /> Recent Transactions</span>}>
             {stats.recentTransactions && stats.recentTransactions.length > 0 ? (
               <div className="space-y-3">
                 {stats.recentTransactions.slice(0, 2).map((t) => (
                   <div
                     key={t.id}
-                    className="flex items-center justify-between group-hover:bg-white/5 px-3 py-2.5 -mx-3 rounded-lg transition"
+                    className="flex items-center justify-between group-hover:bg-slate-100 dark:group-hover:bg-white/5 px-3 py-2.5 -mx-3 rounded-lg transition"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-white text-sm truncate">
+                      <p className="font-semibold text-slate-900 dark:text-white text-sm truncate">
                         {t.user} — {t.productName}
                       </p>
-                      <p className="text-xs text-white/60 mt-0.5">
+                      <p className="text-xs text-slate-500 dark:text-white/60 mt-0.5">
                         {new Date(t.date).toLocaleString()}
                       </p>
                     </div>
 
                     <div className="text-right ml-4 shrink-0">
                       <p className="font-bold text-lg text-emerald-400">
-                        ₹{t.amount.toLocaleString()}
+                        {t.amount.includes("₹") ? t.amount : `₹${Number(t.amount).toLocaleString()}`}
                       </p>
                     </div>
                   </div>
@@ -510,10 +531,10 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <div className="text-center py-6">
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-white/15 bg-white/5 mb-2">
-                  <ClipboardList className="h-6 w-6 text-cyan-300" />
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-gray-200 dark:border-white/15 bg-slate-100 dark:bg-white/5 mb-2">
+                  <ClipboardList className="h-6 w-6 text-cyan-600 dark:text-cyan-300" />
                 </div>
-                <p className="text-white/60 text-sm mb-3">
+                <p className="text-slate-500 dark:text-white/60 text-sm mb-3">
                   No transactions yet
                 </p>
                 <button
@@ -521,7 +542,7 @@ export default function AdminDashboard() {
                     e.stopPropagation();
                     router.push("/dashboard/admin/transactions");
                   }}
-                  className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition text-sm"
+                  className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-slate-900 dark:text-white rounded-lg font-semibold transition text-sm"
                 >
                   View Transactions
                 </button>
@@ -565,8 +586,8 @@ export default function AdminDashboard() {
 
 function AdminDashboardSkeleton() {
   return (
-    <main className="min-h-screen bg-[#05050a] text-white">
-      <header className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-purple-500/30">
+    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
+      <header className="sticky top-0 z-40 bg-white dark:bg-black/80 backdrop-blur-xl border-b border-purple-500/30">
         <div className="max-w-7xl mx-auto h-16 px-4 flex items-center justify-between">
           <div className="h-6 w-32 rounded-full bg-gradient-to-r from-purple-500/60 via-indigo-500/60 to-cyan-400/60 animate-pulse" />
           <div className="flex items-center gap-3">

@@ -25,7 +25,7 @@ const CATEGORIES = [
   { value: "quality_issue", label: "Quality issue", icon: ShieldAlert, color: "text-yellow-400" },
   { value: "not_as_described", label: "Not as described", icon: BadgeAlert, color: "text-blue-400" },
   { value: "payment_issue", label: "Payment issue", icon: CreditCard, color: "text-purple-400" },
-  { value: "other", label: "Other", icon: HelpCircle, color: "text-white/50" },
+  { value: "other", label: "Other", icon: HelpCircle, color: "text-slate-400 dark:text-white/50" },
 ];
 
 const MAX_FILES = 3;
@@ -139,7 +139,7 @@ function ModalShell({ isOpen, onClose, orderId, orderNumber, productName, onSucc
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
         onClick={handleClose}
-        className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+        className="fixed inset-0 z-50 bg-white dark:bg-black/70 backdrop-blur-sm"
       />
 
       {/* Desktop Modal */}
@@ -149,7 +149,7 @@ function ModalShell({ isOpen, onClose, orderId, orderNumber, productName, onSucc
         exit={{ opacity: 0, scale: 0.96, y: 12 }}
         transition={{ type: "spring", stiffness: 340, damping: 28 }}
         role="dialog" aria-modal="true"
-        className="fixed inset-0 z-50 m-auto hidden sm:flex flex-col w-full max-w-lg max-h-[90vh] overflow-hidden rounded-2xl border border-white/10 bg-[#10121a] shadow-[0_32px_80px_rgba(0,0,0,0.6)]"
+        className="fixed inset-0 z-50 m-auto hidden sm:flex flex-col w-full max-w-lg max-h-[90vh] overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-[#10121a] shadow-[0_32px_80px_rgba(0,0,0,0.6)]"
         style={{ height: "fit-content" }}
       >
         <ModalContent {...sharedProps} />
@@ -160,7 +160,7 @@ function ModalShell({ isOpen, onClose, orderId, orderNumber, productName, onSucc
         initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
         transition={{ type: "spring", stiffness: 380, damping: 34 }}
         role="dialog" aria-modal="true"
-        className="fixed bottom-0 left-0 right-0 z-50 flex sm:hidden flex-col max-h-[92dvh] overflow-hidden rounded-t-3xl border-t border-white/10 bg-[#10121a] shadow-[0_-16px_60px_rgba(0,0,0,0.55)]"
+        className="fixed bottom-0 left-0 right-0 z-50 flex sm:hidden flex-col max-h-[92dvh] overflow-hidden rounded-t-3xl border-t border-slate-200 dark:border-white/10 bg-[#10121a] shadow-[0_-16px_60px_rgba(0,0,0,0.55)]"
       >
         <div className="flex justify-center pt-3 pb-1 shrink-0">
           <div className="h-1 w-10 rounded-full bg-white/20" />
@@ -215,19 +215,19 @@ function CategoryDropdown({
             ? "border-cyan-500/50 ring-1 ring-cyan-400/10"
             : error
             ? "border-red-500/50 hover:border-red-400/60"
-            : "border-white/10 hover:border-white/20"}
+            : "border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20"}
         `}
       >
         {selected ? (
           <span className="flex items-center gap-2.5 min-w-0">
             <selected.icon className={`h-4 w-4 shrink-0 ${selected.color}`} />
-            <span className="text-white font-medium truncate">{selected.label}</span>
+            <span className="text-slate-900 dark:text-white font-medium truncate">{selected.label}</span>
           </span>
         ) : (
-          <span className="text-white/30">Select an option</span>
+          <span className="text-slate-300 dark:text-white/30">Select an option</span>
         )}
         <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
-          <ChevronDown className="h-4 w-4 text-white/30 shrink-0" />
+          <ChevronDown className="h-4 w-4 text-slate-300 dark:text-white/30 shrink-0" />
         </motion.div>
       </button>
 
@@ -257,19 +257,19 @@ function CategoryDropdown({
                 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
                 w-[min(320px,88vw)]
                 overflow-hidden rounded-2xl
-                border border-white/10
+                border border-slate-200 dark:border-white/10
                 bg-[#13151f]
                 shadow-[0_24px_80px_rgba(0,0,0,0.9)]
               "
             >
               {/* Panel header */}
               <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-white/35">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-400 dark:text-white/35">
                   Select Issue Type
                 </p>
                 <button
                   onClick={() => setOpen(false)}
-                  className="rounded-md p-1 text-white/30 hover:bg-white/8 hover:text-white/70 transition"
+                  className="rounded-md p-1 text-slate-300 dark:text-white/30 hover:bg-white/8 hover:text-slate-600 dark:hover:text-white/70 transition"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -296,11 +296,11 @@ function CategoryDropdown({
                       <span className="flex items-center gap-2.5 min-w-0">
                         <span className={`
                           flex h-7 w-7 items-center justify-center rounded-lg shrink-0 transition-colors
-                          ${isSelected ? "bg-white/10" : "bg-white/[0.03] group-hover:bg-white/[0.06]"}
+                          ${isSelected ? "bg-slate-200 dark:bg-white/10" : "bg-slate-100 dark:bg-white/[0.03] group-hover:bg-white/[0.06]"}
                         `}>
-                          <cat.icon className={`h-3.5 w-3.5 transition-colors ${isSelected ? cat.color : "text-white/30 group-hover:text-white/55"}`} />
+                          <cat.icon className={`h-3.5 w-3.5 transition-colors ${isSelected ? cat.color : "text-slate-300 dark:text-white/30 group-hover:text-white/55"}`} />
                         </span>
-                        <span className={`font-medium text-sm truncate transition-colors ${isSelected ? "text-white" : "text-white/55 group-hover:text-white/85"}`}>
+                        <span className={`font-medium text-sm truncate transition-colors ${isSelected ? "text-slate-900 dark:text-white" : "text-white/55 group-hover:text-white/85"}`}>
                           {cat.label}
                         </span>
                       </span>
@@ -360,21 +360,21 @@ function ModalContent(p: ContentProps) {
           <CheckCircle2 className="h-8 w-8 text-emerald-400" />
         </motion.div>
         <div>
-          <p className="text-lg font-semibold text-white">Dispute Submitted</p>
-          <p className="mt-1.5 text-sm text-white/50 leading-relaxed">
+          <p className="text-lg font-semibold text-slate-900 dark:text-white">Dispute Submitted</p>
+          <p className="mt-1.5 text-sm text-slate-400 dark:text-white/50 leading-relaxed">
             We've received your dispute. Our team will review it within 24–48 hours.
           </p>
         </div>
-        <div className="mt-1 w-full rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3 text-left text-sm">
-          <div className="flex justify-between gap-2 text-white/35 text-[11px] mb-1.5 uppercase tracking-wider">
+        <div className="mt-1 w-full rounded-xl border border-white/8 bg-slate-100 dark:bg-white/[0.03] px-4 py-3 text-left text-sm">
+          <div className="flex justify-between gap-2 text-slate-400 dark:text-white/35 text-[11px] mb-1.5 uppercase tracking-wider">
             <span>Order</span><span>#{p.orderNumber}</span>
           </div>
-          <p className="text-white/70 font-medium truncate">{p.productName}</p>
+          <p className="text-slate-600 dark:text-white/70 font-medium truncate">{p.productName}</p>
           <div className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[11px] text-amber-400">
             <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Pending Review
           </div>
         </div>
-        <button onClick={p.handleClose} className="mt-1 w-full rounded-xl bg-white/8 border border-white/10 py-3 text-sm font-medium text-white/80 hover:bg-white/12 hover:text-white transition">
+        <button onClick={p.handleClose} className="mt-1 w-full rounded-xl bg-white/8 border border-slate-200 dark:border-white/10 py-3 text-sm font-medium text-slate-700 dark:text-white/80 hover:bg-white/12 hover:text-slate-900 dark:hover:text-white transition">
           Close
         </button>
       </div>
@@ -386,20 +386,20 @@ function ModalContent(p: ContentProps) {
       {/* Header */}
       <div className="flex items-start justify-between gap-3 border-b border-white/8 px-5 py-4 shrink-0">
         <div>
-          <h2 className="text-base font-semibold text-white">Raise a Dispute</h2>
-          <p className="mt-0.5 text-xs text-white/40">Tell us what went wrong with your purchase.</p>
+          <h2 className="text-base font-semibold text-slate-900 dark:text-white">Raise a Dispute</h2>
+          <p className="mt-0.5 text-xs text-slate-400 dark:text-white/40">Tell us what went wrong with your purchase.</p>
         </div>
-        <button onClick={p.handleClose} className="shrink-0 mt-0.5 rounded-lg p-1.5 text-white/35 hover:bg-white/8 hover:text-white/80 transition" aria-label="Close">
+        <button onClick={p.handleClose} className="shrink-0 mt-0.5 rounded-lg p-1.5 text-slate-400 dark:text-white/35 hover:bg-white/8 hover:text-slate-700 dark:hover:text-white/80 transition" aria-label="Close">
           <X className="h-4 w-4" />
         </button>
       </div>
 
       {/* Context pill */}
-      <div className="mx-5 mt-4 shrink-0 flex items-center gap-2.5 rounded-xl border border-white/8 bg-white/[0.03] px-3.5 py-2.5">
+      <div className="mx-5 mt-4 shrink-0 flex items-center gap-2.5 rounded-xl border border-white/8 bg-slate-100 dark:bg-white/[0.03] px-3.5 py-2.5">
         <AlertCircle className="h-4 w-4 text-red-400/70 shrink-0" />
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-white/80">{p.productName}</p>
-          <p className="text-[11px] text-white/30">Order #{p.orderNumber}</p>
+          <p className="truncate text-sm font-medium text-slate-700 dark:text-white/80">{p.productName}</p>
+          <p className="text-[11px] text-slate-300 dark:text-white/30">Order #{p.orderNumber}</p>
         </div>
       </div>
 
@@ -431,11 +431,11 @@ function ModalContent(p: ContentProps) {
             placeholder="Explain what happened, when it occurred, and what you expected."
             className={`
               w-full resize-none rounded-xl border px-4 py-3 text-sm
-              bg-white/[0.04] text-white placeholder-white/20 outline-none transition
+              bg-white/[0.04] text-slate-900 dark:text-white placeholder-white/20 outline-none transition
               focus:ring-1
               ${p.errors.description
                 ? "border-red-500/50 focus:border-red-400 focus:ring-red-400/20"
-                : "border-white/10 focus:border-cyan-500/50 focus:ring-cyan-400/10"}
+                : "border-slate-200 dark:border-white/10 focus:border-cyan-500/50 focus:ring-cyan-400/10"}
             `}
           />
           {p.errors.description
@@ -446,19 +446,19 @@ function ModalContent(p: ContentProps) {
         {/* File Upload */}
         <div>
           <label className="mb-1.5 block text-xs font-medium text-white/55 uppercase tracking-wider">
-            Proof Upload <span className="text-white/20">(optional)</span>
+            Proof Upload <span className="text-slate-200 dark:text-white/20">(optional)</span>
           </label>
           <div
             onDragOver={(e) => { e.preventDefault(); p.setDragging(true); }}
             onDragLeave={() => p.setDragging(false)}
             onDrop={(e) => { e.preventDefault(); p.setDragging(false); p.addFiles(e.dataTransfer.files); }}
             onClick={() => p.fileInputRef.current?.click()}
-            className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-5 cursor-pointer transition-all ${p.dragging ? "border-cyan-400/50 bg-cyan-400/5" : "border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04]"}`}
+            className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-5 cursor-pointer transition-all ${p.dragging ? "border-cyan-400/50 bg-cyan-400/5" : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] hover:border-slate-300 dark:hover:border-white/20 hover:bg-white/[0.04]"}`}
           >
             <Upload className="h-5 w-5 text-white/25" />
             <div className="text-center">
               <p className="text-sm text-white/45"><span className="text-cyan-400 font-medium">Click to upload</span> or drag & drop</p>
-              <p className="mt-0.5 text-xs text-white/20">JPG, PNG, PDF · Max 5MB · Up to 3 files</p>
+              <p className="mt-0.5 text-xs text-slate-200 dark:text-white/20">JPG, PNG, PDF · Max 5MB · Up to 3 files</p>
             </div>
           </div>
           <input ref={p.fileInputRef} type="file" accept=".jpg,.jpeg,.png,.pdf" multiple className="hidden" onChange={(e) => e.target.files && p.addFiles(e.target.files)} />
@@ -466,10 +466,10 @@ function ModalContent(p: ContentProps) {
           {p.files.length > 0 && (
             <div className="mt-3 flex flex-col gap-2">
               {p.files.map((f, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-xl border border-white/8 bg-white/[0.03] px-3 py-2.5">
+                <div key={i} className="flex items-center gap-3 rounded-xl border border-white/8 bg-slate-100 dark:bg-white/[0.03] px-3 py-2.5">
                   {f.preview
-                    ? <img src={f.preview} alt="" className="h-9 w-9 rounded-lg object-cover shrink-0 border border-white/10" />
-                    : <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/5 border border-white/10 shrink-0"><Paperclip className="h-4 w-4 text-white/35" /></div>}
+                    ? <img src={f.preview} alt="" className="h-9 w-9 rounded-lg object-cover shrink-0 border border-slate-200 dark:border-white/10" />
+                    : <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 shrink-0"><Paperclip className="h-4 w-4 text-slate-400 dark:text-white/35" /></div>}
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-white/75">{f.file.name}</p>
                     <p className="text-xs text-white/25">{(f.file.size / 1024).toFixed(0)} KB</p>
@@ -488,13 +488,13 @@ function ModalContent(p: ContentProps) {
       <div className="shrink-0 border-t border-white/8 px-5 py-4 flex gap-3">
         <button
           onClick={p.handleClose} disabled={p.submitting}
-          className="flex-1 rounded-xl border border-white/10 bg-white/[0.04] py-3 text-sm font-medium text-white/55 hover:bg-white/8 hover:text-white/85 transition disabled:opacity-40"
+          className="flex-1 rounded-xl border border-slate-200 dark:border-white/10 bg-white/[0.04] py-3 text-sm font-medium text-white/55 hover:bg-white/8 hover:text-white/85 transition disabled:opacity-40"
         >
           Cancel
         </button>
         <button
           onClick={p.handleSubmit} disabled={p.submitting}
-          className="flex-[2] rounded-xl bg-red-500 py-3 text-sm font-semibold text-white hover:bg-red-400 transition disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2"
+          className="flex-[2] rounded-xl bg-red-500 py-3 text-sm font-semibold text-slate-900 dark:text-white hover:bg-red-400 transition disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2"
         >
           {p.submitting ? (
             <>

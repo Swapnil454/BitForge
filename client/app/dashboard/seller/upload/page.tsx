@@ -407,12 +407,12 @@ export default function UploadAndProductsPage() {
   /* ================= UI CLASSES ================= */
 
   const inputClass =
-    "w-full rounded-xl bg-[#18181b] border border-[#27272a] px-4 py-3 text-sm text-white placeholder:text-zinc-500 hover:border-zinc-600 focus:bg-[#1f1f22] focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 transition-all shadow-sm";
+    "w-full rounded-xl bg-slate-100 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 hover:border-slate-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-[#1f1f22] focus:border-cyan-400 dark:focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-400 dark:focus:ring-zinc-500 transition-all shadow-sm dark:shadow-none";
 
   /* ================= RENDER ================= */
 
   return (
-    <main className="min-h-screen bg-[#05050a] text-white">
+    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
       <PageHeader
         backHref="/dashboard/seller"
         backLabel="Dashboard"
@@ -511,11 +511,11 @@ export default function UploadAndProductsPage() {
                 </div>
 
               {/* FINAL PRICE BAR */}
-              <div className="flex items-center justify-between bg-[#18181b] border border-[#27272a] rounded-xl px-5 py-4 text-sm mt-2 shadow-sm">
-                <span className="text-zinc-400 font-medium">
+              <div className="flex items-center justify-between bg-slate-100 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-5 py-4 text-sm mt-2 shadow-sm dark:shadow-none">
+                <span className="text-slate-500 dark:text-zinc-400 font-medium">
                   Final price (after discount)
                 </span>
-                <span className="font-semibold text-white">
+                <span className="font-semibold text-slate-900 dark:text-white">
                   ₹{finalPrice || 0}
                 </span>
               </div>
@@ -527,19 +527,19 @@ export default function UploadAndProductsPage() {
                   name="file"
                   onChange={handleFile}
                   className="
-                    w-full text-sm text-white/70
+                    w-full text-sm text-slate-600 dark:text-white/70
                     file:mr-4 file:rounded-lg
-                    file:border-0 file:bg-white/10
+                    file:border-0 file:bg-slate-200 dark:bg-white/10
                     file:px-4 file:py-2.5
                     file:text-sm file:font-medium
-                    file:text-white
+                    file:text-slate-900 dark:text-white
                     hover:file:bg-white/20
                     cursor-pointer transition-all
                   "
                 />
 
                 {file && (
-                  <div className="mt-2 text-xs text-white/60 flex items-center gap-2">
+                  <div className="mt-2 text-xs text-slate-500 dark:text-white/60 flex items-center gap-2">
                     <FileText className="w-3.5 h-3.5 text-cyan-400" /> {file.name} • {(file.size / 1024 / 1024).toFixed(2)} MB
                   </div>
                 )}
@@ -556,12 +556,12 @@ export default function UploadAndProductsPage() {
                   accept="image/*"
                   onChange={handleThumbnail}
                   className="
-                    w-full text-sm text-white/70
+                    w-full text-sm text-slate-600 dark:text-white/70
                     file:mr-4 file:rounded-lg
-                    file:border-0 file:bg-white/10
+                    file:border-0 file:bg-slate-200 dark:bg-white/10
                     file:px-4 file:py-2.5
                     file:text-sm file:font-medium
-                    file:text-white
+                    file:text-slate-900 dark:text-white
                     hover:file:bg-white/20
                     cursor-pointer transition-all
                   "
@@ -572,12 +572,12 @@ export default function UploadAndProductsPage() {
                     <img
                       src={thumbnailPreview}
                       alt="Thumbnail preview"
-                      className="w-32 h-24 object-cover rounded-lg border border-white/10"
+                      className="w-32 h-24 object-cover rounded-lg border border-slate-200 dark:border-white/10"
                     />
                     <button
                       type="button"
                       onClick={removeThumbnail}
-                      className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                      className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-slate-900 dark:text-white rounded-full w-5 h-5 flex items-center justify-center"
                     >
                       <XCircle className="w-3 h-3" />
                     </button>
@@ -585,14 +585,14 @@ export default function UploadAndProductsPage() {
                 )}
               </Field>
 
-              <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-4">
+              <div className="rounded-xl border border-indigo-200 dark:border-indigo-500/20 bg-indigo-50 dark:bg-indigo-500/5 p-4">
                 <div className="flex items-start gap-3">
-                  <div className="p-1.5 rounded-lg bg-indigo-500/15 text-indigo-300 shrink-0 mt-0.5">
+                  <div className="p-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 shrink-0 mt-0.5">
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-indigo-300 mb-1 text-sm">Automatic Preview Generation</h4>
-                    <p className="text-xs text-white/60 leading-relaxed">
+                    <h4 className="font-semibold text-indigo-700 dark:text-indigo-300 mb-1 text-sm">Automatic Preview Generation</h4>
+                    <p className="text-xs text-slate-500 dark:text-white/60 leading-relaxed">
                       When you upload a PDF, our system automatically detects page count, generates watermarked previews, and adds locked placeholder pages.
                     </p>
                   </div>
@@ -600,7 +600,7 @@ export default function UploadAndProductsPage() {
               </div>
 
               {/* Terms & Conditions Checkbox */}
-              <div className="mt-6 flex items-start gap-3 bg-slate-800/40 border border-slate-700/50 rounded-xl p-4">
+              <div className="mt-6 flex items-start gap-3 bg-slate-100 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4">
                 <input
                   type="checkbox"
                   id="termsCheckbox"
@@ -608,7 +608,7 @@ export default function UploadAndProductsPage() {
                   onChange={(e) => setAcceptedTerms(e.target.checked)}
                   className="mt-1 w-4 h-4 accent-cyan-500 cursor-pointer"
                 />
-                <label htmlFor="termsCheckbox" className="text-sm text-slate-300 cursor-pointer">
+                <label htmlFor="termsCheckbox" className="text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
                   I have read and agree to the{" "}
                   <a
                     href="/seller-terms"
@@ -631,8 +631,8 @@ export default function UploadAndProductsPage() {
                   transition
                   ${
                     acceptedTerms && !loading
-                      ? "bg-cyan-600/20 border border-cyan-500/30 hover:bg-cyan-600/30"
-                      : "bg-slate-700/20 border border-slate-600/30 cursor-not-allowed opacity-50"
+                      ? "bg-cyan-600 text-white dark:bg-cyan-600/20 dark:text-cyan-100 border border-cyan-500/30 hover:bg-cyan-700 dark:hover:bg-cyan-600/30"
+                      : "bg-slate-200 dark:bg-slate-700/20 text-slate-400 dark:text-slate-500 border border-slate-300 dark:border-slate-600/30 cursor-not-allowed opacity-50"
                   }
                 `}
               >
@@ -657,26 +657,26 @@ export default function UploadAndProductsPage() {
           {loadingProducts ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex flex-col bg-[#0b0b14] border border-white/5 rounded-2xl overflow-hidden animate-pulse">
-                  <div className="w-full aspect-video bg-white/5" />
+                <div key={i} className="flex flex-col bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden animate-pulse">
+                  <div className="w-full aspect-video bg-slate-100 dark:bg-white/5" />
                   <div className="p-5 flex flex-col flex-1 gap-3">
-                    <div className="h-4 bg-white/10 rounded-md w-3/4" />
+                    <div className="h-4 bg-slate-200 dark:bg-white/10 rounded-md w-3/4" />
                     <div className="space-y-2 mt-1">
-                      <div className="h-2.5 bg-white/10 rounded-md w-full" />
-                      <div className="h-2.5 bg-white/10 rounded-md w-4/5" />
+                      <div className="h-2.5 bg-slate-200 dark:bg-white/10 rounded-md w-full" />
+                      <div className="h-2.5 bg-slate-200 dark:bg-white/10 rounded-md w-4/5" />
                     </div>
-                    <div className="mt-auto pt-4 border-t border-white/5 flex items-end justify-between">
-                      <div className="h-6 bg-white/10 rounded-md w-1/3" />
-                      <div className="h-3 bg-white/10 rounded-md w-1/4" />
+                    <div className="mt-auto pt-4 border-t border-slate-200 dark:border-white/5 flex items-end justify-between">
+                      <div className="h-6 bg-slate-200 dark:bg-white/10 rounded-md w-1/3" />
+                      <div className="h-3 bg-slate-200 dark:bg-white/10 rounded-md w-1/4" />
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : products.length === 0 ? (
-            <div className="text-center py-12 bg-white/5 border border-white/10 rounded-2xl">
-              <p className="text-white/60">No products yet</p>
-              <p className="text-sm text-white/40 mt-2">Upload your first product above</p>
+            <div className="text-center py-12 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
+              <p className="text-slate-500 dark:text-white/60">No products yet</p>
+              <p className="text-sm text-slate-400 dark:text-white/40 mt-2">Upload your first product above</p>
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -698,7 +698,7 @@ export default function UploadAndProductsPage() {
               </AnimatePresence>
 
               {filteredProducts.length === 0 && (
-                <p className="text-sm text-white/50 col-span-full text-center py-8">
+                <p className="text-sm text-slate-400 dark:text-white/50 col-span-full text-center py-8">
                   No products match your search
                 </p>
               )}
@@ -709,11 +709,11 @@ export default function UploadAndProductsPage() {
 
       {/* ================= EDIT MODAL ================= */}
       {editingProduct && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-white dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#0b0b14] border border-white/10 rounded-2xl p-6 max-w-md w-full space-y-4"
+            className="bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/10 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-xl"
           >
             <h2 className="text-lg font-black">Edit Product</h2>
 
@@ -806,19 +806,19 @@ export default function UploadAndProductsPage() {
                 type="file"
                 onChange={handleEditFile}
                 className="
-                  w-full text-sm text-zinc-400
+                  w-full text-sm text-slate-500 dark:text-zinc-400
                   file:mr-4 file:rounded-lg
-                  file:border-0 file:bg-[#27272a]
+                  file:border-0 file:bg-slate-200 dark:file:bg-[#27272a]
                   file:px-4 file:py-2.5
                   file:text-sm file:font-medium
-                  file:text-white
-                  hover:file:bg-[#3f3f46]
+                  file:text-slate-900 dark:file:text-white
+                  hover:file:bg-slate-300 dark:hover:file:bg-[#3f3f46]
                   cursor-pointer transition-all
                 "
               />
 
               {editFile && (
-                <div className="mt-2 text-xs text-white/60 flex items-center gap-2">
+                <div className="mt-2 text-xs text-slate-500 dark:text-white/60 flex items-center gap-2">
                   <FileText className="w-3.5 h-3.5 text-cyan-400" /> {editFile.name} • {(editFile.size / 1024 / 1024).toFixed(2)} MB
                 </div>
               )}
@@ -834,13 +834,13 @@ export default function UploadAndProductsPage() {
                 accept="image/*"
                 onChange={handleEditThumbnail}
                 className="
-                  w-full text-sm text-white/70
+                  w-full text-sm text-slate-600 dark:text-white/70
                   file:mr-4 file:rounded-lg
-                  file:border-0 file:bg-purple-500/20
+                  file:border-0 file:bg-purple-100 dark:file:bg-purple-500/20
                   file:px-4 file:py-2
                   file:text-sm file:font-medium
-                  file:text-purple-300
-                  hover:file:bg-purple-500/30
+                  file:text-purple-700 dark:file:text-purple-300
+                  hover:file:bg-purple-200 dark:hover:file:bg-purple-500/30
                   cursor-pointer
                 "
               />
@@ -850,12 +850,12 @@ export default function UploadAndProductsPage() {
                   <img
                     src={editThumbnailPreview}
                     alt="Thumbnail preview"
-                    className="w-32 h-24 object-cover rounded-lg border border-white/10"
+                    className="w-32 h-24 object-cover rounded-lg border border-slate-200 dark:border-white/10"
                   />
                   <button
                     type="button"
                     onClick={removeEditThumbnail}
-                    className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                    className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-slate-900 dark:text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
                   >
                     ✕
                   </button>
@@ -866,7 +866,7 @@ export default function UploadAndProductsPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setEditingProduct(null)}
-                className="flex-1 py-2 px-4 bg-white/10 hover:bg-white/20 rounded-lg transition"
+                className="flex-1 py-2 px-4 bg-slate-200 dark:bg-white/10 hover:bg-white/20 rounded-lg transition"
               >
                 Cancel
               </button>
@@ -884,14 +884,14 @@ export default function UploadAndProductsPage() {
 
       {/* ================= DELETE CONFIRMATION ================= */}
       {deletingProductId && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-white dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#0b0b14] border border-red-500/20 rounded-2xl p-6 max-w-md w-full space-y-4"
+            className="bg-white dark:bg-[#0b0b14] border border-red-200 dark:border-red-500/20 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-xl"
           >
             <h2 className="text-lg font-black text-red-400">Delete Product?</h2>
-            <p className="text-sm text-white/60">
+            <p className="text-sm text-slate-500 dark:text-white/60">
               This action cannot be undone. The product file will also be permanently deleted.
             </p>
 
@@ -899,7 +899,7 @@ export default function UploadAndProductsPage() {
               <button
                 onClick={() => setDeletingProductId(null)}
                 disabled={deleteLoading}
-                className="flex-1 py-2 px-4 bg-white/10 hover:bg-white/20 rounded-lg transition disabled:opacity-50"
+                className="flex-1 py-2 px-4 bg-slate-200 dark:bg-white/10 hover:bg-white/20 rounded-lg transition disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -923,7 +923,7 @@ export default function UploadAndProductsPage() {
 function Field({ label, children }: any) {
   return (
     <div>
-      <label className="text-xs text-white/60 mb-1 block">{label}</label>
+      <label className="text-xs text-slate-500 dark:text-white/60 mb-1 block">{label}</label>
       {children}
     </div>
   );
@@ -951,9 +951,9 @@ function ProductCard({
   const StatusIcon = statusConfig.icon;
 
   return (
-    <div className="rounded-xl border border-white/8 bg-[#0e1018] hover:bg-[#12141c] hover:border-white/15 transition-all overflow-hidden group">
+    <div className="rounded-xl border border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-[#0e1018] hover:bg-white dark:hover:bg-[#12141c] hover:border-slate-300 dark:hover:border-white/15 transition-all overflow-hidden group">
       {product.thumbnailUrl && (
-        <div className="relative w-full h-36 bg-white/5 overflow-hidden">
+        <div className="relative w-full h-36 bg-slate-100 dark:bg-white/5 overflow-hidden">
           <img src={product.thumbnailUrl} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         </div>
       )}
@@ -961,21 +961,21 @@ function ProductCard({
       <div className="p-4 space-y-3">
         {/* Title + Status */}
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-white text-sm leading-tight line-clamp-2 flex-1">{product.title}</h3>
+          <h3 className="font-semibold text-slate-900 dark:text-white text-sm leading-tight line-clamp-2 flex-1">{product.title}</h3>
           <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-full border whitespace-nowrap font-semibold ${statusConfig.cls}`}>
             <StatusIcon className="w-2.5 h-2.5" /> {statusConfig.label}
           </span>
         </div>
 
         {/* Description */}
-        <p className="text-xs text-white/45 line-clamp-2">{product.description}</p>
+        <p className="text-xs text-slate-500 dark:text-white/45 line-clamp-2">{product.description}</p>
 
         {/* Price row */}
         <div className="flex items-center gap-2">
           <span className="text-base font-bold text-cyan-300">₹{displayPrice.toLocaleString()}</span>
           {product.discount > 0 && (
             <>
-              <span className="text-xs text-white/35 line-through">₹{product.price}</span>
+              <span className="text-xs text-slate-400 dark:text-white/35 line-through">₹{product.price}</span>
               <span className="text-[10px] bg-red-500/15 text-red-300 px-1.5 py-0.5 rounded font-semibold">-{product.discount}%</span>
             </>
           )}
@@ -1001,20 +1001,20 @@ function ProductCard({
         </div>
 
         {/* Footer: date + actions */}
-        <div className="flex items-center justify-between pt-2 border-t border-white/6">
-          <span className="text-[10px] text-white/30">{new Date(product.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+        <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-white/6">
+          <span className="text-[10px] text-slate-500 dark:text-white/30">{new Date(product.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
           <div className="flex gap-1.5">
             {product.status !== "approved" && (
               <button
                 onClick={() => onEdit(product)}
-                className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 bg-white/5 hover:bg-blue-500/20 text-white/60 hover:text-blue-300 border border-white/8 hover:border-blue-500/30 rounded-lg transition"
+                className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 bg-slate-100 dark:bg-white/5 hover:bg-blue-500/20 text-slate-500 dark:text-white/60 hover:text-blue-300 border border-white/8 hover:border-blue-500/30 rounded-lg transition"
               >
                 <Pencil className="w-3 h-3" /> Edit
               </button>
             )}
             <button
               onClick={() => onDelete(product._id)}
-              className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 bg-white/5 hover:bg-red-500/20 text-white/60 hover:text-red-300 border border-white/8 hover:border-red-500/30 rounded-lg transition"
+              className="inline-flex items-center gap-1 text-[11px] px-2.5 py-1.5 bg-slate-100 dark:bg-white/5 hover:bg-red-500/20 text-slate-500 dark:text-white/60 hover:text-red-300 border border-white/8 hover:border-red-500/30 rounded-lg transition"
             >
               <Trash2 className="w-3 h-3" /> Delete
             </button>
@@ -1027,7 +1027,7 @@ function ProductCard({
 
 function Chip({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] text-white/45 bg-white/5 border border-white/8 rounded-md px-1.5 py-0.5">
+    <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 dark:text-white/45 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/8 rounded-md px-1.5 py-0.5">
       {icon} {label}
     </span>
   );
@@ -1037,14 +1037,14 @@ function Chip({ icon, label }: { icon: React.ReactNode; label: string }) {
 function UploadSkeleton() {
   return (
     <div className="space-y-4 animate-pulse">
-      <div className="h-5 w-1/3 bg-white/10 rounded" />
-      <div className="h-10 bg-white/10 rounded" />
-      <div className="h-24 bg-white/10 rounded" />
+      <div className="h-5 w-1/3 bg-slate-200 dark:bg-white/10 rounded" />
+      <div className="h-10 bg-slate-200 dark:bg-white/10 rounded" />
+      <div className="h-24 bg-slate-200 dark:bg-white/10 rounded" />
       <div className="grid grid-cols-2 gap-4">
-        <div className="h-10 bg-white/10 rounded" />
-        <div className="h-10 bg-white/10 rounded" />
+        <div className="h-10 bg-slate-200 dark:bg-white/10 rounded" />
+        <div className="h-10 bg-slate-200 dark:bg-white/10 rounded" />
       </div>
-      <div className="h-10 w-40 bg-white/10 rounded" />
+      <div className="h-10 w-40 bg-slate-200 dark:bg-white/10 rounded" />
     </div>
   );
 }
@@ -1072,10 +1072,10 @@ function CustomSelect({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between rounded-xl bg-[#18181b] border border-[#27272a] px-4 py-3 text-sm text-white hover:border-zinc-600 focus:bg-[#1f1f22] focus:outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 transition-all shadow-sm"
+        className="w-full flex items-center justify-between rounded-xl bg-slate-100 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] px-4 py-3 text-sm text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-[#1f1f22] focus:outline-none focus:border-cyan-400 dark:focus:border-zinc-500 focus:ring-1 focus:ring-cyan-400 dark:focus:ring-zinc-500 transition-all shadow-sm dark:shadow-none"
       >
         <span>{value}</span>
-        <ChevronLeft className={`w-4 h-4 text-white/40 transition-transform ${open ? 'rotate-90' : '-rotate-90'}`} />
+        <ChevronLeft className={`w-4 h-4 text-slate-400 dark:text-white/40 transition-transform ${open ? 'rotate-90' : '-rotate-90'}`} />
       </button>
 
       <AnimatePresence>
@@ -1085,7 +1085,7 @@ function CustomSelect({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
             transition={{ duration: 0.15 }}
-            className="absolute z-50 mt-2 w-full rounded-xl border border-[#27272a] bg-[#18181b] shadow-xl overflow-hidden"
+            className="absolute z-50 mt-2 w-full rounded-xl border border-slate-200 dark:border-[#27272a] bg-white dark:bg-[#18181b] shadow-xl overflow-hidden"
           >
             <div className="max-h-56 overflow-y-auto p-1 custom-scrollbar">
               {options.map((opt) => (
@@ -1097,7 +1097,7 @@ function CustomSelect({
                     setOpen(false);
                   }}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                    value === opt ? "bg-[#27272a] text-white font-medium" : "text-zinc-400 hover:bg-[#27272a] hover:text-white"
+                    value === opt ? "bg-slate-100 dark:bg-[#27272a] text-slate-900 dark:text-white font-medium" : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-[#27272a] hover:text-slate-900 dark:hover:text-white"
                   }`}
                 >
                   {opt}

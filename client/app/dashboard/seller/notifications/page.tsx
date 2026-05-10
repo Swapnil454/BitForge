@@ -165,7 +165,7 @@ export default function SellerNotificationsPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#05050a] pb-20">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] pb-20">
       {/* Header */}
       <PageHeader 
         title="Notifications" 
@@ -193,29 +193,29 @@ export default function SellerNotificationsPage() {
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="rounded-2xl p-5 bg-[#0b0b14] border border-[#27272a] animate-pulse flex items-start justify-between gap-4">
+              <div key={i} className="rounded-2xl p-5 bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-[#27272a] animate-pulse flex items-start justify-between gap-4">
                 <div className="flex items-start gap-4 flex-1 min-w-0">
                   <div className="flex-1 min-w-0 space-y-2">
                     <div className="flex items-center gap-2 mb-1">
-                      <div className="h-5 bg-[#18181b] rounded w-1/3 border border-[#27272a]"></div>
+                      <div className="h-5 bg-slate-100 dark:bg-[#18181b] rounded w-1/3 border border-slate-200 dark:border-[#27272a]"></div>
                     </div>
-                    <div className="h-4 bg-[#18181b] rounded w-3/4 mb-2 border border-[#27272a]"></div>
-                    <div className="h-3 bg-[#18181b] rounded w-1/4 border border-[#27272a]"></div>
+                    <div className="h-4 bg-slate-100 dark:bg-[#18181b] rounded w-3/4 mb-2 border border-slate-200 dark:border-[#27272a]"></div>
+                    <div className="h-3 bg-slate-100 dark:bg-[#18181b] rounded w-1/4 border border-slate-200 dark:border-[#27272a]"></div>
                   </div>
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  <div className="w-8 h-8 rounded-full bg-[#18181b] border border-[#27272a]"></div>
+                  <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a]"></div>
                 </div>
               </div>
             ))}
           </div>
         ) : notifications.length === 0 ? (
-          <div className="bg-[#0b0b14]/50 border-2 border-dashed border-[#27272a] rounded-3xl p-16 text-center">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#18181b] flex items-center justify-center border border-[#27272a]">
+          <div className="bg-slate-100/50 dark:bg-[#0b0b14]/50 border-2 border-dashed border-slate-200 dark:border-[#27272a] rounded-3xl p-16 text-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-white dark:bg-[#18181b] flex items-center justify-center border border-slate-200 dark:border-[#27272a]">
               <CheckCircle className="w-10 h-10 text-cyan-500" />
             </div>
-            <p className="text-white text-xl font-bold mb-3">All Clear!</p>
-            <p className="text-zinc-500 text-base max-w-md mx-auto">You're all caught up. No new notifications.</p>
+            <p className="text-slate-900 dark:text-white text-xl font-bold mb-3">All Clear!</p>
+            <p className="text-slate-500 dark:text-zinc-500 text-base max-w-md mx-auto">You're all caught up. No new notifications.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -225,8 +225,8 @@ export default function SellerNotificationsPage() {
                 style={{ animationDelay: `${index * 50}ms` }}
                 className={`group relative rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02] animate-fadeIn ${
                   notification.isRead
-                    ? "bg-[#0b0b14] border border-[#27272a] hover:border-zinc-500/50"
-                    : "bg-[#0b0b14] border-2 border-cyan-500/50 shadow-[0_0_30px_rgba(6,182,212,0.05)] cursor-pointer"
+                    ? "bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-[#27272a] hover:border-slate-300 dark:hover:border-zinc-500/50 shadow-sm"
+                    : "bg-white dark:bg-[#0b0b14] border-2 border-cyan-400 dark:border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.1)] dark:shadow-[0_0_30px_rgba(6,182,212,0.05)] cursor-pointer"
                 }`}
                 onClick={() => { if (!notification.isRead) handleMarkAsRead(notification._id); }}
               >
@@ -240,7 +240,7 @@ export default function SellerNotificationsPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
                         <h3 className={`font-bold text-base ${
-                          notification.isRead ? "text-zinc-300" : "text-white"
+                          notification.isRead ? "text-slate-500 dark:text-zinc-300" : "text-slate-900 dark:text-white"
                         }`}>
                           {cleanNotificationText(notification.title)}
                         </h3>
@@ -251,11 +251,11 @@ export default function SellerNotificationsPage() {
                         )}
                       </div>
                       <p className={`text-sm mb-3 ${
-                        notification.isRead ? "text-zinc-500" : "text-zinc-400"
+                        notification.isRead ? "text-slate-400 dark:text-zinc-500" : "text-slate-600 dark:text-zinc-400"
                       }`}>
                         {cleanNotificationText(notification.message)}
                       </p>
-                      <div className="flex items-center gap-2 text-xs font-medium text-zinc-600">
+                      <div className="flex items-center gap-2 text-xs font-medium text-slate-400 dark:text-zinc-600">
                         <span className="flex items-center gap-1.5">
                           <Clock className="w-3.5 h-3.5" />
                           {formatTime(notification.createdAt)}
@@ -286,7 +286,7 @@ export default function SellerNotificationsPage() {
 
         {!loading && totalNotifications > 0 && (
           <div className="mt-6 flex flex-col items-center justify-center gap-3 text-center">
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-slate-500 dark:text-zinc-500">
               Showing {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, totalNotifications)}-
               {Math.min(currentPage * ITEMS_PER_PAGE, totalNotifications)} of {totalNotifications}
             </p>
@@ -294,18 +294,18 @@ export default function SellerNotificationsPage() {
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage <= 1 || actionLoading}
-                className="inline-flex items-center gap-1 rounded-lg border border-[#27272a] px-3 py-1.5 text-sm text-zinc-300 disabled:cursor-not-allowed disabled:opacity-40 hover:bg-zinc-800"
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-[#27272a] bg-white dark:bg-transparent px-3 py-1.5 text-sm text-slate-700 dark:text-zinc-300 disabled:cursor-not-allowed disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-zinc-800 shadow-sm dark:shadow-none"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Prev
               </button>
-              <span className="px-3 py-1.5 text-sm text-zinc-400">
+              <span className="px-3 py-1.5 text-sm text-slate-600 dark:text-zinc-400">
                 Page {currentPage} of {totalPages}
               </span>
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages || actionLoading}
-                className="inline-flex items-center gap-1 rounded-lg border border-[#27272a] px-3 py-1.5 text-sm text-zinc-300 disabled:cursor-not-allowed disabled:opacity-40 hover:bg-zinc-800"
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 dark:border-[#27272a] bg-white dark:bg-transparent px-3 py-1.5 text-sm text-slate-700 dark:text-zinc-300 disabled:cursor-not-allowed disabled:opacity-40 hover:bg-slate-50 dark:hover:bg-zinc-800 shadow-sm dark:shadow-none"
               >
                 Next
                 <ChevronRight className="h-4 w-4" />

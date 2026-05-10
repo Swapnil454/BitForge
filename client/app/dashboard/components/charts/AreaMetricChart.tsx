@@ -47,7 +47,7 @@ export function AreaMetricChart<T extends { month: string }>({
   }
 
   return (
-    <div style={{ height }}>
+    <div style={{ height }} className="focus:outline-none [&_.recharts-wrapper]:outline-none [&_.recharts-surface]:outline-none [&_*]:focus:outline-none">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
           <XAxis
@@ -74,6 +74,7 @@ export function AreaMetricChart<T extends { month: string }>({
             strokeWidth={3}
             fill={`url(#${gradientId})`}
             dot={{ r: 3, fill: strokeColor, stroke: "#fff", strokeWidth: 1 }}
+            activeDot={{ stroke: 'none' }}
             isAnimationActive
             animationDuration={900}
           />

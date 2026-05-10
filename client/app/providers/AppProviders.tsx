@@ -2,6 +2,7 @@
 
 import { ReactNode, useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { ThemeProvider } from "next-themes";
 import { getCookie, setCookie } from "@/lib/cookies";
 import QueryProvider from "./QueryProvider";
 import BannedModal from "@/app/components/BannedModal";
@@ -88,8 +89,9 @@ export default function AppProviders({ children }: AppProvidersProps) {
   };
 
   return (
-    <QueryProvider>
-      {children}
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+      <QueryProvider>
+        {children}
       
       {showBannedModal && (
         <BannedModal 
@@ -106,5 +108,6 @@ export default function AppProviders({ children }: AppProvidersProps) {
         />
       )}
     </QueryProvider>
+    </ThemeProvider>
   );
 }

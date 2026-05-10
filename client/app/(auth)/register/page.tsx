@@ -49,14 +49,14 @@ function RegisterForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white flex items-center justify-center px-4 relative overflow-hidden">
 
       {/* BACKGROUND GLOW */}
       <div className="absolute -top-40 -left-40 w-125 h-125 rounded-full bg-indigo-600/30 blur-[160px]" />
       <div className="absolute top-1/2 -right-40 w-150 h-150 rounded-full bg-cyan-500/20 blur-[180px]" />
 
       {/* CARD */}
-      <div className="relative z-10 mt-10 mb-10 w-full max-w-md rounded-3xl p-8 bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_30px_120px_rgba(56,189,248,0.25)]">
+      <div className="relative z-10 my-4 sm:my-auto w-full max-w-md rounded-3xl p-6 sm:p-8 bg-slate-100 dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-[0_30px_120px_rgba(56,189,248,0.25)]">
 
         {/* LOGO */}
         <div className="flex flex-col items-center justify-center ">
@@ -65,59 +65,49 @@ function RegisterForm() {
             alt="BitForge logo"
             width={512}
             height={512}
-            className="
-              h-24        
-              sm:h-32    
-              md:h-40    
-              lg:h-48     
-              w-auto
-              object-contain
-              -mt-8
-              block
-            "
+            className="h-16 sm:h-20 md:h-24 lg:h-28 w-auto object-contain -mt-6 block"
             priority
           />
         </div>
 
-        <h1 className="text-2xl font-black text-center -mt-5 sm:-mt-8 lg:-mt-12 leading-none">Create account</h1>
-        <p className="text-center text-sm text-white/60 mb-2 mt-1">
+        <h1 className="text-2xl font-black text-center -mt-2 sm:-mt-4 lg:-mt-6 leading-none">Create account</h1>
+        <p className="text-center text-sm text-slate-500 dark:text-white/60 mb-3 mt-1">
           Join <span className="font-semibold">BitForge</span> and start building
         </p>
 
         {/* NAME */}
-        <div className="mb-4">
-          <label className="text-xs text-white/60">Name</label>
+        <div className="mb-3">
+          <label className="text-xs text-slate-500 dark:text-white/60">Name</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name"
-            className="w-full mt-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)] transition"
+            className="w-full mt-1 px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)] transition text-sm"
           />
         </div>
 
         {/* ROLE */}
-        <div className="mb-4">
-          <label className="text-xs text-white/60 mb-2 block">
+        <div className="mb-3">
+          <label className="text-xs text-slate-500 dark:text-white/60 mb-1.5 block">
             Account type
           </label>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             {[
               { v: "buyer", l: "Buyer", i: "🛒" },
               { v: "seller", l: "Seller", i: "💼" },
-              // { v: "admin", l: "Admin", i: "👑" },
             ].map((r) => (
               <button
                 key={r.v}
                 type="button"
                 onClick={() => setRole(r.v)}
-                className={`rounded-xl px-3 py-3 border transition flex items-center justify-center gap-2 ${
+                className={`rounded-xl px-2 py-2 border transition flex items-center justify-center gap-1.5 ${
                   role === r.v
                     ? "bg-cyan-400/10 border-cyan-400 text-cyan-400 shadow-[0_0_20px_rgba(56,189,248,0.35)]"
-                    : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10"
+                    : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/60 hover:bg-slate-200 dark:hover:bg-white/10"
                 }`}
               >
-                <span className="text-lg leading-none">{r.i}</span>
+                <span className="text-base leading-none">{r.i}</span>
                 <span className="text-sm font-semibold leading-none">
                   {r.l}
                 </span>
@@ -127,19 +117,19 @@ function RegisterForm() {
         </div>
 
         {/* EMAIL */}
-        <div className="mb-4">
-          <label className="text-xs text-white/60">Email</label>
+        <div className="mb-3">
+          <label className="text-xs text-slate-500 dark:text-white/60">Email</label>
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email address"
-            className="w-full mt-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)] transition"
+            className="w-full mt-1 px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)] transition text-sm"
           />
         </div>
 
         {/* PASSWORD */}
-        <div className="mb-5">
-          <label className="text-xs text-white/60">Password</label>
+        <div className="mb-4">
+          <label className="text-xs text-slate-500 dark:text-white/60">Password</label>
           <div className="relative mt-1">
             <input
               type={showPassword ? "text" : "password"}
@@ -147,13 +137,13 @@ function RegisterForm() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Create password"
               disabled={loading}
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 pr-10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)] transition disabled:opacity-50"
+              className="w-full px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 pr-10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)] transition disabled:opacity-50 text-sm"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               disabled={loading}
-              className="absolute right-3 mt-1 top-3 text-white/50"
+              className="absolute right-3 mt-1 top-2.5 text-white/50"
             >
               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
@@ -164,31 +154,25 @@ function RegisterForm() {
         <button
           onClick={handleRegister}
           disabled={loading}
-          className="w-full py-3 rounded-xl font-bold text-black bg-linear-to-r from-cyan-400 to-indigo-500 shadow-[0_0_40px_rgba(56,189,248,0.6)] hover:scale-[1.02] transition"
+          className="w-full py-2.5 rounded-xl font-bold text-black bg-linear-to-r from-cyan-400 to-indigo-500 shadow-[0_0_40px_rgba(56,189,248,0.6)] hover:scale-[1.02] transition text-sm sm:text-base"
         >
           {loading ? "Sending OTP..." : "Register"}
         </button>
 
         {/* DIVIDER */}
-        <div className="flex items-center gap-3 my-6">
-          <div className="flex-1 h-px bg-white/10" />
-          <span className="text-xs text-white/40">OR</span>
-          <div className="flex-1 h-px bg-white/10" />
+        <div className="flex items-center gap-3 my-4">
+          <div className="flex-1 h-px bg-slate-200 dark:bg-white/10" />
+          <span className="text-xs text-slate-400 dark:text-white/40">OR</span>
+          <div className="flex-1 h-px bg-slate-200 dark:bg-white/10" />
         </div>
 
         {/* OAUTH */}
-        <div className="space-y-3">
-          {/* <Link href="/register-phone">
-            <button className="w-full mb-3 flex items-center justify-center gap-3 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition">
-              <FiPhone /> Continue with Phone
-            </button>
-          </Link> */}
-
+        <div className="space-y-2">
           <OAuthButton label="Google" role={role} />
           <OAuthButton label="GitHub" role={role} />
         </div>
 
-        <p className="text-center text-sm text-white/60 mt-6">
+        <p className="text-center text-sm text-slate-500 dark:text-white/60 mt-4">
           Already have an account?{" "}
           <Link href="/login" className="text-cyan-400 font-semibold">
             Login
@@ -206,9 +190,9 @@ function OAuthButton({ label, role }: any) {
       onClick={() =>
         (window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/oauth/${label.toLowerCase()}?role=${role}`)
       }
-      className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] transition"
+      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] transition text-sm"
     >
-      {label === "Google" ? <FaGoogle /> : <FaGithub />}
+      {label === "Google" ? <FaGoogle size={14} /> : <FaGithub size={14} />}
       Continue with {label}
     </button>
   );
@@ -217,10 +201,10 @@ function OAuthButton({ label, role }: any) {
 export default function RegisterPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#05050a] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-cyan-400 border-r-transparent"></div>
-          <p className="mt-4 text-sm text-white/60">Loading...</p>
+          <p className="mt-4 text-sm text-slate-500 dark:text-white/60">Loading...</p>
         </div>
       </div>
     }>

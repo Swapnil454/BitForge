@@ -50,9 +50,9 @@ const getStatusConfig = (status: string) => {
     default:
       return {
         icon: ShieldAlert,
-        bg: "bg-white/10",
+        bg: "bg-slate-200 dark:bg-white/10",
         text: "text-slate-300",
-        border: "border-white/20",
+        border: "border-slate-300 dark:border-white/20",
         stripe: "bg-slate-500",
       };
   }
@@ -101,19 +101,19 @@ export default function BuyerDisputesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#05050a] text-white pb-20">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-20">
         {/* Skeleton Header matching PageHeader */}
-        <header className="sticky top-0 z-50 border-b border-white/10 bg-linear-to-r from-black via-slate-950 to-black/95 backdrop-blur-xl">
+        <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-white/10 bg-linear-to-r from-black via-slate-950 to-black/95 backdrop-blur-xl">
           <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
             <div className="relative flex min-h-[58px] items-center justify-center">
               <div className="absolute left-0 flex items-center gap-2 opacity-50">
-                <div className="h-8 w-8 rounded-md bg-white/10 animate-pulse" />
-                <div className="h-4 w-16 bg-white/10 rounded animate-pulse hidden sm:block" />
+                <div className="h-8 w-8 rounded-md bg-slate-200 dark:bg-white/10 animate-pulse" />
+                <div className="h-4 w-16 bg-slate-200 dark:bg-white/10 rounded animate-pulse hidden sm:block" />
               </div>
 
               <div className="px-16 text-center space-y-2 flex flex-col items-center opacity-50">
-                <div className="h-6 w-40 bg-white/10 rounded animate-pulse" />
-                <div className="h-3 w-32 bg-white/10 rounded animate-pulse" />
+                <div className="h-6 w-40 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+                <div className="h-3 w-32 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
               </div>
             </div>
           </div>
@@ -121,37 +121,37 @@ export default function BuyerDisputesPage() {
 
         <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8 space-y-3 sm:space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-[#08111d] rounded-xl border border-white/5 p-4 sm:p-5 pl-5 sm:pl-6 relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/5 animate-pulse" />
+            <div key={i} className="bg-white dark:bg-[#08111d] rounded-xl border border-slate-200 dark:border-white/5 p-4 sm:p-5 pl-5 sm:pl-6 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-slate-100 dark:bg-white/5 animate-pulse" />
               
               <div className="flex justify-between items-start gap-3 mb-4">
                 <div className="flex-1 space-y-3">
                   {/* Top row */}
                   <div className="flex items-center gap-2">
-                    <div className="h-5 w-16 bg-white/5 rounded animate-pulse" />
-                    <div className="h-3 w-24 bg-white/5 rounded animate-pulse" />
+                    <div className="h-5 w-16 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                    <div className="h-3 w-24 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
                   </div>
                   {/* Title */}
-                  <div className="h-5 w-3/4 max-w-[200px] bg-white/5 rounded animate-pulse" />
+                  <div className="h-5 w-3/4 max-w-[200px] bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
                   {/* Subtitle */}
-                  <div className="h-3 w-1/2 max-w-[150px] bg-white/5 rounded animate-pulse" />
+                  <div className="h-3 w-1/2 max-w-[150px] bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
                 </div>
                 {/* Amount */}
                 <div className="flex flex-col items-end space-y-2">
-                  <div className="h-6 w-20 bg-white/5 rounded animate-pulse" />
-                  <div className="h-3 w-16 bg-white/5 rounded animate-pulse" />
+                  <div className="h-6 w-20 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                  <div className="h-3 w-16 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
                 </div>
               </div>
 
               {/* Reason line */}
               <div className="space-y-2 mb-4">
-                <div className="h-4 w-full bg-white/5 rounded animate-pulse" />
-                <div className="h-4 w-5/6 bg-white/5 rounded animate-pulse" />
+                <div className="h-4 w-full bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                <div className="h-4 w-5/6 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
               </div>
 
               {/* Action Button */}
-              <div className="pt-3 border-t border-white/5 flex justify-center">
-                <div className="h-9 w-32 bg-white/5 rounded-lg animate-pulse" />
+              <div className="pt-3 border-t border-slate-200 dark:border-white/5 flex justify-center">
+                <div className="h-9 w-32 bg-slate-100 dark:bg-white/5 rounded-lg animate-pulse" />
               </div>
             </div>
           ))}
@@ -161,7 +161,7 @@ export default function BuyerDisputesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white pb-20">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-20">
       <PageHeader
         backLabel="Back"
         title="My Disputes"
@@ -170,7 +170,7 @@ export default function BuyerDisputesPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8">
         {disputes.length === 0 ? (
-          <div className="bg-[#08111d] border border-white/5 rounded-3xl p-10 sm:p-12 text-center max-w-lg mx-auto shadow-2xl mt-12 sm:mt-24">
+          <div className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-3xl p-10 sm:p-12 text-center max-w-lg mx-auto shadow-2xl mt-12 sm:mt-24">
             <ShieldAlert className="w-16 h-16 text-slate-700 mx-auto mb-6" />
             <h2 className="text-xl font-bold tracking-tight mb-2">No disputes</h2>
             <p className="text-slate-400 text-sm">You have not raised any disputes yet.</p>
@@ -186,7 +186,7 @@ export default function BuyerDisputesPage() {
                   key={d._id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-[#08111d] border border-white/5 rounded-xl overflow-hidden relative group hover:border-white/10 transition-all shadow-xl p-4 sm:p-5 pl-5 sm:pl-6"
+                  className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-xl overflow-hidden relative group hover:border-slate-200 dark:hover:border-white/10 transition-all shadow-xl p-4 sm:p-5 pl-5 sm:pl-6"
                 >
                   {/* Left accent stripe */}
                   <div className={`absolute left-0 top-0 bottom-0 w-1 ${config.stripe}`} />
@@ -203,7 +203,7 @@ export default function BuyerDisputesPage() {
                         </span>
                       </div>
                       
-                      <h2 className="font-bold text-sm sm:text-base text-white tracking-tight leading-tight mb-1 truncate">
+                      <h2 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white tracking-tight leading-tight mb-1 truncate">
                         {d.productName}
                       </h2>
                       <p className="text-[10px] sm:text-xs text-slate-400 truncate">
@@ -214,7 +214,7 @@ export default function BuyerDisputesPage() {
 
                     {/* Amount */}
                     <div className="text-right shrink-0">
-                      <p className="text-sm sm:text-base font-bold text-white tracking-tight">₹{d.amount.toLocaleString()}</p>
+                      <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">₹{d.amount.toLocaleString()}</p>
                       <p className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">Disputed</p>
                     </div>
                   </div>
@@ -235,11 +235,11 @@ export default function BuyerDisputesPage() {
                   </div>
 
                   {/* Action */}
-                  <div className="mt-4 pt-3 border-t border-white/5 flex justify-center">
+                  <div className="mt-4 pt-3 border-t border-slate-200 dark:border-white/5 flex justify-center">
                     {d.orderId && (
                       <button
                         onClick={() => router.push(`/dashboard/buyer/purchases/${d.orderId}`)}
-                        className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-6 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 shrink-0"
+                        className="bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white px-6 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 shrink-0"
                       >
                         <ExternalLink className="w-4 h-4" /> View Order
                       </button>

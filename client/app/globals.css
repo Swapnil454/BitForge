@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Default: Hide scrollbar for most pages */
 ::-webkit-scrollbar {
   width: 0px;
@@ -42,6 +44,7 @@ html {
 html, body {
   overflow-x: hidden;
   overflow-y: auto;
+  @apply bg-[#f8f9fa] dark:bg-[#05050a] text-slate-900 dark:text-white;
 }
 
 /* Performance-optimized animations */

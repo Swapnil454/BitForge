@@ -276,7 +276,7 @@ Our system now matches how **top marketplaces** handle previews:
 -  **Udemy**: Preview content + locked sections
 -  **Envato**: Watermarked demos
 -  **Amazon**: "Look Inside" preview
--  **ContentSellify**: **Automatic watermarked preview** 🎉
+-  **Bitforge**: **Automatic watermarked preview** 🎉
 
 ---
 
@@ -347,5 +347,5 @@ All features implemented, tested, and documented.
 ---
 
 *Implementation Date: February 11, 2026*  
-*System: ContentSellify - Automatic PDF Preview Generation*  
+*System: Bitforge - Automatic PDF Preview Generation*  
 *Version: 1.0.0*

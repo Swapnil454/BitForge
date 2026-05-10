@@ -22,6 +22,7 @@ const handleApprovedProductUpdate = async (product, req, res, updateData) => {
     const {
       title,
       description,
+      category,
       price,
       discount,
       deleteThumbnail,
@@ -140,6 +141,7 @@ const handleApprovedProductUpdate = async (product, req, res, updateData) => {
         pendingChanges: {
           title: title?.trim() || product.title,
           description: description?.trim() || product.description,
+          category: category || product.category,
           price: price ? Number(price) : product.price,
           discount: discount !== undefined ? Number(discount) : product.discount,
           fileKey,
@@ -200,6 +202,7 @@ export const uploadProduct = async (req, res) => {
     const {
       title,
       description,
+      category,
       price,
       discount,
       pageCount,
@@ -348,6 +351,7 @@ export const uploadProduct = async (req, res) => {
       sellerId: req.user.id,
       title: title.trim(),
       description: description.trim(),
+      category: category || "Software",
       price: Number(price),
       discount: discount ? Number(discount) : 0,
       fileKey: fileUploadResult.public_id,
@@ -414,6 +418,7 @@ export const updateProduct = async (req, res) => {
     const {
       title,
       description,
+      category,
       price,
       discount,
       deleteThumbnail,
@@ -438,6 +443,7 @@ export const updateProduct = async (req, res) => {
       return handleApprovedProductUpdate(product, req, res, {
         title,
         description,
+        category,
         price,
         discount,
         deleteThumbnail,
@@ -598,6 +604,7 @@ export const updateProduct = async (req, res) => {
     const updateData = {
       title: title?.trim(),
       description: description?.trim(),
+      category: category !== undefined ? category : undefined,
       price: price ? Number(price) : undefined,
       discount: discount !== undefined ? Number(discount) : undefined,
       fileKey: fileKey,

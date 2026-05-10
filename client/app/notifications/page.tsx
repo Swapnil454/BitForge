@@ -155,7 +155,7 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-black via-slate-900 to-slate-800 pb-20">
+    <div className="min-h-screen bg-slate-50 dark:bg-linear-to-br dark:from-black dark:via-slate-900 dark:to-slate-800 pb-20">
       {/* Header */}
       <PageHeader 
         title="Notifications" 
@@ -182,29 +182,29 @@ export default function NotificationsPage() {
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="rounded-2xl p-5 bg-white/5 border border-white/10 animate-pulse flex items-start justify-between gap-4">
+                <div key={i} className="rounded-2xl p-5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 animate-pulse flex items-start justify-between gap-4">
                 <div className="flex items-start gap-4 flex-1 min-w-0">
                   <div className="flex-1 min-w-0 space-y-2">
                     <div className="flex items-center gap-2 mb-1">
                       <div className="h-5 bg-white/20 rounded w-1/3"></div>
                     </div>
-                    <div className="h-4 bg-white/10 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-white/5 rounded w-1/4"></div>
+                    <div className="h-4 bg-slate-200 dark:bg-white/10 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-slate-100 dark:bg-white/5 rounded w-1/4"></div>
                   </div>
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  <div className="w-8 h-8 rounded-full bg-white/10"></div>
+                  <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-white/10"></div>
                 </div>
               </div>
             ))}
           </div>
         ) : notifications.length === 0 ? (
-          <div className="bg-linear-to-br from-white/10 via-white/5 to-transparent border-2 border-white/20 rounded-2xl p-16 text-center shadow-2xl">
+          <div className="bg-white dark:bg-transparent dark:bg-linear-to-br dark:from-white/10 dark:via-white/5 dark:to-transparent border border-slate-200 dark:border-white/20 rounded-2xl p-16 text-center shadow-sm dark:shadow-2xl">
             <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-linear-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center border border-blue-500/30 shadow-inner">
               <CheckCircle className="w-12 h-12 text-blue-400" />
             </div>
-            <p className="text-white text-2xl font-bold mb-3">All Clear!</p>
-            <p className="text-white/60 text-lg">You're all caught up. No new notifications.</p>
+            <p className="text-slate-900 dark:text-white text-2xl font-bold mb-3">All Clear!</p>
+            <p className="text-slate-500 dark:text-white/60 text-lg">You're all caught up. No new notifications.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -214,8 +214,8 @@ export default function NotificationsPage() {
                 style={{ animationDelay: `${index * 50}ms` }}
                 className={`group relative rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02] animate-fadeIn ${
                   notification.isRead
-                    ? "bg-linear-to-br from-white/5 to-transparent border border-white/10 hover:border-white/20"
-                    : "bg-linear-to-br from-blue-500/10 to-purple-500/10 border-2 border-blue-500/30 hover:border-blue-500/50 shadow-lg shadow-blue-500/10 cursor-pointer"
+                    ? "bg-white dark:bg-transparent dark:bg-linear-to-br dark:from-white/5 dark:to-transparent border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 shadow-sm dark:shadow-none"
+                    : "bg-blue-50/50 dark:bg-transparent dark:bg-linear-to-br dark:from-blue-500/10 dark:to-purple-500/10 border-2 border-blue-400/30 dark:border-blue-500/30 hover:border-blue-500/50 shadow-lg shadow-blue-500/5 dark:shadow-blue-500/10 cursor-pointer"
                 }`}
                 onClick={() => { if (!notification.isRead) handleMarkAsRead(notification._id); }}
               >
@@ -229,7 +229,7 @@ export default function NotificationsPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className={`font-bold text-base ${
-                          notification.isRead ? "text-white/90" : "text-white"
+                          notification.isRead ? "text-slate-800 dark:text-white/90" : "text-slate-900 dark:text-white"
                         }`}>
                           {cleanNotificationText(notification.title)}
                         </h3>
@@ -240,11 +240,11 @@ export default function NotificationsPage() {
                         )}
                       </div>
                       <p className={`text-sm mb-2 ${
-                        notification.isRead ? "text-white/60" : "text-white/80"
+                        notification.isRead ? "text-slate-500 dark:text-white/60" : "text-slate-700 dark:text-white/80"
                       }`}>
                         {cleanNotificationText(notification.message)}
                       </p>
-                      <div className="flex items-center gap-2 text-xs text-white/40">
+                      <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-white/40">
                         <span className="flex items-center gap-1">
                           <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
@@ -260,7 +260,7 @@ export default function NotificationsPage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); handleDelete(notification._id); }}
                       disabled={actionLoading}
-                      className="p-2 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-all sm:opacity-0 group-hover:opacity-100"
+                      className="p-2 text-slate-400 dark:text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-all sm:opacity-0 group-hover:opacity-100"
                       title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -277,7 +277,7 @@ export default function NotificationsPage() {
 
         {!loading && totalNotifications > 0 && (
           <div className="mt-6 flex flex-col items-center justify-center gap-3 text-center">
-            <p className="text-sm text-white/60">
+            <p className="text-sm text-slate-500 dark:text-white/60">
               Showing {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, totalNotifications)}-
               {Math.min(currentPage * ITEMS_PER_PAGE, totalNotifications)} of {totalNotifications}
             </p>
@@ -285,18 +285,18 @@ export default function NotificationsPage() {
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage <= 1 || actionLoading}
-                className="inline-flex items-center gap-1 rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white/80 disabled:cursor-not-allowed disabled:opacity-40 hover:bg-white/10"
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-300 dark:border-white/20 px-3 py-1.5 text-sm text-slate-700 dark:text-white/80 disabled:cursor-not-allowed disabled:opacity-40 hover:bg-slate-200 dark:hover:bg-white/10"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Prev
               </button>
-              <span className="px-3 py-1.5 text-sm text-white/70">
+              <span className="px-3 py-1.5 text-sm text-slate-600 dark:text-white/70">
                 Page {currentPage} of {totalPages}
               </span>
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages || actionLoading}
-                className="inline-flex items-center gap-1 rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white/80 disabled:cursor-not-allowed disabled:opacity-40 hover:bg-white/10"
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-300 dark:border-white/20 px-3 py-1.5 text-sm text-slate-700 dark:text-white/80 disabled:cursor-not-allowed disabled:opacity-40 hover:bg-slate-200 dark:hover:bg-white/10"
               >
                 Next
                 <ChevronRight className="h-4 w-4" />

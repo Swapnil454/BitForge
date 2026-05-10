@@ -94,7 +94,7 @@ export default function AuthModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] bg-white dark:bg-black/60 backdrop-blur-sm"
             onClick={onClose}
             aria-hidden="true"
           />
@@ -111,13 +111,13 @@ export default function AuthModal({
             aria-labelledby="auth-modal-title"
           >
             <div
-              className="relative w-full max-w-md overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-white/10 shadow-2xl"
+              className="relative w-full max-w-md overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-200 dark:border-white/10 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Close Button */}
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white transition-all z-10"
+                className="absolute top-4 right-4 p-2 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-all z-10"
                 aria-label="Close modal"
               >
                 <svg
@@ -144,7 +144,7 @@ export default function AuthModal({
                 <div className="flex justify-center mb-6">
                   <div className="relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full blur-lg opacity-50" />
-                    <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 border border-white/20 flex items-center justify-center">
+                    <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 border border-slate-300 dark:border-white/20 flex items-center justify-center">
                       <svg
                         className="w-10 h-10 text-cyan-400"
                         fill="none"
@@ -166,55 +166,55 @@ export default function AuthModal({
                 <div className="text-center mb-8">
                   <h2
                     id="auth-modal-title"
-                    className="text-2xl font-bold text-white mb-2"
+                    className="text-2xl font-bold text-slate-900 dark:text-white mb-2"
                   >
                     {title}
                   </h2>
-                  <p className="text-white/60">{subtitle}</p>
+                  <p className="text-slate-500 dark:text-white/60">{subtitle}</p>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="space-y-3">
                   <button
                     onClick={onLogin}
-                    className="w-full py-3.5 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 transition-all duration-300 shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full py-3.5 px-6 rounded-xl font-semibold text-slate-900 dark:text-white bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 transition-all duration-300 shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-[0.98]"
                   >
                     Sign In
                   </button>
 
                   <button
                     onClick={onRegister}
-                    className="w-full py-3.5 px-6 rounded-xl font-semibold text-white bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full py-3.5 px-6 rounded-xl font-semibold text-slate-900 dark:text-white bg-slate-200 dark:bg-white/10 hover:bg-white/15 border border-slate-300 dark:border-white/20 hover:border-white/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                   >
                     Create Account
                   </button>
                 </div>
 
                 {/* Benefits */}
-                <div className="mt-8 pt-6 border-t border-white/10">
-                  <p className="text-center text-sm text-white/40 mb-4">
+                <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/10">
+                  <p className="text-center text-sm text-slate-400 dark:text-white/40 mb-4">
                     Why create an account?
                   </p>
                   <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div className="flex items-center gap-2 text-white/60">
+                    <div className="flex items-center gap-2 text-slate-500 dark:text-white/60">
                       <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs">
                         ✓
                       </span>
                       <span>Secure checkout</span>
                     </div>
-                    <div className="flex items-center gap-2 text-white/60">
+                    <div className="flex items-center gap-2 text-slate-500 dark:text-white/60">
                       <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs">
                         ✓
                       </span>
                       <span>Track orders</span>
                     </div>
-                    <div className="flex items-center gap-2 text-white/60">
+                    <div className="flex items-center gap-2 text-slate-500 dark:text-white/60">
                       <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs">
                         ✓
                       </span>
                       <span>Save wishlist</span>
                     </div>
-                    <div className="flex items-center gap-2 text-white/60">
+                    <div className="flex items-center gap-2 text-slate-500 dark:text-white/60">
                       <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs">
                         ✓
                       </span>

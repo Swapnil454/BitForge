@@ -417,8 +417,14 @@ export const productAPI = {
 
 // Marketplace API functions
 export const marketplaceAPI = {
-    getAllProducts: async () => {
-        const response = await api.get('/marketplace');
+    getAllProducts: async (params?: {
+        page?: number;
+        limit?: number;
+        category?: string;
+        sort?: "newest" | "trending" | "rating" | "price_asc" | "price_desc";
+        search?: string;
+    }) => {
+        const response = await api.get('/marketplace', { params });
         return response.data;
     },
     

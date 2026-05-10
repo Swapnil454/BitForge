@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import User from '../src/models/User.js';
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/contentsellify';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/contentSellify';
 
 async function run() {
   try {

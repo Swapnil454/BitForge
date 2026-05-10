@@ -269,7 +269,7 @@ DELETE /admin/products/:id/delete
 ## File Structure Changes
 
 ```
-contentSellify/
+Bitforge/
 │
 ├── server/src/
 │   ├── models/

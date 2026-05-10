@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { adminAPI } from "@/lib/api";
 import toast from "react-hot-toast";
+import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
+import { Edit2, Trash2, Image as ImageIcon, Info, User, AlertCircle } from "lucide-react";
 
 interface Seller {
   _id: string;
@@ -136,93 +138,83 @@ export default function ProductDetailsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "approved":
-        return "bg-green-500/20 text-green-400 border-green-500/30";
+        return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
       case "pending":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+        return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
       case "rejected":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
+        return "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20";
       default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "approved":
-        return "";
-      case "pending":
-        return "";
-      case "rejected":
-        return "";
-      default:
-        return "";
+        return "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20";
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0a0a14] via-[#0f0f1e] to-[#14142b] flex items-center justify-center">
-        <div className="text-white text-xl">Loading product details...</div>
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f] flex items-center justify-center">
+        <div className="text-slate-900 dark:text-white text-xl">Loading product details...</div>
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0a0a14] via-[#0f0f1e] to-[#14142b] flex items-center justify-center">
-        <div className="text-white text-xl">Product not found</div>
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f] flex items-center justify-center">
+        <div className="text-slate-900 dark:text-white text-xl">Product not found</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0a14] via-[#0f0f1e] to-[#14142b] text-white p-4 sm:p-6 lg:p-8">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => router.push("/dashboard/admin/products-management")}
-            className="mb-4 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-sm flex items-center gap-2"
-          >
-            ← Back to Products
-          </button>
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <h1 className="text-3xl font-bold">Product Details</h1>
-            <div className="flex items-center gap-3">
-              <span className={`px-4 py-2 text-sm rounded-full border ${getStatusColor(product.status)}`}>
-                {getStatusBadge(product.status)} {product.status.toUpperCase()}
-              </span>
-              <button
-                onClick={openEditModal}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-sm font-semibold"
-              >
-                ✏️ Edit Product
-              </button>
-              <button
-                onClick={openDeleteModal}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition text-sm font-semibold"
-              >
-                🗑️ Delete Product
-              </button>
-            </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f] text-slate-900 dark:text-white pb-20">
+      <PageHeader
+        backHref="/dashboard/admin/products-management"
+        backLabel="Back"
+        title="Product Details"
+        subtitle={`Managing ${product.title}`}
+        rightSlot={
+          <div className="flex items-center gap-2 pr-1">
+            <span className={`h-9 px-3 flex items-center justify-center text-[10px] font-black uppercase tracking-widest rounded-xl border ${getStatusColor(product.status)}`}>
+              {product.status}
+            </span>
+            <button
+              onClick={openEditModal}
+              className="h-9 px-4 flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-all text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-600/30"
+            >
+              <Edit2 className="w-3 h-3" />
+              Edit
+            </button>
+            <button
+              onClick={openDeleteModal}
+              className="h-9 px-4 flex items-center gap-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl transition-all text-[10px] font-black uppercase tracking-widest shadow-lg shadow-rose-600/30"
+            >
+              <Trash2 className="w-3 h-3" />
+              Delete
+            </button>
           </div>
-        </div>
-
+        }
+      />
+      
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {/* Product Images */}
-        <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">📷 Product Image</h2>
+        <div className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.05] rounded-3xl p-8 mb-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-500">
+              <ImageIcon className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-bold tracking-tight">Product Asset</h2>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {product.thumbnailUrl && (
               <div className="relative group">
                 <img
                   src={product.thumbnailUrl}
                   alt="Product Thumbnail"
-                  className="w-full h-48 object-cover rounded-lg border border-white/10"
+                  className="w-full h-48 object-cover rounded-lg border border-slate-200 dark:border-white/10"
                 />
               </div>
             )}
             {!product.thumbnailUrl && (
-              <div className="w-full h-48 bg-white/5 rounded-lg flex items-center justify-center border border-white/10">
+              <div className="w-full h-48 bg-slate-100 dark:bg-white/5 rounded-lg flex items-center justify-center border border-slate-200 dark:border-white/10">
                 <span className="text-6xl"></span>
               </div>
             )}
@@ -230,41 +222,46 @@ export default function ProductDetailsPage() {
         </div>
 
         {/* Product Information */}
-        <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4"> Product Information</h2>
-          <div className="space-y-4">
+        <div className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.05] rounded-3xl p-8 mb-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-500">
+              <Info className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-bold tracking-tight">Product Information</h2>
+          </div>
+          <div className="space-y-6">
             <div>
-              <label className="text-white/60 text-sm">Product Name</label>
+              <label className="text-slate-500 dark:text-white/60 text-sm">Product Name</label>
               <p className="text-lg font-semibold">{product.title}</p>
             </div>
             <div>
-              <label className="text-white/60 text-sm">Description</label>
-              <p className="text-white/90">{product.description}</p>
+              <label className="text-slate-500 dark:text-white/60 text-sm">Description</label>
+              <p className="text-slate-800 dark:text-white/90">{product.description}</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div>
-                <label className="text-white/60 text-sm">Price</label>
+                <label className="text-slate-500 dark:text-white/60 text-sm">Price</label>
                 <p className="text-lg font-semibold text-cyan-400">₹{product.price.toLocaleString()}</p>
               </div>
               {product.discount && (
                 <div>
-                  <label className="text-white/60 text-sm">Discount</label>
+                  <label className="text-slate-500 dark:text-white/60 text-sm">Discount</label>
                   <p className="text-lg font-semibold text-green-400">{product.discount}%</p>
                 </div>
               )}
               <div>
-                <label className="text-white/60 text-sm">Category</label>
+                <label className="text-slate-500 dark:text-white/60 text-sm">Category</label>
                 <p className="text-lg font-semibold">{product.category}</p>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-white/60 text-sm">Created At</label>
-                <p className="text-white/90">{new Date(product.createdAt).toLocaleString()}</p>
+                <label className="text-slate-500 dark:text-white/60 text-sm">Created At</label>
+                <p className="text-slate-800 dark:text-white/90">{new Date(product.createdAt).toLocaleString()}</p>
               </div>
               <div>
-                <label className="text-white/60 text-sm">Last Updated</label>
-                <p className="text-white/90">{new Date(product.updatedAt).toLocaleString()}</p>
+                <label className="text-slate-500 dark:text-white/60 text-sm">Last Updated</label>
+                <p className="text-slate-800 dark:text-white/90">{new Date(product.updatedAt).toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -272,47 +269,59 @@ export default function ProductDetailsPage() {
 
         {/* Rejection Reason (if rejected) */}
         {product.rejectionReason && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-2 text-red-400"> Rejection Reason</h2>
-            <p className="text-white/90">{product.rejectionReason}</p>
+          <div className="bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/20 rounded-3xl p-8 mb-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-rose-500" />
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-xl bg-rose-500/20 text-rose-500">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <h2 className="text-xl font-bold text-rose-600 dark:text-rose-400">Rejection Reason</h2>
+            </div>
+            <p className="text-slate-700 dark:text-white/80 leading-relaxed pl-14">{product.rejectionReason}</p>
           </div>
         )}
 
         {/* Seller Information */}
-        <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-          <h2 className="text-xl font-semibold mb-4"> Seller Information</h2>
+        <div className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.05] rounded-3xl p-8 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-500">
+              <User className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-bold tracking-tight">Seller Identity</h2>
+          </div>
           {product.sellerId ? (
             <div className="space-y-3">
               <div>
-                <label className="text-white/60 text-sm">Seller Name</label>
+                <label className="text-slate-500 dark:text-white/60 text-sm">Seller Name</label>
                 <p className="text-lg font-semibold">{product.sellerId.name}</p>
               </div>
               <div>
-                <label className="text-white/60 text-sm">Email</label>
-                <p className="text-white/90">{product.sellerId.email}</p>
+                <label className="text-slate-500 dark:text-white/60 text-sm">Email</label>
+                <p className="text-slate-800 dark:text-white/90">{product.sellerId.email}</p>
               </div>
               {product.sellerId.phone && (
                 <div>
-                  <label className="text-white/60 text-sm">Phone</label>
-                  <p className="text-white/90">{product.sellerId.phone}</p>
+                  <label className="text-slate-500 dark:text-white/60 text-sm">Phone</label>
+                  <p className="text-slate-800 dark:text-white/90">{product.sellerId.phone}</p>
                 </div>
               )}
               <div>
-                <label className="text-white/60 text-sm">Seller ID</label>
-                <p className="text-white/70 text-sm font-mono">{product.sellerId._id}</p>
+                <label className="text-slate-500 dark:text-white/60 text-sm">Seller ID</label>
+                <p className="text-slate-600 dark:text-white/70 text-sm font-mono">{product.sellerId._id}</p>
               </div>
             </div>
           ) : (
-            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-              <p className="text-yellow-400"> Seller information not available (seller may have been deleted)</p>
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-amber-600 dark:text-amber-400 font-medium">Seller information not available (seller may have been deleted or account suspended).</p>
             </div>
           )}
         </div>
 
         {/* EDIT MODAL */}
         {showEditModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-gradient-to-br from-[#0f0f1e] to-[#14142b] border border-white/20 rounded-xl max-w-2xl w-full p-8">
+          <div className="fixed inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/10 shadow-2xl rounded-xl max-w-2xl w-full p-8">
               <h2 className="text-2xl font-bold mb-6">✏️ Edit Product</h2>
               <div className="space-y-4">
                 <div>
@@ -321,7 +330,7 @@ export default function ProductDetailsPage() {
                     type="text"
                     value={editFormData.title}
                     onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-500 focus:outline-none"
+                    className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
                     placeholder="Enter product title"
                   />
                 </div>
@@ -331,7 +340,7 @@ export default function ProductDetailsPage() {
                     value={editFormData.description}
                     onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
                     rows={4}
-                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-500 focus:outline-none resize-none"
+                    className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none resize-none"
                     placeholder="Enter product description"
                   />
                 </div>
@@ -342,7 +351,7 @@ export default function ProductDetailsPage() {
                       type="number"
                       value={editFormData.price}
                       onChange={(e) => setEditFormData({ ...editFormData, price: Number(e.target.value) })}
-                      className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-500 focus:outline-none"
+                      className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
                       placeholder="0"
                     />
                   </div>
@@ -352,7 +361,7 @@ export default function ProductDetailsPage() {
                       type="number"
                       value={editFormData.discount}
                       onChange={(e) => setEditFormData({ ...editFormData, discount: Number(e.target.value) })}
-                      className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-500 focus:outline-none"
+                      className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
                       placeholder="0"
                     />
                   </div>
@@ -363,7 +372,7 @@ export default function ProductDetailsPage() {
                     value={editFormData.editReason}
                     onChange={(e) => setEditFormData({ ...editFormData, editReason: e.target.value })}
                     rows={3}
-                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-cyan-500 focus:outline-none resize-none"
+                    className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none resize-none"
                     placeholder="Explain why you're editing this product (required)"
                   />
                 </div>
@@ -379,7 +388,7 @@ export default function ProductDetailsPage() {
                 <button
                   onClick={() => setShowEditModal(false)}
                   disabled={processing}
-                  className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg font-semibold"
+                  className="flex-1 px-6 py-3 bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white rounded-lg font-semibold"
                 >
                   Cancel
                 </button>
@@ -390,12 +399,12 @@ export default function ProductDetailsPage() {
 
         {/* DELETE MODAL */}
         {showDeleteModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-gradient-to-br from-[#0f0f1e] to-[#14142b] border border-red-500/30 rounded-xl max-w-md w-full p-8">
+          <div className="fixed inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/10 shadow-2xl rounded-xl max-w-md w-full p-8">
               <div className="text-center mb-6">
                 <div className="text-6xl mb-4"></div>
                 <h2 className="text-2xl font-bold text-red-400">Delete Product</h2>
-                <p className="text-white/60 mt-2">This action cannot be undone</p>
+                <p className="text-slate-500 dark:text-white/60 mt-2">This action cannot be undone</p>
               </div>
               <div className="mb-6">
                 <label className="block text-sm font-medium mb-2">Delete Reason *</label>
@@ -403,7 +412,7 @@ export default function ProductDetailsPage() {
                   value={deleteReason}
                   onChange={(e) => setDeleteReason(e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:border-red-500 focus:outline-none resize-none"
+                  className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-red-500 focus:outline-none resize-none"
                   placeholder="Explain why you're deleting this product (minimum 5 characters)"
                 />
               </div>
@@ -418,7 +427,7 @@ export default function ProductDetailsPage() {
                 <button
                   onClick={() => setShowDeleteModal(false)}
                   disabled={processing}
-                  className="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg font-semibold"
+                  className="flex-1 px-6 py-3 bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white rounded-lg font-semibold"
                 >
                   Cancel
                 </button>
@@ -426,7 +435,7 @@ export default function ProductDetailsPage() {
             </div>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

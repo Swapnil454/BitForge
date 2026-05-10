@@ -211,16 +211,16 @@ export default function AdminBankAccountPage() {
   /* === SKELETON === */
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#05050a] text-white">
-        <div className="h-16 w-full border-b border-white/[0.05] bg-[#0a0a0f]" />
+      <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
+        <div className="h-16 w-full border-b border-slate-200 dark:border-white/[0.05] bg-slate-50 dark:bg-[#0a0a0f]" />
         <section className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6 animate-pulse">
           <div className="flex justify-between items-center">
-            <div className="h-6 w-36 bg-[#16161e] rounded-lg" />
-            <div className="h-10 w-32 bg-[#16161e] rounded-xl" />
+            <div className="h-6 w-36 bg-white dark:bg-[#16161e] rounded-lg" />
+            <div className="h-10 w-32 bg-white dark:bg-[#16161e] rounded-xl" />
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             {[1, 2].map((i) => (
-              <div key={i} className="h-48 bg-[#16161e] border border-white/[0.05] rounded-2xl" />
+              <div key={i} className="h-48 bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.05] rounded-2xl" />
             ))}
           </div>
         </section>
@@ -230,7 +230,7 @@ export default function AdminBankAccountPage() {
 
   /* === UI === */
   return (
-    <main className="min-h-screen bg-[#05050a] text-white pb-20">
+    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-20">
       <PageHeader
         backHref="/dashboard/admin"
         backLabel="Back"
@@ -240,7 +240,7 @@ export default function AdminBankAccountPage() {
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="h-9 w-9 flex items-center justify-center rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-all"
+              className="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-200/50 dark:bg-white/[0.04] hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.06] transition-all"
             >
               <MoreVertical className="w-4 h-4" />
             </button>
@@ -250,20 +250,20 @@ export default function AdminBankAccountPage() {
                   initial={{ opacity: 0, y: -6, scale: 0.96 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -6, scale: 0.96 }}
-                  className="absolute right-0 top-11 w-44 bg-[#16161e] border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden z-50"
+                  className="absolute right-0 top-11 w-44 bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden z-50"
                 >
                   <button
                     onClick={() => { router.push("/dashboard/admin/bank-account/analytics"); setShowMenu(false); }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-xs font-black uppercase tracking-widest text-white/50 hover:text-white hover:bg-white/[0.04] transition-all"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-xs font-black uppercase tracking-widest text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-all"
                   >
                     <BarChart3 className="w-3.5 h-3.5" />
                     Analytics
                   </button>
-                  <div className="h-px bg-white/[0.04] mx-3" />
+                  <div className="h-px bg-slate-100 dark:bg-white/[0.04] mx-3" />
                   <button
                     onClick={() => { fetchData(true); setShowMenu(false); }}
                     disabled={refreshing}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-xs font-black uppercase tracking-widest text-white/50 hover:text-white hover:bg-white/[0.04] transition-all disabled:opacity-40"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-xs font-black uppercase tracking-widest text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-all disabled:opacity-40"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
                     Refresh
@@ -281,8 +281,8 @@ export default function AdminBankAccountPage() {
         {/* Section heading */}
         <div className="flex justify-between items-center px-1">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mb-0.5">Registered</p>
-            <h2 className="text-sm font-black text-white/70">Payout Accounts</h2>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/20 mb-0.5">Registered</p>
+            <h2 className="text-sm font-black text-slate-700 dark:text-white/70">Payout Accounts</h2>
           </div>
           <button
             onClick={() => setShowAddForm(true)}
@@ -297,12 +297,12 @@ export default function AdminBankAccountPage() {
         {/* ACCOUNTS LIST */}
         <div className="grid lg:grid-cols-2 gap-5">
           {bankAccounts.length === 0 ? (
-            <div className="lg:col-span-2 flex flex-col items-center justify-center p-12 border border-dashed border-white/[0.06] rounded-3xl bg-[#16161e]/30">
-              <div className="w-16 h-16 bg-[#16161e] rounded-full flex items-center justify-center mb-4 border border-white/[0.05]">
-                <Landmark className="w-8 h-8 text-white/10" />
+            <div className="lg:col-span-2 flex flex-col items-center justify-center p-12 border border-dashed border-slate-300 dark:border-white/[0.06] rounded-3xl bg-white dark:bg-[#16161e]/30">
+              <div className="w-16 h-16 bg-white dark:bg-[#16161e] rounded-full flex items-center justify-center mb-4 border border-slate-200 dark:border-white/[0.05]">
+                <Landmark className="w-8 h-8 text-slate-300 dark:text-white/10" />
               </div>
-              <h3 className="text-sm font-black text-white/30 mb-1">No Accounts Added</h3>
-              <p className="text-xs text-white/15 font-medium mb-6 text-center">Add a bank account to manage commission payouts.</p>
+              <h3 className="text-sm font-black text-slate-500 dark:text-white/30 mb-1">No Accounts Added</h3>
+              <p className="text-xs text-slate-400 dark:text-white/15 font-medium mb-6 text-center">Add a bank account to manage commission payouts.</p>
               <button
                 onClick={() => setShowAddForm(true)}
                 className="px-5 py-2.5 bg-cyan-500 text-[#05050a] text-xs font-black uppercase tracking-widest rounded-xl flex items-center gap-2"
@@ -320,10 +320,10 @@ export default function AdminBankAccountPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className={`relative group bg-[#16161e] border rounded-2xl p-5 transition-all duration-300 ${
+                  className={`relative group bg-white dark:bg-[#16161e] border rounded-2xl p-5 transition-all duration-300 ${
                     acc.isPrimary
                       ? "border-cyan-500/30 shadow-[0_0_25px_rgba(6,182,212,0.05)]"
-                      : "border-white/[0.05] hover:border-white/10"
+                      : "border-slate-200 dark:border-white/[0.05] hover:border-slate-200 dark:hover:border-white/10"
                   }`}
                 >
                   {/* Primary badge */}
@@ -336,16 +336,16 @@ export default function AdminBankAccountPage() {
                   {/* Header */}
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-sm font-black text-white/90">{acc.accountHolderName}</h3>
-                      <p className="text-xs text-cyan-400/70 font-medium mt-0.5 flex items-center gap-1">
+                      <h3 className="text-sm font-black text-slate-800 dark:text-white/90">{acc.accountHolderName}</h3>
+                      <p className="text-xs text-cyan-600 dark:text-cyan-400/70 font-medium mt-0.5 flex items-center gap-1">
                         <Landmark className="w-3 h-3" />
                         {acc.bankName || "Unknown Bank"}
                       </p>
                     </div>
                     <div className={`shrink-0 px-2 py-1 rounded-lg text-[10px] font-black border flex items-center gap-1 ${
                       acc.isVerified
-                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                        : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                        : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
                     }`}>
                       {acc.isVerified ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                       <span className="hidden sm:inline">{acc.isVerified ? "Verified" : "Pending"}</span>
@@ -353,29 +353,29 @@ export default function AdminBankAccountPage() {
                   </div>
 
                   {/* Account details */}
-                  <div className="bg-[#1c1c24] border border-white/[0.04] rounded-xl p-4 mb-4 space-y-2">
+                  <div className="bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.04] rounded-xl p-4 mb-4 space-y-2">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-white/30 font-medium">Account No</span>
+                      <span className="text-slate-500 dark:text-white/30 font-medium">Account No</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-white font-mono font-bold tracking-wider">
+                        <span className="text-slate-900 dark:text-white font-mono font-bold tracking-wider">
                           {visibleAccounts[acc.id] ? acc.accountNumber : maskAccountNumber(acc.accountNumber)}
                         </span>
                         <button
                           onClick={() => toggleAccountVisibility(acc.id)}
-                          className="text-white/20 hover:text-cyan-400 transition-colors p-1 rounded-lg hover:bg-white/5"
+                          className="text-slate-400 dark:text-white/20 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-white/5"
                         >
                           {visibleAccounts[acc.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
                       </div>
                     </div>
-                    <div className="flex justify-between items-center text-xs pt-1 border-t border-white/[0.03]">
-                      <span className="text-white/30 font-medium">IFSC Code</span>
-                      <span className="text-white/70 font-mono tracking-wider">{acc.ifscCode}</span>
+                    <div className="flex justify-between items-center text-xs pt-1 border-t border-slate-200 dark:border-white/[0.03]">
+                      <span className="text-slate-500 dark:text-white/30 font-medium">IFSC Code</span>
+                      <span className="text-slate-600 dark:text-white/70 font-mono tracking-wider">{acc.ifscCode}</span>
                     </div>
                     {acc.branchName && (
-                      <div className="flex justify-between items-center text-xs pt-1 border-t border-white/[0.03]">
-                        <span className="text-white/30 font-medium">Branch</span>
-                        <span className="text-white/50 text-right line-clamp-1 max-w-[160px]">{acc.branchName}</span>
+                      <div className="flex justify-between items-center text-xs pt-1 border-t border-slate-200 dark:border-white/[0.03]">
+                        <span className="text-slate-500 dark:text-white/30 font-medium">Branch</span>
+                        <span className="text-slate-600 dark:text-white/50 text-right line-clamp-1 max-w-[160px]">{acc.branchName}</span>
                       </div>
                     )}
                   </div>
@@ -385,14 +385,14 @@ export default function AdminBankAccountPage() {
                     {!acc.isPrimary && (
                       <button
                         onClick={() => handleSetPrimary(acc.id)}
-                        className="flex-1 py-2 bg-[#1c1c24] hover:bg-white/[0.08] border border-white/[0.05] text-white/50 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
+                        className="flex-1 py-2 bg-slate-50 dark:bg-[#1c1c24] hover:bg-slate-100 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.05] text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
                       >
                         Set Primary
                       </button>
                     )}
                     <button
                       onClick={() => handleEdit(acc)}
-                      className="flex-1 py-2 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-1.5"
+                      className="flex-1 py-2 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-1.5"
                     >
                       <PencilLine className="w-3.5 h-3.5" />
                       Edit
@@ -402,8 +402,8 @@ export default function AdminBankAccountPage() {
                       onClick={() => handleDelete(acc)}
                       className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border flex items-center justify-center gap-1.5 transition-all ${
                         acc.isPrimary
-                          ? "bg-red-500/5 text-red-500/20 border-red-500/10 cursor-not-allowed"
-                          : "bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/20"
+                          ? "bg-red-500/5 text-red-500/40 dark:text-red-500/20 border-red-500/10 cursor-not-allowed"
+                          : "bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/20"
                       }`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -423,7 +423,7 @@ export default function AdminBankAccountPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/50 dark:bg-black/70 backdrop-blur-sm"
             onClick={resetForm}
           >
             <motion.div
@@ -431,15 +431,15 @@ export default function AdminBankAccountPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#16161e] border border-white/[0.08] rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden"
+              className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.08] rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden"
             >
               {/* Modal Header */}
-              <div className="px-6 py-5 border-b border-white/[0.05] flex items-center justify-between">
+              <div className="px-6 py-5 border-b border-slate-200 dark:border-white/[0.05] flex items-center justify-between">
                 <h2 className="text-sm font-black flex items-center gap-2">
                   <Landmark className="w-5 h-5 text-cyan-500" />
                   {editingAccount ? "Edit Bank Account" : "Add Bank Account"}
                 </h2>
-                <button onClick={resetForm} className="p-2 text-white/30 hover:text-white bg-white/[0.03] hover:bg-white/[0.08] rounded-xl transition-all">
+                <button onClick={resetForm} className="p-2 text-slate-500 dark:text-white/30 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/[0.03] hover:bg-slate-200 dark:hover:bg-white/[0.08] rounded-xl transition-all">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -449,7 +449,7 @@ export default function AdminBankAccountPage() {
                 <form id="bank-form" onSubmit={handleSubmit} className="grid sm:grid-cols-2 gap-5">
                   {/* Account Holder Name */}
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/30">Account Holder Name</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30">Account Holder Name</label>
                     <div className="relative">
                       <input
                         name="accountHolderName"
@@ -457,15 +457,15 @@ export default function AdminBankAccountPage() {
                         onChange={handleInputChange}
                         placeholder="e.g. Company Pvt Ltd"
                         required
-                        className="w-full bg-[#1c1c24] border border-white/[0.06] rounded-xl px-4 py-3 pl-11 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 focus:border-cyan-500/40 transition-all"
+                        className="w-full bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.06] rounded-xl px-4 py-3 pl-11 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 focus:border-cyan-500/40 transition-all"
                       />
-                      <ShieldCheck className="w-4 h-4 text-white/20 absolute left-3.5 top-3.5" />
+                      <ShieldCheck className="w-4 h-4 text-slate-400 dark:text-white/20 absolute left-3.5 top-3.5" />
                     </div>
                   </div>
 
                   {/* Account Number */}
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/30">Account Number</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30">Account Number</label>
                     <div className="relative">
                       <input
                         name="accountNumber"
@@ -474,13 +474,13 @@ export default function AdminBankAccountPage() {
                         placeholder="Enter account number"
                         required
                         type={showAccountNumberInput ? "text" : "password"}
-                        className="w-full bg-[#1c1c24] border border-white/[0.06] rounded-xl px-4 py-3 pl-11 pr-12 text-sm text-white font-mono tracking-widest placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 focus:border-cyan-500/40 transition-all"
+                        className="w-full bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.06] rounded-xl px-4 py-3 pl-11 pr-12 text-sm text-slate-900 dark:text-white font-mono tracking-widest placeholder:text-slate-400 dark:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 focus:border-cyan-500/40 transition-all"
                       />
-                      <CreditCard className="w-4 h-4 text-white/20 absolute left-3.5 top-3.5" />
+                      <CreditCard className="w-4 h-4 text-slate-400 dark:text-white/20 absolute left-3.5 top-3.5" />
                       <button
                         type="button"
                         onClick={() => setShowAccountNumberInput(!showAccountNumberInput)}
-                        className="absolute right-3 top-3 p-1 text-white/20 hover:text-cyan-400 transition-colors rounded-lg hover:bg-white/5"
+                        className="absolute right-3 top-3 p-1 text-slate-400 dark:text-white/20 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors rounded-lg hover:bg-slate-200 dark:hover:bg-white/5"
                       >
                         {showAccountNumberInput ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -489,7 +489,7 @@ export default function AdminBankAccountPage() {
 
                   {/* IFSC */}
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/30">IFSC Code</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30">IFSC Code</label>
                     <div className="relative">
                       <input
                         name="ifscCode"
@@ -498,24 +498,24 @@ export default function AdminBankAccountPage() {
                         placeholder="e.g. SBIN0001234"
                         required
                         maxLength={11}
-                        className="w-full bg-[#1c1c24] border border-white/[0.06] rounded-xl px-4 py-3 pl-11 text-sm text-white uppercase placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 focus:border-cyan-500/40 transition-all"
+                        className="w-full bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.06] rounded-xl px-4 py-3 pl-11 text-sm text-slate-900 dark:text-white uppercase placeholder:text-slate-400 dark:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 focus:border-cyan-500/40 transition-all"
                       />
-                      <Building2 className="w-4 h-4 text-white/20 absolute left-3.5 top-3.5" />
+                      <Building2 className="w-4 h-4 text-slate-400 dark:text-white/20 absolute left-3.5 top-3.5" />
                       {ifscLoading && (
-                        <span className="absolute right-3.5 top-3.5 h-4 w-4 border-2 border-white/10 border-t-cyan-500 rounded-full animate-spin" />
+                        <span className="absolute right-3.5 top-3.5 h-4 w-4 border-2 border-slate-200 dark:border-white/10 border-t-cyan-500 rounded-full animate-spin" />
                       )}
                     </div>
                   </div>
 
                   {/* Account Type dropdown */}
                   <div className="space-y-1.5 relative" ref={dropdownRef}>
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/30">Account Type</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30">Account Type</label>
                     <div
                       onClick={() => setShowAccountTypeDropdown(!showAccountTypeDropdown)}
-                      className="w-full bg-[#1c1c24] border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-white flex justify-between items-center cursor-pointer hover:border-cyan-500/40 transition-all"
+                      className="w-full bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.06] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white flex justify-between items-center cursor-pointer hover:border-cyan-500/40 transition-all"
                     >
                       <span className="capitalize">{formData.accountType} Account</span>
-                      <ChevronDown className={`w-4 h-4 text-white/30 transition-transform ${showAccountTypeDropdown ? "rotate-180" : ""}`} />
+                      <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-white/30 transition-transform ${showAccountTypeDropdown ? "rotate-180" : ""}`} />
                     </div>
                     <AnimatePresence>
                       {showAccountTypeDropdown && (
@@ -523,13 +523,13 @@ export default function AdminBankAccountPage() {
                           initial={{ opacity: 0, y: -8 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -8 }}
-                          className="absolute z-50 top-[calc(100%+0.5rem)] left-0 w-full bg-[#1c1c24] border border-white/[0.08] rounded-xl shadow-xl overflow-hidden"
+                          className="absolute z-50 top-[calc(100%+0.5rem)] left-0 w-full bg-white dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.08] rounded-xl shadow-xl overflow-hidden"
                         >
                           {["current", "savings"].map((type) => (
                             <div
                               key={type}
                               onClick={() => { setFormData((p) => ({ ...p, accountType: type as any })); setShowAccountTypeDropdown(false); }}
-                              className={`px-4 py-3 text-sm cursor-pointer capitalize transition-colors ${formData.accountType === type ? "bg-cyan-500/10 text-cyan-400" : "text-white hover:bg-white/[0.04]"}`}
+                              className={`px-4 py-3 text-sm cursor-pointer capitalize transition-colors ${formData.accountType === type ? "bg-cyan-50/50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400" : "text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/[0.04]"}`}
                             >
                               {type} Account
                             </div>
@@ -541,36 +541,36 @@ export default function AdminBankAccountPage() {
 
                   {/* Bank Name */}
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/30">Bank Name</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30">Bank Name</label>
                     <input
                       name="bankName"
                       value={formData.bankName}
                       onChange={handleInputChange}
                       placeholder="Auto-filled via IFSC"
-                      className="w-full bg-[#1c1c24] border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 transition-all"
+                      className="w-full bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.06] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 transition-all"
                     />
                   </div>
 
                   {/* Branch Name */}
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-white/30">Branch Name</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30">Branch Name</label>
                     <input
                       name="branchName"
                       value={formData.branchName}
                       onChange={handleInputChange}
                       placeholder="Auto-filled via IFSC"
-                      className="w-full bg-[#1c1c24] border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 transition-all"
+                      className="w-full bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.06] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 transition-all"
                     />
                   </div>
                 </form>
               </div>
 
               {/* Modal Footer */}
-              <div className="px-6 py-5 border-t border-white/[0.05] flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
+              <div className="px-6 py-5 border-t border-slate-200 dark:border-white/[0.05] flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="w-full sm:w-auto px-6 py-3 text-xs font-black uppercase tracking-widest text-white/40 hover:text-white bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] rounded-xl transition-all"
+                  className="w-full sm:w-auto px-6 py-3 text-xs font-black uppercase tracking-widest text-slate-500 dark:text-white/40 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/[0.03] hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.06] rounded-xl transition-all"
                 >
                   Cancel
                 </button>

@@ -4,7 +4,7 @@
 
 ### Step 1: Install Dependencies (if not already done)
 ```bash
-cd c:\mini Desktop\Fullstack\contentSellify\server
+cd c:\mini Desktop\Fullstack\Bitforge\server
 npm install pdf-lib
 ```
 

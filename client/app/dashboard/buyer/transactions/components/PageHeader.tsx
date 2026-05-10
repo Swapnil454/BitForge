@@ -24,16 +24,14 @@ export default function PageHeader({
   const router = useRouter();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-linear-to-r from-black via-slate-950 to-black/95 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-white/10 bg-linear-to-r from-white via-slate-50 to-white/95 dark:from-[#05050a] dark:via-[#0a0a0f] dark:to-[#05050a]/95 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
         <div className="relative flex min-h-[58px] items-center justify-center">
           <button
             onClick={() => {
-              if (onBack) onBack();
-              else if (backHref) router.push(backHref);
-              else router.back();
+              router.back();
             }}
-            className="absolute left-0 inline-flex items-center gap-1 text-white/80 hover:text-white transition"
+            className="absolute left-0 inline-flex items-center gap-1 text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white transition"
             aria-label={backLabel}
           >
             <ChevronLeft className="h-8 w-8" strokeWidth={3} />
@@ -41,10 +39,10 @@ export default function PageHeader({
           </button>
 
           <div className="px-16 text-center">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight bg-linear-to-r from-fuchsia-300 via-violet-300 to-indigo-300 bg-clip-text text-transparent">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight bg-linear-to-r from-fuchsia-600 via-violet-600 to-indigo-600 dark:from-fuchsia-300 dark:via-violet-300 dark:to-indigo-300 bg-clip-text text-transparent">
               {title}
             </h1>
-            {subtitle && <p className="text-white/55 text-xs sm:text-sm mt-0.5">{subtitle}</p>}
+            {subtitle && <p className="text-slate-500 dark:text-white/55 text-xs sm:text-sm mt-0.5">{subtitle}</p>}
           </div>
 
           {rightSlot && <div className="absolute right-0">{rightSlot}</div>}

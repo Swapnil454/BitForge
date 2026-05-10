@@ -8,6 +8,10 @@ const productSchema = new mongoose.Schema({
   },
   title: String,
   description: String,
+  category: {
+    type: String,
+    default: "Software"
+  },
   price: Number,
   discount: {
     type: Number,
@@ -123,6 +127,7 @@ const productSchema = new mongoose.Schema({
   pendingChanges: {
     title: String,
     description: String,
+    category: String,
     price: Number,
     discount: Number,
     fileKey: String,

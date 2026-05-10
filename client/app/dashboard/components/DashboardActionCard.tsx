@@ -79,7 +79,7 @@ export default function DashboardActionCard({
 
         <div className="flex-1 min-w-0">
           <div
-            className={`font-bold text-white transition-colors truncate
+            className={`font-bold text-gray-900 dark:text-white transition-colors truncate
               ${isSellerOrBuyer ? "text-sm md:text-lg mb-0.5" : "text-sm"}
               group-hover:${hoverTextColor}
             `}
@@ -92,8 +92,8 @@ export default function DashboardActionCard({
               className={`text-xs transition-colors truncate hidden sm:block
                 ${
                   isSellerOrBuyer
-                    ? "text-white/70 group-hover:text-white/90"
-                    : "text-white/70"
+                    ? "text-gray-500 dark:text-white/70 group-hover:text-gray-700 dark:group-hover:text-slate-800 dark:group-hover:text-white/90"
+                    : "text-gray-500 dark:text-white/70"
                 }
               `}
             >
@@ -103,7 +103,7 @@ export default function DashboardActionCard({
         </div>
 
         <svg
-          className={`text-white/40 group-hover:text-white/80 group-hover:translate-x-1 transition-all shrink-0 hidden md:block
+          className={`text-gray-400 dark:text-white/40 group-hover:text-gray-700 dark:group-hover:text-slate-700 dark:group-hover:text-white/80 group-hover:translate-x-1 transition-all shrink-0 hidden md:block
             ${isSellerOrBuyer ? "w-4 h-4 md:w-5 md:h-5" : "w-4 h-4"}
           `}
           fill="none"

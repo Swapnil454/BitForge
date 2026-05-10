@@ -156,11 +156,11 @@ export default function InvoicePage() {
     return (
       <div className="min-h-screen bg-[#06070b]">
         {/* Skeleton Header */}
-        <header className="sticky top-0 z-50 border-b border-white/10 bg-black/95">
+        <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-white/10 bg-white dark:bg-black/95">
           <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
             <div className="relative flex min-h-[58px] items-center justify-center">
-              <div className="h-8 w-24 bg-white/5 rounded absolute left-0 animate-pulse"></div>
-              <div className="h-6 w-48 bg-white/5 rounded animate-pulse"></div>
+              <div className="h-8 w-24 bg-slate-100 dark:bg-white/5 rounded absolute left-0 animate-pulse"></div>
+              <div className="h-6 w-48 bg-slate-100 dark:bg-white/5 rounded animate-pulse"></div>
             </div>
           </div>
         </header>
@@ -168,12 +168,12 @@ export default function InvoicePage() {
         <main className="mx-auto max-w-4xl px-4 py-5 sm:px-6 sm:py-8 w-full">
           <div className="mb-5 flex justify-end">
             <div className="grid grid-cols-2 gap-3 w-full sm:w-auto">
-              <div className="h-10 w-full sm:w-24 bg-white/10 rounded-xl animate-pulse"></div>
+              <div className="h-10 w-full sm:w-24 bg-slate-200 dark:bg-white/10 rounded-xl animate-pulse"></div>
               <div className="h-10 w-full sm:w-32 bg-cyan-400/20 rounded-xl animate-pulse"></div>
             </div>
           </div>
           
-          <div className="rounded-[30px] border border-white/5 bg-[#12141c]/50 h-[600px] animate-pulse"></div>
+          <div className="rounded-[30px] border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c]/50 h-[600px] animate-pulse"></div>
         </main>
       </div>
     );
@@ -182,11 +182,11 @@ export default function InvoicePage() {
   if (error || !invoice || !totals) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#06070b] px-4">
-        <div className="w-full max-w-md rounded-[28px] border border-white/10 bg-slate-900/75 p-8 text-center text-white shadow-2xl">
+        <div className="w-full max-w-md rounded-[28px] border border-slate-200 dark:border-white/10 bg-slate-900/75 p-8 text-center text-slate-900 dark:text-white shadow-2xl">
           <p className="mb-4 text-red-400">{error || "Invoice not found"}</p>
           <button
             onClick={() => router.back()}
-            className="rounded-full bg-white/10 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-white/15"
+            className="rounded-full bg-slate-200 dark:bg-white/10 px-5 py-2.5 text-sm font-medium text-slate-900 dark:text-white transition hover:bg-white/15"
           >
             Go Back
           </button>
@@ -247,7 +247,7 @@ export default function InvoicePage() {
         subtitle={invoice?.invoiceNumber ? `Invoice #${invoice.invoiceNumber}` : ""}
       />
 
-      <main className="min-h-screen bg-[#06070b] px-4 py-5 text-white sm:px-6 sm:py-8">
+      <main className="min-h-screen bg-[#06070b] px-4 py-5 text-slate-900 dark:text-white sm:px-6 sm:py-8">
         <div className="mx-auto max-w-4xl">
           <div className="no-print mb-5 flex justify-end">
             <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row w-full sm:w-auto">
@@ -291,7 +291,7 @@ export default function InvoicePage() {
           </div>
 
           <section className="print-area overflow-hidden rounded-[30px] border border-slate-200 bg-white text-slate-900 shadow-[0_28px_80px_rgba(15,23,42,0.32)]">
-            <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#0f172a,#1e293b)] px-5 py-6 text-white sm:px-8">
+            <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#0f172a,#1e293b)] px-5 py-6 text-slate-900 dark:text-white sm:px-8">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="text-3xl font-bold tracking-tight">BitForge</p>
@@ -302,11 +302,11 @@ export default function InvoicePage() {
                 <div className="grid gap-3 text-sm sm:text-right">
                   <div>
                     <p className="text-slate-400">Invoice Number</p>
-                    <p className="font-semibold text-white">{invoice.invoiceNumber}</p>
+                    <p className="font-semibold text-slate-900 dark:text-white">{invoice.invoiceNumber}</p>
                   </div>
                   <div>
                     <p className="text-slate-400">Invoice Date</p>
-                    <p className="font-medium text-white">{formatDate(invoice.invoiceDate || invoice.createdAt)}</p>
+                    <p className="font-medium text-slate-900 dark:text-white">{formatDate(invoice.invoiceDate || invoice.createdAt)}</p>
                   </div>
                 </div>
               </div>

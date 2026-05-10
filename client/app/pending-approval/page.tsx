@@ -101,8 +101,8 @@
 
 //   if (loading || !user) {
 //     return (
-//       <div className="min-h-screen flex items-center justify-center bg-black/80">
-//         <div className="text-white text-lg animate-pulse">Checking your approval status...</div>
+//       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black/80">
+//         <div className="text-slate-900 dark:text-white text-lg animate-pulse">Checking your approval status...</div>
 //       </div>
 //     );
 //   }
@@ -152,7 +152,7 @@
 //                 <button
 //                   onClick={handleCheckStatus}
 //                   disabled={checking}
-//                   className="px-7 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-semibold text-base shadow-lg transition disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+//                   className="px-7 py-3 bg-cyan-600 hover:bg-cyan-700 text-slate-900 dark:text-white rounded-xl font-semibold text-base shadow-lg transition disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-cyan-400"
 //                 >
 //                   {checking ? (
 //                     <span className="flex items-center gap-2"><span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>Checking...</span>
@@ -202,7 +202,7 @@
 //             <>
 //               <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-linear-to-br from-red-400 to-red-600 flex items-center justify-center">
 //                 <svg
-//                   className="w-12 h-12 text-white"
+//                   className="w-12 h-12 text-slate-900 dark:text-white"
 //                   fill="none"
 //                   stroke="currentColor"
 //                   viewBox="0 0 24 24"
@@ -216,7 +216,7 @@
 //                 </svg>
 //               </div>
 
-//               <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+//               <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
 //                 Application Not Approved
 //               </h1>
 
@@ -224,23 +224,23 @@
 //                 <h2 className="text-xl font-semibold text-red-400 mb-2">
 //                   Account Rejected
 //                 </h2>
-//                 <p className="text-white/70 leading-relaxed mb-4">
+//                 <p className="text-slate-600 dark:text-white/70 leading-relaxed mb-4">
 //                   Unfortunately, your seller account application was not approved at this time.
 //                 </p>
 //                 {user.approvalReason && (
-//                   <div className="bg-white/5 rounded-lg p-4 text-left">
-//                     <p className="text-sm text-white/60 mb-1">Reason:</p>
-//                     <p className="text-white/90">{user.approvalReason}</p>
+//                   <div className="bg-slate-100 dark:bg-white/5 rounded-lg p-4 text-left">
+//                     <p className="text-sm text-slate-500 dark:text-white/60 mb-1">Reason:</p>
+//                     <p className="text-slate-800 dark:text-white/90">{user.approvalReason}</p>
 //                   </div>
 //                 )}
 //               </div>
 
-//               <div className="bg-white/5 rounded-xl p-6 mb-8 text-left">
-//                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+//               <div className="bg-slate-100 dark:bg-white/5 rounded-xl p-6 mb-8 text-left">
+//                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
 //                   <span className="text-2xl">💡</span>
 //                   What can you do?
 //                 </h3>
-//                 <ul className="space-y-3 text-white/70">
+//                 <ul className="space-y-3 text-slate-600 dark:text-white/70">
 //                   <li className="flex items-start gap-3">
 //                     <span className="text-cyan-400 mt-1">•</span>
 //                     <span>Contact our support team for more information</span>
@@ -259,13 +259,13 @@
 //               <div className="flex flex-col sm:flex-row gap-3 justify-center">
 //                 <button
 //                   onClick={() => router.push("/dashboard")}
-//                   className="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-semibold transition"
+//                   className="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-slate-900 dark:text-white rounded-xl font-semibold transition"
 //                 >
 //                   Browse as Buyer
 //                 </button>
 //                 <button
 //                   onClick={handleLogout}
-//                   className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold transition"
+//                   className="px-6 py-3 bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white rounded-xl font-semibold transition"
 //                 >
 //                   Logout
 //                 </button>
@@ -274,7 +274,7 @@
 //           )}
 //         </div>
 
-//         <p className="text-center text-white/60 text-base mt-8">
+//         <p className="text-center text-slate-500 dark:text-white/60 text-base mt-8">
 //           Need help? <a href="mailto:support@sellify.com" className="underline text-cyan-300 hover:text-cyan-400 transition">Contact us at support@sellify.com</a>
 //         </p>
 //       </motion.div>
@@ -389,8 +389,8 @@ export default function PendingApprovalPage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <p className="text-white/70">Checking approval status…</p>
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950">
+        <p className="text-slate-600 dark:text-white/70">Checking approval status…</p>
       </div>
     );
   }
@@ -404,7 +404,7 @@ export default function PendingApprovalPage() {
   const isRejected = user.approvalStatus === "rejected";
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-16">
+    <div className="min-h-screen bg-white dark:bg-slate-950 px-4 py-16">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -412,7 +412,7 @@ export default function PendingApprovalPage() {
       >
         {isPending && (
           <>
-            <h1 className="text-3xl font-bold text-white mb-4 text-center">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4 text-center">
               Seller Account Under Review
             </h1>
 
@@ -442,7 +442,7 @@ export default function PendingApprovalPage() {
             </div>
 
             <div className="mb-10">
-              <h2 className="text-lg font-semibold text-white mb-3">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">
                 Review Process
               </h2>
               <ul className="list-disc list-inside space-y-2 text-slate-400">
@@ -457,7 +457,7 @@ export default function PendingApprovalPage() {
               <button
                 onClick={fetchUserStatus}
                 disabled={checking}
-                className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-md font-semibold disabled:opacity-50"
+                className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-slate-900 dark:text-white rounded-md font-semibold disabled:opacity-50"
               >
                 {checking ? "Checking…" : "Check Status"}
               </button>
@@ -474,7 +474,7 @@ export default function PendingApprovalPage() {
 
         {isRejected && (
           <>
-            <h1 className="text-3xl font-bold text-white mb-4 text-center">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4 text-center">
               Application Not Approved
             </h1>
 
@@ -492,7 +492,7 @@ export default function PendingApprovalPage() {
             )}
 
             <div className="mb-10">
-              <h2 className="text-lg font-semibold text-white mb-3">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">
                 Next Steps
               </h2>
               <ul className="list-disc list-inside space-y-2 text-slate-400">
@@ -506,7 +506,7 @@ export default function PendingApprovalPage() {
             <div className="flex justify-center gap-4">
               <button
                 onClick={() => router.push("/dashboard")}
-                className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-md font-semibold"
+                className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-slate-900 dark:text-white rounded-md font-semibold"
               >
                 Browse as Buyer
               </button>

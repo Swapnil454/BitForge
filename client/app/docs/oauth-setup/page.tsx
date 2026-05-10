@@ -9,7 +9,7 @@ export default function OAuthSetupPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-10 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
-        <nav className="mb-6 text-sm text-white/60">
+        <nav className="mb-6 text-sm text-slate-500 dark:text-white/60">
           <Link href="/docs" className="hover:text-cyan-400">
             Documentation
           </Link>
@@ -18,7 +18,7 @@ export default function OAuthSetupPage() {
             Getting Started
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-white">OAuth Setup</span>
+          <span className="text-slate-900 dark:text-white">OAuth Setup</span>
         </nav>
 
         {/* Header */}
@@ -26,22 +26,22 @@ export default function OAuthSetupPage() {
           <span className="inline-block px-3 py-1 mb-4 text-xs font-semibold text-cyan-400 bg-cyan-500/10 rounded-full border border-cyan-500/20">
             Getting Started
           </span>
-          <h1 className="text-4xl font-bold text-white mb-4">
+          <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">
             OAuth Authentication Setup
           </h1>
-          <p className="text-lg text-white/70">
+          <p className="text-lg text-slate-600 dark:text-white/70">
             Enable Google and GitHub OAuth for seamless user registration and login. This guide covers complete OAuth integration for both providers.
           </p>
         </div>
 
         {/* Overview */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-4">Overview</h2>
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-            <p className="text-white/80 mb-4">
-              ContentSellify supports OAuth 2.0 authentication with Google and GitHub, allowing users to:
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Overview</h2>
+          <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <p className="text-slate-700 dark:text-white/80 mb-4">
+              Bitforge supports OAuth 2.0 authentication with Google and GitHub, allowing users to:
             </p>
-            <ul className="space-y-2 text-white/70">
+            <ul className="space-y-2 text-slate-600 dark:text-white/70">
               <li className="flex items-start gap-3">
                 <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-1" />
                 <span>Register and log in without creating passwords</span>
@@ -64,44 +64,44 @@ export default function OAuthSetupPage() {
 
         {/* How OAuth Works */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <Rocket className="w-6 h-6 text-cyan-400" /> How OAuth Works
           </h2>
           <div className="grid md:grid-cols-4 gap-4">
-            <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-5 text-center">
+            <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-5 text-center">
               <div className="text-3xl mb-3"></div>
-              <h3 className="text-white font-semibold mb-2">1. User Clicks Login</h3>
-              <p className="text-white/60 text-sm">User chooses Google or GitHub</p>
+              <h3 className="text-slate-900 dark:text-white font-semibold mb-2">1. User Clicks Login</h3>
+              <p className="text-slate-500 dark:text-white/60 text-sm">User chooses Google or GitHub</p>
             </div>
-            <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-5 text-center">
+            <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-5 text-center">
               <div className="text-3xl mb-3">🔀</div>
-              <h3 className="text-white font-semibold mb-2">2. Redirect to Provider</h3>
-              <p className="text-white/60 text-sm">User authenticates with provider</p>
+              <h3 className="text-slate-900 dark:text-white font-semibold mb-2">2. Redirect to Provider</h3>
+              <p className="text-slate-500 dark:text-white/60 text-sm">User authenticates with provider</p>
             </div>
-            <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-5 text-center">
+            <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-5 text-center">
               <div className="text-3xl mb-3">🎫</div>
-              <h3 className="text-white font-semibold mb-2">3. Authorization Code</h3>
-              <p className="text-white/60 text-sm">Provider returns auth code</p>
+              <h3 className="text-slate-900 dark:text-white font-semibold mb-2">3. Authorization Code</h3>
+              <p className="text-slate-500 dark:text-white/60 text-sm">Provider returns auth code</p>
             </div>
-            <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-5 text-center">
+            <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-5 text-center">
               <div className="text-3xl mb-3"></div>
-              <h3 className="text-white font-semibold mb-2">4. Create Session</h3>
-              <p className="text-white/60 text-sm">User logged in successfully</p>
+              <h3 className="text-slate-900 dark:text-white font-semibold mb-2">4. Create Session</h3>
+              <p className="text-slate-500 dark:text-white/60 text-sm">User logged in successfully</p>
             </div>
           </div>
         </section>
 
         {/* Google OAuth Setup */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-4">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">1.</span> Google OAuth Setup
           </h2>
 
           {/* Step 1.1 */}
           <div className="mb-6">
-            <h3 className="text-xl font-semibold text-white mb-3">1.1 Create Google Cloud Project</h3>
-            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
-              <ol className="space-y-4 text-white/80">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">1.1 Create Google Cloud Project</h3>
+            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+              <ol className="space-y-4 text-slate-700 dark:text-white/80">
                 <li className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-cyan-500/20 rounded-full text-cyan-400 text-sm font-bold">
                     1
@@ -115,7 +115,7 @@ export default function OAuthSetupPage() {
                     2
                   </span>
                   <div>
-                    <p>Click <strong className="text-white">Select a project</strong> → <strong className="text-white">New Project</strong></p>
+                    <p>Click <strong className="text-slate-900 dark:text-white">Select a project</strong> → <strong className="text-slate-900 dark:text-white">New Project</strong></p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -123,7 +123,7 @@ export default function OAuthSetupPage() {
                     3
                   </span>
                   <div>
-                    <p>Enter project name (e.g., "ContentSellify") and click <strong className="text-white">Create</strong></p>
+                    <p>Enter project name (e.g., "Bitforge") and click <strong className="text-slate-900 dark:text-white">Create</strong></p>
                   </div>
                 </li>
               </ol>
@@ -132,15 +132,15 @@ export default function OAuthSetupPage() {
 
           {/* Step 1.2 */}
           <div className="mb-6">
-            <h3 className="text-xl font-semibold text-white mb-3">1.2 Configure OAuth Consent Screen</h3>
-            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
-              <ol className="space-y-4 text-white/80">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">1.2 Configure OAuth Consent Screen</h3>
+            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+              <ol className="space-y-4 text-slate-700 dark:text-white/80">
                 <li className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-cyan-500/20 rounded-full text-cyan-400 text-sm font-bold">
                     1
                   </span>
                   <div>
-                    <p>Navigate to <strong className="text-white">APIs & Services</strong> → <strong className="text-white">OAuth consent screen</strong></p>
+                    <p>Navigate to <strong className="text-slate-900 dark:text-white">APIs & Services</strong> → <strong className="text-slate-900 dark:text-white">OAuth consent screen</strong></p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -148,7 +148,7 @@ export default function OAuthSetupPage() {
                     2
                   </span>
                   <div>
-                    <p>Select <strong className="text-white">External</strong> user type and click <strong className="text-white">Create</strong></p>
+                    <p>Select <strong className="text-slate-900 dark:text-white">External</strong> user type and click <strong className="text-slate-900 dark:text-white">Create</strong></p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -158,7 +158,7 @@ export default function OAuthSetupPage() {
                   <div>
                     <p>Fill in required fields:</p>
                     <ul className="mt-2 ml-4 space-y-2 text-sm">
-                      <li>• App name: <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">ContentSellify</code></li>
+                      <li>• App name: <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">Bitforge</code></li>
                       <li>• User support email: Your email</li>
                       <li>• Developer contact: Your email</li>
                     </ul>
@@ -169,7 +169,7 @@ export default function OAuthSetupPage() {
                     4
                   </span>
                   <div>
-                    <p>Click <strong className="text-white">Save and Continue</strong> through remaining screens</p>
+                    <p>Click <strong className="text-slate-900 dark:text-white">Save and Continue</strong> through remaining screens</p>
                   </div>
                 </li>
               </ol>
@@ -178,15 +178,15 @@ export default function OAuthSetupPage() {
 
           {/* Step 1.3 */}
           <div className="mb-6">
-            <h3 className="text-xl font-semibold text-white mb-3">1.3 Create OAuth Credentials</h3>
-            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
-              <ol className="space-y-4 text-white/80">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">1.3 Create OAuth Credentials</h3>
+            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+              <ol className="space-y-4 text-slate-700 dark:text-white/80">
                 <li className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-cyan-500/20 rounded-full text-cyan-400 text-sm font-bold">
                     1
                   </span>
                   <div>
-                    <p>Go to <strong className="text-white">APIs & Services</strong> → <strong className="text-white">Credentials</strong></p>
+                    <p>Go to <strong className="text-slate-900 dark:text-white">APIs & Services</strong> → <strong className="text-slate-900 dark:text-white">Credentials</strong></p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -194,7 +194,7 @@ export default function OAuthSetupPage() {
                     2
                   </span>
                   <div>
-                    <p>Click <strong className="text-white">Create Credentials</strong> → <strong className="text-white">OAuth client ID</strong></p>
+                    <p>Click <strong className="text-slate-900 dark:text-white">Create Credentials</strong> → <strong className="text-slate-900 dark:text-white">OAuth client ID</strong></p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -202,7 +202,7 @@ export default function OAuthSetupPage() {
                     3
                   </span>
                   <div>
-                    <p>Select <strong className="text-white">Web application</strong> as application type</p>
+                    <p>Select <strong className="text-slate-900 dark:text-white">Web application</strong> as application type</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -220,7 +220,7 @@ export default function OAuthSetupPage() {
                     5
                   </span>
                   <div>
-                    <p>Click <strong className="text-white">Create</strong> and copy your <strong>Client ID</strong> and <strong>Client Secret</strong></p>
+                    <p>Click <strong className="text-slate-900 dark:text-white">Create</strong> and copy your <strong>Client ID</strong> and <strong>Client Secret</strong></p>
                   </div>
                 </li>
               </ol>
@@ -229,9 +229,9 @@ export default function OAuthSetupPage() {
 
           {/* Step 1.4 */}
           <div>
-            <h3 className="text-xl font-semibold text-white mb-3">1.4 Add to Environment Variables</h3>
-            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
-              <p className="text-white/80 mb-4">Add these to your <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">server/.env</code> file:</p>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">1.4 Add to Environment Variables</h3>
+            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+              <p className="text-slate-700 dark:text-white/80 mb-4">Add these to your <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">server/.env</code> file:</p>
               <CodeBlock
                 code={`GOOGLE_CLIENT_ID=your_google_client_id_here
 GOOGLE_CLIENT_SECRET=your_google_client_secret_here
@@ -244,15 +244,15 @@ GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback`}
 
         {/* GitHub OAuth Setup */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-4">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">2.</span> GitHub OAuth Setup
           </h2>
 
           {/* Step 2.1 */}
           <div className="mb-6">
-            <h3 className="text-xl font-semibold text-white mb-3">2.1 Register OAuth App on GitHub</h3>
-            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
-              <ol className="space-y-4 text-white/80">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">2.1 Register OAuth App on GitHub</h3>
+            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+              <ol className="space-y-4 text-slate-700 dark:text-white/80">
                 <li className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-cyan-500/20 rounded-full text-cyan-400 text-sm font-bold">
                     1
@@ -266,7 +266,7 @@ GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback`}
                     2
                   </span>
                   <div>
-                    <p>Click <strong className="text-white">OAuth Apps</strong> → <strong className="text-white">New OAuth App</strong></p>
+                    <p>Click <strong className="text-slate-900 dark:text-white">OAuth Apps</strong> → <strong className="text-slate-900 dark:text-white">New OAuth App</strong></p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -276,7 +276,7 @@ GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback`}
                   <div>
                     <p>Fill in application details:</p>
                     <ul className="mt-2 ml-4 space-y-2 text-sm">
-                      <li>• <strong>Application name:</strong> <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">ContentSellify</code></li>
+                      <li>• <strong>Application name:</strong> <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">Bitforge</code></li>
                       <li>• <strong>Homepage URL:</strong> <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">http://localhost:3000</code></li>
                       <li>• <strong>Authorization callback URL:</strong> <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">http://localhost:3000/api/auth/github/callback</code></li>
                     </ul>
@@ -287,7 +287,7 @@ GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback`}
                     4
                   </span>
                   <div>
-                    <p>Click <strong className="text-white">Register application</strong></p>
+                    <p>Click <strong className="text-slate-900 dark:text-white">Register application</strong></p>
                   </div>
                 </li>
               </ol>
@@ -296,15 +296,15 @@ GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback`}
 
           {/* Step 2.2 */}
           <div className="mb-6">
-            <h3 className="text-xl font-semibold text-white mb-3">2.2 Generate Client Secret</h3>
-            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
-              <ol className="space-y-4 text-white/80">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">2.2 Generate Client Secret</h3>
+            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+              <ol className="space-y-4 text-slate-700 dark:text-white/80">
                 <li className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-cyan-500/20 rounded-full text-cyan-400 text-sm font-bold">
                     1
                   </span>
                   <div>
-                    <p>On the OAuth App page, copy your <strong className="text-white">Client ID</strong></p>
+                    <p>On the OAuth App page, copy your <strong className="text-slate-900 dark:text-white">Client ID</strong></p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -312,7 +312,7 @@ GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback`}
                     2
                   </span>
                   <div>
-                    <p>Click <strong className="text-white">Generate a new client secret</strong></p>
+                    <p>Click <strong className="text-slate-900 dark:text-white">Generate a new client secret</strong></p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
@@ -337,9 +337,9 @@ GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback`}
 
           {/* Step 2.3 */}
           <div>
-            <h3 className="text-xl font-semibold text-white mb-3">2.3 Add to Environment Variables</h3>
-            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
-              <p className="text-white/80 mb-4">Add these to your <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">server/.env</code> file:</p>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">2.3 Add to Environment Variables</h3>
+            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+              <p className="text-slate-700 dark:text-white/80 mb-4">Add these to your <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">server/.env</code> file:</p>
               <CodeBlock
                 code={`GITHUB_CLIENT_ID=your_github_client_id_here
 GITHUB_CLIENT_SECRET=your_github_client_secret_here
@@ -352,11 +352,11 @@ GITHUB_CALLBACK_URL=http://localhost:3000/api/auth/github/callback`}
 
         {/* Complete Environment Variables */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-4">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">3.</span> Complete Environment Variables
           </h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
-            <p className="text-white/80 mb-4">Your final <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">server/.env</code> should include:</p>
+          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <p className="text-slate-700 dark:text-white/80 mb-4">Your final <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">server/.env</code> should include:</p>
             <CodeBlock
               code={`# OAuth - Google
 GOOGLE_CLIENT_ID=1234567890-abcdefghijklmnop.apps.googleusercontent.com
@@ -380,15 +380,15 @@ SESSION_SECRET=your_super_secret_session_key_here`}
 
         {/* Testing OAuth */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <span className="text-cyan-400">🧪</span> Testing OAuth Integration
           </h2>
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-            <ol className="space-y-4 text-white/70">
+          <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <ol className="space-y-4 text-slate-600 dark:text-white/70">
               <li className="flex items-start gap-3">
                 <span className="font-bold text-cyan-400">1.</span>
                 <div>
-                  <p className="text-white/80 mb-2">Start your application:</p>
+                  <p className="text-slate-700 dark:text-white/80 mb-2">Start your application:</p>
                   <CodeBlock code="npm run dev" language="bash" />
                 </div>
               </li>
@@ -398,7 +398,7 @@ SESSION_SECRET=your_super_secret_session_key_here`}
               </li>
               <li className="flex items-start gap-3">
                 <span className="font-bold text-cyan-400">3.</span>
-                <span>Click <strong className="text-white">"Continue with Google"</strong> or <strong className="text-white">"Continue with GitHub"</strong></span>
+                <span>Click <strong className="text-slate-900 dark:text-white">"Continue with Google"</strong> or <strong className="text-slate-900 dark:text-white">"Continue with GitHub"</strong></span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="font-bold text-cyan-400">4.</span>
@@ -414,23 +414,23 @@ SESSION_SECRET=your_super_secret_session_key_here`}
 
         {/* Production Deployment */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <Rocket className="w-6 h-6 text-cyan-400" /> Production Deployment
           </h2>
           <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/30 rounded-xl p-6">
-            <p className="text-white/80 mb-4">Before deploying to production:</p>
+            <p className="text-slate-700 dark:text-white/80 mb-4">Before deploying to production:</p>
 
             <div className="space-y-4">
               <div>
-                <h3 className="text-white font-semibold mb-2">1. Update OAuth Apps with Production URLs</h3>
-                <p className="text-white/60 text-sm mb-2">Add your production domain to authorized redirect URIs:</p>
+                <h3 className="text-slate-900 dark:text-white font-semibold mb-2">1. Update OAuth Apps with Production URLs</h3>
+                <p className="text-slate-500 dark:text-white/60 text-sm mb-2">Add your production domain to authorized redirect URIs:</p>
                 <CodeBlock code="https://yourdomain.com/api/auth/google/callback" language="bash" />
                 <CodeBlock code="https://yourdomain.com/api/auth/github/callback" language="bash" />
               </div>
 
               <div>
-                <h3 className="text-white font-semibold mb-2">2. Update Environment Variables</h3>
-                <p className="text-white/60 text-sm mb-2">Update callback URLs in production <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">.env</code>:</p>
+                <h3 className="text-slate-900 dark:text-white font-semibold mb-2">2. Update Environment Variables</h3>
+                <p className="text-slate-500 dark:text-white/60 text-sm mb-2">Update callback URLs in production <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">.env</code>:</p>
                 <CodeBlock
                   code={`GOOGLE_CALLBACK_URL=https://yourdomain.com/api/auth/google/callback
 GITHUB_CALLBACK_URL=https://yourdomain.com/api/auth/github/callback`}
@@ -439,8 +439,8 @@ GITHUB_CALLBACK_URL=https://yourdomain.com/api/auth/github/callback`}
               </div>
 
               <div>
-                <h3 className="text-white font-semibold mb-2">3. Verify OAuth Apps</h3>
-                <ul className="space-y-2 text-white/70 text-sm ml-6 list-disc">
+                <h3 className="text-slate-900 dark:text-white font-semibold mb-2">3. Verify OAuth Apps</h3>
+                <ul className="space-y-2 text-slate-600 dark:text-white/70 text-sm ml-6 list-disc">
                   <li>Google: Complete app verification (mandatory for scaling beyond 100 users)</li>
                   <li>Add privacy policy and terms of service URLs</li>
                   <li>Test OAuth flow on production domain before launch</li>
@@ -452,15 +452,15 @@ GITHUB_CALLBACK_URL=https://yourdomain.com/api/auth/github/callback`}
 
         {/* Troubleshooting */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <span className="text-cyan-400">🔧</span> Troubleshooting
           </h2>
           <div className="space-y-4">
-            <details className="bg-white/5 border border-white/10 rounded-xl p-5 cursor-pointer">
-              <summary className="text-white font-semibold">Invalid Redirect URI Error</summary>
-              <div className="mt-4 space-y-2 text-white/70 text-sm">
-                <p><strong className="text-white">Problem:</strong> "redirect_uri_mismatch" error during OAuth flow</p>
-                <p><strong className="text-white">Solution:</strong></p>
+            <details className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 cursor-pointer">
+              <summary className="text-slate-900 dark:text-white font-semibold">Invalid Redirect URI Error</summary>
+              <div className="mt-4 space-y-2 text-slate-600 dark:text-white/70 text-sm">
+                <p><strong className="text-slate-900 dark:text-white">Problem:</strong> "redirect_uri_mismatch" error during OAuth flow</p>
+                <p><strong className="text-slate-900 dark:text-white">Solution:</strong></p>
                 <ul className="ml-6 list-disc space-y-1">
                   <li>Verify redirect URI in OAuth app matches exactly (including protocol and port)</li>
                   <li>Check for trailing slashes (http://localhost:3000/ vs http://localhost:3000)</li>
@@ -470,11 +470,11 @@ GITHUB_CALLBACK_URL=https://yourdomain.com/api/auth/github/callback`}
               </div>
             </details>
 
-            <details className="bg-white/5 border border-white/10 rounded-xl p-5 cursor-pointer">
-              <summary className="text-white font-semibold">OAuth App Not Approved (Google)</summary>
-              <div className="mt-4 space-y-2 text-white/70 text-sm">
-                <p><strong className="text-white">Problem:</strong> "This app isn't verified" warning on Google login</p>
-                <p><strong className="text-white">Solution:</strong></p>
+            <details className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 cursor-pointer">
+              <summary className="text-slate-900 dark:text-white font-semibold">OAuth App Not Approved (Google)</summary>
+              <div className="mt-4 space-y-2 text-slate-600 dark:text-white/70 text-sm">
+                <p><strong className="text-slate-900 dark:text-white">Problem:</strong> "This app isn't verified" warning on Google login</p>
+                <p><strong className="text-slate-900 dark:text-white">Solution:</strong></p>
                 <ul className="ml-6 list-disc space-y-1">
                   <li>During development, click "Advanced" → "Go to [App] (unsafe)"</li>
                   <li>Add test users in Google Cloud Console (OAuth consent screen → Test users)</li>
@@ -484,11 +484,11 @@ GITHUB_CALLBACK_URL=https://yourdomain.com/api/auth/github/callback`}
               </div>
             </details>
 
-            <details className="bg-white/5 border border-white/10 rounded-xl p-5 cursor-pointer">
-              <summary className="text-white font-semibold">User Already Exists Error</summary>
-              <div className="mt-4 space-y-2 text-white/70 text-sm">
-                <p><strong className="text-white">Problem:</strong> User tries OAuth but email is already registered</p>
-                <p><strong className="text-white">Solution:</strong></p>
+            <details className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 cursor-pointer">
+              <summary className="text-slate-900 dark:text-white font-semibold">User Already Exists Error</summary>
+              <div className="mt-4 space-y-2 text-slate-600 dark:text-white/70 text-sm">
+                <p><strong className="text-slate-900 dark:text-white">Problem:</strong> User tries OAuth but email is already registered</p>
+                <p><strong className="text-slate-900 dark:text-white">Solution:</strong></p>
                 <ul className="ml-6 list-disc space-y-1">
                   <li>Implement account linking to merge OAuth with existing account</li>
                   <li>Show message: "Email already registered. Please log in with password"</li>
@@ -497,11 +497,11 @@ GITHUB_CALLBACK_URL=https://yourdomain.com/api/auth/github/callback`}
               </div>
             </details>
 
-            <details className="bg-white/5 border border-white/10 rounded-xl p-5 cursor-pointer">
-              <summary className="text-white font-semibold">Session Not Persisting</summary>
-              <div className="mt-4 space-y-2 text-white/70 text-sm">
-                <p><strong className="text-white">Problem:</strong> User logged out immediately after OAuth login</p>
-                <p><strong className="text-white">Solution:</strong></p>
+            <details className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 cursor-pointer">
+              <summary className="text-slate-900 dark:text-white font-semibold">Session Not Persisting</summary>
+              <div className="mt-4 space-y-2 text-slate-600 dark:text-white/70 text-sm">
+                <p><strong className="text-slate-900 dark:text-white">Problem:</strong> User logged out immediately after OAuth login</p>
+                <p><strong className="text-slate-900 dark:text-white">Solution:</strong></p>
                 <ul className="ml-6 list-disc space-y-1">
                   <li>Verify JWT_SECRET and SESSION_SECRET are set in environment</li>
                   <li>Check cookie settings (httpOnly, secure, sameSite)</li>
@@ -515,30 +515,30 @@ GITHUB_CALLBACK_URL=https://yourdomain.com/api/auth/github/callback`}
 
         {/* Security Best Practices */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <Shield className="w-6 h-6 text-cyan-400" /> Security Best Practices
           </h2>
           <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-6">
-            <ul className="space-y-3 text-white/80">
+            <ul className="space-y-3 text-slate-700 dark:text-white/80">
               <li className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                <span><strong className="text-white">Never commit secrets:</strong> Keep OAuth client secrets out of version control</span>
+                <span><strong className="text-slate-900 dark:text-white">Never commit secrets:</strong> Keep OAuth client secrets out of version control</span>
               </li>
               <li className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                <span><strong className="text-white">Validate state parameter:</strong> Prevent CSRF attacks by verifying state tokens</span>
+                <span><strong className="text-slate-900 dark:text-white">Validate state parameter:</strong> Prevent CSRF attacks by verifying state tokens</span>
               </li>
               <li className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                <span><strong className="text-white">Use HTTPS in production:</strong> Always use secure connections for OAuth flows</span>
+                <span><strong className="text-slate-900 dark:text-white">Use HTTPS in production:</strong> Always use secure connections for OAuth flows</span>
               </li>
               <li className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                <span><strong className="text-white">Rotate secrets regularly:</strong> Update OAuth secrets periodically for security</span>
+                <span><strong className="text-slate-900 dark:text-white">Rotate secrets regularly:</strong> Update OAuth secrets periodically for security</span>
               </li>
               <li className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                <span><strong className="text-white">Minimal scopes:</strong> Only request necessary user permissions</span>
+                <span><strong className="text-slate-900 dark:text-white">Minimal scopes:</strong> Only request necessary user permissions</span>
               </li>
             </ul>
           </div>
@@ -546,7 +546,7 @@ GITHUB_CALLBACK_URL=https://yourdomain.com/api/auth/github/callback`}
 
         {/* Next Steps */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-6">Next Steps</h2>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Next Steps</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <NextStepCard
               title="Complete Quick Start"
@@ -577,20 +577,20 @@ GITHUB_CALLBACK_URL=https://yourdomain.com/api/auth/github/callback`}
 
         {/* Support CTA */}
         <div className="bg-gradient-to-r from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-8 text-center">
-          <h3 className="text-2xl font-bold text-white mb-3">Need Help with OAuth?</h3>
-          <p className="text-white/70 mb-6">
+          <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Need Help with OAuth?</h3>
+          <p className="text-slate-600 dark:text-white/70 mb-6">
             Having trouble setting up OAuth authentication? Our support team can help.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
               href="/contact"
-              className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
+              className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-slate-900 dark:text-white font-semibold rounded-lg transition-colors"
             >
               Contact Support
             </Link>
             <Link
               href="/docs/troubleshooting"
-              className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-lg border border-white/10 transition-colors"
+              className="px-6 py-3 bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white font-semibold rounded-lg border border-slate-200 dark:border-white/10 transition-colors"
             >
               View Troubleshooting Guide
             </Link>
@@ -613,12 +613,12 @@ function CodeBlock({ code, language = "bash" }: { code: string; language?: strin
 
   return (
     <div className="relative group mb-4">
-      <pre className="bg-slate-950/50 border border-white/10 rounded-lg p-4 overflow-x-auto">
+      <pre className="bg-slate-950/50 border border-slate-200 dark:border-white/10 rounded-lg p-4 overflow-x-auto">
         <code className="text-cyan-300 text-sm font-mono">{code}</code>
       </pre>
       <button
         onClick={handleCopy}
-        className="absolute top-2 right-2 px-3 py-1 bg-white/10 hover:bg-white/20 text-white text-xs rounded border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-2 right-2 px-3 py-1 bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white text-xs rounded border border-slate-200 dark:border-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
       >
         {copied ? "✓ Copied" : "Copy"}
       </button>
@@ -640,13 +640,13 @@ function NextStepCard({
   return (
     <Link
       href={href}
-      className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-white/10 transition-all"
+      className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
     >
       <div className="text-3xl mb-3 text-cyan-400">{icon}</div>
-      <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-cyan-300">
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-cyan-300">
         {title}
       </h3>
-      <p className="text-white/60 text-sm group-hover:text-white/70">{description}</p>
+      <p className="text-slate-500 dark:text-white/60 text-sm group-hover:text-slate-600 dark:group-hover:text-white/70">{description}</p>
       <span className="inline-block mt-3 text-cyan-400 text-sm group-hover:translate-x-1 transition-transform">
         Learn more →
       </span>

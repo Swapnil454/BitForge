@@ -100,7 +100,7 @@ If this file is found being distributed illegally, action will be taken
 against the account holder.
 
 ================================================================================
-                           ContentSellify.com
+                           Bitforge.com
 ================================================================================
 `;
 };

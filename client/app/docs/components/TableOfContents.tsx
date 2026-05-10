@@ -167,7 +167,7 @@ export default function TableOfContents() {
 
   if (headings.length === 0) {
     return (
-      <div className="text-xs text-white/40 italic">
+      <div className="text-xs text-slate-400 dark:text-white/40 italic">
         No sections on this page
       </div>
     );
@@ -185,7 +185,7 @@ export default function TableOfContents() {
             ${
               activeId === heading.id
                 ? "text-cyan-400 font-semibold border-cyan-400 bg-cyan-500/10"
-                : "text-white/60 hover:text-white hover:bg-white/5 border-transparent hover:border-white/20"
+                : "text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 border-transparent hover:border-slate-300 dark:hover:border-white/20"
             }
           `}
         >

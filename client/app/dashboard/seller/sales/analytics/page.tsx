@@ -53,7 +53,7 @@ export default function SalesAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#05050a] text-white">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
         <PageHeader
           backHref="/dashboard/seller/sales"
           backLabel="Sales"
@@ -61,11 +61,11 @@ export default function SalesAnalyticsPage() {
           subtitle="Your complete sales performance breakdown"
         />
         <main className="max-w-2xl mx-auto px-4 py-8 space-y-4">
-          <div className="h-52 rounded-3xl bg-white/5 animate-pulse border border-white/5" />
-          <div className="h-36 rounded-2xl bg-white/5 animate-pulse border border-white/5" />
+          <div className="h-52 rounded-3xl bg-slate-100 dark:bg-white/5 animate-pulse border border-slate-200 dark:border-white/5" />
+          <div className="h-36 rounded-2xl bg-slate-100 dark:bg-white/5 animate-pulse border border-slate-200 dark:border-white/5" />
           <div className="grid grid-cols-2 gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-24 rounded-2xl bg-white/5 animate-pulse border border-white/5" />
+              <div key={i} className="h-24 rounded-2xl bg-slate-100 dark:bg-white/5 animate-pulse border border-slate-200 dark:border-white/5" />
             ))}
           </div>
         </main>
@@ -74,7 +74,7 @@ export default function SalesAnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
       <PageHeader
         backHref="/dashboard/seller/sales"
         backLabel="Sales"
@@ -88,7 +88,7 @@ export default function SalesAnalyticsPage() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl border border-white/8 bg-[#12141c] p-7 shadow-2xl overflow-hidden relative"
+          className="rounded-3xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#12141c] p-7 shadow-2xl overflow-hidden relative"
         >
           {/* Subtle glow blob */}
           <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-indigo-600/10 blur-3xl pointer-events-none" />
@@ -96,20 +96,20 @@ export default function SalesAnalyticsPage() {
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-indigo-500/15 text-indigo-300">
+                <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-300">
                   <Wallet className="w-4 h-4" />
                 </div>
-                <p className="text-xs uppercase tracking-widest text-white/50 font-semibold">Total Earned</p>
+                <p className="text-xs uppercase tracking-widest text-slate-500 dark:text-white/50 font-semibold">Total Earned</p>
               </div>
               <span className="inline-flex items-center gap-1 text-xs text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2.5 py-1">
                 <ArrowUpRight className="w-3 h-3" /> {stats.successRate}% success
               </span>
             </div>
 
-            <p className="text-6xl sm:text-7xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-indigo-200">
+            <p className="text-6xl sm:text-7xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-indigo-700 via-indigo-600 to-indigo-800 dark:from-white dark:via-white dark:to-indigo-200">
               ₹{stats.earned.toLocaleString()}
             </p>
-            <p className="text-white/40 text-sm mt-3 leading-relaxed">
+            <p className="text-slate-500 dark:text-white/40 text-sm mt-3 leading-relaxed">
               After deducting ₹{stats.fee.toLocaleString()} platform fees from ₹{stats.revenue.toLocaleString()} gross revenue
             </p>
           </div>
@@ -120,26 +120,26 @@ export default function SalesAnalyticsPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.07 }}
-          className="rounded-2xl border border-white/8 bg-[#12141c] overflow-hidden shadow-lg"
+          className="rounded-2xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#12141c] overflow-hidden shadow-sm dark:shadow-lg"
         >
-          <div className="px-5 py-4 border-b border-white/6">
-            <p className="text-xs uppercase tracking-widest text-white/40 font-semibold">Sales Breakdown</p>
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-white/6">
+            <p className="text-xs uppercase tracking-widest text-slate-500 dark:text-white/40 font-semibold">Sales Breakdown</p>
           </div>
 
-          <div className="grid grid-cols-2 divide-x divide-white/6">
+          <div className="grid grid-cols-2 divide-x divide-slate-200 dark:divide-white/6">
             {[
-              { label: "Total Sales", value: stats.total, icon: ShoppingBag, color: "text-white" },
+              { label: "Total Sales", value: stats.total, icon: ShoppingBag, color: "text-slate-900 dark:text-white" },
               { label: "Paid", value: stats.paid, icon: TrendingUp, color: "text-emerald-400" },
               { label: "Failed", value: stats.failed, icon: XCircle, color: "text-red-400" },
               { label: "Pending", value: stats.pending, icon: Clock, color: "text-amber-400" },
             ].map(({ label, value, icon: Icon, color }, i) => (
               <div
                 key={label}
-                className={`px-5 py-4 ${i >= 2 ? "border-t border-white/6" : ""}`}
+                className={`px-5 py-4 ${i >= 2 ? "border-t border-slate-200 dark:border-white/6" : ""}`}
               >
                 <div className="flex items-center gap-2 mb-1.5">
                   <Icon className={`w-3.5 h-3.5 ${color} opacity-70`} />
-                  <p className="text-[11px] text-white/45 uppercase tracking-wider font-medium">{label}</p>
+                  <p className="text-[11px] text-slate-500 dark:text-white/45 uppercase tracking-wider font-medium">{label}</p>
                 </div>
                 <p className={`text-3xl font-bold ${color}`}>{value}</p>
               </div>
@@ -152,14 +152,14 @@ export default function SalesAnalyticsPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.13 }}
-          className="rounded-2xl border border-white/8 bg-[#12141c] overflow-hidden shadow-lg"
+          className="rounded-2xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#12141c] overflow-hidden shadow-sm dark:shadow-lg"
         >
-          <div className="px-5 py-4 border-b border-white/6">
-            <p className="text-xs uppercase tracking-widest text-white/40 font-semibold">Revenue Breakdown</p>
+          <div className="px-5 py-4 border-b border-slate-200 dark:border-white/6">
+            <p className="text-xs uppercase tracking-widest text-slate-500 dark:text-white/40 font-semibold">Revenue Breakdown</p>
           </div>
 
-          <div className="px-5 py-2 divide-y divide-white/5">
-            <Row label="Gross Revenue" value={`₹${stats.revenue.toLocaleString()}`} valueColor="text-white" />
+          <div className="px-5 py-2 divide-y divide-slate-200 dark:divide-white/5">
+            <Row label="Gross Revenue" value={`₹${stats.revenue.toLocaleString()}`} valueColor="text-slate-900 dark:text-white" />
             <Row label="Platform Fees" value={`−₹${stats.fee.toLocaleString()}`} valueColor="text-red-400/80" />
             <Row label="GST on Fees" value={`−₹${Math.round(stats.fee * 0.18).toLocaleString()}`} valueColor="text-orange-400/80" />
             <Row label="Net Earned" value={`₹${stats.earned.toLocaleString()}`} valueColor="text-emerald-400" bold />
@@ -171,14 +171,14 @@ export default function SalesAnalyticsPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.19 }}
-          className="rounded-2xl border border-white/8 bg-[#12141c] p-5 shadow-lg"
+          className="rounded-2xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#12141c] p-5 shadow-sm dark:shadow-lg"
         >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-cyan-400" />
-              <p className="text-xs uppercase tracking-widest text-white/40 font-semibold">Conversion Rate</p>
+              <p className="text-xs uppercase tracking-widest text-slate-500 dark:text-white/40 font-semibold">Conversion Rate</p>
             </div>
-            <p className="text-sm font-bold text-white">{stats.successRate}%</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white">{stats.successRate}%</p>
           </div>
 
           {/* Segmented bar */}
@@ -201,7 +201,7 @@ export default function SalesAnalyticsPage() {
             )}
           </div>
 
-          <div className="flex items-center gap-4 mt-3 text-xs text-white/45">
+          <div className="flex items-center gap-4 mt-3 text-xs text-slate-500 dark:text-white/45">
             <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />Paid</span>
             <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />Pending</span>
             <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" />Failed</span>
@@ -216,7 +216,7 @@ export default function SalesAnalyticsPage() {
 function Row({
   label,
   value,
-  valueColor = "text-white",
+  valueColor = "text-slate-900 dark:text-white",
   bold = false,
 }: {
   label: string;
@@ -226,7 +226,7 @@ function Row({
 }) {
   return (
     <div className={`flex items-center justify-between py-3.5 ${bold ? "mt-1" : ""}`}>
-      <p className={`text-sm ${bold ? "text-white font-semibold" : "text-white/55"}`}>{label}</p>
+      <p className={`text-sm ${bold ? "text-slate-900 dark:text-white font-semibold" : "text-slate-500 dark:text-white/55"}`}>{label}</p>
       <p className={`text-sm font-bold ${valueColor} ${bold ? "text-base" : ""}`}>{value}</p>
     </div>
   );

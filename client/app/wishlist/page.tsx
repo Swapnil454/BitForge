@@ -105,9 +105,9 @@ export default function WishlistPage() {
 
   if (loading || !authChecked) {
     return (
-      <div className="min-h-screen bg-[#05050a] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-indigo-500" />
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-slate-200 dark:border-white/10 border-t-indigo-500" />
           <p className="text-slate-400 text-sm font-medium tracking-wide">Loading wishlist...</p>
         </div>
       </div>
@@ -115,10 +115,10 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white pb-20">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-20">
       <PageHeader
         backHref="/dashboard/buyer"
-        backLabel="Dashboard"
+        backLabel="Back"
         title="My Wishlist"
         subtitle={`${wishlist.length} item${wishlist.length !== 1 ? "s" : ""} saved`}
         rightSlot={
@@ -135,13 +135,13 @@ export default function WishlistPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8">
         {products.length === 0 ? (
-          <div className="bg-[#08111d] border border-white/5 rounded-3xl p-10 sm:p-12 text-center max-w-lg mx-auto shadow-2xl mt-12 sm:mt-24">
-            <HeartCrack className="w-16 h-16 text-slate-700 mx-auto mb-6" />
-            <p className="text-white text-xl font-bold tracking-tight mb-2">Your wishlist is empty</p>
-            <p className="text-slate-400 text-sm mb-8">Start adding products you love</p>
+          <div className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-3xl p-10 sm:p-12 text-center max-w-lg mx-auto shadow-2xl mt-12 sm:mt-24">
+            <HeartCrack className="w-16 h-16 text-slate-300 dark:text-slate-700 mx-auto mb-6" />
+            <p className="text-slate-900 dark:text-white text-xl font-bold tracking-tight mb-2">Your wishlist is empty</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-8">Start adding products you love</p>
             <button
               onClick={() => router.push("/marketplace")}
-              className="w-full bg-white hover:bg-slate-200 text-slate-950 px-6 py-3.5 rounded-xl font-bold transition shadow-lg flex items-center justify-center gap-2"
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-200 dark:text-slate-950 px-6 py-3.5 rounded-xl font-bold transition shadow-lg flex items-center justify-center gap-2"
             >
               Explore Marketplace
             </button>
@@ -156,11 +156,11 @@ export default function WishlistPage() {
               return (
                 <div
                   key={product._id}
-                  className="bg-[#08111d] border border-white/5 rounded-2xl shadow-xl hover:border-indigo-500/20 transition-all p-3 sm:p-5 flex flex-row gap-3 sm:gap-5 group"
+                  className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-2xl shadow-xl hover:border-indigo-500/20 transition-all p-3 sm:p-5 flex flex-row gap-3 sm:gap-5 group"
                 >
                   {/* Thumbnail */}
                   <div 
-                    className="w-24 h-24 sm:w-48 sm:h-auto sm:aspect-[16/9] shrink-0 bg-[#05050a] rounded-xl border border-white/5 overflow-hidden relative cursor-pointer flex items-center justify-center" 
+                    className="w-24 h-24 sm:w-48 sm:h-auto sm:aspect-[16/9] shrink-0 bg-slate-100 dark:bg-[#05050a] rounded-xl border border-slate-200 dark:border-white/5 overflow-hidden relative cursor-pointer flex items-center justify-center" 
                     onClick={() => router.push(`/marketplace/${product._id}`)}
                   >
                     {product.thumbnailUrl ? (
@@ -179,7 +179,7 @@ export default function WishlistPage() {
                     <div>
                       <div className="flex justify-between items-start gap-2">
                         <h2 
-                          className="font-bold text-sm sm:text-lg text-white line-clamp-1 hover:text-indigo-400 cursor-pointer tracking-tight"
+                          className="font-bold text-sm sm:text-lg text-slate-900 dark:text-white line-clamp-1 hover:text-indigo-400 cursor-pointer tracking-tight"
                           onClick={() => router.push(`/marketplace/${product._id}`)}
                         >
                           {product.title}
@@ -192,17 +192,17 @@ export default function WishlistPage() {
                           <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                         </button>
                       </div>
-                      <p className="text-slate-400 text-xs sm:text-sm line-clamp-1 sm:line-clamp-2 mt-0.5 sm:mt-1 leading-relaxed">
+                      <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm line-clamp-1 sm:line-clamp-2 mt-0.5 sm:mt-1 leading-relaxed">
                         {product.description}
                       </p>
                     </div>
 
-                    <div className="mt-2 pt-2 sm:pt-0 sm:border-t-0 border-t border-white/5 flex flex-row items-end justify-between gap-3">
+                    <div className="mt-2 pt-2 sm:pt-0 sm:border-t-0 border-t border-slate-200 dark:border-white/5 flex flex-row items-end justify-between gap-3">
                       {/* Price Block */}
                       <div>
                         {product.discount > 0 ? (
                           <div className="flex items-center gap-1.5 sm:gap-2">
-                            <span className="text-sm sm:text-xl font-bold text-white tracking-tight">
+                            <span className="text-sm sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                               ₹{finalPrice.toLocaleString()}
                             </span>
                             <span className="text-[10px] sm:text-xs text-slate-500 line-through font-mono">
@@ -213,7 +213,7 @@ export default function WishlistPage() {
                             </span>
                           </div>
                         ) : (
-                          <span className="text-sm sm:text-xl font-bold text-white tracking-tight">
+                          <span className="text-sm sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                             ₹{product.price.toLocaleString()}
                           </span>
                         )}
@@ -227,7 +227,7 @@ export default function WishlistPage() {
                       {/* Action Button */}
                       <button
                         onClick={() => moveToCart(product)}
-                        className="bg-indigo-100/10 hover:bg-white/10 border border-white/10 text-white px-5 sm:px-6 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0"
+                        className="bg-indigo-100/10 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white px-5 sm:px-6 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0"
                       >
                         <ShoppingCart className="w-3.5 h-3.5" />
                         <span>Move to Cart</span>

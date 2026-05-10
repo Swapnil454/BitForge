@@ -207,7 +207,7 @@ function SellerTransactionsPageContent() {
   /* ================= UI ================= */
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white scroll-smooth">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white scroll-smooth">
       <PageHeader
         backHref="/dashboard/seller"
         backLabel="Dashboard"
@@ -217,10 +217,10 @@ function SellerTransactionsPageContent() {
           <div className="relative shrink-0 flex items-center gap-2" ref={headerMenuRef}>
             <button
               onClick={() => setHeaderMenuOpen((prev) => !prev)}
-              className="h-10 w-10 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 hover:border-white/30 inline-flex items-center justify-center transition"
+              className="h-10 w-10 rounded-xl border border-slate-200 dark:border-white/15 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 hover:border-slate-300 dark:hover:border-white/30 inline-flex items-center justify-center transition shadow-sm dark:shadow-none"
               aria-label="Open actions"
             >
-              <MoreVertical className="h-5 w-5 text-white/80" />
+              <MoreVertical className="h-5 w-5 text-slate-700 dark:text-white/80" />
             </button>
 
             <AnimatePresence>
@@ -229,20 +229,20 @@ function SellerTransactionsPageContent() {
                   initial={{ opacity: 0, y: 8, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                  className="absolute right-0 top-11 w-48 rounded-xl border border-white/15 bg-slate-900/95 backdrop-blur-xl p-1.5 shadow-xl shadow-black/40 z-50 flex flex-col gap-1"
+                  className="absolute right-0 top-11 w-48 rounded-xl border border-slate-200 dark:border-white/15 bg-white dark:bg-slate-900/95 backdrop-blur-xl p-1.5 shadow-xl dark:shadow-black/40 z-50 flex flex-col gap-1"
                 >
                   <button
                     onClick={() => {
                       setHeaderMenuOpen(false);
                       router.push("/dashboard/seller/transactions/analytics");
                     }}
-                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-white hover:text-white hover:bg-cyan-500/20 transition flex items-center gap-2"
+                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-900 dark:text-white hover:text-slate-900 dark:hover:text-white hover:bg-cyan-50 dark:hover:bg-cyan-500/20 transition flex items-center gap-2"
                   >
                     <BarChart3 className="w-4 h-4 text-cyan-400" /> Analytics
                   </button>
                   <button
                     onClick={exportCSV}
-                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-white hover:text-white hover:bg-emerald-500/20 transition flex items-center gap-2"
+                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-900 dark:text-white hover:text-slate-900 dark:hover:text-white hover:bg-emerald-50 dark:hover:bg-emerald-500/20 transition flex items-center gap-2"
                   >
                     <Download className="w-4 h-4 text-emerald-400" /> Export CSV
                   </button>
@@ -274,17 +274,17 @@ function SellerTransactionsPageContent() {
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className="rounded-2xl border border-white/5 bg-[#12141c] p-4 sm:p-5 shadow-lg overflow-hidden animate-pulse"
+                  className="rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c] p-4 sm:p-5 shadow-lg overflow-hidden animate-pulse"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 space-y-3">
-                      <div className="h-5 w-48 bg-white/10 rounded-lg" />
-                      <div className="h-4 w-32 bg-white/5 rounded-lg" />
-                      <div className="h-4 w-24 bg-white/5 rounded-lg" />
+                      <div className="h-5 w-48 bg-slate-200 dark:bg-white/10 rounded-lg" />
+                      <div className="h-4 w-32 bg-slate-100 dark:bg-white/5 rounded-lg" />
+                      <div className="h-4 w-24 bg-slate-100 dark:bg-white/5 rounded-lg" />
                     </div>
                     <div className="text-right space-y-2">
-                      <div className="h-7 w-20 bg-white/10 rounded-lg ml-auto" />
-                      <div className="h-6 w-16 bg-white/5 rounded-full ml-auto" />
+                      <div className="h-7 w-20 bg-slate-200 dark:bg-white/10 rounded-lg ml-auto" />
+                      <div className="h-6 w-16 bg-slate-100 dark:bg-white/5 rounded-full ml-auto" />
                     </div>
                   </div>
                 </div>
@@ -294,10 +294,10 @@ function SellerTransactionsPageContent() {
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center shadow-lg"
+              className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/[0.03] p-10 text-center shadow-lg"
             >
-              <h3 className="text-lg sm:text-xl font-bold text-white mb-2">No Transactions Found</h3>
-              <p className="text-white/60 mb-5 text-sm sm:text-base">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-2">No Transactions Found</h3>
+              <p className="text-slate-500 dark:text-white/60 mb-5 text-sm sm:text-base">
                 {search || status !== "all"
                   ? "No transactions match your filters. Try a different status or search."
                   : "You have no transactions yet."}
@@ -315,18 +315,18 @@ function SellerTransactionsPageContent() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ delay: index * 0.02 }}
-                    className="relative overflow-hidden rounded-2xl border border-white/5 bg-[#12141c] p-4 sm:p-5 text-left transition-all duration-300 hover:bg-[#181a25] hover:border-white/10 hover:shadow-xl hover:shadow-black/50 group"
+                    className="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c] p-4 sm:p-5 text-left transition-all duration-300 hover:bg-slate-50 dark:hover:bg-[#181a25] hover:border-slate-200 dark:hover:border-white/10 hover:shadow-xl hover:shadow-black/50 group"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-xl leading-tight font-semibold text-white group-hover:text-cyan-200 transition-colors truncate">
+                        <h3 className="text-xl leading-tight font-semibold text-slate-900 dark:text-white group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors truncate">
                           {transaction.productName}
                         </h3>
-                        <p className="text-sm text-white/65 mt-1.5">
-                          Bought by <span className="text-white/90 font-semibold">{transaction.buyerName}</span>
+                        <p className="text-sm text-slate-500 dark:text-white/65 mt-1.5">
+                          Bought by <span className="text-slate-800 dark:text-white/90 font-semibold">{transaction.buyerName}</span>
                         </p>
 
-                        <div className="mt-3 flex flex-wrap items-center gap-2.5 text-xs text-white/50">
+                        <div className="mt-3 flex flex-wrap items-center gap-2.5 text-xs text-slate-400 dark:text-white/50">
                           <span className="inline-flex items-center gap-1.5">
                             <CalendarDays className="h-3.5 w-3.5" />
                             {new Date(transaction.date).toLocaleDateString("en-IN", {
@@ -341,13 +341,13 @@ function SellerTransactionsPageContent() {
                             <button
                               type="button"
                               onClick={(e) => handleCopyOrderId(e, transaction.orderId)}
-                              className="p-1 rounded hover:bg-white/10 transition"
+                              className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10 transition"
                               title="Copy Order ID"
                             >
                               {copiedId === transaction.orderId ? (
                                 <Check className="h-3.5 w-3.5 text-emerald-400" />
                               ) : (
-                                <Copy className="h-3.5 w-3.5 text-white/65" />
+                                <Copy className="h-3.5 w-3.5 text-slate-500 dark:text-white/65" />
                               )}
                             </button>
                           </span>
@@ -356,7 +356,7 @@ function SellerTransactionsPageContent() {
 
                       <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2.5">
                         <div className="text-right">
-                          <p className="text-3xl font-bold tracking-tight text-white">₹{transaction.saleAmount.toLocaleString()}</p>
+                          <p className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">₹{transaction.saleAmount.toLocaleString()}</p>
                         </div>
                         <span
                           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${statusConfig.badgeClass}`}
@@ -375,7 +375,7 @@ function SellerTransactionsPageContent() {
 
         {!loading && transactions.length > 0 && (
           <div className="mt-2 space-y-3">
-            <p className="text-center text-white/40 text-sm">
+            <p className="text-center text-slate-400 dark:text-white/40 text-sm">
               Showing page {page} of {totalPages}
             </p>
 
@@ -383,7 +383,7 @@ function SellerTransactionsPageContent() {
               <button
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                 disabled={page === 1}
-                className="px-4 py-2 rounded-xl border border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="px-4 py-2 rounded-xl border border-white/15 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white/80 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
               >
                 Previous
               </button>
@@ -395,7 +395,7 @@ function SellerTransactionsPageContent() {
               <button
                 onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
                 disabled={page === totalPages}
-                className="px-4 py-2 rounded-xl border border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="px-4 py-2 rounded-xl border border-white/15 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white/80 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
               >
                 Next
               </button>
@@ -409,8 +409,8 @@ function SellerTransactionsPageContent() {
 
 function SellerTransactionsFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#05050a]">
-      <div className="h-12 w-12 border-4 border-white/20 border-t-cyan-400 rounded-full animate-spin" />
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#05050a]">
+      <div className="h-12 w-12 border-4 border-slate-300 dark:border-white/20 border-t-cyan-400 rounded-full animate-spin" />
     </div>
   );
 }

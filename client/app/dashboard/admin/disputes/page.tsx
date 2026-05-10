@@ -85,20 +85,20 @@ export default function DisputesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#05050a]">
-        <div className="h-16 w-full border-b border-white/[0.05] bg-[#0a0a0f]" />
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a]">
+        <div className="h-16 w-full border-b border-slate-200 dark:border-white/[0.05] bg-slate-50 dark:bg-[#0a0a0f]" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-4 animate-pulse">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-[#16161e] border border-white/[0.05] rounded-2xl p-6">
+            <div key={i} className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.05] rounded-2xl p-6">
               <div className="flex justify-between gap-6">
                 <div className="flex-1 space-y-4">
                   <div className="flex gap-3">
                     <div className="h-6 w-16 bg-white/[0.04] rounded-full" />
-                    <div className="h-6 w-40 bg-white/[0.03] rounded-lg" />
+                    <div className="h-6 w-40 bg-slate-100 dark:bg-white/[0.03] rounded-lg" />
                   </div>
                   <div className="h-5 w-48 bg-white/[0.04] rounded-lg" />
-                  <div className="h-14 w-full bg-white/[0.02] rounded-xl" />
-                  <div className="h-4 w-32 bg-white/[0.03] rounded-md" />
+                  <div className="h-14 w-full bg-slate-50 dark:bg-white/[0.02] rounded-xl" />
+                  <div className="h-4 w-32 bg-slate-100 dark:bg-white/[0.03] rounded-md" />
                 </div>
                 <div className="flex flex-col gap-2 w-36">
                   <div className="h-10 w-full bg-white/[0.04] rounded-xl" />
@@ -113,7 +113,7 @@ export default function DisputesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
       <PageHeader
         backHref="/dashboard/admin"
         backLabel="Back"
@@ -134,16 +134,16 @@ export default function DisputesPage() {
 
         {/* Empty State */}
         {disputes.length === 0 ? (
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-10 text-center">
+          <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-10 text-center">
             <div className="text-4xl mb-3">🎉</div>
-            <p className="text-white/70">No open disputes</p>
+            <p className="text-slate-600 dark:text-white/70">No open disputes</p>
           </div>
         ) : (
           <div className="grid gap-4">
             {disputes.map(dispute => (
               <div
                 key={dispute._id}
-                className="bg-[#16161e] border border-white/[0.06] rounded-2xl p-5 hover:border-white/10 transition-all"
+                className="bg-white dark:bg-[#16161e] border border-white/[0.06] rounded-2xl p-5 hover:border-slate-200 dark:hover:border-white/10 transition-all"
               >
                 {/* Top meta row */}
                 <div className="flex items-center gap-2.5 mb-4">
@@ -156,20 +156,20 @@ export default function DisputesPage() {
                 </div>
 
                 {/* Product name */}
-                <h3 className="text-base font-bold mb-3 text-white/90">
+                <h3 className="text-base font-bold mb-3 text-slate-800 dark:text-white/90">
                   {dispute.productName}
                 </h3>
 
                 {/* Buyer / Seller */}
-                <div className="flex gap-6 text-xs text-white/50 mb-4">
-                  <span>Buyer: <span className="text-white/80 font-semibold">{dispute.buyerName}</span></span>
-                  <span>Seller: <span className="text-white/80 font-semibold">{dispute.sellerName}</span></span>
+                <div className="flex gap-6 text-xs text-slate-400 dark:text-white/50 mb-4">
+                  <span>Buyer: <span className="text-slate-700 dark:text-white/80 font-semibold">{dispute.buyerName}</span></span>
+                  <span>Seller: <span className="text-slate-700 dark:text-white/80 font-semibold">{dispute.sellerName}</span></span>
                 </div>
 
                 {/* Reason box */}
-                <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl px-4 py-3 mb-4">
-                  <p className="text-xs text-white/60 leading-relaxed">
-                    <span className="font-bold text-white/80">Reason: </span>
+                <div className="bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] rounded-xl px-4 py-3 mb-4">
+                  <p className="text-xs text-slate-500 dark:text-white/60 leading-relaxed">
+                    <span className="font-bold text-slate-700 dark:text-white/80">Reason: </span>
                     {dispute.reason}
                   </p>
                 </div>
@@ -190,14 +190,14 @@ export default function DisputesPage() {
                     <button
                       onClick={() => handleApproveRefund(dispute._id)}
                       disabled={processing === dispute._id}
-                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-widest transition disabled:opacity-50"
+                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-900 dark:text-white text-xs font-black uppercase tracking-widest transition disabled:opacity-50"
                     >
                       {processing === dispute._id ? "Processing..." : "Approve Refund"}
                     </button>
                     <button
                       onClick={() => handleReject(dispute._id)}
                       disabled={processing === dispute._id}
-                      className="px-4 py-2 rounded-xl bg-white/[0.04] hover:bg-rose-600/20 border border-white/[0.05] hover:border-rose-500/30 text-white/50 hover:text-rose-400 text-xs font-black uppercase tracking-widest transition disabled:opacity-50"
+                      className="px-4 py-2 rounded-xl bg-white/[0.04] hover:bg-rose-600/20 border border-slate-200 dark:border-white/[0.05] hover:border-rose-500/30 text-slate-400 dark:text-white/50 hover:text-rose-400 text-xs font-black uppercase tracking-widest transition disabled:opacity-50"
                     >
                       Reject
                     </button>

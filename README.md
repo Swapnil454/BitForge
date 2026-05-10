@@ -1,4 +1,4 @@
-# ContentSellify
+# Bitforge
 
 A full-stack digital marketplace platform for buying and selling digital content.
 
@@ -34,7 +34,7 @@ A full-stack digital marketplace platform for buying and selling digital content
 ## Project Structure
 
 ```
-contentSellify/
+Bitforge/
 ├── client/          # Next.js frontend application
 │   ├── app/         # App router pages
 │   ├── components/  # Reusable components
@@ -97,7 +97,7 @@ CLIENT_URL=http://localhost:3000
 #### 1. Clone the repository
 ```bash
 git clone <your-repo-url>
-cd contentSellify
+cd Bitforge
 ```
 
 #### 2. Install dependencies

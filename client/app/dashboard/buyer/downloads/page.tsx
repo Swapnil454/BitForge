@@ -203,7 +203,7 @@ export default function BuyerDownloadsPage() {
   const isLoadingSelectedDetails = selectedProductId === loadingDetailsId;
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white scroll-smooth">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white scroll-smooth">
       <PageHeader
         backHref="/dashboard/buyer"
         backLabel="Dashboard"
@@ -216,23 +216,23 @@ export default function BuyerDownloadsPage() {
           <div className="w-full flex-1">
             <div className="flex w-full items-center gap-2 sm:gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/45" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-white/45" />
                 <input
                   type="text"
                   placeholder="Search product, seller, order ID"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="h-11 w-full rounded-xl border border-white/12 bg-white/5 pl-10 pr-3 text-sm text-white placeholder:text-white/40 transition focus:border-violet-400/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                  className="h-11 w-full rounded-xl border border-slate-200 dark:border-white/12 bg-white dark:bg-white/5 pl-10 pr-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/40 transition focus:border-violet-500 dark:focus:border-violet-400/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
                 />
               </div>
 
               <div className="relative" ref={filterMenuRef}>
                 <button
                   onClick={() => setFilterMenuOpen((prev) => !prev)}
-                  className="h-11 px-3 sm:px-4 rounded-xl border border-white/12 bg-white/5 hover:bg-white/10 hover:border-white/25 inline-flex items-center gap-2 transition"
+                  className="h-11 px-3 sm:px-4 rounded-xl border border-slate-200 dark:border-white/12 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 hover:border-slate-300 dark:hover:border-white/25 inline-flex items-center gap-2 transition"
                 >
-                  <Filter className="h-4 w-4 text-white/80" />
-                  <span className="hidden sm:inline text-sm text-white/80">Sort By</span>
+                  <Filter className="h-4 w-4 text-slate-700 dark:text-white/80" />
+                  <span className="hidden sm:inline text-sm text-slate-700 dark:text-white/80">Sort By</span>
                 </button>
 
                 <AnimatePresence>
@@ -241,9 +241,9 @@ export default function BuyerDownloadsPage() {
                       initial={{ opacity: 0, y: 8, scale: 0.98 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                      className="absolute right-0 mt-2 w-56 rounded-xl border border-white/15 bg-slate-900/95 backdrop-blur-xl p-3 shadow-2xl shadow-black/40 z-20"
+                      className="absolute right-0 mt-2 w-56 rounded-xl border border-slate-200 dark:border-white/15 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl p-3 shadow-xl shadow-slate-200/50 dark:shadow-2xl dark:shadow-black/40 z-20"
                     >
-                      <p className="text-[11px] uppercase tracking-wider text-white/45 mb-2">Sort</p>
+                      <p className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-white/45 mb-2">Sort</p>
                       <div className="grid grid-cols-1 gap-2">
                         {[
                           { key: "newest", label: "Newest First" },
@@ -257,8 +257,8 @@ export default function BuyerDownloadsPage() {
                             }}
                             className={`rounded-lg px-3 py-2 text-sm text-left flex items-center justify-between transition border ${
                               sortBy === sort.key
-                                ? "border-indigo-400/45 bg-indigo-500/25 text-white"
-                                : "border-white/10 bg-white/5 text-white/70 hover:text-white hover:bg-white/10"
+                                ? "border-indigo-400/45 bg-indigo-500/25 text-slate-900 dark:text-white"
+                                : "border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10"
                             }`}
                           >
                             {sort.label}
@@ -280,8 +280,8 @@ export default function BuyerDownloadsPage() {
               <PurchaseCardSkeleton key={i} />
             ))
           ) : downloads.length === 0 ? (
-            <div className="py-16 text-center rounded-[28px] border border-white/10 bg-[#08111d]/78 shadow-[0_20px_55px_rgba(2,6,23,0.28)]">
-              <p className="text-lg font-semibold text-white">No matching downloads</p>
+            <div className="py-16 text-center rounded-[28px] border border-slate-200 dark:border-white/10 bg-white dark:bg-[#08111d]/78 shadow-xl shadow-slate-200/50 dark:shadow-[0_20px_55px_rgba(2,6,23,0.28)]">
+              <p className="text-lg font-semibold text-slate-900 dark:text-white">No matching downloads</p>
               <p className="mt-2 text-sm text-slate-400">
                 Try a different search term or clear the filter to view your full library.
               </p>
@@ -300,7 +300,7 @@ export default function BuyerDownloadsPage() {
                   initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25, delay: Math.min(index * 0.04, 0.2) }}
-                  className="group flex flex-col sm:flex-row gap-4 p-4 sm:p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.12] transition-all duration-300 relative overflow-hidden"
+                  className="group flex flex-col sm:flex-row gap-4 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:border-slate-300 dark:hover:border-white/[0.12] transition-all duration-300 relative overflow-hidden shadow-xs hover:shadow-md dark:shadow-none"
                 >
                   <Thumbnail title={download.productName} url={download.thumbnailUrl} />
 
@@ -308,37 +308,37 @@ export default function BuyerDownloadsPage() {
                     <div>
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <h2 className="truncate text-lg font-semibold text-white transition group-hover:text-cyan-400 sm:text-xl">
+                          <h2 className="truncate text-lg font-semibold text-slate-900 dark:text-white transition group-hover:text-cyan-600 dark:group-hover:text-cyan-400 sm:text-xl">
                             {download.productName}
                           </h2>
-                          <p className="mt-1 text-sm text-slate-400 truncate">
+                          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 truncate">
                             {download.sellerName}
                           </p>
                         </div>
                         <button
                           onClick={() => handleOpenProductModal(download)}
-                          className="text-slate-500 hover:text-white transition p-1 shrink-0"
+                          className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition p-1 shrink-0"
                           title="View Details"
                         >
                           <Info className="h-5 w-5" />
                         </button>
                       </div>
 
-                      <p className="mt-2.5 text-xs font-medium text-slate-500">
+                      <p className="mt-2.5 text-xs font-medium text-slate-600 dark:text-slate-500">
                         {formatCompactDate(download.purchaseDate)} <span className="mx-1.5">•</span> {currency.format(download.amount || 0)}
                       </p>
                     </div>
 
                     <div className="mt-5 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                       <div className="flex flex-col gap-2 flex-1 w-full sm:max-w-[200px]">
-                        <div className="flex items-center justify-between text-xs font-medium text-slate-400">
+                        <div className="flex items-center justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
                           <span>{isLimitReached ? "Limit reached" : `${remaining} downloads left`}</span>
                           <span>{downloadCount} / {downloadLimit}</span>
                         </div>
-                        <div className="h-1 w-full overflow-hidden rounded-full bg-white/5">
+                        <div className="h-1 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-white/5">
                           <div
                             className={`h-full rounded-full transition-all duration-500 ${
-                              isLimitReached ? "bg-slate-500" : "bg-cyan-400"
+                              isLimitReached ? "bg-slate-400 dark:bg-slate-500" : "bg-cyan-500 dark:bg-cyan-400"
                             }`}
                             style={{
                               width: `${Math.min(
@@ -353,14 +353,14 @@ export default function BuyerDownloadsPage() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => router.push(`/dashboard/buyer/purchases/${download._id}`)}
-                          className="rounded-lg border border-indigo-500/20 bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-300 transition hover:bg-indigo-500/20"
+                          className="rounded-lg border border-indigo-200 dark:border-indigo-500/20 bg-indigo-50 dark:bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 transition hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
                         >
                           View Order
                         </button>
                         <button
                           onClick={() => handleDownload(download)}
                           disabled={isDownloading || isLimitReached}
-                          className="flex items-center gap-2 rounded-lg bg-white/[0.08] border border-white/[0.08] px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/[0.15] disabled:cursor-not-allowed disabled:bg-white/5 disabled:text-slate-500"
+                          className="flex items-center gap-2 rounded-lg bg-slate-900 dark:bg-white/[0.08] border border-slate-900 dark:border-white/[0.08] px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 dark:hover:bg-white/[0.15] disabled:cursor-not-allowed disabled:bg-slate-100 dark:disabled:bg-white/5 disabled:border-slate-200 dark:disabled:border-white/5 disabled:text-slate-400 dark:disabled:text-slate-500 shadow-md dark:shadow-none"
                         >
                           {isLimitReached ? "Unavailable" : isDownloading ? "Downloading..." : "Download"}
                         </button>
@@ -375,7 +375,7 @@ export default function BuyerDownloadsPage() {
 
         {!loading && pagination.totalRecords > 0 && (
           <div className="mt-8 space-y-3">
-            <p className="text-center text-white/40 text-sm">
+            <p className="text-center text-slate-400 dark:text-white/40 text-sm">
               Showing page {pagination.page} of {pagination.totalPages} • {pagination.totalRecords} total
             </p>
 
@@ -383,19 +383,19 @@ export default function BuyerDownloadsPage() {
               <button
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                 disabled={!pagination.hasPrevPage}
-                className="px-4 py-2 rounded-xl border border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-white/15 bg-white dark:bg-white/5 text-slate-700 dark:text-white/80 hover:bg-slate-50 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
               >
                 Previous
               </button>
 
-              <span className="px-4 py-2 rounded-xl border border-violet-400/30 bg-violet-500/15 text-violet-200 text-sm font-semibold min-w-16 text-center">
+              <span className="px-4 py-2 rounded-xl border border-violet-300 dark:border-violet-400/30 bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-200 text-sm font-semibold min-w-16 text-center">
                 {pagination.page}
               </span>
 
               <button
                 onClick={() => setPage((prev) => prev + 1)}
                 disabled={!pagination.hasNextPage}
-                className="px-4 py-2 rounded-xl border border-white/15 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-white/15 bg-white dark:bg-white/5 text-slate-700 dark:text-white/80 hover:bg-slate-50 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
               >
                 Next
               </button>
@@ -410,7 +410,7 @@ export default function BuyerDownloadsPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedProductId(null)}
-            className="fixed inset-0 z-50 bg-black/75 p-3 backdrop-blur-sm sm:p-6"
+            className="fixed inset-0 z-50 bg-white dark:bg-black/75 p-3 backdrop-blur-sm sm:p-6"
           >
             <motion.div
               initial={{ opacity: 0, y: 20, scale: 0.98 }}
@@ -418,22 +418,22 @@ export default function BuyerDownloadsPage() {
               exit={{ opacity: 0, y: 12, scale: 0.98 }}
               transition={{ duration: 0.2 }}
               onClick={(e) => e.stopPropagation()}
-              className="mx-auto flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-[#08111d] shadow-[0_0_80px_rgba(0,0,0,0.8)]"
+              className="mx-auto flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#08111d] shadow-2xl shadow-slate-900/20 dark:shadow-[0_0_80px_rgba(0,0,0,0.8)]"
             >
-              <div className="flex items-center justify-between border-b border-white/5 px-4 py-3 sm:px-5">
-                <h3 className="text-base font-semibold text-white">Product Details</h3>
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/5 px-4 py-3 sm:px-5">
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white">Product Details</h3>
                 <button
                   onClick={() => setSelectedProductId(null)}
-                  className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs font-medium text-white transition hover:bg-white/[0.08]"
+                  className="rounded-full border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/[0.03] px-3 py-1 text-xs font-medium text-slate-900 dark:text-white transition hover:bg-white/[0.08]"
                 >
                   Close
                 </button>
               </div>
 
               <div className="overflow-y-auto">
-                <div className="p-4 sm:p-5 border-b border-white/5 bg-[#08111d]">
+                <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-white/5 bg-white dark:bg-[#08111d]">
                   <div className="flex flex-col sm:flex-row items-start gap-4">
-                    <div className="relative w-full sm:w-32 sm:h-28 aspect-video sm:aspect-auto shrink-0 overflow-hidden rounded-xl bg-[#05050a] border border-white/5 shadow-md">
+                    <div className="relative w-full sm:w-32 sm:h-28 aspect-video sm:aspect-auto shrink-0 overflow-hidden rounded-xl bg-slate-50 dark:bg-[#05050a] border border-slate-200 dark:border-white/5 shadow-md">
                       {selectedDownload.thumbnailUrl ? (
                         <img
                           src={selectedDownload.thumbnailUrl}
@@ -448,13 +448,13 @@ export default function BuyerDownloadsPage() {
                     </div>
                     
                     <div className="flex-1 flex flex-col min-w-0 w-full justify-center sm:min-h-[112px]">
-                      <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight leading-snug truncate">
+                      <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-snug truncate">
                         {selectedDownload.productName}
                       </h2>
-                      <p className="mt-0.5 text-xs text-slate-400 font-medium">by <span className="text-slate-300">{selectedDownload.sellerName}</span></p>
+                      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 font-medium">by <span className="text-slate-700 dark:text-slate-300">{selectedDownload.sellerName}</span></p>
                       
                       <div className="mt-3 flex items-center gap-2">
-                        <span className="rounded bg-white/[0.04] px-2 py-1 text-[10px] font-semibold text-slate-300 border border-white/[0.05]">
+                        <span className="rounded bg-slate-100 dark:bg-white/[0.04] px-2 py-1 text-[10px] font-semibold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/[0.05]">
                           {formatCompactDate(selectedDownload.purchaseDate)}
                         </span>
                         <span className="rounded bg-indigo-500/10 px-2 py-1 text-[10px] font-bold text-indigo-300 border border-indigo-500/20">
@@ -472,13 +472,13 @@ export default function BuyerDownloadsPage() {
                               0,
                             ) <= 0
                           }
-                          className="rounded-lg bg-white text-slate-950 px-4 py-1.5 text-xs font-bold shadow-md shadow-white/5 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500 disabled:shadow-none"
+                          className="rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-950 px-4 py-1.5 text-xs font-bold shadow-md shadow-slate-200 dark:shadow-white/5 transition hover:bg-slate-800 dark:hover:bg-slate-200 disabled:cursor-not-allowed disabled:bg-slate-200 dark:disabled:bg-white/10 disabled:text-slate-400 dark:disabled:text-slate-500 disabled:shadow-none"
                         >
                           {downloading === selectedDownload._id ? "Downloading..." : "Download File"}
                         </button>
                         <button
                           onClick={() => router.push(`/dashboard/buyer/purchases/${selectedDownload._id}`)}
-                          className="rounded-lg border border-white/10 bg-transparent px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-white/[0.05]"
+                          className="rounded-lg border border-slate-200 dark:border-white/10 bg-transparent px-4 py-1.5 text-xs font-semibold text-slate-900 dark:text-white transition hover:bg-slate-200 dark:bg-white/[0.05]"
                         >
                           Full Order
                         </button>
@@ -487,10 +487,10 @@ export default function BuyerDownloadsPage() {
                   </div>
                 </div>
 
-                <div className="p-4 sm:p-5 bg-[#05050a]">
+                <div className="p-4 sm:p-5 bg-slate-50 dark:bg-[#05050a]">
                   {isLoadingSelectedDetails ? (
                     <div className="flex items-center gap-3 text-sm font-medium text-slate-400">
-                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-indigo-400" />
+                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 dark:border-white/10 border-t-indigo-400" />
                       Fetching latest details...
                     </div>
                   ) : (
@@ -500,7 +500,7 @@ export default function BuyerDownloadsPage() {
                           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-2">
                             Description
                           </p>
-                          <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-300">
+                          <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                             {selectedDetails.productDescription}
                           </p>
                         </div>
@@ -510,7 +510,7 @@ export default function BuyerDownloadsPage() {
                         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-2">
                           Download Activity
                         </p>
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 rounded-xl border border-white/5 bg-[#08111d] p-3">
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#08111d] p-3">
                           <Detail label="Purchased" value={formatCompactDate(selectedDownload.purchaseDate)} />
                           <Detail label="Time" value={formatTime(selectedDownload.purchaseDate)} />
                           <Detail
@@ -534,7 +534,7 @@ export default function BuyerDownloadsPage() {
                         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-2">
                           System Metadata
                         </p>
-                        <div className="grid gap-2 rounded-xl border border-white/5 bg-[#08111d] p-3">
+                        <div className="grid gap-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#08111d] p-3">
                           <Detail label="Order ID" value={selectedDownload.orderId || selectedDetails?.orderId || "N/A"} mono />
                           <Detail label="Product ID" value={selectedDownload.productId || selectedDetails?.productId || "N/A"} mono />
                           <Detail label="Razorpay Ref" value={selectedDetails?.razorpayPaymentId || "N/A"} mono />
@@ -556,14 +556,14 @@ export default function BuyerDownloadsPage() {
 function Thumbnail({ title, url }: { title: string; url?: string | null }) {
   if (url) {
     return (
-      <div className="h-44 w-full shrink-0 overflow-hidden rounded-xl border border-white/5 bg-slate-900/50 sm:h-32 sm:w-44">
+      <div className="h-44 w-full shrink-0 overflow-hidden rounded-xl border border-slate-200 dark:border-white/5 bg-slate-100 dark:bg-slate-900/50 sm:h-32 sm:w-44">
         <img src={url} alt={title || "Product thumbnail"} className="h-full w-full object-cover" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-44 w-full shrink-0 items-end rounded-xl border border-white/5 bg-gradient-to-br from-indigo-500/10 to-slate-900/50 p-4 text-[10px] font-medium uppercase tracking-widest text-slate-400 sm:h-32 sm:w-44">
+    <div className="flex h-44 w-full shrink-0 items-end rounded-xl border border-slate-200 dark:border-white/5 bg-gradient-to-br from-indigo-100 dark:from-indigo-500/10 to-slate-200 dark:to-slate-900/50 p-4 text-[10px] font-medium uppercase tracking-widest text-slate-500 dark:text-slate-400 sm:h-32 sm:w-44">
       File
     </div>
   );
@@ -584,7 +584,7 @@ function Detail({
     <div>
       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{label}</p>
       <p
-        className={`${accent ? "text-cyan-200" : "text-white"} ${mono ? "font-mono text-xs break-all" : "text-sm break-words"} mt-1`}
+        className={`${accent ? "text-cyan-600 dark:text-cyan-200" : "text-slate-900 dark:text-white"} ${mono ? "font-mono text-xs break-all" : "text-sm break-words"} mt-1`}
       >
         {value}
       </p>

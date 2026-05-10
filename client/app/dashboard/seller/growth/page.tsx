@@ -52,14 +52,14 @@ interface GrowthStats {
 /* ================= HELPERS ================= */
 
 const growthColor = (v: number) =>
-  v > 0 ? "text-emerald-400" : v < 0 ? "text-red-400" : "text-white/40";
+  v > 0 ? "text-emerald-400" : v < 0 ? "text-red-400" : "text-slate-400 dark:text-white/40";
 
 const growthBg = (v: number) =>
   v > 0
     ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
     : v < 0
       ? "bg-red-500/10 border-red-500/20 text-red-400"
-      : "bg-white/5 border-white/10 text-white/40";
+      : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-400 dark:text-white/40";
 
 const GrowthIcon = ({ v }: { v: number }) =>
   v > 0 ? (
@@ -94,7 +94,7 @@ export default function RevenueGrowthPage() {
   /* ─── SKELETON ─── */
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#05050a] text-white">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
         <PageHeader
           backHref="/dashboard/seller"
           backLabel="Dashboard"
@@ -102,12 +102,12 @@ export default function RevenueGrowthPage() {
           subtitle="Monthly performance, trends & insights"
         />
         <main className="max-w-3xl mx-auto px-4 py-6 space-y-4 animate-pulse">
-          <div className="h-28 rounded-2xl bg-white/5 border border-white/5" />
+          <div className="h-28 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5" />
           <div className="grid grid-cols-3 gap-3">
-            {[1, 2, 3].map((i) => <div key={i} className="h-16 rounded-xl bg-white/5 border border-white/5" />)}
+            {[1, 2, 3].map((i) => <div key={i} className="h-16 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5" />)}
           </div>
-          <div className="h-64 rounded-2xl bg-white/5 border border-white/5" />
-          <div className="h-64 rounded-2xl bg-white/5 border border-white/5" />
+          <div className="h-64 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5" />
+          <div className="h-64 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5" />
         </main>
       </div>
     );
@@ -115,7 +115,7 @@ export default function RevenueGrowthPage() {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-[#05050a] flex items-center justify-center text-white/40">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] flex items-center justify-center text-slate-400 dark:text-white/40">
         No analytics available
       </div>
     );
@@ -126,13 +126,13 @@ export default function RevenueGrowthPage() {
     if (data.revenueGrowth > 20) return { emoji: "🎉", label: "Excellent Growth", msg: "Revenue increased significantly this month.", border: "border-emerald-500/20", bg: "bg-emerald-500/8" };
     if (data.revenueGrowth > 0) return { emoji: "", label: "Positive Growth", msg: "Revenue is trending upward.", border: "border-cyan-500/20", bg: "bg-cyan-500/8" };
     if (data.revenueGrowth < 0) return { emoji: "", label: "Revenue Decline", msg: "Review pricing or marketing strategy.", border: "border-red-500/20", bg: "bg-red-500/8" };
-    return { emoji: "➖", label: "No Change", msg: "No completed sales found for comparison.", border: "border-white/10", bg: "bg-white/5" };
+    return { emoji: "➖", label: "No Change", msg: "No completed sales found for comparison.", border: "border-slate-200 dark:border-white/10", bg: "bg-slate-100 dark:bg-white/5" };
   })();
 
   /* ================= UI ================= */
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
       {/* ── HEADER ── */}
       <PageHeader
         backHref="/dashboard/seller"
@@ -147,23 +147,23 @@ export default function RevenueGrowthPage() {
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border border-white/8 bg-[#12141c] overflow-hidden shadow-lg"
+          className="rounded-2xl border border-white/8 bg-white dark:bg-[#12141c] overflow-hidden shadow-lg"
         >
           {/* Top row: Revenue Growth % + This Month revenue */}
           <div className="flex items-stretch divide-x divide-white/8">
             {/* Left: main KPI */}
             <div className="flex-1 px-5 py-4">
-              <p className="text-[11px] uppercase tracking-widest text-white/40 font-semibold mb-1">Revenue Growth</p>
+              <p className="text-[11px] uppercase tracking-widest text-slate-400 dark:text-white/40 font-semibold mb-1">Revenue Growth</p>
               <p className={`text-4xl font-black tracking-tight ${growthColor(data.revenueGrowth)}`}>
                 {fmt(data.revenueGrowth)}
               </p>
-              <p className="text-xs text-white/30 mt-1">vs last month</p>
+              <p className="text-xs text-slate-300 dark:text-white/30 mt-1">vs last month</p>
             </div>
             {/* Right: This month */}
             <div className="px-5 py-4 text-right flex flex-col justify-center min-w-[130px]">
-              <p className="text-[11px] uppercase tracking-widest text-white/40 font-semibold mb-1">This Month</p>
+              <p className="text-[11px] uppercase tracking-widest text-slate-400 dark:text-white/40 font-semibold mb-1">This Month</p>
               <p className="text-2xl font-bold text-cyan-300">₹{data.currentMonthRevenue.toLocaleString()}</p>
-              <p className="text-xs text-white/30 mt-1">Last: ₹{data.lastMonthRevenue.toLocaleString()}</p>
+              <p className="text-xs text-slate-300 dark:text-white/30 mt-1">Last: ₹{data.lastMonthRevenue.toLocaleString()}</p>
             </div>
           </div>
 
@@ -175,14 +175,14 @@ export default function RevenueGrowthPage() {
               { label: "AOV Growth", value: fmt(data.averageOrderValueGrowth), v: data.averageOrderValueGrowth, icon: BarChart3 },
             ].map(({ label, value, v, icon: Icon, neutral }) => (
               <div key={label} className="px-4 py-3 flex flex-col gap-1">
-                <p className="text-[10px] uppercase tracking-wider text-white/35 font-semibold">{label}</p>
+                <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-white/35 font-semibold">{label}</p>
                 <div className="flex items-center gap-1.5">
                   {!neutral && (
                     <span className={`inline-flex items-center ${growthColor(v)}`}>
                       <GrowthIcon v={v} />
                     </span>
                   )}
-                  <p className={`text-base font-bold ${neutral ? "text-white" : growthColor(v)}`}>{value}</p>
+                  <p className={`text-base font-bold ${neutral ? "text-slate-900 dark:text-white" : growthColor(v)}`}>{value}</p>
                 </div>
               </div>
             ))}
@@ -198,7 +198,7 @@ export default function RevenueGrowthPage() {
         >
           <span className="text-lg leading-none">{insight.emoji}</span>
           <div>
-            <span className="font-semibold text-white">{insight.label}:&nbsp;</span>
+            <span className="font-semibold text-slate-900 dark:text-white">{insight.label}:&nbsp;</span>
             <span className="text-white/55">{insight.msg}</span>
           </div>
         </motion.div>
@@ -209,9 +209,9 @@ export default function RevenueGrowthPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="rounded-2xl border border-white/8 bg-[#12141c] p-5 shadow-lg"
+            className="rounded-2xl border border-white/8 bg-white dark:bg-[#12141c] p-5 shadow-lg"
           >
-            <p className="text-xs uppercase tracking-widest text-white/40 font-semibold mb-4">Revenue Trend</p>
+            <p className="text-xs uppercase tracking-widest text-slate-400 dark:text-white/40 font-semibold mb-4">Revenue Trend</p>
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={data.monthlyData}>
                 <defs>
@@ -236,9 +236,9 @@ export default function RevenueGrowthPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.14 }}
-            className="rounded-2xl border border-white/8 bg-[#12141c] p-5 shadow-lg"
+            className="rounded-2xl border border-white/8 bg-white dark:bg-[#12141c] p-5 shadow-lg"
           >
-            <p className="text-xs uppercase tracking-widest text-white/40 font-semibold mb-4">Sales Volume</p>
+            <p className="text-xs uppercase tracking-widest text-slate-400 dark:text-white/40 font-semibold mb-4">Sales Volume</p>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={data.monthlyData}>
                 <XAxis dataKey="month" stroke="#334155" tick={{ fill: "#64748b", fontSize: 11 }} />
@@ -259,9 +259,9 @@ export default function RevenueGrowthPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.18 }}
-          className="rounded-2xl border border-white/8 bg-[#12141c] p-5 shadow-lg"
+          className="rounded-2xl border border-white/8 bg-white dark:bg-[#12141c] p-5 shadow-lg"
         >
-          <p className="text-xs uppercase tracking-widest text-white/40 font-semibold mb-4">Monthly Growth %</p>
+          <p className="text-xs uppercase tracking-widest text-slate-400 dark:text-white/40 font-semibold mb-4">Monthly Growth %</p>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={data.monthlyData}>
               <XAxis dataKey="month" stroke="#334155" tick={{ fill: "#64748b", fontSize: 11 }} />
@@ -281,10 +281,10 @@ export default function RevenueGrowthPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.22 }}
-          className="rounded-2xl border border-white/8 bg-[#12141c] overflow-hidden shadow-lg"
+          className="rounded-2xl border border-white/8 bg-white dark:bg-[#12141c] overflow-hidden shadow-lg"
         >
           <div className="px-5 py-3.5 border-b border-white/8">
-            <p className="text-xs uppercase tracking-widest text-white/40 font-semibold">Monthly Breakdown</p>
+            <p className="text-xs uppercase tracking-widest text-slate-400 dark:text-white/40 font-semibold">Monthly Breakdown</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -293,7 +293,7 @@ export default function RevenueGrowthPage() {
                   {["Month", "Revenue", "Sales", "Avg Order", "Growth"].map((h, i) => (
                     <th
                       key={h}
-                      className={`py-2.5 px-4 text-[11px] uppercase tracking-wider font-semibold text-white/35 ${i === 0 ? "text-left" : "text-right"}`}
+                      className={`py-2.5 px-4 text-[11px] uppercase tracking-wider font-semibold text-slate-400 dark:text-white/35 ${i === 0 ? "text-left" : "text-right"}`}
                     >
                       {h}
                     </th>
@@ -302,11 +302,11 @@ export default function RevenueGrowthPage() {
               </thead>
               <tbody>
                 {data.monthlyData.map((m, i) => (
-                  <tr key={i} className="border-b border-white/5 hover:bg-white/[0.03] transition-colors">
-                    <td className="py-2.5 px-4 font-medium text-white/80">{m.month}</td>
-                    <td className="py-2.5 px-4 text-right text-white/70">₹{m.revenue.toLocaleString()}</td>
-                    <td className="py-2.5 px-4 text-right text-white/70">{m.sales}</td>
-                    <td className="py-2.5 px-4 text-right text-white/70">₹{m.sales ? Math.round(m.revenue / m.sales).toLocaleString() : 0}</td>
+                  <tr key={i} className="border-b border-slate-200 dark:border-white/5 hover:bg-slate-100 dark:bg-white/[0.03] transition-colors">
+                    <td className="py-2.5 px-4 font-medium text-slate-700 dark:text-white/80">{m.month}</td>
+                    <td className="py-2.5 px-4 text-right text-slate-600 dark:text-white/70">₹{m.revenue.toLocaleString()}</td>
+                    <td className="py-2.5 px-4 text-right text-slate-600 dark:text-white/70">{m.sales}</td>
+                    <td className="py-2.5 px-4 text-right text-slate-600 dark:text-white/70">₹{m.sales ? Math.round(m.revenue / m.sales).toLocaleString() : 0}</td>
                     <td className={`py-2.5 px-4 text-right font-semibold ${growthColor(m.growth)}`}>
                       {m.growth > 0 ? "+" : ""}{m.growth.toFixed(1)}%
                     </td>

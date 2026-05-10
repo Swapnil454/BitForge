@@ -6,16 +6,51 @@ import { getSellerStats } from "../utils/sellerStats.js";
 
 export const getMarketplaceProducts = async (req, res) => {
   try {
-    const products = await Product.find({ 
-      status: "approved",
-      changeRequest: "none",  // Only show products without pending changes
-      isDeleted: { $ne: true }  // Exclude soft-deleted products
-    })
-      .populate("sellerId", "name email isVerified identityVerifiedAt profilePictureUrl bio")
-      .sort({ createdAt: -1 });
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 8));
+    const skip  = (page - 1) * limit;
 
-    res.status(200).json(products);
+    // Build filter
+    const filter = {
+      status: "approved",
+      changeRequest: "none",
+      isDeleted: { $ne: true }
+    };
+
+    if (req.query.category) {
+      filter.category = req.query.category;
+    }
+
+    if (req.query.search) {
+      const searchRegex = new RegExp(req.query.search, "i");
+      filter.$or = [{ title: searchRegex }, { description: searchRegex }];
+    }
+
+    // Build sort
+    let sort = { createdAt: -1 }; // default: newest first
+    if (req.query.sort === "trending") sort = { buyers: -1 };
+    if (req.query.sort === "rating")   sort = { rating: -1 };
+    if (req.query.sort === "price_asc")  sort = { price: 1 };
+    if (req.query.sort === "price_desc") sort = { price: -1 };
+
+    const [products, total] = await Promise.all([
+      Product.find(filter)
+        .populate("sellerId", "name email isVerified identityVerifiedAt profilePictureUrl bio")
+        .sort(sort)
+        .skip(skip)
+        .limit(limit),
+      Product.countDocuments(filter)
+    ]);
+
+    res.status(200).json({
+      products,
+      page,
+      limit,
+      total,
+      hasMore: skip + products.length < total,
+    });
   } catch (error) {
+    console.error("Marketplace fetch error:", error);
     res.status(500).json({ message: "Failed to fetch products" });
   }
 };

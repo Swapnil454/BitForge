@@ -5,7 +5,7 @@ import CareerForm from "../components/CareerForm";
 
 export default function CreateCareerPage() {
   return (
-    <div className="min-h-screen bg-[#05050a] text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
       <PageHeader
         backHref="/dashboard/admin/careers"
         backLabel="Back to Careers"

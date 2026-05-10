@@ -380,7 +380,7 @@ Password: Buyer@123
 
 ## Success! 🎉
 
-If you've completed all tests above, your ContentSellify marketplace now has:
+If you've completed all tests above, your Bitforge marketplace now has:
 -  Enterprise-level malware protection
 -  Accurate PDF validation
 -  Complete review and rating system

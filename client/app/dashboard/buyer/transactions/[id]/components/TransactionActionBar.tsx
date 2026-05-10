@@ -26,7 +26,7 @@ export default function TransactionActionBar({
         <button
           onClick={onDownload}
           disabled={downloading}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 text-white font-semibold px-4 py-3 hover:bg-emerald-600 transition disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 text-slate-900 dark:text-white font-semibold px-4 py-3 hover:bg-emerald-600 transition disabled:opacity-60"
         >
           <Download className="h-4 w-4" />
           {downloading ? "Downloading..." : "Download Product"}
@@ -44,7 +44,7 @@ export default function TransactionActionBar({
       {transaction.status === "failed" && (
         <button
           onClick={onRetryPayment}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 text-white font-semibold px-4 py-3 hover:bg-amber-600 transition"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 text-slate-900 dark:text-white font-semibold px-4 py-3 hover:bg-amber-600 transition"
         >
           <RotateCcw className="h-4 w-4" />
           Retry Payment

@@ -48,7 +48,7 @@ export default function TransactionAnalyticsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
       <PageHeader
         backHref="/dashboard/buyer/transactions"
         backLabel="Transactions"
@@ -57,8 +57,8 @@ export default function TransactionAnalyticsPage() {
       />
 
       <main className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex items-center gap-2 mb-4 text-white/80">
-          <BarChart3 className="h-5 w-5 text-indigo-300" />
+        <div className="flex items-center gap-2 mb-4 text-slate-700 dark:text-white/80">
+          <BarChart3 className="h-5 w-5 text-indigo-500 dark:text-indigo-300" />
           <span className="text-sm">Performance summary</span>
         </div>
 

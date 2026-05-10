@@ -47,7 +47,7 @@ export function BarMetricChart<T extends { month: string }>({
   }
 
   return (
-    <div style={{ height }}>
+    <div style={{ height }} className="focus:outline-none [&_.recharts-wrapper]:outline-none [&_.recharts-surface]:outline-none [&_*]:focus:outline-none">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
           <XAxis
@@ -71,6 +71,7 @@ export function BarMetricChart<T extends { month: string }>({
             dataKey={dataKey as string}
             fill={`url(#${gradientId})`}
             radius={[8, 8, 0, 0]}
+            activeBar={{ stroke: 'none' }}
             isAnimationActive
             animationDuration={900}
           />

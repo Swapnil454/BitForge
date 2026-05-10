@@ -97,10 +97,10 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-[#05050a] text-white">
+    <div className="relative min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
       {/* Header */}
-      <header className="sticky top-0 z-50 h-14 border-b border-white/10 bg-[#05050a]/85 backdrop-blur-xl">
-        <nav className="mx-auto flex h-full max-w-[1800px] items-center justify-between px-4 md:px-6">
+      <header className="sticky top-0 z-50 h-14 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#05050a]/85 backdrop-blur-xl">
+        <nav className="relative mx-auto flex h-full max-w-[1800px] items-center justify-between px-4 md:px-6">
           {authChecked && user ? (
             <>
               <button
@@ -115,7 +115,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                   }
                   router.push("/docs");
                 }}
-                className="inline-flex items-center gap-1 text-white/80 hover:text-white transition"
+                className="inline-flex items-center gap-1 text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white transition"
                 aria-label="Back"
               >
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,13 +124,13 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                 <span className="hidden sm:inline text-sm font-medium">Back</span>
               </button>
 
-              <h1 className="text-lg sm:text-2xl font-bold tracking-tight bg-linear-to-r from-fuchsia-300 via-violet-300 to-indigo-300 bg-clip-text text-transparent">
+              <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-lg sm:text-2xl font-bold tracking-tight bg-linear-to-r from-fuchsia-500 via-violet-500 to-indigo-500 dark:from-fuchsia-300 dark:via-violet-300 dark:to-indigo-300 bg-clip-text text-transparent">
                 {currentHeaderTitle}
               </h1>
 
               <button
                 onClick={() => setSidebarOpen((prev) => !prev)}
-                className="rounded-lg p-2 hover:bg-white/5 lg:hidden"
+                className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-white/5 lg:hidden"
                 aria-label="Open docs menu"
                 aria-expanded={sidebarOpen}
               >
@@ -154,13 +154,13 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                     BitForge
                   </span>
                 </Link>
-                <span className="hidden md:block text-sm text-white/40"><Link href="/docs">/ Docs</Link></span>
+                <span className="hidden md:block text-sm text-slate-400 dark:text-white/40"><Link href="/docs">/ Docs</Link></span>
               </div>
 
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setSidebarOpen((prev) => !prev)}
-                  className="rounded-lg p-2 hover:bg-white/5 lg:hidden"
+                  className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-white/5 lg:hidden"
                   aria-label="Open docs menu"
                   aria-expanded={sidebarOpen}
                 >
@@ -170,13 +170,13 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                 </button>
                 <Link
                   href="/"
-                  className="rounded-lg px-3 py-1.5 text-sm text-white/70 hover:text-white hover:bg-white/5"
+                  className="rounded-lg px-3 py-1.5 text-sm text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
                 >
                   Home
                 </Link>
                 <Link
                   href="/login"
-                  className="rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white/80 hover:border-cyan-400 hover:text-white"
+                  className="rounded-lg border border-slate-300 dark:border-white/20 px-3 py-1.5 text-sm text-slate-700 dark:text-white/80 hover:border-cyan-400 hover:text-slate-900 dark:hover:text-white"
                 >
                   Sign in
                 </Link>
@@ -191,7 +191,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
           {/* Left Sidebar - Navigation */}
           <aside
             className={`
-              fixed left-0 top-14 z-40 h-[calc(100vh-3.5rem)] w-72 overflow-y-auto border-r border-white/10 bg-[#05050a]/95 backdrop-blur-xl
+              fixed left-0 top-14 z-40 h-[calc(100vh-3.5rem)] w-72 overflow-y-auto border-r border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#05050a]/95 backdrop-blur-xl
               transition-transform duration-300 lg:sticky lg:translate-x-0
               ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
               scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent hover:scrollbar-thumb-white/20
@@ -205,9 +205,9 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                   placeholder="Search docs..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-lg border border-white/20 bg-white/5 px-3 py-2 pl-9 text-sm text-white placeholder:text-white/40 focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                  className="w-full rounded-lg border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 px-3 py-2 pl-9 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
                 />
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/40">
 
                 </span>
               </div>
@@ -224,7 +224,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
 
                 return (
                   <div key={section.title}>
-                    <h3 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/50">
+                    <h3 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50">
                       {
                         (() => {
                           const IconComponent = section.icon;
@@ -243,7 +243,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                               block rounded-lg px-3 py-2 text-sm transition-all
                               ${isActive(item.href)
                                 ? "bg-cyan-500/10 text-cyan-300 font-medium"
-                                : "text-white/70 hover:bg-white/5 hover:text-white"
+                                : "text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
                               }
                             `}
                           >
@@ -263,7 +263,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                 )
               ) && (
                   <div className="py-8 text-center">
-                    <p className="text-sm text-white/50">No results found</p>
+                    <p className="text-sm text-slate-500 dark:text-white/50">No results found</p>
                     <button
                       onClick={() => setSearchQuery("")}
                       className="mt-2 text-xs text-cyan-400 hover:text-cyan-300"
@@ -274,15 +274,15 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                 )}
 
               {/* Quick Links */}
-              <div className="border-t border-white/10 pt-6">
-                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/50">
+              <div className="border-t border-slate-200 dark:border-white/10 pt-6">
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50">
                   Resources
                 </h3>
                 <ul className="space-y-1">
                   <li>
                     <Link
                       href="/contact"
-                      className="block rounded-lg px-3 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white"
+                      className="block rounded-lg px-3 py-2 text-sm text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
                     >
                       Contact Support
                     </Link>
@@ -290,7 +290,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                   <li>
                     <Link
                       href="/trust-center"
-                      className="block rounded-lg px-3 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white"
+                      className="block rounded-lg px-3 py-2 text-sm text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
                     >
                       Trust Center
                     </Link>
@@ -298,7 +298,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                   <li>
                     <Link
                       href="/status"
-                      className="block rounded-lg px-3 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white"
+                      className="block rounded-lg px-3 py-2 text-sm text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
                     >
                       System Status
                     </Link>
@@ -311,7 +311,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
           {/* Backdrop for mobile */}
           {sidebarOpen && (
             <div
-              className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-30 bg-white dark:bg-black/50 backdrop-blur-sm lg:hidden"
               onClick={() => setSidebarOpen(false)}
             />
           )}
@@ -322,9 +322,9 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
           </main>
 
           {/* Table of Contents - Right Sidebar */}
-          <aside className="hidden xl:block w-64 border-l border-white/10 h-[calc(100vh-3.5rem)] overflow-y-auto sticky top-14 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent hover:scrollbar-thumb-white/20">
+          <aside className="hidden xl:block w-64 border-l border-slate-200 dark:border-white/10 h-[calc(100vh-3.5rem)] overflow-y-auto sticky top-14 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent hover:scrollbar-thumb-white/20">
             <div className="p-6">
-              <h3 className="mb-4 text-xs font-semibold uppercase tracking-wide text-white/50">
+              <h3 className="mb-4 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/50">
                 On This Page
               </h3>
               <TableOfContents />

@@ -41,7 +41,7 @@ nano .env  # or use VS Code: code .env
 ```env
 RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxx
 RAZORPAY_KEY_SECRET=xxxxxxxxxxxxx
-MONGODB_URI=mongodb://localhost:27017/contentSellify
+MONGODB_URI=mongodb://localhost:27017/Bitforge
 JWT_SECRET=your_secure_random_32_character_string
 ```
 

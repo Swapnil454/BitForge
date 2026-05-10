@@ -6,7 +6,7 @@ export default function SellerTermsPage() {
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-black text-white mb-4">
+          <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-4">
             Seller Terms & Conditions
           </h1>
           <p className="text-slate-400">
@@ -63,7 +63,7 @@ export default function SellerTermsPage() {
               </p>
 
               <div className="bg-slate-900/50 rounded-lg p-4 my-4">
-                <h3 className="text-lg font-semibold text-white mb-3">Preview Page Count Rules:</h3>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Preview Page Count Rules:</h3>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-700">
@@ -247,7 +247,7 @@ export default function SellerTermsPage() {
 
           {/* Acceptance */}
           <section className="border-t border-slate-700 pt-6 mt-8">
-            <h2 className="text-2xl font-bold text-white mb-4">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
               ✍️ Agreement
             </h2>
             <div className="space-y-3 text-slate-300 leading-relaxed">
@@ -264,14 +264,14 @@ export default function SellerTermsPage() {
 
           {/* Contact */}
           <section className="bg-cyan-500/10 border border-cyan-500/30 rounded-xl p-6">
-            <h3 className="text-lg font-bold text-white mb-2">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
               Questions or Concerns?
             </h3>
             <p className="text-slate-300 text-sm">
               If you have questions about these terms or need clarification, please contact our
               support team at{" "}
-              <a href="mailto:support@contentsellify.com" className="text-cyan-400 underline">
-                support@contentsellify.com
+              <a href="mailto:support@Bitforge.com" className="text-cyan-400 underline">
+                support@Bitforge.com
               </a>
             </p>
           </section>
@@ -283,7 +283,7 @@ export default function SellerTermsPage() {
           <button
             onClick={() => window.close()}
             className="inline-flex items-center gap-2 px-6 py-3 bg-slate-700/50 hover:bg-slate-700 
-                     border border-slate-600 rounded-xl text-white font-medium transition"
+                     border border-slate-600 rounded-xl text-slate-900 dark:text-white font-medium transition"
           >
             ← Close Window
           </button>

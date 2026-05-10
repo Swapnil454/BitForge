@@ -19,12 +19,12 @@ function TrustRow({ label, active }: { label: string; active: boolean }) {
         className={`inline-flex h-5 w-5 items-center justify-center rounded-full ${
           active
             ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/40"
-            : "bg-white/5 text-white/40 border border-white/10"
+            : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-white/40 border border-slate-200 dark:border-white/10"
         }`}
       >
         {active ? <CheckCircle className="w-3 h-3" /> : <Info className="w-3 h-3" />}
       </span>
-      <span className={active ? "text-white/80" : "text-white/50 text-sm"}>{label}</span>
+      <span className={active ? "text-slate-700 dark:text-white/80" : "text-white/50 text-sm"}>{label}</span>
     </div>
   );
 }
@@ -140,63 +140,63 @@ export default function ProductDetailsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black">
+      <div className="min-h-screen bg-white dark:bg-black">
         {/* Skeleton Header */}
-        <header className="sticky top-0 z-50 border-b border-white/10 bg-black/95">
+        <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-white/10 bg-white dark:bg-black/95">
           <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
             <div className="relative flex min-h-[58px] items-center justify-center">
-              <div className="h-8 w-24 bg-white/5 rounded absolute left-0 animate-pulse"></div>
-              <div className="h-6 w-48 bg-white/5 rounded animate-pulse"></div>
-              <div className="h-10 w-24 bg-white/5 rounded-xl absolute right-0 animate-pulse"></div>
+              <div className="h-8 w-24 bg-slate-100 dark:bg-white/5 rounded absolute left-0 animate-pulse"></div>
+              <div className="h-6 w-48 bg-slate-100 dark:bg-white/5 rounded animate-pulse"></div>
+              <div className="h-10 w-24 bg-slate-100 dark:bg-white/5 rounded-xl absolute right-0 animate-pulse"></div>
             </div>
           </div>
         </header>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 w-full">
-          <div className="bg-[#12141c]/50 backdrop-blur-xl rounded-2xl border border-white/5 overflow-hidden shadow-xl">
+          <div className="bg-[#12141c]/50 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-xl">
             <div className="p-3 sm:p-5 lg:p-6 space-y-4 sm:space-y-6">
               
               {/* Skeleton Category */}
-              <div className="h-5 w-20 bg-white/5 rounded animate-pulse"></div>
+              <div className="h-5 w-20 bg-slate-100 dark:bg-white/5 rounded animate-pulse"></div>
 
               {/* Skeleton Preview */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <div className="h-6 w-32 bg-white/5 rounded animate-pulse"></div>
-                  <div className="h-8 w-32 bg-white/5 rounded-lg animate-pulse"></div>
+                  <div className="h-6 w-32 bg-slate-100 dark:bg-white/5 rounded animate-pulse"></div>
+                  <div className="h-8 w-32 bg-slate-100 dark:bg-white/5 rounded-lg animate-pulse"></div>
                 </div>
-                <div className="w-full bg-[#0a0a0f]/50 rounded-xl border border-white/5 h-[200px] sm:h-[280px] animate-pulse"></div>
-                <div className="h-3 w-48 bg-white/5 rounded mx-auto mt-2 animate-pulse"></div>
+                <div className="w-full bg-slate-50 dark:bg-[#0a0a0f]/50 rounded-xl border border-slate-200 dark:border-white/5 h-[200px] sm:h-[280px] animate-pulse"></div>
+                <div className="h-3 w-48 bg-slate-100 dark:bg-white/5 rounded mx-auto mt-2 animate-pulse"></div>
               </div>
 
               {/* Skeleton Description */}
               <div className="space-y-2">
-                <div className="h-6 w-40 bg-white/5 rounded animate-pulse"></div>
+                <div className="h-6 w-40 bg-slate-100 dark:bg-white/5 rounded animate-pulse"></div>
                 <div className="space-y-1.5">
-                  <div className="h-3 w-full bg-white/5 rounded animate-pulse"></div>
-                  <div className="h-3 w-[90%] bg-white/5 rounded animate-pulse"></div>
-                  <div className="h-3 w-[75%] bg-white/5 rounded animate-pulse"></div>
+                  <div className="h-3 w-full bg-slate-100 dark:bg-white/5 rounded animate-pulse"></div>
+                  <div className="h-3 w-[90%] bg-slate-100 dark:bg-white/5 rounded animate-pulse"></div>
+                  <div className="h-3 w-[75%] bg-slate-100 dark:bg-white/5 rounded animate-pulse"></div>
                 </div>
               </div>
 
               {/* Skeleton Grid */}
               <div className="space-y-2 sm:space-y-3">
-                <div className="h-6 w-32 bg-white/5 rounded animate-pulse"></div>
+                <div className="h-6 w-32 bg-slate-100 dark:bg-white/5 rounded animate-pulse"></div>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
                   {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className="bg-[#12141c] border border-white/5 rounded-lg px-2.5 py-2 sm:px-3 sm:py-2.5 animate-pulse">
-                      <div className="h-2 w-16 bg-white/10 rounded mb-1.5"></div>
-                      <div className="h-3 w-20 bg-white/5 rounded"></div>
+                    <div key={i} className="bg-[#12141c] border border-slate-200 dark:border-white/5 rounded-lg px-2.5 py-2 sm:px-3 sm:py-2.5 animate-pulse">
+                      <div className="h-2 w-16 bg-slate-200 dark:bg-white/10 rounded mb-1.5"></div>
+                      <div className="h-3 w-20 bg-slate-100 dark:bg-white/5 rounded"></div>
                     </div>
                   ))}
                 </div>
-                <div className="h-10 w-full sm:w-1/2 bg-white/5 rounded-lg animate-pulse mt-2"></div>
+                <div className="h-10 w-full sm:w-1/2 bg-slate-100 dark:bg-white/5 rounded-lg animate-pulse mt-2"></div>
               </div>
 
               {/* Skeleton Seller Info */}
               <div className="space-y-1.5 sm:space-y-2">
-                <div className="h-6 w-40 bg-white/5 rounded animate-pulse"></div>
-                <div className="h-32 w-full bg-white/5 rounded-xl animate-pulse"></div>
+                <div className="h-6 w-40 bg-slate-100 dark:bg-white/5 rounded animate-pulse"></div>
+                <div className="h-32 w-full bg-slate-100 dark:bg-white/5 rounded-xl animate-pulse"></div>
               </div>
 
             </div>
@@ -210,10 +210,10 @@ export default function ProductDetailsPage() {
     return (
       <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-white/70 text-xl mb-6">Product not found</p>
+          <p className="text-slate-600 dark:text-white/70 text-xl mb-6">Product not found</p>
           <button
             onClick={() => router.push('/marketplace')}
-            className="px-6 py-3 bg-linear-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white rounded-xl font-semibold transition shadow-lg"
+            className="px-6 py-3 bg-linear-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-900 dark:text-white rounded-xl font-semibold transition shadow-lg"
           >
             Back to Marketplace
           </button>
@@ -362,21 +362,21 @@ export default function ProductDetailsPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={toggleWishlist}
-              className="relative h-10 w-10 md:h-11 md:w-11 rounded-xl bg-white/5 border border-white/10 hover:border-pink-500/50 hover:bg-pink-500/10 grid place-items-center transition-all duration-300 group hover:scale-105 shadow-lg"
+              className="relative h-10 w-10 md:h-11 md:w-11 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-pink-500/50 hover:bg-pink-500/10 grid place-items-center transition-all duration-300 group hover:scale-105 shadow-lg"
               title={wishlist.includes(id as string) ? "Remove from wishlist" : "Add to wishlist"}
             >
               {wishlist.includes(id as string) ? (
                 <Heart className="w-5 h-5 fill-pink-500 text-pink-500 group-hover:scale-110 transition-transform" />
               ) : (
-                <Heart className="w-5 h-5 text-white/70 group-hover:text-white group-hover:scale-110 transition-transform" />
+                <Heart className="w-5 h-5 text-slate-600 dark:text-white/70 group-hover:text-slate-900 dark:group-hover:text-white group-hover:scale-110 transition-transform" />
               )}
             </button>
             <button
               onClick={() => requireAuth("view cart", () => router.push("/cart"))}
-              className="relative h-10 w-10 md:h-11 md:w-11 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-500/50 hover:bg-cyan-500/10 grid place-items-center transition-all duration-300 group hover:scale-105 shadow-lg"
+              className="relative h-10 w-10 md:h-11 md:w-11 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-cyan-500/50 hover:bg-cyan-500/10 grid place-items-center transition-all duration-300 group hover:scale-105 shadow-lg"
               title="Cart"
             >
-              <ShoppingCart className="w-5 h-5 text-white/70 group-hover:text-white group-hover:scale-110 transition-transform" />
+              <ShoppingCart className="w-5 h-5 text-slate-600 dark:text-white/70 group-hover:text-slate-900 dark:group-hover:text-white group-hover:scale-110 transition-transform" />
             </button>
           </div>
         }
@@ -400,13 +400,13 @@ export default function ProductDetailsPage() {
           </div>
         )}
         
-        <div className="bg-[#12141c]/50 backdrop-blur-xl rounded-2xl border border-white/5 overflow-hidden shadow-xl">
+        <div className="bg-[#12141c]/50 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-xl">
           <div className="p-3 sm:p-5 lg:p-6 space-y-4 sm:space-y-6">
             
             {/* Product Category */}
             {product.category && (
               <div className="flex gap-2">
-                <span className="px-3 py-1 bg-white/5 text-white/70 text-[10px] font-semibold uppercase tracking-wider rounded border border-white/10">
+                <span className="px-3 py-1 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-white/70 text-[10px] font-semibold uppercase tracking-wider rounded border border-slate-200 dark:border-white/10">
                   {product.category}
                 </span>
               </div>
@@ -415,12 +415,12 @@ export default function ProductDetailsPage() {
             {/* Product Thumbnail with Preview Download */}
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <h2 className="text-base sm:text-lg font-bold text-white/90">Product Preview</h2>
+                <h2 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white/90">Product Preview</h2>
                 {product.previewPdfUrl && (
                   <button
                     type="button"
                     onClick={handleDownloadPreview}
-                    className="py-1 px-2.5 sm:py-1.5 sm:px-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white rounded-lg text-xs sm:text-sm font-semibold transition shadow-sm flex items-center gap-1.5"
+                    className="py-1 px-2.5 sm:py-1.5 sm:px-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-slate-900 dark:text-white rounded-lg text-xs sm:text-sm font-semibold transition shadow-sm flex items-center gap-1.5"
                   >
                     <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -434,7 +434,7 @@ export default function ProductDetailsPage() {
               
               {/* Thumbnail */}
               {product.thumbnailUrl ? (
-                <div className="w-full bg-[#0a0a0f]/50 flex justify-center items-center rounded-xl overflow-hidden border border-white/5 shadow-inner">
+                <div className="w-full bg-slate-50 dark:bg-[#0a0a0f]/50 flex justify-center items-center rounded-xl overflow-hidden border border-slate-200 dark:border-white/5 shadow-inner">
                   <img
                     src={product.thumbnailUrl}
                     alt={product.title}
@@ -442,7 +442,7 @@ export default function ProductDetailsPage() {
                   />
                 </div>
               ) : (
-                <div className="w-full bg-[#0a0a0f]/50 flex items-center justify-center rounded-xl border border-white/5 shadow-inner" style={{ height: '200px' }}>
+                <div className="w-full bg-slate-50 dark:bg-[#0a0a0f]/50 flex items-center justify-center rounded-xl border border-slate-200 dark:border-white/5 shadow-inner" style={{ height: '200px' }}>
                   <Archive className="w-10 h-10 text-white/10" />
                 </div>
               )}
@@ -457,44 +457,44 @@ export default function ProductDetailsPage() {
 
             {/* Description */}
             <div className="space-y-1.5">
-              <h2 className="text-lg sm:text-xl font-bold text-white">About this product</h2>
-              <p className="text-white/70 text-xs sm:text-sm leading-relaxed">
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">About this product</h2>
+              <p className="text-slate-600 dark:text-white/70 text-xs sm:text-sm leading-relaxed">
                 {product.description}
               </p>
             </div>
 
             {/* Product Details */}
             <div className="space-y-2 sm:space-y-3">
-              <h2 className="text-lg sm:text-xl font-bold text-white">Product Details</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Product Details</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
-                <div className="bg-[#12141c] border border-white/5 rounded-lg px-2.5 py-2 sm:px-3 sm:py-2.5">
-                  <div className="text-white/40 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">Format</div>
-                  <div className="font-medium text-xs sm:text-sm text-white/90">{product.format ?? "-"}</div>
+                <div className="bg-[#12141c] border border-slate-200 dark:border-white/5 rounded-lg px-2.5 py-2 sm:px-3 sm:py-2.5">
+                  <div className="text-slate-400 dark:text-white/40 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">Format</div>
+                  <div className="font-medium text-xs sm:text-sm text-slate-800 dark:text-white/90">{product.format ?? "-"}</div>
                 </div>
-                <div className="bg-[#12141c] border border-white/5 rounded-lg px-2.5 py-2 sm:px-3 sm:py-2.5">
-                  <div className="text-white/40 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">Pages</div>
-                  <div className="font-medium text-xs sm:text-sm text-white/90">{product.pageCount ?? "-"}</div>
+                <div className="bg-[#12141c] border border-slate-200 dark:border-white/5 rounded-lg px-2.5 py-2 sm:px-3 sm:py-2.5">
+                  <div className="text-slate-400 dark:text-white/40 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">Pages</div>
+                  <div className="font-medium text-xs sm:text-sm text-slate-800 dark:text-white/90">{product.pageCount ?? "-"}</div>
                 </div>
-                <div className="bg-[#12141c] border border-white/5 rounded-lg px-2.5 py-2 sm:px-3 sm:py-2.5">
-                  <div className="text-white/40 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">File size</div>
-                  <div className="font-medium text-xs sm:text-sm text-white/90">{formatFileSize(product.fileSizeBytes)}</div>
+                <div className="bg-[#12141c] border border-slate-200 dark:border-white/5 rounded-lg px-2.5 py-2 sm:px-3 sm:py-2.5">
+                  <div className="text-slate-400 dark:text-white/40 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">File size</div>
+                  <div className="font-medium text-xs sm:text-sm text-slate-800 dark:text-white/90">{formatFileSize(product.fileSizeBytes)}</div>
                 </div>
-                <div className="bg-[#12141c] border border-white/5 rounded-lg px-2.5 py-2 sm:px-3 sm:py-2.5">
-                  <div className="text-white/40 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">Language</div>
-                  <div className="font-medium text-xs sm:text-sm text-white/90">{product.language || "-"}</div>
+                <div className="bg-[#12141c] border border-slate-200 dark:border-white/5 rounded-lg px-2.5 py-2 sm:px-3 sm:py-2.5">
+                  <div className="text-slate-400 dark:text-white/40 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">Language</div>
+                  <div className="font-medium text-xs sm:text-sm text-slate-800 dark:text-white/90">{product.language || "-"}</div>
                 </div>
-                <div className="bg-[#12141c] border border-white/5 rounded-lg px-2.5 py-2 sm:px-3 sm:py-2.5">
-                  <div className="text-white/40 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">Level</div>
-                  <div className="font-medium text-xs sm:text-sm text-white/90">{product.intendedAudience || "-"}</div>
+                <div className="bg-[#12141c] border border-slate-200 dark:border-white/5 rounded-lg px-2.5 py-2 sm:px-3 sm:py-2.5">
+                  <div className="text-slate-400 dark:text-white/40 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">Level</div>
+                  <div className="font-medium text-xs sm:text-sm text-slate-800 dark:text-white/90">{product.intendedAudience || "-"}</div>
                 </div>
-                <div className="bg-[#12141c] border border-white/5 rounded-lg px-2.5 py-2 sm:px-3 sm:py-2.5">
-                  <div className="text-white/40 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">Last updated</div>
-                  <div className="font-medium text-xs sm:text-sm text-white/90">{formatDate(product.lastUpdatedAt)}</div>
+                <div className="bg-[#12141c] border border-slate-200 dark:border-white/5 rounded-lg px-2.5 py-2 sm:px-3 sm:py-2.5">
+                  <div className="text-slate-400 dark:text-white/40 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">Last updated</div>
+                  <div className="font-medium text-xs sm:text-sm text-slate-800 dark:text-white/90">{formatDate(product.lastUpdatedAt)}</div>
                 </div>
               </div>
               
               {/* Trust checklist */}
-              <div className="mt-2 bg-emerald-500/5 border border-emerald-400/20 rounded-lg px-2.5 py-1.5 sm:px-3 sm:py-2 text-[10px] sm:text-xs text-white/80 space-y-1 sm:space-y-1.5">
+              <div className="mt-2 bg-emerald-500/5 border border-emerald-400/20 rounded-lg px-2.5 py-1.5 sm:px-3 sm:py-2 text-[10px] sm:text-xs text-slate-700 dark:text-white/80 space-y-1 sm:space-y-1.5">
                 <div className="font-semibold flex items-center gap-2 text-emerald-300">
                   <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                   Trusted purchase
@@ -517,24 +517,24 @@ export default function ProductDetailsPage() {
 
             {/* Seller Information */}
             <div className="space-y-1.5 sm:space-y-2">
-              <h2 className="text-lg sm:text-xl font-bold text-white">Seller Information</h2>
-              <div className="bg-white/5 border border-white/10 rounded-lg p-2.5 sm:p-3">
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Seller Information</h2>
+              <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg p-2.5 sm:p-3">
                 <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
                   {product.sellerId?.profilePictureUrl ? (
                     <img
                       src={product.sellerId.profilePictureUrl}
                       alt={product.sellerId.name}
-                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/20 object-cover"
+                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-slate-300 dark:border-white/20 object-cover"
                     />
                   ) : (
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-white/20 flex items-center justify-center text-lg">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 border border-slate-300 dark:border-white/20 flex items-center justify-center text-lg">
                       {product.sellerId?.name?.charAt(0) || "?"}
                     </div>
                   )}
                   
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="font-semibold text-white text-lg">
+                      <span className="font-semibold text-slate-900 dark:text-white text-lg">
                         {product.sellerId?.name || product.sellerId?.email}
                       </span>
                       
@@ -559,34 +559,34 @@ export default function ProductDetailsPage() {
                         <span className="font-bold">
                           {product.sellerStats.averageRating.toFixed(1)}
                         </span>
-                        <span className="text-white/40">
+                        <span className="text-slate-400 dark:text-white/40">
                           ({product.sellerStats.ratingCount} ratings)
                         </span>
                       </div>
                     )}
                     
                     {product.sellerId?.bio && (
-                      <p className="text-white/60 text-xs mt-0.5 line-clamp-2">{product.sellerId.bio}</p>
+                      <p className="text-slate-500 dark:text-white/60 text-xs mt-0.5 line-clamp-2">{product.sellerId.bio}</p>
                     )}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-white/5 border border-white/10 rounded-md px-2 py-1.5 text-center">
+                  <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-md px-2 py-1.5 text-center">
                     <div className="text-white/50 text-[9px] sm:text-[10px] mb-0.5">Total Sales</div>
-                    <div className="font-semibold text-white text-sm sm:text-base">
+                    <div className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base">
                       {product.sellerStats?.totalSales ?? 0}
                     </div>
                   </div>
-                  <div className="bg-white/5 border border-white/10 rounded-md px-2 py-1.5 text-center">
+                  <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-md px-2 py-1.5 text-center">
                     <div className="text-white/50 text-[9px] sm:text-[10px] mb-0.5">Products</div>
-                    <div className="font-semibold text-white text-sm sm:text-base">
+                    <div className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base">
                       {product.sellerStats?.productCount ?? 1}
                     </div>
                   </div>
-                  <div className="bg-white/5 border border-white/10 rounded-md px-2 py-1.5 text-center">
+                  <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-md px-2 py-1.5 text-center">
                     <div className="text-white/50 text-[9px] sm:text-[10px] mb-0.5">Member Since</div>
-                    <div className="font-semibold text-white text-[10px] sm:text-xs">
+                    <div className="font-semibold text-slate-900 dark:text-white text-[10px] sm:text-xs">
                       {(product.sellerStats?.memberSince || product.sellerId?.createdAt)
                         ? new Date(product.sellerStats?.memberSince || product.sellerId?.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
                         : '-'
@@ -599,7 +599,7 @@ export default function ProductDetailsPage() {
 
             {/* Price Section */}
             <div className="space-y-1.5 sm:space-y-2">
-              <h2 className="text-lg sm:text-xl font-bold text-white">Pricing</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Pricing</h2>
               {product.isDeleted ? (
                 <div className="bg-[#12141c] p-3 sm:p-4 rounded-lg border border-emerald-500/20 relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
@@ -608,15 +608,15 @@ export default function ProductDetailsPage() {
                       <CheckCircle className="w-4 h-4 text-emerald-400" />
                     </div>
                     <div>
-                      <p className="text-sm sm:text-base font-bold text-white mb-0.5">Already Purchased</p>
-                      <p className="text-[10px] sm:text-xs text-white/60">You own this product. Go to your purchases to download.</p>
+                      <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-0.5">Already Purchased</p>
+                      <p className="text-[10px] sm:text-xs text-slate-500 dark:text-white/60">You own this product. Go to your purchases to download.</p>
                     </div>
                   </div>
                 </div>
               ) : (
-              <div className="bg-gradient-to-br from-white/5 to-white/10 p-3 sm:p-4 rounded-lg border border-white/10">
+              <div className="bg-gradient-to-br from-white/5 to-white/10 p-3 sm:p-4 rounded-lg border border-slate-200 dark:border-white/10">
                 <div className="space-y-1.5 sm:space-y-2">
-                  <div className="flex justify-between text-white/60">
+                  <div className="flex justify-between text-slate-500 dark:text-white/60">
                     <span>Original Price</span>
                     <span className="line-through">₹{calculateOriginalPrice().toLocaleString()}</span>
                   </div>
@@ -634,7 +634,7 @@ export default function ProductDetailsPage() {
                     </>
                   )}
 
-                  <div className="border-t border-white/20 pt-2 bg-gradient-to-r from-cyan-500/20 to-indigo-500/20 -mx-3 sm:-mx-4 px-3 sm:px-4 py-2 sm:py-2.5 -mb-3 sm:-mb-4 rounded-b-lg">
+                  <div className="border-t border-slate-300 dark:border-white/20 pt-2 bg-gradient-to-r from-cyan-500/20 to-indigo-500/20 -mx-3 sm:-mx-4 px-3 sm:px-4 py-2 sm:py-2.5 -mb-3 sm:-mb-4 rounded-b-lg">
                     <div className="flex justify-between text-base sm:text-lg font-bold">
                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-indigo-300">Final Total</span>
                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-indigo-300">₹{calculateFinalTotal().toLocaleString()}</span>
@@ -650,7 +650,7 @@ export default function ProductDetailsPage() {
                   /* For archived products - show download button only */
                   <button
                     onClick={() => router.push(`/dashboard/buyer/purchases`)}
-                    className="flex-1 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white py-2 px-3 rounded-lg font-bold text-sm transition shadow-sm flex items-center justify-center gap-1.5"
+                    className="flex-1 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-900 dark:text-white py-2 px-3 rounded-lg font-bold text-sm transition shadow-sm flex items-center justify-center gap-1.5"
                   >
                     <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -667,14 +667,14 @@ export default function ProductDetailsPage() {
                       disabled={addingToCart}
                       className={`flex-1 px-3 py-2 sm:py-2.5 rounded-lg font-bold text-sm transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${
                         isInCart
-                          ? 'bg-white/10 hover:bg-white/20 border border-white/20 text-white'
-                          : 'bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white'
+                          ? 'bg-slate-200 dark:bg-white/10 hover:bg-white/20 border border-slate-300 dark:border-white/20 text-slate-900 dark:text-white'
+                          : 'bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-slate-900 dark:text-white'
                       }`}
                     >
                       {addingToCart ? 'Updating...' : isInCart ? 'Remove from Cart' : 'Add to Cart'}
                     </button>
                     <button
-                      className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white py-2 px-3 sm:py-2.5 rounded-lg font-bold text-sm transition shadow-sm"
+                      className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-slate-900 dark:text-white py-2 px-3 sm:py-2.5 rounded-lg font-bold text-sm transition shadow-sm"
                       onClick={handleBuy}
                     >
                       Buy Now

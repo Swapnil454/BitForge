@@ -23,7 +23,7 @@ const getStatusConfig = (status: string) => {
     case "failed":
       return { bg: "bg-rose-500/10 text-rose-400 border-rose-500/20", stripe: "bg-rose-500" };
     default:
-      return { bg: "bg-transparent text-slate-300 border-white/20", stripe: "bg-slate-500" };
+      return { bg: "bg-transparent text-slate-300 border-slate-300 dark:border-white/20", stripe: "bg-slate-500" };
   }
 };
 
@@ -46,10 +46,10 @@ export default function PurchaseCard({
   const statusConfig = getStatusConfig(purchase.status);
 
   return (
-    <article className="bg-[#08111d] border border-white/5 rounded-xl p-3 sm:p-4 flex flex-col group hover:border-white/10 transition-all shadow-xl">
+    <article className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-xl p-3 sm:p-4 flex flex-col group hover:border-slate-200 dark:hover:border-white/10 transition-all shadow-xl">
       <div className="flex gap-3 sm:gap-4">
         {/* Thumbnail - Fixed Left */}
-        <div className="w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] shrink-0 rounded-lg overflow-hidden bg-white/5 border border-white/5 relative">
+        <div className="w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] shrink-0 rounded-lg overflow-hidden bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 relative">
           {purchase.thumbnailUrl ? (
             <img
               src={purchase.thumbnailUrl}
@@ -58,7 +58,7 @@ export default function PurchaseCard({
             />
           ) : (
             <div className="h-full w-full flex items-center justify-center">
-              <Package className="h-6 w-6 sm:h-8 sm:w-8 text-white/20" />
+              <Package className="h-6 w-6 sm:h-8 sm:w-8 text-slate-200 dark:text-white/20" />
             </div>
           )}
         </div>
@@ -67,7 +67,7 @@ export default function PurchaseCard({
         <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
           <div>
             <div className="flex justify-between items-start gap-2 mb-1">
-              <h3 className="text-sm sm:text-base font-bold text-white truncate tracking-tight leading-tight">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate tracking-tight leading-tight">
                 {purchase.productName}
               </h3>
               {/* Price Top Right */}
@@ -98,7 +98,7 @@ export default function PurchaseCard({
               disabled={isLimitReached || downloading}
               className={`h-8 sm:h-9 px-4 sm:px-5 rounded-lg text-[11px] sm:text-xs font-bold transition-all inline-flex items-center justify-center gap-2 whitespace-nowrap shadow-lg shadow-white/5 ${
                 isLimitReached
-                  ? "cursor-not-allowed bg-white/5 text-white/30 border border-white/5 shadow-none"
+                  ? "cursor-not-allowed bg-slate-100 dark:bg-white/5 text-slate-300 dark:text-white/30 border border-slate-200 dark:border-white/5 shadow-none"
                   : "bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 hover:border-cyan-500/30"
               }`}
             >
@@ -115,13 +115,13 @@ export default function PurchaseCard({
       </div>
 
       {/* Secondary Actions Row */}
-      <div className="mt-3 sm:mt-4 pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-2">
+      <div className="mt-3 sm:mt-4 pt-3 border-t border-slate-200 dark:border-white/5 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           {canReviewOrder(purchase.status) && purchase.productId && (
             <button
               type="button"
               onClick={() => onReview(purchase)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-[10px] sm:text-[11px] font-medium transition-colors border border-transparent hover:border-white/10"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white text-[10px] sm:text-[11px] font-medium transition-colors border border-transparent hover:border-slate-200 dark:hover:border-white/10"
             >
               <Star className="w-3.5 h-3.5" /> Review
             </button>
@@ -132,7 +132,7 @@ export default function PurchaseCard({
             onClick={() => onViewProduct(purchase.productId)}
             disabled={!purchase.productId}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-transparent text-[10px] sm:text-[11px] font-medium transition-colors ${
-              !purchase.productId ? "opacity-40 cursor-not-allowed text-white/40" : "bg-white/5 hover:bg-white/10 text-white/70 hover:text-white hover:border-white/10"
+              !purchase.productId ? "opacity-40 cursor-not-allowed text-slate-400 dark:text-white/40" : "bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white hover:border-slate-200 dark:hover:border-white/10"
             }`}
           >
             <Eye className="w-3.5 h-3.5" /> Product
@@ -140,7 +140,7 @@ export default function PurchaseCard({
 
           <a
             href={`/dashboard/buyer/invoice/${purchase._id}`}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-[10px] sm:text-[11px] font-medium transition-colors border border-transparent hover:border-white/10"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white text-[10px] sm:text-[11px] font-medium transition-colors border border-transparent hover:border-slate-200 dark:hover:border-white/10"
           >
             <FileText className="w-3.5 h-3.5" /> Invoice
           </a>

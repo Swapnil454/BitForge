@@ -9,7 +9,7 @@ export default function BankAccountSetupPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-10 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
-        <nav className="mb-6 text-sm text-white/60">
+        <nav className="mb-6 text-sm text-slate-500 dark:text-white/60">
           <Link href="/docs" className="hover:text-cyan-400">
             Documentation
           </Link>
@@ -18,7 +18,7 @@ export default function BankAccountSetupPage() {
             Getting Started
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-white">Bank Account Setup</span>
+          <span className="text-slate-900 dark:text-white">Bank Account Setup</span>
         </nav>
 
         {/* Header */}
@@ -26,43 +26,43 @@ export default function BankAccountSetupPage() {
           <span className="inline-block px-3 py-1 mb-4 text-xs font-semibold text-cyan-400 bg-cyan-500/10 rounded-full border border-cyan-500/20">
             Getting Started
           </span>
-          <h1 className="text-4xl font-bold text-white mb-4">
+          <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">
             Bank Account Setup
           </h1>
-          <p className="text-lg text-white/70">
-            Connect your bank account to receive payouts from ContentSellify. Follow this guide to link your account securely and start receiving earnings.
+          <p className="text-lg text-slate-600 dark:text-white/70">
+            Connect your bank account to receive payouts from Bitforge. Follow this guide to link your account securely and start receiving earnings.
           </p>
         </div>
 
         {/* Prerequisites */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <span className="text-cyan-400"></span> Prerequisites
           </h2>
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+          <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-green-400 mt-1 flex-shrink-0" />
-                <span className="text-white/80">
-                  <strong className="text-white">Seller Account:</strong> Registered and verified on ContentSellify
+                <span className="text-slate-700 dark:text-white/80">
+                  <strong className="text-slate-900 dark:text-white">Seller Account:</strong> Registered and verified on Bitforge
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-green-400 mt-1 flex-shrink-0" />
-                <span className="text-white/80">
-                  <strong className="text-white">Bank Account:</strong> Active savings or current account in your name
+                <span className="text-slate-700 dark:text-white/80">
+                  <strong className="text-slate-900 dark:text-white">Bank Account:</strong> Active savings or current account in your name
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-green-400 mt-1 flex-shrink-0" />
-                <span className="text-white/80">
-                  <strong className="text-white">Account Details:</strong> Account number, IFSC code, and account holder name
+                <span className="text-slate-700 dark:text-white/80">
+                  <strong className="text-slate-900 dark:text-white">Account Details:</strong> Account number, IFSC code, and account holder name
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-green-400 mt-1 flex-shrink-0" />
-                <span className="text-white/80">
-                  <strong className="text-white">Verification:</strong> Cancelled cheque or bank statement (for verification)
+                <span className="text-slate-700 dark:text-white/80">
+                  <strong className="text-slate-900 dark:text-white">Verification:</strong> Cancelled cheque or bank statement (for verification)
                 </span>
               </li>
             </ul>
@@ -71,17 +71,17 @@ export default function BankAccountSetupPage() {
 
         {/* Step 1: Navigate to Settings */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-4">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">1.</span> Navigate to Bank Settings
           </h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
-            <ol className="space-y-4 text-white/80">
+          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <ol className="space-y-4 text-slate-700 dark:text-white/80">
               <li className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-cyan-500/20 rounded-full text-cyan-400 text-sm font-bold">
                   1
                 </span>
                 <div>
-                  <p>Log in to your ContentSellify seller account</p>
+                  <p>Log in to your Bitforge seller account</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
@@ -89,7 +89,7 @@ export default function BankAccountSetupPage() {
                   2
                 </span>
                 <div>
-                  <p>Go to <strong className="text-white">Dashboard</strong> → <strong className="text-white">Settings</strong></p>
+                  <p>Go to <strong className="text-slate-900 dark:text-white">Dashboard</strong> → <strong className="text-slate-900 dark:text-white">Settings</strong></p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
@@ -97,7 +97,7 @@ export default function BankAccountSetupPage() {
                   3
                 </span>
                 <div>
-                  <p>Click on <strong className="text-white">Bank Account</strong> tab</p>
+                  <p>Click on <strong className="text-slate-900 dark:text-white">Bank Account</strong> tab</p>
                 </div>
               </li>
             </ol>
@@ -106,47 +106,47 @@ export default function BankAccountSetupPage() {
 
         {/* Step 2: Add Bank Account Details */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-4">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">2.</span> Add Bank Account Details
           </h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
-            <p className="text-white/80 mb-6">Fill in the following information carefully:</p>
+          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <p className="text-slate-700 dark:text-white/80 mb-6">Fill in the following information carefully:</p>
 
             <div className="space-y-6">
               <div>
-                <h3 className="text-white font-semibold mb-2">Account Holder Name</h3>
-                <p className="text-white/60 text-sm mb-2">Full name as per bank records (must match bank statement)</p>
+                <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Account Holder Name</h3>
+                <p className="text-slate-500 dark:text-white/60 text-sm mb-2">Full name as per bank records (must match bank statement)</p>
                 <CodeBlock code="Swapnil Shelke" />
               </div>
 
               <div>
-                <h3 className="text-white font-semibold mb-2">Account Number</h3>
-                <p className="text-white/60 text-sm mb-2">Your bank account number (10-18 digits)</p>
+                <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Account Number</h3>
+                <p className="text-slate-500 dark:text-white/60 text-sm mb-2">Your bank account number (10-18 digits)</p>
                 <CodeBlock code="1234567890123456" />
               </div>
 
               <div>
-                <h3 className="text-white font-semibold mb-2">IFSC Code</h3>
-                <p className="text-white/60 text-sm mb-2">11-character code found on your cheque or bank statement</p>
+                <h3 className="text-slate-900 dark:text-white font-semibold mb-2">IFSC Code</h3>
+                <p className="text-slate-500 dark:text-white/60 text-sm mb-2">11-character code found on your cheque or bank statement</p>
                 <CodeBlock code="SBIN0001234" />
               </div>
 
               <div>
-                <h3 className="text-white font-semibold mb-2">Account Type</h3>
-                <p className="text-white/60 text-sm mb-2">Select account type</p>
+                <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Account Type</h3>
+                <p className="text-slate-500 dark:text-white/60 text-sm mb-2">Select account type</p>
                 <div className="flex gap-4 mt-2">
-                  <div className="bg-white/5 px-4 py-2 rounded-lg border border-cyan-500/30">
-                    <span className="text-white">Savings</span>
+                  <div className="bg-slate-100 dark:bg-white/5 px-4 py-2 rounded-lg border border-cyan-500/30">
+                    <span className="text-slate-900 dark:text-white">Savings</span>
                   </div>
-                  <div className="bg-white/5 px-4 py-2 rounded-lg border border-white/10">
-                    <span className="text-white/60">Current</span>
+                  <div className="bg-slate-100 dark:bg-white/5 px-4 py-2 rounded-lg border border-slate-200 dark:border-white/10">
+                    <span className="text-slate-500 dark:text-white/60">Current</span>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-white font-semibold mb-2">Bank Name</h3>
-                <p className="text-white/60 text-sm mb-2">Your bank name (auto-filled from IFSC code)</p>
+                <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Bank Name</h3>
+                <p className="text-slate-500 dark:text-white/60 text-sm mb-2">Your bank name (auto-filled from IFSC code)</p>
                 <CodeBlock code="State Bank of India" />
               </div>
             </div>
@@ -164,20 +164,20 @@ export default function BankAccountSetupPage() {
 
         {/* Step 3: Verification */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-4">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">3.</span> Account Verification
           </h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
-            <p className="text-white/80 mb-6">
-              ContentSellify uses RazorpayX to verify bank accounts. Verification happens automatically:
+          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <p className="text-slate-700 dark:text-white/80 mb-6">
+              Bitforge uses RazorpayX to verify bank accounts. Verification happens automatically:
             </p>
 
             <div className="space-y-4">
-              <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+              <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg p-4">
+                <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
                   <span className="text-cyan-400">🔄</span> Penny Drop Verification
                 </h3>
-                <ul className="space-y-2 text-white/70 text-sm">
+                <ul className="space-y-2 text-slate-600 dark:text-white/70 text-sm">
                   <li className="flex items-start gap-2">
                     <span className="text-cyan-400">•</span>
                     <span>A small amount (₹1 or less) is deposited to your account</span>
@@ -197,20 +197,20 @@ export default function BankAccountSetupPage() {
                 </ul>
               </div>
 
-              <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                <h3 className="text-white font-semibold mb-2">Verification Status</h3>
+              <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg p-4">
+                <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Verification Status</h3>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span className="text-white/80"><strong className="text-white">Verified:</strong> Account is ready to receive payouts</span>
+                    <span className="text-slate-700 dark:text-white/80"><strong className="text-slate-900 dark:text-white">Verified:</strong> Account is ready to receive payouts</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
-                    <span className="text-white/80"><strong className="text-white">Pending:</strong> Verification in progress (wait 30-60 seconds)</span>
+                    <span className="text-slate-700 dark:text-white/80"><strong className="text-slate-900 dark:text-white">Pending:</strong> Verification in progress (wait 30-60 seconds)</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                    <span className="text-white/80"><strong className="text-white">Failed:</strong> Details incorrect or account inactive</span>
+                    <span className="text-slate-700 dark:text-white/80"><strong className="text-slate-900 dark:text-white">Failed:</strong> Details incorrect or account inactive</span>
                   </div>
                 </div>
               </div>
@@ -220,32 +220,32 @@ export default function BankAccountSetupPage() {
 
         {/* Step 4: Payout Preferences */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-4">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">4.</span> Configure Payout Preferences
           </h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-white/10 rounded-xl p-6">
+          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <div className="space-y-6">
               <div>
-                <h3 className="text-white font-semibold mb-3">Minimum Payout Amount</h3>
-                <p className="text-white/70 text-sm mb-3">Set the minimum balance required before requesting a payout:</p>
+                <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Minimum Payout Amount</h3>
+                <p className="text-slate-600 dark:text-white/70 text-sm mb-3">Set the minimum balance required before requesting a payout:</p>
                 <div className="flex items-center gap-4">
                   <input
                     type="number"
-                    className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white w-32"
+                    className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-4 py-2 text-slate-900 dark:text-white w-32"
                     placeholder="₹500"
                     disabled
                   />
-                  <span className="text-white/60 text-sm">Default: ₹500</span>
+                  <span className="text-slate-500 dark:text-white/60 text-sm">Default: ₹500</span>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-white font-semibold mb-3">Auto-Payout Settings</h3>
-                <p className="text-white/70 text-sm mb-3">Enable automatic payouts when balance reaches threshold:</p>
+                <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Auto-Payout Settings</h3>
+                <p className="text-slate-600 dark:text-white/70 text-sm mb-3">Enable automatic payouts when balance reaches threshold:</p>
                 <div className="space-y-3">
                   <label className="flex items-center gap-3">
                     <input type="checkbox" className="w-4 h-4 accent-cyan-500" disabled />
-                    <span className="text-white/80">Enable auto-payout (coming soon)</span>
+                    <span className="text-slate-700 dark:text-white/80">Enable auto-payout (coming soon)</span>
                   </label>
                   <p className="text-white/50 text-xs ml-7">
                     When enabled, payouts will be processed automatically on the 1st of every month if balance ≥ minimum amount
@@ -258,14 +258,14 @@ export default function BankAccountSetupPage() {
 
         {/* Testing Your Setup */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <span className="text-cyan-400">🧪</span> Testing Your Setup
           </h2>
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-            <p className="text-white/80 mb-4">
+          <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <p className="text-slate-700 dark:text-white/80 mb-4">
               Verify your bank account setup is working correctly:
             </p>
-            <ol className="space-y-3 text-white/70">
+            <ol className="space-y-3 text-slate-600 dark:text-white/70">
               <li className="flex items-start gap-3">
                 <span className="font-bold text-cyan-400">1.</span>
                 <span>Make a test sale (or upload a product and purchase it with a test account)</span>
@@ -276,7 +276,7 @@ export default function BankAccountSetupPage() {
               </li>
               <li className="flex items-start gap-3">
                 <span className="font-bold text-cyan-400">3.</span>
-                <span>Check your earnings in <strong className="text-white">Dashboard → Earnings</strong></span>
+                <span>Check your earnings in <strong className="text-slate-900 dark:text-white">Dashboard → Earnings</strong></span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="font-bold text-cyan-400">4.</span>
@@ -292,15 +292,15 @@ export default function BankAccountSetupPage() {
 
         {/* Troubleshooting */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <span className="text-cyan-400">🔧</span> Troubleshooting
           </h2>
           <div className="space-y-4">
-            <details className="bg-white/5 border border-white/10 rounded-xl p-5 cursor-pointer">
-              <summary className="text-white font-semibold">Verification Failed - Name Mismatch</summary>
-              <div className="mt-4 space-y-2 text-white/70 text-sm">
-                <p><strong className="text-white">Problem:</strong> Account holder name doesn't match bank records</p>
-                <p><strong className="text-white">Solution:</strong></p>
+            <details className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 cursor-pointer">
+              <summary className="text-slate-900 dark:text-white font-semibold">Verification Failed - Name Mismatch</summary>
+              <div className="mt-4 space-y-2 text-slate-600 dark:text-white/70 text-sm">
+                <p><strong className="text-slate-900 dark:text-white">Problem:</strong> Account holder name doesn't match bank records</p>
+                <p><strong className="text-slate-900 dark:text-white">Solution:</strong></p>
                 <ul className="ml-6 list-disc space-y-1">
                   <li>Check for typos or extra spaces in name</li>
                   <li>Use full name as per bank records (avoid nicknames)</li>
@@ -310,11 +310,11 @@ export default function BankAccountSetupPage() {
               </div>
             </details>
 
-            <details className="bg-white/5 border border-white/10 rounded-xl p-5 cursor-pointer">
-              <summary className="text-white font-semibold">Invalid IFSC Code</summary>
-              <div className="mt-4 space-y-2 text-white/70 text-sm">
-                <p><strong className="text-white">Problem:</strong> IFSC code is invalid or not recognized</p>
-                <p><strong className="text-white">Solution:</strong></p>
+            <details className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 cursor-pointer">
+              <summary className="text-slate-900 dark:text-white font-semibold">Invalid IFSC Code</summary>
+              <div className="mt-4 space-y-2 text-slate-600 dark:text-white/70 text-sm">
+                <p><strong className="text-slate-900 dark:text-white">Problem:</strong> IFSC code is invalid or not recognized</p>
+                <p><strong className="text-slate-900 dark:text-white">Solution:</strong></p>
                 <ul className="ml-6 list-disc space-y-1">
                   <li>Verify IFSC code from your bank cheque or statement</li>
                   <li>Use the <a href="https://ifsc.razorpay.com/" target="_blank" className="text-cyan-400 hover:underline">Razorpay IFSC lookup</a> tool</li>
@@ -324,11 +324,11 @@ export default function BankAccountSetupPage() {
               </div>
             </details>
 
-            <details className="bg-white/5 border border-white/10 rounded-xl p-5 cursor-pointer">
-              <summary className="text-white font-semibold">Payout Not Received</summary>
-              <div className="mt-4 space-y-2 text-white/70 text-sm">
-                <p><strong className="text-white">Problem:</strong> Payout was processed but amount not received</p>
-                <p><strong className="text-white">Solution:</strong></p>
+            <details className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 cursor-pointer">
+              <summary className="text-slate-900 dark:text-white font-semibold">Payout Not Received</summary>
+              <div className="mt-4 space-y-2 text-slate-600 dark:text-white/70 text-sm">
+                <p><strong className="text-slate-900 dark:text-white">Problem:</strong> Payout was processed but amount not received</p>
+                <p><strong className="text-slate-900 dark:text-white">Solution:</strong></p>
                 <ul className="ml-6 list-disc space-y-1">
                   <li>Wait 1-3 business days (standard processing time)</li>
                   <li>Check transaction status in <strong>Dashboard → Payouts</strong></li>
@@ -339,11 +339,11 @@ export default function BankAccountSetupPage() {
               </div>
             </details>
 
-            <details className="bg-white/5 border border-white/10 rounded-xl p-5 cursor-pointer">
-              <summary className="text-white font-semibold">Can I Update Bank Account?</summary>
-              <div className="mt-4 space-y-2 text-white/70 text-sm">
-                <p><strong className="text-white">Answer:</strong> Yes, you can update or change your bank account anytime.</p>
-                <p><strong className="text-white">Steps:</strong></p>
+            <details className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 cursor-pointer">
+              <summary className="text-slate-900 dark:text-white font-semibold">Can I Update Bank Account?</summary>
+              <div className="mt-4 space-y-2 text-slate-600 dark:text-white/70 text-sm">
+                <p><strong className="text-slate-900 dark:text-white">Answer:</strong> Yes, you can update or change your bank account anytime.</p>
+                <p><strong className="text-slate-900 dark:text-white">Steps:</strong></p>
                 <ul className="ml-6 list-disc space-y-1">
                   <li>Go to <strong>Dashboard → Settings → Bank Account</strong></li>
                   <li>Click <strong>"Update Bank Account"</strong></li>
@@ -358,30 +358,30 @@ export default function BankAccountSetupPage() {
 
         {/* Security Best Practices */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <Shield className="w-5 h-5 text-cyan-400" /> Security Best Practices
           </h2>
           <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-6">
-            <ul className="space-y-3 text-white/80">
+            <ul className="space-y-3 text-slate-700 dark:text-white/80">
               <li className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
-                <span><strong className="text-white">Never share:</strong> Bank account details, OTPs, or passwords with anyone</span>
+                <span><strong className="text-slate-900 dark:text-white">Never share:</strong> Bank account details, OTPs, or passwords with anyone</span>
               </li>
               <li className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
-                <span><strong className="text-white">Only use:</strong> Your own bank account (not friend's or relative's)</span>
+                <span><strong className="text-slate-900 dark:text-white">Only use:</strong> Your own bank account (not friend's or relative's)</span>
               </li>
               <li className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
-                <span><strong className="text-white">Verify URL:</strong> Always check you're on the official ContentSellify domain</span>
+                <span><strong className="text-slate-900 dark:text-white">Verify URL:</strong> Always check you're on the official Bitforge domain</span>
               </li>
               <li className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
-                <span><strong className="text-white">Enable 2FA:</strong> Add two-factor authentication to your account</span>
+                <span><strong className="text-slate-900 dark:text-white">Enable 2FA:</strong> Add two-factor authentication to your account</span>
               </li>
               <li className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
-                <span><strong className="text-white">Monitor transactions:</strong> Regularly check payout history for unauthorized activity</span>
+                <span><strong className="text-slate-900 dark:text-white">Monitor transactions:</strong> Regularly check payout history for unauthorized activity</span>
               </li>
             </ul>
           </div>
@@ -389,7 +389,7 @@ export default function BankAccountSetupPage() {
 
         {/* Next Steps */}
         <section className="mb-10">
-          <h2 className="text-2xl font-bold text-white mb-6">Next Steps</h2>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Next Steps</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <NextStepCard
               title="Request Your First Payout"
@@ -420,20 +420,20 @@ export default function BankAccountSetupPage() {
 
         {/* Support CTA */}
         <div className="bg-gradient-to-r from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-8 text-center">
-          <h3 className="text-2xl font-bold text-white mb-3">Need Help?</h3>
-          <p className="text-white/70 mb-6">
+          <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Need Help?</h3>
+          <p className="text-slate-600 dark:text-white/70 mb-6">
             Having trouble setting up your bank account? Our support team is here to help.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link
               href="/contact"
-              className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
+              className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-slate-900 dark:text-white font-semibold rounded-lg transition-colors"
             >
               Contact Support
             </Link>
             <Link
               href="/docs/troubleshooting"
-              className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-lg border border-white/10 transition-colors"
+              className="px-6 py-3 bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white font-semibold rounded-lg border border-slate-200 dark:border-white/10 transition-colors"
             >
               View All FAQs
             </Link>
@@ -456,12 +456,12 @@ function CodeBlock({ code }: { code: string }) {
 
   return (
     <div className="relative group">
-      <pre className="bg-slate-950/50 border border-white/10 rounded-lg p-4 overflow-x-auto">
+      <pre className="bg-slate-950/50 border border-slate-200 dark:border-white/10 rounded-lg p-4 overflow-x-auto">
         <code className="text-cyan-300 text-sm font-mono">{code}</code>
       </pre>
       <button
         onClick={handleCopy}
-        className="absolute top-2 right-2 px-3 py-1 bg-white/10 hover:bg-white/20 text-white text-xs rounded border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-2 right-2 px-3 py-1 bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white text-xs rounded border border-slate-200 dark:border-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
       >
         {copied ? "✓ Copied" : "Copy"}
       </button>
@@ -483,13 +483,13 @@ function NextStepCard({
   return (
     <Link
       href={href}
-      className="group block bg-white/5 border border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-white/10 transition-all"
+      className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
     >
       <div className="text-3xl mb-3">{icon}</div>
-      <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-cyan-300">
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-cyan-300">
         {title}
       </h3>
-      <p className="text-white/60 text-sm group-hover:text-white/70">{description}</p>
+      <p className="text-slate-500 dark:text-white/60 text-sm group-hover:text-slate-600 dark:group-hover:text-white/70">{description}</p>
       <span className="inline-block mt-3 text-cyan-400 text-sm group-hover:translate-x-1 transition-transform">
         Learn more →
       </span>

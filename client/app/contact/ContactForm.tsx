@@ -53,10 +53,10 @@ export function ContactForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-5 grid gap-4 text-sm text-white/80">
+    <form onSubmit={handleSubmit} className="mt-5 grid gap-4 text-sm text-slate-700 dark:text-white/80">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="name" className="text-xs font-medium uppercase tracking-wide text-white/60">
+          <label htmlFor="name" className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">
             Full name
           </label>
           <input
@@ -65,11 +65,11 @@ export function ContactForm() {
             type="text"
             autoComplete="name"
             placeholder="Jane Doe"
-            className="rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-sm outline-none placeholder:text-white/35 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+            className="rounded-lg border border-white/15 bg-white dark:bg-black/40 px-3 py-2 text-sm outline-none placeholder:text-white/35 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="email" className="text-xs font-medium uppercase tracking-wide text-white/60">
+          <label htmlFor="email" className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">
             Work email
           </label>
           <input
@@ -78,19 +78,19 @@ export function ContactForm() {
             type="email"
             autoComplete="email"
             placeholder="you@company.com"
-            className="rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-sm outline-none placeholder:text-white/35 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+            className="rounded-lg border border-white/15 bg-white dark:bg-black/40 px-3 py-2 text-sm outline-none placeholder:text-white/35 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
           />
         </div>
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="type" className="text-xs font-medium uppercase tracking-wide text-white/60">
+        <label htmlFor="type" className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">
           Enquiry type
         </label>
         <select
           id="type"
           name="type"
-          className="rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-sm outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+          className="rounded-lg border border-white/15 bg-white dark:bg-black/40 px-3 py-2 text-sm outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
           defaultValue="support"
         >
           <option value="support">Product or order support</option>
@@ -101,7 +101,7 @@ export function ContactForm() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="message" className="text-xs font-medium uppercase tracking-wide text-white/60">
+        <label htmlFor="message" className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">
           How can we help?
         </label>
         <textarea
@@ -109,7 +109,7 @@ export function ContactForm() {
           name="message"
           rows={5}
           placeholder="Share context such as order ID, product link, or what you are trying to achieve."
-          className="resize-none rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-sm outline-none placeholder:text-white/35 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+          className="resize-none rounded-lg border border-white/15 bg-white dark:bg-black/40 px-3 py-2 text-sm outline-none placeholder:text-white/35 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
         />
       </div>
 

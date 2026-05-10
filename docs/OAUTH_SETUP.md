@@ -1,6 +1,6 @@
 # OAuth Setup Guide
 
-This guide will help you set up OAuth authentication with Google and GitHub for your ContentSellify application.
+This guide will help you set up OAuth authentication with Google and GitHub for your Bitforge application.
 
 ## 1. Google OAuth Setup
 
@@ -18,7 +18,7 @@ This guide will help you set up OAuth authentication with Google and GitHub for 
 1. Go to "APIs & Services" > "Credentials"
 2. Click "Create Credentials" > "OAuth client ID"
 3. Choose "Web application"
-4. Set the name as "ContentSellify"
+4. Set the name as "bitforge"
 5. Add authorized redirect URIs:
    - `http://localhost:5000/api/oauth/google/callback`
    - `https://yourdomain.com/api/oauth/google/callback` (for production)
@@ -38,7 +38,7 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret-here
 3. Click "New OAuth App"
 
 ### Step 2: Create OAuth Application
-1. Application name: "ContentSellify"
+1. Application name: "bitforge"
 2. Homepage URL: `http://localhost:3000` (development) or your production URL
 3. Authorization callback URL: `http://localhost:5000/api/oauth/github/callback`
 4. Click "Register application"

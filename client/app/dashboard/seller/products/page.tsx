@@ -221,13 +221,13 @@ export default function MyProductsPage() {
   };
 
   const inputClass =
-    "w-full rounded-xl bg-[#18181b] border border-[#27272a] px-4 py-3 text-sm text-white placeholder:text-zinc-500 hover:border-zinc-600 focus:bg-[#1f1f22] focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 transition-all shadow-sm";
+    "w-full rounded-xl bg-slate-100 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 hover:border-slate-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-[#1f1f22] focus:border-cyan-400 dark:focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-400 dark:focus:ring-zinc-500 transition-all shadow-sm dark:shadow-none";
 
   /* ================= LOADING ================= */
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#05050a] text-white">
+      <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
         <PageHeader
           backHref="/dashboard/seller"
           backLabel="Dashboard"
@@ -236,22 +236,22 @@ export default function MyProductsPage() {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <div key={i} className="flex flex-col bg-[#0b0b14] border border-white/5 rounded-2xl overflow-hidden animate-pulse">
+              <div key={i} className="flex flex-col bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden animate-pulse">
                 {/* Thumbnail Skeleton */}
-                <div className="w-full aspect-video bg-white/5" />
+                <div className="w-full aspect-video bg-slate-100 dark:bg-white/5" />
                 
                 {/* Content Skeleton */}
                 <div className="p-5 flex flex-col flex-1 gap-3">
-                  <div className="h-5 bg-white/10 rounded-md w-3/4" />
+                  <div className="h-5 bg-slate-200 dark:bg-white/10 rounded-md w-3/4" />
                   <div className="space-y-2 mt-1">
-                    <div className="h-3 bg-white/10 rounded-md w-full" />
-                    <div className="h-3 bg-white/10 rounded-md w-4/5" />
+                    <div className="h-3 bg-slate-200 dark:bg-white/10 rounded-md w-full" />
+                    <div className="h-3 bg-slate-200 dark:bg-white/10 rounded-md w-4/5" />
                   </div>
                   
                   {/* Price & Footer Skeleton */}
-                  <div className="mt-auto pt-4 flex items-end justify-between border-t border-white/5">
-                    <div className="h-7 bg-white/10 rounded-md w-1/3" />
-                    <div className="h-3 bg-white/10 rounded-md w-1/4" />
+                  <div className="mt-auto pt-4 flex items-end justify-between border-t border-slate-200 dark:border-white/5">
+                    <div className="h-7 bg-slate-200 dark:bg-white/10 rounded-md w-1/3" />
+                    <div className="h-3 bg-slate-200 dark:bg-white/10 rounded-md w-1/4" />
                   </div>
                 </div>
               </div>
@@ -265,7 +265,7 @@ export default function MyProductsPage() {
   /* ================= RENDER ================= */
 
   return (
-    <main className="min-h-screen bg-[#05050a] text-white">
+    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
       <PageHeader
         backHref="/dashboard/seller"
         backLabel="Dashboard"
@@ -296,12 +296,12 @@ export default function MyProductsPage() {
               <motion.div
                 key={p._id}
                 whileHover={approved ? { y: -4 } : {}}
-                className={`relative flex flex-col bg-[#0b0b14] border border-white/10 rounded-2xl overflow-hidden transition-all duration-300
+                className={`relative flex flex-col bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden transition-all duration-300
                   ${approved ? "hover:border-cyan-500/30 hover:shadow-[0_8px_30px_rgba(6,182,212,0.1)]" : "opacity-90"}
                 `}
               >
                 {/* THUMBNAIL AREA */}
-                <div className="relative w-full aspect-video bg-white/5 group-hover:bg-white/10 transition-colors">
+                <div className="relative w-full aspect-video bg-slate-100 dark:bg-white/5 group-hover:bg-slate-200 dark:group-hover:bg-white/10 transition-colors">
                   {p.thumbnailUrl ? (
                     <img
                       src={p.thumbnailUrl}
@@ -309,13 +309,13 @@ export default function MyProductsPage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-white/20">
+                    <div className="absolute inset-0 flex items-center justify-center text-slate-200 dark:text-white/20">
                       <Package className="w-12 h-12" />
                     </div>
                   )}
 
                   {/* OVERLAY GRADIENT */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b14] via-transparent to-transparent opacity-80" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-[#0b0b14] via-transparent to-transparent opacity-80" />
 
                   {/* STATUS BADGE OVERLAY */}
                   <div className="absolute top-3 left-3">
@@ -353,8 +353,8 @@ export default function MyProductsPage() {
                   {/* HEADER */}
                   <div className="flex justify-between items-start gap-4 mb-2">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-base text-white truncate">{p.title}</h3>
-                      <p className="text-xs text-zinc-400 line-clamp-2 mt-1.5 leading-relaxed">
+                      <h3 className="font-bold text-base text-slate-900 dark:text-white truncate">{p.title}</h3>
+                      <p className="text-xs text-slate-500 dark:text-zinc-400 line-clamp-2 mt-1.5 leading-relaxed">
                         {p.description}
                       </p>
                     </div>
@@ -365,7 +365,7 @@ export default function MyProductsPage() {
                         onClick={() =>
                           setOpenMenuId(openMenuId === p._id ? null : p._id)
                         }
-                        className="h-8 w-8 grid place-items-center rounded-xl bg-white/[0.03] border border-white/10 hover:bg-white/10 text-zinc-400 hover:text-white transition-all"
+                        className="h-8 w-8 grid place-items-center rounded-xl bg-slate-100 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-all"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
@@ -377,7 +377,7 @@ export default function MyProductsPage() {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                             transition={{ duration: 0.15 }}
-                            className="absolute right-0 mt-2 w-40 bg-[#18181b] border border-[#27272a] rounded-xl shadow-2xl z-20 overflow-hidden"
+                            className="absolute right-0 mt-2 w-40 bg-white dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl shadow-2xl z-20 overflow-hidden"
                           >
                             <MenuItem
                               label="Edit Details"
@@ -401,11 +401,11 @@ export default function MyProductsPage() {
                   </div>
 
                   {/* PRICE & FOOTER STRETCH */}
-                  <div className="mt-auto pt-4 flex items-end justify-between border-t border-white/5">
+                  <div className="mt-auto pt-4 flex items-end justify-between border-t border-slate-200 dark:border-white/5">
                     <div>
                       {p.discount > 0 ? (
                         <div className="flex flex-col">
-                          <span className="text-[10px] line-through text-zinc-500 font-medium tracking-wide">
+                          <span className="text-[10px] line-through text-slate-500 dark:text-zinc-500 font-medium tracking-wide">
                             ₹{p.price}
                           </span>
                           <div className="flex items-center gap-2">
@@ -419,7 +419,7 @@ export default function MyProductsPage() {
                         </div>
                       ) : (
                         <div className="flex flex-col justify-end h-full pb-0.5">
-                          <span className="font-black text-lg text-white leading-none">
+                          <span className="font-black text-lg text-slate-900 dark:text-white leading-none">
                             ₹{p.price}
                           </span>
                         </div>
@@ -440,54 +440,54 @@ export default function MyProductsPage() {
 
       {/* ================= EDIT MODAL (UNCHANGED STYLE) ================= */}
       {editingProduct && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-white dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#0b0b14] border border-white/10 rounded-2xl p-6 max-w-md w-full space-y-4 max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/10 rounded-2xl p-6 max-w-md w-full space-y-4 max-h-[90vh] overflow-y-auto"
           >
             <h2 className="text-lg font-black">Edit Product</h2>
 
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-white/70 block mb-2">Title</label>
+                <label className="text-xs font-semibold text-slate-600 dark:text-white/70 block mb-2">Title</label>
                 <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className={inputClass} />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-white/70 block mb-2">Description</label>
+                <label className="text-xs font-semibold text-slate-600 dark:text-white/70 block mb-2">Description</label>
                 <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} rows={3} className={`${inputClass} resize-none`} />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-white/70 block mb-2">Price (₹)</label>
+                  <label className="text-xs font-semibold text-slate-600 dark:text-white/70 block mb-2">Price (₹)</label>
                   <input type="number" value={editPrice} onChange={(e) => setEditPrice(+e.target.value)} className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-white/70 block mb-2">Discount (%)</label>
+                  <label className="text-xs font-semibold text-slate-600 dark:text-white/70 block mb-2">Discount (%)</label>
                   <input type="number" value={editDiscount} onChange={(e) => setEditDiscount(+e.target.value)} className={inputClass} />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-white/70 block mb-2">Update File (Optional)</label>
+                <label className="text-xs font-semibold text-slate-600 dark:text-white/70 block mb-2">Update File (Optional)</label>
                 <input
                   type="file"
                   onChange={handleEditFile}
                   className="
-                    w-full text-sm text-zinc-400
+                    w-full text-sm text-slate-500 dark:text-zinc-400
                     file:mr-4 file:rounded-lg
-                    file:border-0 file:bg-[#27272a]
+                    file:border-0 file:bg-slate-200 dark:file:bg-[#27272a]
                     file:px-4 file:py-2.5
                     file:text-sm file:font-medium
-                    file:text-white
-                    hover:file:bg-[#3f3f46]
+                    file:text-slate-900 dark:file:text-white
+                    hover:file:bg-slate-300 dark:hover:file:bg-[#3f3f46]
                     cursor-pointer transition-all
                   "
                 />
                 {editFile && (
-                  <div className="mt-2 text-xs text-white/60">
+                  <div className="mt-2 text-xs text-slate-500 dark:text-white/60">
                     📄 {editFile.name} • {(editFile.size / 1024 / 1024).toFixed(2)} MB
                   </div>
                 )}
@@ -497,19 +497,19 @@ export default function MyProductsPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-white/70 block mb-2">Update Thumbnail (Optional)</label>
+                <label className="text-xs font-semibold text-slate-600 dark:text-white/70 block mb-2">Update Thumbnail (Optional)</label>
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleEditThumbnail}
                   className="
-                    w-full text-sm text-zinc-400
+                    w-full text-sm text-slate-500 dark:text-zinc-400
                     file:mr-4 file:rounded-lg
-                    file:border-0 file:bg-[#27272a]
+                    file:border-0 file:bg-slate-200 dark:file:bg-[#27272a]
                     file:px-4 file:py-2.5
                     file:text-sm file:font-medium
-                    file:text-white
-                    hover:file:bg-[#3f3f46]
+                    file:text-slate-900 dark:file:text-white
+                    hover:file:bg-slate-300 dark:hover:file:bg-[#3f3f46]
                     cursor-pointer transition-all
                   "
                 />
@@ -518,12 +518,12 @@ export default function MyProductsPage() {
                     <img
                       src={editThumbnailPreview}
                       alt="Thumbnail preview"
-                      className="w-32 h-24 object-cover rounded-lg border border-white/10"
+                      className="w-32 h-24 object-cover rounded-lg border border-slate-200 dark:border-white/10"
                     />
                     <button
                       type="button"
                       onClick={removeEditThumbnail}
-                      className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center transition-colors"
+                      className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-slate-900 dark:text-white rounded-full w-6 h-6 flex items-center justify-center transition-colors"
                     >
                       <X className="w-3.5 h-3.5" strokeWidth={3} />
                     </button>
@@ -533,7 +533,7 @@ export default function MyProductsPage() {
             </div>
 
             <div className="flex gap-2 pt-2">
-              <button onClick={() => setEditingProduct(null)} disabled={editLoading} className="flex-1 py-2 bg-white/10 rounded-lg disabled:opacity-50">Cancel</button>
+              <button onClick={() => setEditingProduct(null)} disabled={editLoading} className="flex-1 py-2 bg-slate-200 dark:bg-white/10 rounded-lg disabled:opacity-50">Cancel</button>
               <button onClick={handleUpdateProduct} disabled={editLoading} className="flex-1 py-2 bg-cyan-600/20 border border-cyan-500/30 rounded-lg disabled:opacity-50">
                 {editLoading ? "Updating..." : "Update"}
               </button>
@@ -544,12 +544,12 @@ export default function MyProductsPage() {
 
       {/* ================= DELETE MODAL ================= */}
       {deletingProductId && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <motion.div className="bg-[#0b0b14] border border-red-500/20 rounded-2xl p-6 max-w-md w-full space-y-4">
+        <div className="fixed inset-0 bg-white dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div className="bg-white dark:bg-[#0b0b14] border border-red-200 dark:border-red-500/20 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-xl">
             <h2 className="text-lg font-black text-red-400">Delete Product?</h2>
-            <p className="text-sm text-white/60">This action cannot be undone.</p>
+            <p className="text-sm text-slate-500 dark:text-white/60">This action cannot be undone.</p>
             <div className="flex gap-2">
-              <button onClick={() => setDeletingProductId(null)} className="flex-1 py-2 bg-white/10 rounded-lg">
+              <button onClick={() => setDeletingProductId(null)} className="flex-1 py-2 bg-slate-200 dark:bg-white/10 rounded-lg">
                 Cancel
               </button>
               <button onClick={handleConfirmDelete} className="flex-1 py-2 bg-red-600/20 border border-red-500/30 rounded-lg">
@@ -589,14 +589,14 @@ function MenuItem({
             ? "opacity-40 cursor-not-allowed"
             : danger
             ? "text-red-400 hover:bg-red-500/10 hover:text-red-300"
-            : "text-zinc-300 hover:bg-white/5 hover:text-white"}
+            : "text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"}
         `}
       >
         {icon}
         {label}
       </button>
       {tooltip && (
-        <div className="absolute hidden group-hover:block bottom-full right-0 mb-2 w-max text-[10px] uppercase font-bold tracking-wider bg-black border border-zinc-800 text-zinc-300 px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-xl">
+        <div className="absolute hidden group-hover:block bottom-full right-0 mb-2 w-max text-[10px] uppercase font-bold tracking-wider bg-white dark:bg-black border border-zinc-800 text-zinc-300 px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-xl">
           {tooltip}
         </div>
       )}

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <main className="relative min-h-screen bg-[#05050a] text-white overflow-x-hidden">
+    <main className="relative min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white overflow-x-hidden">
       {/* Background glow */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -top-40 -left-40 h-[420px] w-[420px] rounded-full bg-indigo-600/25 blur-[160px]" />
@@ -25,7 +25,7 @@ export default function ContactPage() {
       <div className="relative z-10 mx-auto max-w-6xl px-4 pt-24 pb-14 md:px-6 md:pt-28 md:pb-18 lg:pt-32 lg:pb-22">
         {/* Hero */}
         <section className="mb-12 md:mb-16">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-600 dark:text-cyan-300/80">
             Contact
           </p>
           <h1 className="mt-3 text-3xl font-black tracking-tight leading-tight sm:text-4xl md:text-5xl">
@@ -34,7 +34,7 @@ export default function ContactPage() {
               Support, sales and partnership enquiries
             </span>
           </h1>
-          <p className="mt-4 max-w-md text-sm text-white/70 sm:max-w-2xl sm:text-base">
+          <p className="mt-4 max-w-md text-sm text-slate-600 dark:text-white/70 sm:max-w-2xl sm:text-base">
             Whether you are a creator selling your first product, a team consolidating your
             digital commerce stack, or a buyer who needs help with an order, we are here to help.
             Choose the most relevant option below and we will route your request to the right
@@ -45,9 +45,9 @@ export default function ContactPage() {
         {/* Primary contact options */}
         <section className="mb-12 grid gap-6 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           {/* Form */}
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 sm:p-7">
+          <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-5 sm:p-7">
             <h2 className="text-base font-semibold sm:text-lg">Send us a message</h2>
-            <p className="mt-2 text-[13px] text-white/65 sm:text-sm">
+            <p className="mt-2 text-[13px] text-slate-600 dark:text-white/65 sm:text-sm">
               Share a few details about what you need help with. Our team typically responds
               within one working day for support requests and within two working days for
               partnership enquiries.
@@ -57,49 +57,49 @@ export default function ContactPage() {
           </div>
 
           {/* Direct channels */}
-          <aside className="space-y-6 rounded-2xl border border-white/10 bg-black/50 p-5 text-[13px] text-white/75 sm:p-6 sm:text-sm">
+          <aside className="space-y-6 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-black/50 p-5 text-[13px] text-slate-600 dark:text-white/75 sm:p-6 sm:text-sm">
             <div>
-              <h2 className="text-sm font-semibold text-white">Support</h2>
-              <p className="mt-2 text-white/65">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Support</h2>
+              <p className="mt-2 text-slate-600 dark:text-white/65">
                 For help with payments, access, or downloads, reach out to our support team.
               </p>
               <a
                 href="mailto:help@bittforge.in"
-                className="mt-2 inline-flex text-sm font-medium text-cyan-300 hover:text-cyan-200 hover:underline underline-offset-2"
+                className="mt-2 inline-flex text-sm font-medium text-cyan-600 dark:text-cyan-300 hover:text-cyan-800 dark:hover:text-cyan-200 hover:underline underline-offset-2"
               >
                 help@bittforge.in
               </a>
-              <p className="mt-1 text-[11px] text-white/45">
+              <p className="mt-1 text-[11px] text-slate-500 dark:text-white/45">
                 Typical response time: under 24 hours on business days.
               </p>
             </div>
 
             <div>
-              <h2 className="text-sm font-semibold text-white">Sales & partnerships</h2>
-              <p className="mt-2 text-white/65">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Sales & partnerships</h2>
+              <p className="mt-2 text-slate-600 dark:text-white/65">
                 If you are evaluating BitForge for a team, or exploring integrations and
                 co-marketing opportunities, our partnerships group can help.
               </p>
               <a
                 href="mailto:partners@bittforge.in"
-                className="mt-2 inline-flex text-sm font-medium text-cyan-300 hover:text-cyan-200 hover:underline underline-offset-2"
+                className="mt-2 inline-flex text-sm font-medium text-cyan-600 dark:text-cyan-300 hover:text-cyan-800 dark:hover:text-cyan-200 hover:underline underline-offset-2"
               >
                 partners@bittforge.in
               </a>
-              <p className="mt-1 text-[11px] text-white/45">
+              <p className="mt-1 text-[11px] text-slate-500 dark:text-white/45">
                 Please include a short description of your company and use case.
               </p>
             </div>
 
             <div>
-              <h2 className="text-sm font-semibold text-white">Press & legal</h2>
-              <p className="mt-2 text-white/65">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Press & legal</h2>
+              <p className="mt-2 text-slate-600 dark:text-white/65">
                 For media enquiries, platform policies, or legal notices, contact us via our
                 dedicated mailbox.
               </p>
               <a
                 href="mailto:legal@bittforge.in"
-                className="mt-2 inline-flex text-sm font-medium text-cyan-300 hover:text-cyan-200 hover:underline underline-offset-2"
+                className="mt-2 inline-flex text-sm font-medium text-cyan-600 dark:text-cyan-300 hover:text-cyan-800 dark:hover:text-cyan-200 hover:underline underline-offset-2"
               >
                 legal@bittforge.in
               </a>
@@ -108,28 +108,28 @@ export default function ContactPage() {
         </section>
 
         {/* Regional info / footer meta */}
-        <section className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5 text-[12px] text-white/65 sm:p-6 sm:text-[13px]">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-white/60">
+        <section className="mt-6 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-5 text-[12px] text-slate-600 dark:text-white/65 sm:p-6 sm:text-[13px]">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-white/60">
             Company & regional information
           </h2>
           <div className="mt-3 grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <p className="font-medium text-white/80">BitForge Platform</p>
+              <p className="font-medium text-slate-700 dark:text-white/80">BitForge Platform</p>
               <p>India-first, remote-friendly team focused on digital product commerce.</p>
-              <p className="text-white/45">
+              <p className="text-slate-500 dark:text-white/45">
                 For security disclosures, uptime, and policy details, visit our Trust Center.
               </p>
               <Link
                 href="/trust-center"
-                className="inline-flex text-xs font-medium text-cyan-300 hover:text-cyan-200 hover:underline underline-offset-2"
+                className="inline-flex text-xs font-medium text-cyan-600 dark:text-cyan-300 hover:text-cyan-800 dark:hover:text-cyan-200 hover:underline underline-offset-2"
               >
                 Open Trust Center
               </Link>
             </div>
             <div className="space-y-1.5">
-              <p className="font-medium text-white/80">Operational hours</p>
+              <p className="font-medium text-slate-700 dark:text-white/80">Operational hours</p>
               <p>Support coverage: Monday–Friday, 10:00–19:00 IST (excluding public holidays).</p>
-              <p className="text-white/45">
+              <p className="text-slate-500 dark:text-white/45">
                 Messages received outside these hours are queued and answered on the next
                 business day.
               </p>

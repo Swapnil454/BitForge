@@ -104,7 +104,7 @@ export default function ProductsManagementPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white selection:bg-purple-500/30">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f] text-slate-900 dark:text-white selection:bg-purple-500/30">
       <PageHeader
         backHref="/dashboard/admin"
         backLabel="Dashboard"
@@ -116,9 +116,9 @@ export default function ProductsManagementPage() {
              <div className="relative" ref={headerMenuRef}>
                 <button
                   onClick={() => setHeaderMenuOpen(!headerMenuOpen)}
-                  className="h-11 w-11 rounded-2xl border border-white/10 bg-white/[0.03] flex items-center justify-center hover:bg-white/[0.08] transition shadow-xl"
+                  className="h-11 w-11 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/[0.03] flex items-center justify-center hover:bg-white/[0.08] transition shadow-xl"
                 >
-                  <MoreVertical className="h-5 w-5 text-white/70" />
+                  <MoreVertical className="h-5 w-5 text-slate-600 dark:text-white/70" />
                 </button>
 
                 <AnimatePresence>
@@ -127,14 +127,14 @@ export default function ProductsManagementPage() {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                      className="absolute right-0 mt-3 w-48 rounded-2xl border border-white/10 bg-[#12121a] backdrop-blur-xl p-2 shadow-2xl z-50"
+                      className="absolute right-0 mt-3 w-48 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/95 dark:bg-[#12121a] backdrop-blur-xl p-2 shadow-2xl shadow-gray-200/50 dark:shadow-black/40 z-50"
                     >
                       <button
                         onClick={() => {
                           router.push("/dashboard/admin/products-management/analytics");
                           setHeaderMenuOpen(false);
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-white/60 hover:text-white hover:bg-white/[0.05] transition-all"
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-white/[0.05] transition-all"
                       >
                         <BarChart3 className="w-4 h-4" />
                         Analytics
@@ -164,7 +164,7 @@ export default function ProductsManagementPage() {
           <AnimatePresence mode="popLayout">
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-[120px] bg-[#1c1c24] border border-white/10 rounded-2xl animate-pulse" />
+                <div key={i} className="h-[120px] bg-slate-100 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/10 rounded-2xl animate-pulse" />
               ))
             ) : products.length > 0 ? (
               products.map((product, idx) => (
@@ -174,11 +174,11 @@ export default function ProductsManagementPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.98 }}
                   transition={{ delay: idx * 0.03 }}
-                  className="group relative bg-[#1c1c24] hover:bg-[#23232d] border border-white/[0.05] hover:border-blue-500/40 rounded-2xl p-4 transition-all duration-300"
+                  className="group relative bg-slate-100 dark:bg-[#1c1c24] hover:bg-slate-200 dark:hover:bg-[#23232d] border border-slate-200 dark:border-white/[0.05] hover:border-blue-500/40 rounded-2xl p-4 transition-all duration-300"
                 >
                   <div className="flex items-center gap-4">
                     {/* Compact Square Thumbnail */}
-                    <div className="relative shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-black/40 overflow-hidden border border-white/5 shadow-xl">
+                    <div className="relative shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-white dark:bg-black/40 overflow-hidden border border-slate-200 dark:border-white/5 shadow-xl">
                       {product.thumbnailUrl ? (
                         <img 
                           src={product.thumbnailUrl} 
@@ -195,35 +195,35 @@ export default function ProductsManagementPage() {
                     {/* Middle Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <h3 className="text-base sm:text-lg font-bold text-white/90 group-hover:text-white truncate tracking-tight uppercase">
+                        <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white/90 group-hover:text-slate-900 dark:group-hover:text-white truncate tracking-tight uppercase">
                           {product.title}
                         </h3>
                         <div className={`shrink-0 flex items-center gap-1.5 px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border ${
-                          product.status === "approved" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" :
-                          product.status === "pending" ? "bg-amber-500/10 border-amber-500/20 text-amber-400" :
-                          "bg-rose-500/10 border-rose-500/20 text-rose-400"
+                          product.status === "approved" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400" :
+                          product.status === "pending" ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400" :
+                          "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400"
                         }`}>
                           {getStatusIcon(product.status)}
                           {product.status}
                         </div>
                       </div>
                       
-                      <p className="text-sm text-white/40 line-clamp-1 mb-1 font-medium">
+                      <p className="text-sm text-slate-400 dark:text-white/40 line-clamp-1 mb-1 font-medium">
                         {product.description}
                       </p>
 
                       <div className="flex items-center gap-3 flex-wrap opacity-60">
                         <div className="flex items-center gap-1.5 text-[10px] font-bold">
-                          <span className="text-white/30 uppercase tracking-widest text-[8px]">₹</span>
-                          <span className="text-white">{product.price}</span>
+                          <span className="text-slate-300 dark:text-white/30 uppercase tracking-widest text-[8px]">₹</span>
+                          <span className="text-slate-900 dark:text-white">{product.price}</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-[10px] font-bold">
-                          <span className="text-white/30 uppercase tracking-widest text-[8px]">By</span>
-                          <span className="text-white truncate max-w-[100px]">{product.sellerId?.name}</span>
+                          <span className="text-slate-300 dark:text-white/30 uppercase tracking-widest text-[8px]">By</span>
+                          <span className="text-slate-900 dark:text-white truncate max-w-[100px]">{product.sellerId?.name}</span>
                         </div>
                         <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-bold">
-                          <span className="text-white/30 uppercase tracking-widest text-[8px]">In</span>
-                          <span className="text-white">{product.category || "General"}</span>
+                          <span className="text-slate-300 dark:text-white/30 uppercase tracking-widest text-[8px]">In</span>
+                          <span className="text-slate-900 dark:text-white">{product.category || "General"}</span>
                         </div>
                       </div>
                     </div>
@@ -231,7 +231,7 @@ export default function ProductsManagementPage() {
                     {/* Right Action Button */}
                     <button 
                       onClick={() => router.push(`/dashboard/admin/products-management/${product._id}`)}
-                      className="shrink-0 h-8 px-4 rounded-lg bg-blue-500/10 hover:bg-blue-600 border border-blue-500/20 hover:border-blue-600 text-[11px] font-black uppercase tracking-wider text-blue-400 hover:text-white transition-all duration-300 active:scale-95"
+                      className="shrink-0 h-8 px-4 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-white/60 hover:text-slate-900 dark:hover:text-white transition-all duration-300 active:scale-95"
                     >
                       View
                     </button>
@@ -239,12 +239,12 @@ export default function ProductsManagementPage() {
                 </motion.div>
               ))
             ) : (
-              <div className="text-center py-24 bg-[#1c1c24] border border-white/10 rounded-3xl">
-                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Search className="w-6 h-6 text-white/20" />
+              <div className="text-center py-24 bg-slate-100 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/10 rounded-3xl">
+                <div className="w-16 h-16 bg-slate-200/50 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-6 h-6 text-slate-400 dark:text-white/20" />
                 </div>
-                <h3 className="text-lg font-semibold text-white/60">No products found</h3>
-                <p className="text-white/20 text-sm mt-1 px-4">Try adjusting your filters or search terms.</p>
+                <h3 className="text-lg font-semibold text-slate-500 dark:text-white/60">No products found</h3>
+                <p className="text-slate-400 dark:text-white/20 text-sm mt-1 px-4">Try adjusting your filters or search terms.</p>
               </div>
             )}
           </AnimatePresence>
@@ -252,15 +252,15 @@ export default function ProductsManagementPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/5">
-            <p className="text-xs font-bold text-white/30 uppercase tracking-widest">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-200 dark:border-white/5">
+            <p className="text-xs font-bold text-slate-300 dark:text-white/30 uppercase tracking-widest">
               Showing {products.length} of {totalCount} products
             </p>
             <div className="flex items-center gap-2">
               <button
                 disabled={page === 1}
                 onClick={() => setPage(p => p - 1)}
-                className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/10 text-white/40 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/[0.08] transition-all"
+                className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-400 dark:text-white/40 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/[0.08] transition-all"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
@@ -276,7 +276,7 @@ export default function ProductsManagementPage() {
                       className={`h-10 w-10 rounded-xl text-xs font-black transition-all border ${
                         page === p
                           ? "bg-purple-500/20 border-purple-500/40 text-purple-400"
-                          : "bg-white/[0.03] border-white/5 text-white/30 hover:bg-white/[0.08] hover:text-white"
+                          : "bg-slate-100 dark:bg-white/[0.03] border-slate-200 dark:border-white/5 text-slate-300 dark:text-white/30 hover:bg-white/[0.08] hover:text-slate-900 dark:hover:text-white"
                       }`}
                     >
                       {p}
@@ -288,7 +288,7 @@ export default function ProductsManagementPage() {
               <button
                 disabled={page === totalPages}
                 onClick={() => setPage(p => p + 1)}
-                className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/[0.03] border border-white/10 text-white/40 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/[0.08] transition-all"
+                className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-400 dark:text-white/40 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/[0.08] transition-all"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>

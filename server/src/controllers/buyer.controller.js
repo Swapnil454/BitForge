@@ -173,7 +173,11 @@ export const getAllBuyerTransactions = async (req, res) => {
     const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
     const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
     const status = req.query.status || "all";
-    const sortBy = req.query.sortBy === "oldest" ? "oldest" : "newest";
+    const sortBy = req.query.sortBy;
+    let sortQuery = { createdAt: -1 };
+    if (sortBy === "oldest") sortQuery = { createdAt: 1 };
+    else if (sortBy === "highest") sortQuery = { amount: -1 };
+    else if (sortBy === "lowest") sortQuery = { amount: 1 };
     const search = (req.query.search || "").trim();
     const skip = (page - 1) * limit;
 
@@ -195,7 +199,7 @@ export const getAllBuyerTransactions = async (req, res) => {
     const orders = await Order.find(query)
       .populate("productId", "title")
       .populate("sellerId", "name email")
-      .sort({ createdAt: sortBy === "newest" ? -1 : 1 })
+      .sort(sortQuery)
       .skip(skip)
       .limit(limit);
 

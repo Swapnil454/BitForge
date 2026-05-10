@@ -101,16 +101,16 @@ export default function TransactionDetailsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#05050a] text-white">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
         <PageHeader
           backHref="/dashboard/buyer/transactions"
           backLabel="Transactions"
           title="Transaction Details"
         />
         <main className="max-w-6xl mx-auto px-4 py-6 space-y-4">
-          <div className="h-44 rounded-3xl bg-white/5 animate-pulse" />
-          <div className="h-56 rounded-2xl bg-white/5 animate-pulse" />
-          <div className="h-14 rounded-xl bg-white/5 animate-pulse" />
+          <div className="h-44 rounded-3xl bg-slate-100 dark:bg-white/5 animate-pulse" />
+          <div className="h-56 rounded-2xl bg-slate-100 dark:bg-white/5 animate-pulse" />
+          <div className="h-14 rounded-xl bg-slate-100 dark:bg-white/5 animate-pulse" />
         </main>
       </div>
     );
@@ -118,13 +118,13 @@ export default function TransactionDetailsPage() {
 
   if (!transaction) {
     return (
-      <div className="min-h-screen bg-[#05050a] text-white flex items-center justify-center px-4">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white flex items-center justify-center px-4">
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-2">Transaction Not Found</h1>
-          <p className="text-white/60 mb-6">This transaction does not exist or you do not have access to it.</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Transaction Not Found</h1>
+          <p className="text-slate-500 dark:text-white/60 mb-6">This transaction does not exist or you do not have access to it.</p>
           <button
             onClick={() => router.push("/dashboard/buyer/transactions")}
-            className="px-5 py-2.5 rounded-xl bg-linear-to-r from-violet-500 to-indigo-500 text-white font-semibold hover:from-violet-600 hover:to-indigo-600 transition"
+            className="px-5 py-2.5 rounded-xl bg-linear-to-r from-violet-500 to-indigo-500 text-slate-900 dark:text-white font-semibold hover:from-violet-600 hover:to-indigo-600 transition"
           >
             View All Transactions
           </button>
@@ -134,7 +134,7 @@ export default function TransactionDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
       <PrintInvoice transaction={transaction} />
 
       <div className="screen-content">

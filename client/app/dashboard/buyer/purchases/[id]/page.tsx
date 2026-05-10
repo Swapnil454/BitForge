@@ -113,19 +113,19 @@ export default function PurchaseDetailsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#05050a] text-white pb-20">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-20">
         {/* Skeleton Header matching PageHeader */}
-        <header className="sticky top-0 z-50 border-b border-white/10 bg-linear-to-r from-black via-slate-950 to-black/95 backdrop-blur-xl">
+        <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-white/10 bg-linear-to-r from-black via-slate-950 to-black/95 backdrop-blur-xl">
           <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
             <div className="relative flex min-h-[58px] items-center justify-center">
               <div className="absolute left-0 flex items-center gap-2 opacity-50">
-                <div className="h-8 w-8 rounded-md bg-white/10 animate-pulse" />
-                <div className="h-4 w-16 bg-white/10 rounded animate-pulse hidden sm:block" />
+                <div className="h-8 w-8 rounded-md bg-slate-200 dark:bg-white/10 animate-pulse" />
+                <div className="h-4 w-16 bg-slate-200 dark:bg-white/10 rounded animate-pulse hidden sm:block" />
               </div>
 
               <div className="px-16 text-center space-y-2 flex flex-col items-center opacity-50">
-                <div className="h-6 w-40 bg-white/10 rounded animate-pulse" />
-                <div className="h-3 w-32 bg-white/10 rounded animate-pulse" />
+                <div className="h-6 w-40 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+                <div className="h-3 w-32 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
               </div>
             </div>
           </div>
@@ -137,29 +137,29 @@ export default function PurchaseDetailsPage() {
             {/* Left Column Skeleton */}
             <div className="flex-1 space-y-6">
               {/* Product Card */}
-              <div className="bg-[#08111d] rounded-2xl border border-white/5 p-5 sm:p-6 lg:p-8">
+              <div className="bg-white dark:bg-[#08111d] rounded-2xl border border-slate-200 dark:border-white/5 p-5 sm:p-6 lg:p-8">
                 <div className="flex flex-col sm:flex-row gap-6 items-start">
-                  <div className="w-full sm:w-48 aspect-video sm:aspect-square rounded-xl bg-white/5 animate-pulse shrink-0" />
+                  <div className="w-full sm:w-48 aspect-video sm:aspect-square rounded-xl bg-slate-100 dark:bg-white/5 animate-pulse shrink-0" />
                   <div className="flex-1 w-full space-y-4 py-2">
-                    <div className="h-6 w-3/4 bg-white/5 rounded animate-pulse" />
+                    <div className="h-6 w-3/4 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
                     <div className="space-y-2">
-                      <div className="h-3 w-full bg-white/5 rounded animate-pulse" />
-                      <div className="h-3 w-full bg-white/5 rounded animate-pulse" />
-                      <div className="h-3 w-2/3 bg-white/5 rounded animate-pulse" />
+                      <div className="h-3 w-full bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                      <div className="h-3 w-full bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                      <div className="h-3 w-2/3 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
                     </div>
-                    <div className="h-5 w-24 bg-white/5 rounded animate-pulse mt-4" />
+                    <div className="h-5 w-24 bg-slate-100 dark:bg-white/5 rounded animate-pulse mt-4" />
                   </div>
                 </div>
               </div>
 
               {/* System Info */}
-              <div className="bg-[#08111d] rounded-2xl border border-white/5 p-5 sm:p-6 lg:p-8">
-                <div className="h-3 w-32 bg-white/5 rounded animate-pulse mb-6" />
+              <div className="bg-white dark:bg-[#08111d] rounded-2xl border border-slate-200 dark:border-white/5 p-5 sm:p-6 lg:p-8">
+                <div className="h-3 w-32 bg-slate-100 dark:bg-white/5 rounded animate-pulse mb-6" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="bg-[#05050a] border border-white/5 rounded-xl p-4 space-y-2">
-                      <div className="h-3 w-16 bg-white/5 rounded animate-pulse" />
-                      <div className="h-4 w-full bg-white/5 rounded animate-pulse" />
+                    <div key={i} className="bg-slate-50 dark:bg-[#05050a] border border-slate-200 dark:border-white/5 rounded-xl p-4 space-y-2">
+                      <div className="h-3 w-16 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                      <div className="h-4 w-full bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
                     </div>
                   ))}
                 </div>
@@ -169,42 +169,42 @@ export default function PurchaseDetailsPage() {
             {/* Right Column Skeleton */}
             <div className="lg:w-[340px] xl:w-[380px] space-y-6 shrink-0">
               {/* Payment Summary */}
-              <div className="bg-[#08111d] border border-white/5 rounded-2xl p-5 sm:p-6">
-                <div className="h-3 w-28 bg-white/5 rounded animate-pulse mb-6" />
+              <div className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-2xl p-5 sm:p-6">
+                <div className="h-3 w-28 bg-slate-100 dark:bg-white/5 rounded animate-pulse mb-6" />
                 <div className="space-y-4">
-                  <div className="h-3 w-20 bg-white/5 rounded animate-pulse" />
-                  <div className="h-8 w-32 bg-white/5 rounded animate-pulse" />
-                  <div className="h-px w-full bg-white/5" />
+                  <div className="h-3 w-20 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                  <div className="h-8 w-32 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                  <div className="h-px w-full bg-slate-100 dark:bg-white/5" />
                   <div className="flex justify-between">
-                    <div className="h-3 w-16 bg-white/5 rounded animate-pulse" />
-                    <div className="h-5 w-16 bg-white/5 rounded animate-pulse" />
+                    <div className="h-3 w-16 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                    <div className="h-5 w-16 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
                   </div>
                 </div>
               </div>
 
               {/* Seller Info */}
-              <div className="bg-[#08111d] border border-white/5 rounded-2xl p-5 sm:p-6">
-                <div className="h-3 w-24 bg-white/5 rounded animate-pulse mb-6" />
+              <div className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-2xl p-5 sm:p-6">
+                <div className="h-3 w-24 bg-slate-100 dark:bg-white/5 rounded animate-pulse mb-6" />
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <div className="h-3 w-20 bg-white/5 rounded animate-pulse" />
-                    <div className="h-4 w-32 bg-white/5 rounded animate-pulse" />
+                    <div className="h-3 w-20 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                    <div className="h-4 w-32 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
                   </div>
                   <div className="space-y-2">
-                    <div className="h-3 w-20 bg-white/5 rounded animate-pulse" />
-                    <div className="h-4 w-40 bg-white/5 rounded animate-pulse" />
+                    <div className="h-3 w-20 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                    <div className="h-4 w-40 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
                   </div>
                 </div>
               </div>
 
               {/* Timeline */}
-              <div className="bg-[#08111d] border border-white/5 rounded-2xl p-5 sm:p-6">
-                <div className="h-3 w-20 bg-white/5 rounded animate-pulse mb-6" />
+              <div className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-2xl p-5 sm:p-6">
+                <div className="h-3 w-20 bg-slate-100 dark:bg-white/5 rounded animate-pulse mb-6" />
                 <div className="space-y-6 pl-6">
                   {[1, 2].map((i) => (
                     <div key={i} className="space-y-2">
-                      <div className="h-4 w-28 bg-white/5 rounded animate-pulse" />
-                      <div className="h-3 w-32 bg-white/5 rounded animate-pulse" />
+                      <div className="h-4 w-28 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                      <div className="h-3 w-32 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
                     </div>
                   ))}
                 </div>
@@ -213,10 +213,10 @@ export default function PurchaseDetailsPage() {
               {/* Stats */}
               <div className="grid grid-cols-2 gap-3">
                 {[1, 2].map((i) => (
-                  <div key={i} className="bg-[#08111d] border border-white/5 rounded-xl p-4 flex flex-col items-center justify-center space-y-2">
-                    <div className="h-4 w-4 bg-white/5 rounded animate-pulse" />
-                    <div className="h-2 w-16 bg-white/5 rounded animate-pulse" />
-                    <div className="h-3 w-12 bg-white/5 rounded animate-pulse" />
+                  <div key={i} className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-xl p-4 flex flex-col items-center justify-center space-y-2">
+                    <div className="h-4 w-4 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                    <div className="h-2 w-16 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                    <div className="h-3 w-12 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
                   </div>
                 ))}
               </div>
@@ -230,10 +230,10 @@ export default function PurchaseDetailsPage() {
 
   if (!purchase) {
     return (
-      <div className="min-h-screen bg-[#05050a] text-white flex items-center justify-center p-6">
-        <div className="text-center bg-[#08111d] border border-white/10 rounded-3xl p-10 max-w-md w-full shadow-2xl">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white flex items-center justify-center p-6">
+        <div className="text-center bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/10 rounded-3xl p-10 max-w-md w-full shadow-2xl">
           <Package className="w-16 h-16 text-slate-700 mx-auto mb-6" />
-          <p className="text-xl font-bold text-white mb-2">Purchase Not Found</p>
+          <p className="text-xl font-bold text-slate-900 dark:text-white mb-2">Purchase Not Found</p>
           <p className="text-slate-400 text-sm mb-8">This purchase could not be found or you don't have access to it.</p>
           <button
             onClick={() => router.push("/dashboard/buyer/downloads")}
@@ -250,7 +250,7 @@ export default function PurchaseDetailsPage() {
   const purchaseDate = new Date(purchase.purchaseDate);
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white pb-20">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-20">
       
       <PageHeader
         backHref="/dashboard/buyer/downloads"
@@ -261,7 +261,7 @@ export default function PurchaseDetailsPage() {
           <div className="flex items-center gap-2">
              <button 
                 onClick={() => window.print()} 
-                className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-bold text-white transition"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-xs font-bold text-slate-900 dark:text-white transition"
              >
                 <Printer className="w-4 h-4" /> <span className="hidden md:inline">Receipt</span>
              </button>
@@ -285,9 +285,9 @@ export default function PurchaseDetailsPage() {
           <div className="flex-1 space-y-6">
             
             {/* Compact Product Card */}
-            <div className="bg-[#08111d] rounded-2xl border border-white/5 shadow-xl p-5 sm:p-6 lg:p-8">
+            <div className="bg-white dark:bg-[#08111d] rounded-2xl border border-slate-200 dark:border-white/5 shadow-xl p-5 sm:p-6 lg:p-8">
               <div className="flex flex-col sm:flex-row gap-6 items-start">
-                <div className="w-full sm:w-48 aspect-video sm:aspect-square shrink-0 rounded-xl overflow-hidden bg-[#05050a] border border-white/5 shadow-inner">
+                <div className="w-full sm:w-48 aspect-video sm:aspect-square shrink-0 rounded-xl overflow-hidden bg-slate-50 dark:bg-[#05050a] border border-slate-200 dark:border-white/5 shadow-inner">
                   {purchase.thumbnailUrl ? (
                     <img 
                       src={purchase.thumbnailUrl} 
@@ -303,7 +303,7 @@ export default function PurchaseDetailsPage() {
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug mb-3">
+                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight leading-snug mb-3">
                     {purchase.productName}
                   </h2>
                   
@@ -314,7 +314,7 @@ export default function PurchaseDetailsPage() {
                   )}
                   
                   {purchase.category && (
-                    <div className="mt-5 inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.03] border border-white/5 rounded text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <div className="mt-5 inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 rounded text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                       <Tag className="w-3 h-3" />
                       {purchase.category}
                     </div>
@@ -324,28 +324,28 @@ export default function PurchaseDetailsPage() {
             </div>
 
             {/* System Information */}
-            <div className="bg-[#08111d] border border-white/5 rounded-2xl p-5 sm:p-6 lg:p-8 shadow-xl">
+            <div className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-2xl p-5 sm:p-6 lg:p-8 shadow-xl">
               <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-5 flex items-center gap-2">
                 <CreditCard className="w-4 h-4" /> System Reference
               </h3>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-[#05050a] border border-white/5 rounded-xl p-4">
+                <div className="bg-slate-50 dark:bg-[#05050a] border border-slate-200 dark:border-white/5 rounded-xl p-4">
                   <p className="text-[11px] text-slate-500 mb-1 font-semibold uppercase tracking-wider">Product ID</p>
                   <p className="text-sm text-slate-300 font-mono break-all">{purchase.productId}</p>
                 </div>
-                <div className="bg-[#05050a] border border-white/5 rounded-xl p-4">
+                <div className="bg-slate-50 dark:bg-[#05050a] border border-slate-200 dark:border-white/5 rounded-xl p-4">
                   <p className="text-[11px] text-slate-500 mb-1 font-semibold uppercase tracking-wider">Order ID</p>
                   <p className="text-sm text-slate-300 font-mono break-all">{purchase.orderId}</p>
                 </div>
                 {purchase.razorpayOrderId && (
-                  <div className="bg-[#05050a] border border-white/5 rounded-xl p-4">
+                  <div className="bg-slate-50 dark:bg-[#05050a] border border-slate-200 dark:border-white/5 rounded-xl p-4">
                     <p className="text-[11px] text-slate-500 mb-1 font-semibold uppercase tracking-wider">Razorpay Order</p>
                     <p className="text-sm text-slate-300 font-mono break-all">{purchase.razorpayOrderId}</p>
                   </div>
                 )}
                 {purchase.razorpayPaymentId && (
-                  <div className="bg-[#05050a] border border-white/5 rounded-xl p-4">
+                  <div className="bg-slate-50 dark:bg-[#05050a] border border-slate-200 dark:border-white/5 rounded-xl p-4">
                     <p className="text-[11px] text-slate-500 mb-1 font-semibold uppercase tracking-wider">Payment Ref</p>
                     <p className="text-sm text-slate-300 font-mono break-all">{purchase.razorpayPaymentId}</p>
                   </div>
@@ -368,7 +368,7 @@ export default function PurchaseDetailsPage() {
               <div className="flex flex-col gap-4">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Amount Paid</p>
-                  <p className="text-3xl font-black text-white tracking-tight">{currency.format(purchase.amount)}</p>
+                  <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{currency.format(purchase.amount)}</p>
                 </div>
                 
                 <div className="h-px w-full bg-emerald-500/10" />
@@ -383,14 +383,14 @@ export default function PurchaseDetailsPage() {
             </div>
 
             {/* Seller Information */}
-            <div className="bg-[#08111d] border border-white/5 rounded-2xl p-5 sm:p-6 shadow-xl">
+            <div className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-2xl p-5 sm:p-6 shadow-xl">
               <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-5 flex items-center gap-2">
                 <User className="w-4 h-4" /> Seller Details
               </h3>
               <div className="space-y-4">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Seller Name</p>
-                  <p className="text-sm text-white font-bold">{purchase.sellerName}</p>
+                  <p className="text-sm text-slate-900 dark:text-white font-bold">{purchase.sellerName}</p>
                 </div>
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Contact Email</p>
@@ -400,17 +400,17 @@ export default function PurchaseDetailsPage() {
             </div>
 
             {/* Purchase Timeline */}
-            <div className="bg-[#08111d] border border-white/5 rounded-2xl p-5 sm:p-6 shadow-xl">
+            <div className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-2xl p-5 sm:p-6 shadow-xl">
               <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-5 flex items-center gap-2">
                 <History className="w-4 h-4" /> Timeline
               </h3>
               
-              <div className="relative pl-6 space-y-5 before:absolute before:inset-y-0 before:left-[11px] before:w-px before:bg-white/5">
+              <div className="relative pl-6 space-y-5 before:absolute before:inset-y-0 before:left-[11px] before:w-px before:bg-slate-100 dark:bg-white/5">
                 <div className="relative">
                   <div className="absolute -left-[29px] w-6 h-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                   </div>
-                  <p className="text-xs font-bold text-white mb-0.5">Purchase Completed</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white mb-0.5">Purchase Completed</p>
                   <p className="text-[11px] text-slate-400 font-medium">
                     {purchaseDate.toLocaleString('en-US', {
                       month: 'short',
@@ -426,7 +426,7 @@ export default function PurchaseDetailsPage() {
                   <div className="absolute -left-[29px] w-6 h-6 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
                     <DownloadCloud className="w-3.5 h-3.5 text-indigo-400" />
                   </div>
-                  <p className="text-xs font-bold text-white mb-0.5">Product Available</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white mb-0.5">Product Available</p>
                   <p className="text-[11px] text-slate-400 font-medium">Ready for instant download</p>
                 </div>
               </div>
@@ -434,15 +434,15 @@ export default function PurchaseDetailsPage() {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-[#08111d] border border-white/5 rounded-xl p-4 flex flex-col justify-center items-center text-center shadow-lg">
+              <div className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-xl p-4 flex flex-col justify-center items-center text-center shadow-lg">
                 <Calendar className="w-4 h-4 text-slate-500 mb-2" />
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Purchased On</p>
-                <p className="text-xs text-white font-bold">{purchaseDate.toLocaleDateString()}</p>
+                <p className="text-xs text-slate-900 dark:text-white font-bold">{purchaseDate.toLocaleDateString()}</p>
               </div>
-              <div className="bg-[#08111d] border border-white/5 rounded-xl p-4 flex flex-col justify-center items-center text-center shadow-lg">
+              <div className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-xl p-4 flex flex-col justify-center items-center text-center shadow-lg">
                 <Clock className="w-4 h-4 text-slate-500 mb-2" />
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Days Ago</p>
-                <p className="text-xs text-white font-bold">
+                <p className="text-xs text-slate-900 dark:text-white font-bold">
                   {Math.floor((Date.now() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24))}
                 </p>
               </div>

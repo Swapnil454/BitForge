@@ -60,17 +60,17 @@ export default function InlineSearchFilters({
           placeholder="Search by product, seller, or order ID"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full h-11 rounded-xl border border-white/12 bg-white/5 pl-10 pr-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-violet-400/50 focus:ring-2 focus:ring-violet-500/20 transition"
+          className="w-full h-11 rounded-xl border border-white/12 bg-slate-100 dark:bg-white/5 pl-10 pr-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:border-violet-400/50 focus:ring-2 focus:ring-violet-500/20 transition"
         />
       </div>
 
       <div className="relative" ref={filterMenuRef}>
         <button
           onClick={() => setFilterMenuOpen((prev) => !prev)}
-          className="h-11 px-3 sm:px-4 rounded-xl border border-white/12 bg-white/5 hover:bg-white/10 hover:border-white/25 inline-flex items-center gap-2 transition"
+          className="h-11 px-3 sm:px-4 rounded-xl border border-white/12 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 hover:border-white/25 inline-flex items-center gap-2 transition"
         >
-          <Filter className="h-4 w-4 text-white/80" />
-          <span className="hidden sm:inline text-sm text-white/80">Filters</span>
+          <Filter className="h-4 w-4 text-slate-700 dark:text-white/80" />
+          <span className="hidden sm:inline text-sm text-slate-700 dark:text-white/80">Filters</span>
         </button>
 
         <AnimatePresence>
@@ -93,8 +93,8 @@ export default function InlineSearchFilters({
                       }}
                       className={`rounded-lg px-3 py-2 text-sm text-left transition border ${
                         filterBy === filter
-                          ? "border-violet-400/45 bg-violet-500/25 text-white"
-                          : "border-white/10 bg-white/5 text-white/70 hover:text-white hover:bg-white/10"
+                          ? "border-violet-400/45 bg-violet-500/25 text-slate-900 dark:text-white"
+                          : "border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10"
                       }`}
                     >
                       {FILTER_LABELS[filter]}
@@ -103,7 +103,7 @@ export default function InlineSearchFilters({
                 </div>
               </div>
 
-              <div className="mt-3 pt-3 border-t border-white/10">
+              <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/10">
                 <p className="text-[11px] uppercase tracking-wider text-white/45 mb-2">Sort</p>
                 <div className="grid grid-cols-1 gap-2">
                   {(["newest", "oldest"] as SortOption[]).map((sort) => (
@@ -115,8 +115,8 @@ export default function InlineSearchFilters({
                       }}
                       className={`rounded-lg px-3 py-2 text-sm text-left transition border ${
                         sortBy === sort
-                          ? "border-indigo-400/45 bg-indigo-500/25 text-white"
-                          : "border-white/10 bg-white/5 text-white/70 hover:text-white hover:bg-white/10"
+                          ? "border-indigo-400/45 bg-indigo-500/25 text-slate-900 dark:text-white"
+                          : "border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10"
                       }`}
                     >
                       {SORT_LABELS[sort]}

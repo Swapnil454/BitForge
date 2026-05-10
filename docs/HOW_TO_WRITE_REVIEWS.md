@@ -1,7 +1,7 @@
 # How Buyers Can Write Reviews - Complete Guide
 
 ## Overview
-The ContentSellify marketplace allows **verified buyers** to write reviews for products they've purchased. This ensures authentic feedback and builds trust in the marketplace.
+The Bitforge marketplace allows **verified buyers** to write reviews for products they've purchased. This ensures authentic feedback and builds trust in the marketplace.
 
 ---
 
@@ -512,7 +512,7 @@ const handleSubmitReview = async () => {
 
 ## Success! 🎉
 
-You now know how buyers can write reviews on ContentSellify! The system ensures:
+You now know how buyers can write reviews on Bitforge! The system ensures:
 - Only verified purchasers can review
 - Authentic and trustworthy feedback
 - Seller accountability and transparency

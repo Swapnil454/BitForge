@@ -104,7 +104,7 @@ export default function SellerEarningsPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#05050a] text-white">
+      <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
         <PageHeader
           backHref="/dashboard/seller"
           backLabel="Dashboard"
@@ -113,12 +113,12 @@ export default function SellerEarningsPage() {
         <section className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-28 bg-[#0b0b14] border border-white/5 rounded-2xl animate-pulse" />
+              <div key={i} className="h-28 bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/5 rounded-2xl animate-pulse shadow-sm dark:shadow-none" />
             ))}
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="h-72 bg-[#0b0b14] border border-white/5 rounded-2xl animate-pulse" />
-            <div className="h-72 bg-[#0b0b14] border border-white/5 rounded-2xl animate-pulse" />
+            <div className="h-72 bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/5 rounded-2xl animate-pulse shadow-sm dark:shadow-none" />
+            <div className="h-72 bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/5 rounded-2xl animate-pulse shadow-sm dark:shadow-none" />
           </div>
         </section>
       </main>
@@ -126,7 +126,7 @@ export default function SellerEarningsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#05050a] text-white">
+    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
       <PageHeader
         backHref="/dashboard/seller"
         backLabel="Dashboard"
@@ -137,37 +137,37 @@ export default function SellerEarningsPage() {
       <section className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* STATS GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} className="bg-[#12121a] border border-[#27272a] rounded-xl p-5 hover:border-zinc-500 transition-colors">
-            <p className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5 flex items-center gap-2">
-              <IndianRupee className="w-3.5 h-3.5 text-zinc-300" /> Total Earnings
+          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} className="bg-white dark:bg-[#12121a] border border-slate-200 dark:border-[#27272a] rounded-xl p-5 hover:border-slate-300 dark:hover:border-zinc-500 transition-colors shadow-sm dark:shadow-none">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-1.5 flex items-center gap-2">
+              <IndianRupee className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-300" /> Total Earnings
             </p>
-            <p className="text-2xl font-black text-white">₹{data?.totalEarnings?.toLocaleString() || 0}</p>
+            <p className="text-2xl font-black text-slate-900 dark:text-white">₹{data?.totalEarnings?.toLocaleString() || 0}</p>
           </motion.div>
 
-          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.1}} className="bg-[#12121a] border border-[#27272a] rounded-xl p-5 hover:border-orange-500/30 transition-colors">
-            <p className="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5 flex items-center gap-2">
+          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.1}} className="bg-white dark:bg-[#12121a] border border-slate-200 dark:border-[#27272a] rounded-xl p-5 hover:border-orange-500/30 transition-colors shadow-sm dark:shadow-none">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-1.5 flex items-center gap-2">
               <ArrowUpRight className="w-3.5 h-3.5 text-orange-500" /> Withdrawn
             </p>
-            <p className="text-2xl font-black text-white">₹{data?.withdrawn?.toLocaleString() || 0}</p>
+            <p className="text-2xl font-black text-slate-900 dark:text-white">₹{data?.withdrawn?.toLocaleString() || 0}</p>
           </motion.div>
 
-          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.2}} className="bg-cyan-500/5 border border-cyan-500/20 rounded-xl p-5 hover:border-cyan-500/40 transition-colors shadow-[0_0_15px_rgba(6,182,212,0.05)]">
-            <p className="text-xs font-bold uppercase tracking-wider text-cyan-400/80 mb-1.5 flex items-center gap-2">
-              <Wallet className="w-3.5 h-3.5 text-cyan-400" /> Available Balance
+          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.2}} className="bg-cyan-50 dark:bg-cyan-500/5 border border-cyan-200 dark:border-cyan-500/20 rounded-xl p-5 hover:border-cyan-300 dark:hover:border-cyan-500/40 transition-colors shadow-[0_0_15px_rgba(6,182,212,0.05)]">
+            <p className="text-xs font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400/80 mb-1.5 flex items-center gap-2">
+              <Wallet className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" /> Available Balance
             </p>
-            <p className="text-2xl font-black text-cyan-400">₹{data?.availableBalance?.toLocaleString() || 0}</p>
+            <p className="text-2xl font-black text-cyan-600 dark:text-cyan-400">₹{data?.availableBalance?.toLocaleString() || 0}</p>
           </motion.div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* REQUEST WITHDRAWAL */}
-          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.3}} className="bg-[#0b0b14] border border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col">
-            <h2 className="text-xl font-bold text-white mb-6">Request Withdrawal</h2>
+          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.3}} className="bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col shadow-sm dark:shadow-none">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Request Withdrawal</h2>
             
             <div className="flex-1 flex flex-col justify-center">
               <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-semibold text-zinc-400 mb-2">
+                  <label className="block text-sm font-semibold text-slate-500 dark:text-zinc-400 mb-2">
                     Withdrawal Amount (₹)
                   </label>
                   <input
@@ -175,14 +175,14 @@ export default function SellerEarningsPage() {
                     placeholder="Enter amount"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="w-full rounded-xl bg-[#18181b] border border-[#27272a] px-5 py-4 text-xl font-black text-white placeholder:text-zinc-600 placeholder:font-normal hover:border-zinc-600 focus:bg-[#1f1f22] focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all shadow-sm"
+                    className="w-full rounded-xl bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] px-5 py-4 text-xl font-black text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 placeholder:font-normal hover:border-slate-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-[#1f1f22] focus:border-cyan-400 dark:focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-400 dark:focus:ring-cyan-500/50 transition-all shadow-sm"
                     disabled={withdrawing}
                   />
                 </div>
                 
                 <div className="flex items-center justify-between text-sm px-1">
-                  <span className="text-zinc-500 font-medium">Available to withdraw:</span>
-                  <span className="font-bold text-cyan-400">₹{data?.availableBalance?.toLocaleString() || 0}</span>
+                  <span className="text-slate-500 dark:text-zinc-500 font-medium">Available to withdraw:</span>
+                  <span className="font-bold text-cyan-600 dark:text-cyan-400">₹{data?.availableBalance?.toLocaleString() || 0}</span>
                 </div>
 
                 <button
@@ -197,12 +197,12 @@ export default function SellerEarningsPage() {
             </div>
 
             {data?.pendingWithdrawals ? (
-              <div className="mt-8 flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+              <div className="mt-8 flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl">
                 <Clock className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-bold tracking-wide text-amber-500">Pending Withdrawals</h4>
-                  <p className="text-sm text-amber-500/80 mt-1 leading-relaxed">
-                    You have <span className="font-bold text-amber-400">₹{data.pendingWithdrawals.toLocaleString()}</span> in pending withdrawals waiting for approval.
+                  <h4 className="text-sm font-bold tracking-wide text-amber-600 dark:text-amber-500">Pending Withdrawals</h4>
+                  <p className="text-sm text-amber-700/80 dark:text-amber-500/80 mt-1 leading-relaxed">
+                    You have <span className="font-bold text-amber-600 dark:text-amber-400">₹{data.pendingWithdrawals.toLocaleString()}</span> in pending withdrawals waiting for approval.
                   </p>
                 </div>
               </div>
@@ -210,22 +210,22 @@ export default function SellerEarningsPage() {
           </motion.div>
 
           {/* PENDING PAYOUTS */}
-          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.4}} className="bg-[#0b0b14] border border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col">
-            <h2 className="text-xl font-bold text-white mb-6">Pending Requests</h2>
+          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay: 0.4}} className="bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/10 rounded-2xl p-5 sm:p-6 flex flex-col shadow-sm dark:shadow-none">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Pending Requests</h2>
             
             {data?.pendingPayouts && data.pendingPayouts.length > 0 ? (
               <div className="space-y-4 overflow-y-auto max-h-[400px] custom-scrollbar pr-2">
                 {data.pendingPayouts.map((payout) => (
                   <div
                     key={payout._id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-[#18181b] rounded-xl border border-[#27272a] hover:border-white/10 transition-colors group"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-slate-50 dark:bg-[#18181b] rounded-xl border border-slate-200 dark:border-[#27272a] hover:border-slate-300 dark:hover:border-white/10 transition-colors group shadow-sm dark:shadow-none"
                   >
                     <div>
-                      <p className="text-2xl font-black text-white">
+                      <p className="text-2xl font-black text-slate-900 dark:text-white">
                         ₹{payout.amount.toLocaleString()}
                       </p>
-                      <p className="text-sm text-zinc-500 mt-1.5 flex items-center gap-1.5 font-medium">
-                        <Clock className="w-4 h-4 text-zinc-600" />
+                      <p className="text-sm text-slate-500 dark:text-zinc-500 mt-1.5 flex items-center gap-1.5 font-medium">
+                        <Clock className="w-4 h-4 text-slate-400 dark:text-zinc-600" />
                         Requested {new Date(payout.requestedAt).toLocaleDateString()}
                       </p>
                     </div>
@@ -241,12 +241,12 @@ export default function SellerEarningsPage() {
                 ))}
               </div>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-[#27272a] rounded-2xl bg-[#18181b]/50">
-                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
-                  <CheckCircle2 className="w-8 h-8 text-zinc-500" />
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-slate-200 dark:border-[#27272a] rounded-2xl bg-slate-50 dark:bg-[#18181b]/50">
+                <div className="w-16 h-16 bg-white dark:bg-white/5 rounded-full flex items-center justify-center mb-4 shadow-sm dark:shadow-none">
+                  <CheckCircle2 className="w-8 h-8 text-slate-400 dark:text-zinc-500" />
                 </div>
-                <p className="text-lg text-zinc-300 font-bold">No pending requests</p>
-                <p className="text-sm text-zinc-500 mt-2 max-w-[250px]">Your withdrawal history is clear. Request a payout to see it here.</p>
+                <p className="text-lg text-slate-700 dark:text-zinc-300 font-bold">No pending requests</p>
+                <p className="text-sm text-slate-500 dark:text-zinc-500 mt-2 max-w-[250px]">Your withdrawal history is clear. Request a payout to see it here.</p>
               </div>
             )}
           </motion.div>

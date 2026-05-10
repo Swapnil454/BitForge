@@ -173,16 +173,16 @@ export default function NotificationsPage() {
   if (!user)
     return (
       <div className="w-full h-screen bg-gradient-to-br from-[#0b0b14] to-[#1a1a2e] flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+        <div className="text-slate-900 dark:text-white">Loading...</div>
       </div>
     );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0b0b14] to-[#1a1a2e]">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-white/10 backdrop-blur-xl bg-[#0b0b14]/80">
+      <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-white/10 backdrop-blur-xl bg-[#0b0b14]/80">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white">Notifications</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Notifications</h1>
           <div className="flex items-center gap-4">
             <button
               onClick={logout}
@@ -201,18 +201,18 @@ export default function NotificationsPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-xl bg-white/5 border border-white/10"
+            className="p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10"
           >
-            <div className="text-sm text-white/60">Total Notifications</div>
-            <div className="text-3xl font-bold text-white">{notifications.length}</div>
+            <div className="text-sm text-slate-500 dark:text-white/60">Total Notifications</div>
+            <div className="text-3xl font-bold text-slate-900 dark:text-white">{notifications.length}</div>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="p-4 rounded-xl bg-white/5 border border-white/10"
+            className="p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10"
           >
-            <div className="text-sm text-white/60">Unread</div>
+            <div className="text-sm text-slate-500 dark:text-white/60">Unread</div>
             <div className="text-3xl font-bold text-cyan-400">{unreadCount}</div>
           </motion.div>
         </div>
@@ -224,7 +224,7 @@ export default function NotificationsPage() {
               onClick={() => setFilter("all")}
               className={`px-4 py-2 rounded-lg transition ${filter === "all"
                   ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                  : "bg-white/5 text-white/60 border border-white/10 hover:border-white/20"
+                  : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-white/60 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20"
                 }`}
             >
               All
@@ -233,7 +233,7 @@ export default function NotificationsPage() {
               onClick={() => setFilter("unread")}
               className={`px-4 py-2 rounded-lg transition ${filter === "unread"
                   ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                  : "bg-white/5 text-white/60 border border-white/10 hover:border-white/20"
+                  : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-white/60 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20"
                 }`}
             >
               Unread ({unreadCount})
@@ -242,7 +242,7 @@ export default function NotificationsPage() {
           {unreadCount > 0 && (
             <button
               onClick={handleMarkAllAsRead}
-              className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 transition text-sm"
+              className="px-4 py-2 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-white/70 border border-slate-200 dark:border-white/10 transition text-sm"
             >
               Mark All as Read
             </button>
@@ -264,18 +264,18 @@ export default function NotificationsPage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ delay: index * 0.05 }}
-                  className="p-4 rounded-lg border-l-4 bg-white/5 border-l-orange-500 border-b border-r border-white/10"
+                  className="p-4 rounded-lg border-l-4 bg-slate-100 dark:bg-white/5 border-l-orange-500 border-b border-r border-slate-200 dark:border-white/10"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-white mb-1">
+                      <h3 className="font-semibold text-slate-900 dark:text-white mb-1">
                         {notification.title}
                       </h3>
-                      <p className="text-sm text-white/50 mb-2">
+                      <p className="text-sm text-slate-400 dark:text-white/50 mb-2">
                         {formatDate(notification.createdAt)}
                       </p>
-                      <div className="bg-white/10 p-3 rounded-lg border border-white/10">
-                        <p className="text-sm text-white/80 whitespace-pre-wrap">
+                      <div className="bg-slate-200 dark:bg-white/10 p-3 rounded-lg border border-slate-200 dark:border-white/10">
+                        <p className="text-sm text-slate-700 dark:text-white/80 whitespace-pre-wrap">
                           {notification.message}
                         </p>
                       </div>
@@ -330,18 +330,18 @@ export default function NotificationsPage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ delay: index * 0.05 }}
-                  className="p-4 rounded-lg border-l-4 bg-white/5 border-l-yellow-500 border-b border-r border-white/10"
+                  className="p-4 rounded-lg border-l-4 bg-slate-100 dark:bg-white/5 border-l-yellow-500 border-b border-r border-slate-200 dark:border-white/10"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-white mb-1">
+                      <h3 className="font-semibold text-slate-900 dark:text-white mb-1">
                         {notification.title}
                       </h3>
-                      <p className="text-sm text-white/50 mb-2">
+                      <p className="text-sm text-slate-400 dark:text-white/50 mb-2">
                         {formatDate(notification.createdAt)}
                       </p>
-                      <div className="bg-white/10 p-3 rounded-lg border border-white/10">
-                        <p className="text-sm text-white/80 whitespace-pre-wrap">
+                      <div className="bg-slate-200 dark:bg-white/10 p-3 rounded-lg border border-slate-200 dark:border-white/10">
+                        <p className="text-sm text-slate-700 dark:text-white/80 whitespace-pre-wrap">
                           {notification.message}
                         </p>
                       </div>
@@ -376,7 +376,7 @@ export default function NotificationsPage() {
         {/* Other Notifications Section */}
         {otherNotifications.length > 0 && (
           <>
-            <h2 className="text-lg font-bold text-white mb-4">Other Notifications</h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Other Notifications</h2>
             <div className="space-y-3">
               <AnimatePresence>
                 {loading ? (
@@ -384,7 +384,7 @@ export default function NotificationsPage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="text-center py-12 text-white/60"
+                    className="text-center py-12 text-slate-500 dark:text-white/60"
                   >
                     Loading notifications...
                   </motion.div>
@@ -393,7 +393,7 @@ export default function NotificationsPage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="text-center py-12 text-white/60"
+                    className="text-center py-12 text-slate-500 dark:text-white/60"
                   >
                     No {filter === "unread" ? "unread" : ""} notifications
                   </motion.div>
@@ -405,7 +405,7 @@ export default function NotificationsPage() {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 20 }}
                       transition={{ delay: index * 0.05 }}
-                      className={`p-4 rounded-lg border-l-4 bg-white/5 border-b border-r border-white/10 ${getNotificationColor(
+                      className={`p-4 rounded-lg border-l-4 bg-slate-100 dark:bg-white/5 border-b border-r border-slate-200 dark:border-white/10 ${getNotificationColor(
                         notification.type
                       )} ${!notification.isRead ? "ring-1 ring-cyan-500/30" : ""}`}
                     >
@@ -416,23 +416,23 @@ export default function NotificationsPage() {
                             <div>
                               <h3
                                 className={`font-semibold ${notification.isRead
-                                    ? "text-white/70"
-                                    : "text-white font-bold"
+                                    ? "text-slate-600 dark:text-white/70"
+                                    : "text-slate-900 dark:text-white font-bold"
                                   }`}
                               >
                                 {notification.title}
                               </h3>
-                              <p className="text-sm text-white/50">
+                              <p className="text-sm text-slate-400 dark:text-white/50">
                                 {formatDate(notification.createdAt)}
                               </p>
                             </div>
                           </div>
-                          <p className="text-sm text-white/60 ml-11">
+                          <p className="text-sm text-slate-500 dark:text-white/60 ml-11">
                             {notification.message}
                           </p>
                           {notification.type && (
                             <div className="mt-2 ml-11">
-                              <span className="inline-block px-2 py-1 text-xs rounded bg-white/5 text-white/50">
+                              <span className="inline-block px-2 py-1 text-xs rounded bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-white/50">
                                 {notification.type
                                   .replace(/_/g, " ")
                                   .charAt(0)
@@ -480,7 +480,7 @@ export default function NotificationsPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center py-12 text-white/60"
+            className="text-center py-12 text-slate-500 dark:text-white/60"
           >
             No notifications yet
           </motion.div>

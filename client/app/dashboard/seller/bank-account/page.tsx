@@ -180,7 +180,7 @@ export default function BankAccountPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#05050a] text-white">
+      <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
         <PageHeader
           backHref="/dashboard/seller"
           backLabel="Dashboard"
@@ -188,12 +188,12 @@ export default function BankAccountPage() {
         />
         <section className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-8">
           <div className="flex justify-between items-center">
-            <div className="h-8 w-32 bg-[#0b0b14] rounded-md animate-pulse" />
-            <div className="h-10 w-40 bg-[#0b0b14] border border-white/5 rounded-xl animate-pulse" />
+            <div className="h-8 w-32 bg-slate-200 dark:bg-[#0b0b14] rounded-md animate-pulse" />
+            <div className="h-10 w-40 bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/5 rounded-xl animate-pulse" />
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             {[1, 2].map((i) => (
-              <div key={i} className="h-48 bg-[#0b0b14] border border-white/5 rounded-2xl animate-pulse" />
+              <div key={i} className="h-48 bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/5 rounded-2xl animate-pulse shadow-sm dark:shadow-none" />
             ))}
           </div>
         </section>
@@ -204,7 +204,7 @@ export default function BankAccountPage() {
   /* ================= UI ================= */
 
   return (
-    <main className="min-h-screen bg-[#05050a] text-white pb-20">
+    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-20">
       <PageHeader
         backHref="/dashboard/seller"
         backLabel="Dashboard"
@@ -216,7 +216,7 @@ export default function BankAccountPage() {
         
         {/* TOP ACTIONS */}
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold text-white">Your Accounts</h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Your Accounts</h2>
           <button
             onClick={() => setShowAddForm(true)}
             className="flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-cyan-500 hover:bg-cyan-400 text-[#05050a] text-sm font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.2)] hover:shadow-[0_0_25px_rgba(6,182,212,0.4)]"
@@ -234,20 +234,20 @@ export default function BankAccountPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto"
+              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white dark:bg-black/60 backdrop-blur-md overflow-y-auto"
             >
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="bg-[#0b0b14] border border-[#27272a] rounded-2xl w-full max-w-2xl shadow-2xl relative my-auto"
+                className="bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-[#27272a] rounded-2xl w-full max-w-2xl shadow-2xl relative my-auto"
               >
-                <div className="p-6 sm:p-8 border-b border-[#27272a] flex items-center justify-between sticky top-0 bg-[#0b0b14]/90 backdrop-blur-sm z-10 rounded-t-2xl">
+                <div className="p-6 sm:p-8 border-b border-slate-200 dark:border-[#27272a] flex items-center justify-between sticky top-0 bg-white/90 dark:bg-[#0b0b14]/90 backdrop-blur-sm z-10 rounded-t-2xl">
                   <h2 className="text-xl font-bold flex items-center gap-2">
                     <Landmark className="w-6 h-6 text-cyan-500" />
                     {editingAccount ? "Edit Bank Account" : "Add Bank Account"}
                   </h2>
-                  <button onClick={resetForm} className="p-2 text-zinc-500 hover:text-white bg-[#18181b] hover:bg-[#27272a] rounded-full transition-colors">
+                  <button onClick={resetForm} className="p-2 text-zinc-500 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-[#18181b] hover:bg-slate-200 dark:hover:bg-[#27272a] rounded-full transition-colors">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -263,9 +263,9 @@ export default function BankAccountPage() {
                           onChange={handleInputChange}
                           placeholder="e.g. John Doe"
                           required
-                          className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-11"
+                          className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-11"
                         />
-                        <ShieldCheck className="w-5 h-5 text-zinc-500 absolute left-3.5 top-3" />
+                        <ShieldCheck className="w-5 h-5 text-slate-400 dark:text-zinc-500 absolute left-3.5 top-3" />
                       </div>
                     </div>
 
@@ -279,13 +279,13 @@ export default function BankAccountPage() {
                           placeholder="Enter account number"
                           required
                           type={showAccountNumberInput ? "text" : "password"}
-                          className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-11 pr-12 font-mono tracking-widest"
+                          className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-11 pr-12 font-mono tracking-widest"
                         />
-                        <CreditCard className="w-5 h-5 text-zinc-500 absolute left-3.5 top-3" />
+                        <CreditCard className="w-5 h-5 text-slate-400 dark:text-zinc-500 absolute left-3.5 top-3" />
                         <button
                           type="button"
                           onClick={() => setShowAccountNumberInput(!showAccountNumberInput)}
-                          className="absolute right-2 top-2 p-1.5 text-zinc-500 hover:text-cyan-400 transition-colors rounded-lg hover:bg-white/5"
+                          className="absolute right-2 top-2 p-1.5 text-zinc-500 hover:text-cyan-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/5"
                         >
                           {showAccountNumberInput ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
@@ -301,11 +301,11 @@ export default function BankAccountPage() {
                           onChange={handleInputChange}
                           placeholder="e.g. SBIN0001234"
                           required
-                          className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-4 py-3 text-sm text-white uppercase placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-11"
+                          className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white uppercase placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-11"
                         />
-                        <Building2 className="w-5 h-5 text-zinc-500 absolute left-3.5 top-3" />
+                        <Building2 className="w-5 h-5 text-slate-400 dark:text-zinc-500 absolute left-3.5 top-3" />
                         {ifscLoading && (
-                          <span className="absolute right-3.5 top-3.5 h-4 w-4 border-2 border-white/20 border-t-cyan-500 rounded-full animate-spin" />
+                          <span className="absolute right-3.5 top-3.5 h-4 w-4 border-2 border-slate-300 dark:border-white/20 border-t-cyan-500 rounded-full animate-spin" />
                         )}
                       </div>
                     </div>
@@ -314,10 +314,10 @@ export default function BankAccountPage() {
                       <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Account Type</label>
                       <div 
                         onClick={() => setShowAccountTypeDropdown(!showAccountTypeDropdown)}
-                        className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-4 py-3 text-sm text-white flex justify-between items-center cursor-pointer hover:border-cyan-500/50 transition-all"
+                        className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white flex justify-between items-center cursor-pointer hover:border-cyan-500/50 transition-all"
                       >
                         <span className="capitalize">{formData.accountType} Account</span>
-                        <ChevronDown className={`w-4 h-4 text-zinc-500 transition-transform ${showAccountTypeDropdown ? "rotate-180" : ""}`} />
+                        <ChevronDown className={`w-4 h-4 text-slate-500 dark:text-zinc-500 transition-transform ${showAccountTypeDropdown ? "rotate-180" : ""}`} />
                       </div>
                       
                       <AnimatePresence>
@@ -326,14 +326,14 @@ export default function BankAccountPage() {
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="absolute z-50 top-[calc(100%+0.5rem)] left-0 w-full bg-[#18181b] border border-[#27272a] rounded-xl shadow-xl overflow-hidden"
+                            className="absolute z-50 top-[calc(100%+0.5rem)] left-0 w-full bg-white dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl shadow-xl overflow-hidden"
                           >
                             <div 
                               onClick={() => {
                                 setFormData(prev => ({ ...prev, accountType: "savings" }));
                                 setShowAccountTypeDropdown(false);
                               }}
-                              className={`px-4 py-3 text-sm cursor-pointer transition-colors ${formData.accountType === "savings" ? "bg-cyan-500/10 text-cyan-400" : "text-white hover:bg-[#27272a]"}`}
+                              className={`px-4 py-3 text-sm cursor-pointer transition-colors ${formData.accountType === "savings" ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400" : "text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-[#27272a]"}`}
                             >
                               Savings Account
                             </div>
@@ -342,7 +342,7 @@ export default function BankAccountPage() {
                                 setFormData(prev => ({ ...prev, accountType: "current" }));
                                 setShowAccountTypeDropdown(false);
                               }}
-                              className={`px-4 py-3 text-sm cursor-pointer transition-colors ${formData.accountType === "current" ? "bg-cyan-500/10 text-cyan-400" : "text-white hover:bg-[#27272a]"}`}
+                              className={`px-4 py-3 text-sm cursor-pointer transition-colors ${formData.accountType === "current" ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400" : "text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-[#27272a]"}`}
                             >
                               Current Account
                             </div>
@@ -358,7 +358,7 @@ export default function BankAccountPage() {
                         value={formData.bankName}
                         onChange={handleInputChange}
                         placeholder="Auto-filled via IFSC"
-                        className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all"
+                        className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all"
                       />
                     </div>
 
@@ -369,17 +369,17 @@ export default function BankAccountPage() {
                         value={formData.branchName}
                         onChange={handleInputChange}
                         placeholder="Auto-filled via IFSC"
-                        className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all"
+                        className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all"
                       />
                     </div>
                   </form>
                 </div>
 
-                <div className="p-6 sm:p-8 border-t border-[#27272a] flex flex-col-reverse sm:flex-row items-center justify-end gap-3 bg-[#0b0b14]/90 rounded-b-2xl">
+                <div className="p-6 sm:p-8 border-t border-slate-200 dark:border-[#27272a] flex flex-col-reverse sm:flex-row items-center justify-end gap-3 bg-white/90 dark:bg-[#0b0b14]/90 rounded-b-2xl">
                   <button
                     type="button"
                     onClick={resetForm}
-                    className="w-full sm:w-auto px-6 py-3 text-sm font-semibold text-zinc-400 hover:text-white bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] rounded-xl transition-colors"
+                    className="w-full sm:w-auto px-6 py-3 text-sm font-semibold text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-[#18181b] hover:bg-slate-200 dark:hover:bg-[#27272a] border border-slate-200 dark:border-[#27272a] rounded-xl transition-colors"
                   >
                     Cancel
                   </button>
@@ -400,12 +400,12 @@ export default function BankAccountPage() {
         {/* ACCOUNTS LIST */}
         <div className="grid lg:grid-cols-2 gap-6">
           {bankAccounts.length === 0 ? (
-            <div className="lg:col-span-2 flex flex-col items-center justify-center p-12 border-2 border-dashed border-[#27272a] rounded-3xl bg-[#0b0b14]/50">
-              <div className="w-20 h-20 bg-[#18181b] rounded-full flex items-center justify-center mb-5 border border-[#27272a]">
-                <Landmark className="w-10 h-10 text-zinc-600" />
+            <div className="lg:col-span-2 flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-200 dark:border-[#27272a] rounded-3xl bg-white dark:bg-[#0b0b14]/50 shadow-sm dark:shadow-none">
+              <div className="w-20 h-20 bg-slate-50 dark:bg-[#18181b] rounded-full flex items-center justify-center mb-5 border border-slate-200 dark:border-[#27272a]">
+                <Landmark className="w-10 h-10 text-slate-400 dark:text-zinc-600" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">No Bank Accounts Added</h3>
-              <p className="text-zinc-500 text-center max-w-md mb-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No Bank Accounts Added</h3>
+              <p className="text-slate-500 dark:text-zinc-500 text-center max-w-md mb-6">
                 You need to add at least one bank account to receive payouts for your earnings.
               </p>
               <button
@@ -425,10 +425,10 @@ export default function BankAccountPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 key={acc.id}
-                className={`relative group bg-[#0b0b14] border rounded-2xl p-5 sm:p-6 transition-all duration-300 ${
+                className={`relative group bg-white dark:bg-[#0b0b14] border rounded-2xl p-5 sm:p-6 transition-all duration-300 shadow-sm dark:shadow-none ${
                   acc.isPrimary 
-                    ? "border-cyan-500/50 shadow-[0_0_30px_rgba(6,182,212,0.05)]" 
-                    : "border-[#27272a] hover:border-zinc-500/50"
+                    ? "border-cyan-400 dark:border-cyan-500/50 shadow-[0_0_30px_rgba(6,182,212,0.05)]" 
+                    : "border-slate-200 dark:border-[#27272a] hover:border-slate-300 dark:hover:border-zinc-500/50"
                 }`}
               >
                 {/* Primary Badge */}
@@ -440,7 +440,7 @@ export default function BankAccountPage() {
 
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-lg font-black text-white">{acc.accountHolderName}</h3>
+                    <h3 className="text-lg font-black text-slate-900 dark:text-white">{acc.accountHolderName}</h3>
                     <p className="text-sm font-medium text-cyan-400 mt-0.5 flex items-center gap-1.5">
                       <Landmark className="w-3.5 h-3.5" />
                       {acc.bankName || "Unknown Bank"}
@@ -458,16 +458,16 @@ export default function BankAccountPage() {
                   </div>
                 </div>
 
-                <div className="bg-[#12121a] border border-[#27272a] rounded-xl p-4 mb-5 space-y-2">
+                <div className="bg-slate-50 dark:bg-[#12121a] border border-slate-200 dark:border-[#27272a] rounded-xl p-4 mb-5 space-y-2">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-zinc-500 font-medium shrink-0">Account No</span>
+                    <span className="text-slate-500 dark:text-zinc-500 font-medium shrink-0">Account No</span>
                     <div className="flex items-center justify-end gap-2 overflow-hidden w-full ml-4">
-                      <span className={`text-white font-mono font-bold tracking-wider truncate text-right ${visibleAccounts[acc.id] ? "select-all" : ""}`}>
+                      <span className={`text-slate-900 dark:text-white font-mono font-bold tracking-wider truncate text-right ${visibleAccounts[acc.id] ? "select-all" : ""}`}>
                         {visibleAccounts[acc.id] ? acc.accountNumber : `•••• •••• ${acc.accountNumber.slice(-4)}`}
                       </span>
                       <button 
                         onClick={() => toggleAccountVisibility(acc.id)} 
-                        className="text-zinc-500 hover:text-cyan-400 transition-colors shrink-0 p-1.5 -mr-1.5 rounded-lg hover:bg-white/5"
+                        className="text-slate-500 dark:text-zinc-500 hover:text-cyan-400 transition-colors shrink-0 p-1.5 -mr-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-white/5"
                         title={visibleAccounts[acc.id] ? "Hide Account Number" : "Show Account Number"}
                       >
                         {visibleAccounts[acc.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -475,15 +475,15 @@ export default function BankAccountPage() {
                     </div>
                   </div>
                   <div className="flex justify-between items-center text-sm pt-1">
-                    <span className="text-zinc-500 font-medium">IFSC Code</span>
-                    <span className="text-zinc-300 font-mono tracking-wider text-right">
+                    <span className="text-slate-500 dark:text-zinc-500 font-medium">IFSC Code</span>
+                    <span className="text-slate-700 dark:text-zinc-300 font-mono tracking-wider text-right">
                       {acc.ifscCode}
                     </span>
                   </div>
                   {acc.branchName && (
-                    <div className="flex justify-between items-center text-sm pt-3 mt-1 border-t border-[#27272a]/50">
-                      <span className="text-zinc-500 font-medium">Branch</span>
-                      <span className="text-zinc-400 text-right line-clamp-1 max-w-[180px]">
+                    <div className="flex justify-between items-center text-sm pt-3 mt-1 border-t border-slate-200 dark:border-[#27272a]/50">
+                      <span className="text-slate-500 dark:text-zinc-500 font-medium">Branch</span>
+                      <span className="text-slate-600 dark:text-zinc-400 text-right line-clamp-1 max-w-[180px]">
                         {acc.branchName}
                       </span>
                     </div>
@@ -494,7 +494,7 @@ export default function BankAccountPage() {
                   {!acc.isPrimary && (
                     <button 
                       onClick={() => handleSetPrimary(acc.id)}
-                      className="flex-1 bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] text-white py-2 rounded-xl text-sm font-semibold transition-colors"
+                      className="flex-1 bg-slate-100 dark:bg-[#18181b] hover:bg-slate-200 dark:hover:bg-[#27272a] border border-slate-200 dark:border-[#27272a] text-slate-900 dark:text-white py-2 rounded-xl text-sm font-semibold transition-colors"
                     >
                       Set Primary
                     </button>

@@ -217,7 +217,7 @@ export default function ProductDetailsPage() {
                     link.click();
                     document.body.removeChild(link);
                   }}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium cursor-pointer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-slate-900 dark:text-white rounded-lg hover:bg-purple-700 font-medium cursor-pointer"
                 >
                   <span>⬇️</span> View/Download File
                 </button>

@@ -67,7 +67,11 @@ function LoginPageContent() {
     const user = getStoredUser();
     if (token) {
       const role = user?.role || 'buyer';
-      router.replace(nextPath || `/dashboard/${role}`);
+      if (role === 'buyer') {
+        router.replace(nextPath || '/marketplace');
+      } else {
+        router.replace(nextPath || `/dashboard/${role}`);
+      }
     }
   }, [router, nextPath]);
 
@@ -133,7 +137,11 @@ function LoginPageContent() {
           toast.error("Please log in as a buyer to purchase. Redirecting to your dashboard.");
         }
 
-        router.push(`/dashboard/${role}`);
+        if (role === "buyer") {
+          router.push("/marketplace");
+        } else {
+          router.push(`/dashboard/${role}`);
+        }
       }, 1400);
     } catch (err: any) {
       const errResponse = err.response?.data;
@@ -177,19 +185,23 @@ function LoginPageContent() {
     }, 800);
 
     setTimeout(() => {
-      router.push(`/dashboard/${role}`);
+      if (role === "buyer") {
+        router.push("/marketplace");
+      } else {
+        router.push(`/dashboard/${role}`);
+      }
     }, 1400);
   };
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white flex items-center justify-center px-4 relative overflow-hidden">
 
       {/* BACKGROUND GLOW */}
       <div className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full bg-indigo-600/30 blur-[160px]" />
       <div className="absolute top-1/2 -right-40 w-[600px] h-[600px] rounded-full bg-cyan-500/20 blur-[180px]" />
 
       {/* CARD */}
-      <div className="relative z-10 w-full max-w-md rounded-3xl p-8 bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_30px_120px_rgba(56,189,248,0.25)]">
+      <div className="relative z-10 w-full max-w-md rounded-3xl p-8 bg-slate-100 dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-[0_30px_120px_rgba(56,189,248,0.25)]">
 
         {/* LOGO */}
         <div className="flex flex-col items-center justify-center ">
@@ -213,14 +225,14 @@ function LoginPageContent() {
         </div>
 
         <h1 className="text-2xl font-black text-center -mt-5 sm:-mt-8 lg:-mt-12 leading-none">Welcome back</h1>
-        <p className="text-center text-sm text-white/60 mb-4 mt-1">
+        <p className="text-center text-sm text-slate-500 dark:text-white/60 mb-4 mt-1">
           Login to your <span className="font-semibold">BitForge</span> account
         </p>
 
         <form onSubmit={handleLogin} className="space-y-4">
 
           {/* METHOD SWITCH */}
-          <div className="flex bg-white/5 rounded-xl p-1">
+          <div className="flex bg-slate-100 dark:bg-white/5 rounded-xl p-1">
             {["email", /* "phone" */].map(m => (
               <button
                 key={m}
@@ -228,7 +240,7 @@ function LoginPageContent() {
                 onClick={() => setLoginMethod(m as any)}
                 suppressHydrationWarning
                 className={`flex-1 py-2 text-sm rounded-lg transition ${
-                  loginMethod === m ? "bg-white text-black font-semibold" : "text-white/60"
+                  loginMethod === m ? "bg-white text-black font-semibold" : "text-slate-500 dark:text-white/60"
                 }`}
               >
                 {m === "email" ? "Email" : "Phone"}
@@ -247,7 +259,7 @@ function LoginPageContent() {
               className="
                 w-full px-3 py-2 sm:px-4 sm:py-3
                 text-sm sm:text-base
-                rounded-xl bg-white/5 border border-white/10
+                rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10
                 outline-none focus:border-cyan-400
                 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)]
                 transition
@@ -264,7 +276,7 @@ function LoginPageContent() {
                 className="
                   px-3 py-2 sm:py-3
                   text-sm sm:text-base
-                  rounded-xl bg-white/5 border border-white/10
+                  rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10
                   flex items-center justify-center
                 "
               >
@@ -283,7 +295,7 @@ function LoginPageContent() {
                 className="
                   flex-1 px-3 py-2 sm:px-4 sm:py-3
                   text-sm sm:text-base
-                  rounded-xl bg-white/5 border border-white/10
+                  rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10
                   outline-none focus:border-cyan-400
                   focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)]
                   transition
@@ -304,7 +316,7 @@ function LoginPageContent() {
               className="
                 w-full px-3 py-2 sm:px-4 sm:py-3
                 text-sm sm:text-base
-                rounded-xl bg-white/5 border border-white/10
+                rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10
                 pr-10 outline-none focus:border-cyan-400
                 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)]
                 transition
@@ -347,7 +359,7 @@ function LoginPageContent() {
           <OAuthButton icon={<FaGithub />} label="GitHub" />
         </div>
 
-        <p className="text-center text-sm text-white/60 mt-6">
+        <p className="text-center text-sm text-slate-500 dark:text-white/60 mt-6">
           New here?{" "}
           <Link href="/register" className="text-cyan-400 font-semibold">
             Create account
@@ -358,12 +370,12 @@ function LoginPageContent() {
       {/* COUNTRY MODAL */}
       {showCountryDropdown && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setShowCountryDropdown(false)} />
+          <div className="absolute inset-0 bg-white dark:bg-black/60" onClick={() => setShowCountryDropdown(false)} />
           <div
             ref={dropdownRef}
-            className="relative w-[90%] max-w-md max-h-[70vh] rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 overflow-hidden"
+            className="relative w-[90%] max-w-md max-h-[70vh] rounded-2xl bg-slate-100 dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 overflow-hidden"
           >
-            <div className="px-5 py-4 border-b border-white/10">
+            <div className="px-5 py-4 border-b border-slate-200 dark:border-white/10">
               <h3 className="text-lg font-bold">Select country</h3>
             </div>
             <div className="max-h-[50vh] overflow-y-auto divide-y divide-white/10">
@@ -374,7 +386,7 @@ function LoginPageContent() {
                     setSelectedCountry(c);
                     setShowCountryDropdown(false);
                   }}
-                  className="w-full px-5 py-4 flex items-center gap-4 hover:bg-white/5"
+                  className="w-full px-5 py-4 flex items-center gap-4 hover:bg-slate-100 dark:hover:bg-white/5"
                 >
                   <span className="text-xl">{c.flag}</span>
                   <span className="flex-1 text-left">{c.name}</span>
@@ -388,8 +400,8 @@ function LoginPageContent() {
 
       {/* ROLE BADGE */}
       {showRoleBadge && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/70">
-          <div className="px-8 py-4 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/10 text-xl font-black">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-white dark:bg-black/70">
+          <div className="px-8 py-4 rounded-2xl bg-slate-200 dark:bg-white/10 backdrop-blur-xl border border-slate-200 dark:border-white/10 text-xl font-black">
             {userRole.toUpperCase()} MODE
           </div>
         </div>
@@ -397,13 +409,13 @@ function LoginPageContent() {
 
       {/* SKELETON */}
       {showSkeleton && (
-        <div className="fixed inset-0 z-40 bg-[#05050a] p-6 space-y-6">
-          <div className="h-8 w-40 bg-white/10 rounded animate-pulse" />
+        <div className="fixed inset-0 z-40 bg-slate-50 dark:bg-[#05050a] p-6 space-y-6">
+          <div className="h-8 w-40 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
           <div className="grid grid-cols-2 gap-4">
-            <div className="h-24 bg-white/5 rounded-xl animate-pulse" />
-            <div className="h-24 bg-white/5 rounded-xl animate-pulse" />
+            <div className="h-24 bg-slate-100 dark:bg-white/5 rounded-xl animate-pulse" />
+            <div className="h-24 bg-slate-100 dark:bg-white/5 rounded-xl animate-pulse" />
           </div>
-          <div className="h-64 bg-white/5 rounded-xl animate-pulse" />
+          <div className="h-64 bg-slate-100 dark:bg-white/5 rounded-xl animate-pulse" />
         </div>
       )}
 
@@ -428,8 +440,8 @@ function LoginPageContent() {
 
 function LoginPageFallback() {
   return (
-    <div className="min-h-screen bg-[#05050a] text-white flex items-center justify-center px-4">
-      <div className="text-sm text-white/70">Loading login...</div>
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white flex items-center justify-center px-4">
+      <div className="text-sm text-slate-600 dark:text-white/70">Loading login...</div>
     </div>
   );
 }
@@ -451,7 +463,7 @@ function OAuthButton({ icon, label }: any) {
         (window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/oauth/${label.toLowerCase()}`)
       }
       suppressHydrationWarning
-      className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
+      className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition"
     >
       {icon}
       <span className="text-sm font-semibold">Continue with {label}</span>

@@ -11,10 +11,11 @@ import {
   Area,
   BarChart,
   Bar,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
 } from "recharts";
+import { useTheme } from "next-themes";
 import {
   BarChart3,
   CircleHelp,
@@ -28,8 +29,10 @@ import {
   Settings,
   ShoppingCart,
   TrendingUp,
-  UserRound,
   Wallet,
+  Moon,
+  Sun,
+  UserRound,
 } from "lucide-react";
 import { clearAuthStorage, getStoredUser, setCookie, getCookie } from "@/lib/cookies";
 import { notificationAPI, userAPI } from "@/lib/api";
@@ -76,6 +79,11 @@ export default function BuyerDashboard() {
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
+
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   const router = useRouter();
   
@@ -276,9 +284,9 @@ export default function BuyerDashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-[#05050a] text-white">
+    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white transition-colors duration-300">
       {/* ================= HEADER ================= */}
-      <header className="sticky top-0 z-50 bg-linear-to-r from-black via-slate-900 to-black backdrop-blur-xl border-b border-white/20 shadow-lg shadow-black/50">
+      <header className="sticky top-0 z-50 bg-linear-to-r from-white/90 via-slate-50/90 to-white/90 dark:from-black dark:via-slate-900 dark:to-black backdrop-blur-xl border-b border-slate-200 dark:border-white/20 shadow-lg shadow-slate-200/50 dark:shadow-black/50 transition-colors duration-300">
         <div className="max-w-7xl mx-auto h-16 px-4 flex items-center justify-between">
           {/* Logo */}
           <BitForgeBrand role="Buyer" />
@@ -287,12 +295,12 @@ export default function BuyerDashboard() {
             {/* Cart Icon */}
             <button
               onClick={() => router.push('/cart')}
-              className="relative h-10 w-10 md:h-11 md:w-11 rounded-xl bg-linear-to-br from-white/10 to-white/5 border border-white/20 hover:border-purple-500/50 hover:from-purple-500/20 hover:to-purple-600/20 grid place-items-center transition-all duration-300 group hover:scale-105 shadow-lg hover:shadow-purple-500/50"
+              className="relative h-10 w-10 md:h-11 md:w-11 rounded-xl bg-white dark:bg-transparent dark:bg-linear-to-br dark:from-white/10 dark:to-white/5 border border-slate-200 dark:border-white/20 hover:border-purple-500/50 hover:bg-purple-50 dark:hover:bg-transparent dark:hover:from-purple-500/20 dark:hover:to-purple-600/20 grid place-items-center transition-all duration-300 group hover:scale-105 shadow-sm dark:shadow-lg hover:shadow-purple-500/30"
               title="View cart"
             >
-              <ShoppingCart className="h-5 w-5 text-white group-hover:scale-110 group-hover:text-purple-200 transition-all" />
+              <ShoppingCart className="h-5 w-5 text-slate-700 dark:text-white group-hover:scale-110 group-hover:text-purple-600 dark:group-hover:text-purple-200 transition-all" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-linear-to-r from-purple-500 to-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg shadow-purple-500/50 animate-pulse">
+                <span className="absolute -top-1 -right-1 bg-linear-to-r from-purple-500 to-pink-500 text-slate-900 dark:text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg shadow-purple-500/50 animate-pulse">
                   {cartCount > 9 ? '9+' : cartCount}
                 </span>
               )}
@@ -315,15 +323,15 @@ export default function BuyerDashboard() {
                   setProfileOpen(v => !v);
                   setNotifOpen(false);
                 }}
-                className={`relative h-10 w-10 md:h-11 md:w-11 rounded-xl bg-linear-to-br from-white/10 to-white/5 border border-white/20 hover:border-indigo-500/50 hover:from-indigo-500/20 hover:to-indigo-600/20 flex flex-col items-center justify-center gap-1.5 transition-all duration-300 group hover:scale-105 shadow-lg hover:shadow-indigo-500/50 ${profileOpen ? 'border-indigo-500 from-indigo-500/20 to-indigo-600/20 shadow-indigo-500/50' : ''}`}
+                className={`relative h-10 w-10 md:h-11 md:w-11 rounded-xl bg-white dark:bg-transparent dark:bg-linear-to-br dark:from-white/10 dark:to-white/5 border border-slate-200 dark:border-white/20 hover:border-indigo-500/50 hover:bg-indigo-50 dark:hover:bg-transparent dark:hover:from-indigo-500/20 dark:hover:to-indigo-600/20 flex flex-col items-center justify-center gap-1.5 transition-all duration-300 group hover:scale-105 shadow-sm dark:shadow-lg hover:shadow-indigo-500/30 ${profileOpen ? 'border-indigo-500 bg-indigo-50 dark:bg-transparent dark:from-indigo-500/20 dark:to-indigo-600/20 shadow-indigo-500/30' : ''}`}
                 title="Menu"
               >
                 {chatUnreadCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-red-500 shadow-sm shadow-red-500" />
                 )}
-                <span className={`w-4 h-0.5 bg-white group-hover:bg-indigo-300 transition-all origin-center ${profileOpen ? 'rotate-45 translate-y-2 bg-indigo-300' : ''}`}></span>
-                <span className={`w-4 h-0.5 bg-white group-hover:bg-indigo-300 transition-all ${profileOpen ? 'opacity-0' : ''}`}></span>
-                <span className={`w-4 h-0.5 bg-white group-hover:bg-indigo-300 transition-all origin-center ${profileOpen ? '-rotate-45 -translate-y-2 bg-indigo-300' : ''}`}></span>
+                <span className={`w-4 h-0.5 bg-slate-700 dark:bg-white group-hover:bg-indigo-600 dark:group-hover:bg-indigo-300 transition-all origin-center ${profileOpen ? 'rotate-45 translate-y-2 bg-indigo-600 dark:bg-indigo-300' : ''}`}></span>
+                <span className={`w-4 h-0.5 bg-slate-700 dark:bg-white group-hover:bg-indigo-600 dark:group-hover:bg-indigo-300 transition-all ${profileOpen ? 'opacity-0' : ''}`}></span>
+                <span className={`w-4 h-0.5 bg-slate-700 dark:bg-white group-hover:bg-indigo-600 dark:group-hover:bg-indigo-300 transition-all origin-center ${profileOpen ? '-rotate-45 -translate-y-2 bg-indigo-600 dark:bg-indigo-300' : ''}`}></span>
               </button>
 
               <AnimatePresence>
@@ -333,10 +341,10 @@ export default function BuyerDashboard() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 6, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 mt-3 w-56 rounded-2xl bg-linear-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl border-2 border-indigo-500/20 shadow-2xl shadow-indigo-500/20"
+                    className="absolute right-0 mt-3 w-56 rounded-2xl bg-white dark:bg-transparent dark:bg-linear-to-br dark:from-slate-900/95 dark:via-slate-800/95 dark:to-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-indigo-500/20 shadow-xl dark:shadow-2xl dark:shadow-indigo-500/20"
                   >
-                    <div className="px-4 py-3 border-b border-white/10 bg-linear-to-r from-indigo-500/10 to-purple-500/10 rounded-t-2xl">
-                      <p className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Menu</p>
+                    <div className="px-4 py-3 border-b border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-transparent dark:bg-linear-to-r dark:from-indigo-500/10 dark:to-purple-500/10 rounded-t-2xl">
+                      <p className="text-xs font-semibold text-slate-500 dark:text-indigo-300 uppercase tracking-wider">Menu</p>
                     </div>
                     <MenuItem 
                       label="Profile" 
@@ -373,7 +381,14 @@ export default function BuyerDashboard() {
                       icon={<FileText className="h-4 w-4" />}
                       onClick={() => { router.push("/dashboard/buyer/reports"); setProfileOpen(false); }} 
                     />
-                    <div className="h-px bg-linear-to-r from-transparent via-indigo-500/20 to-transparent" />
+                    {mounted && (
+                      <MenuItem 
+                        label={theme === 'dark' ? "Light Mode" : "Dark Mode"} 
+                        icon={theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
+                      />
+                    )}
+                    <div className="h-px bg-slate-100 dark:bg-linear-to-r dark:from-transparent dark:via-indigo-500/20 dark:to-transparent" />
                     <MenuItem label="Logout" icon={<LogOut className="h-4 w-4" />} danger onClick={() => { setIsLogoutModalOpen(true); setProfileOpen(false); }} />
                   </motion.div>
                 )}
@@ -397,11 +412,11 @@ export default function BuyerDashboard() {
             <div className="flex items-center gap-6">
               <div className="text-5xl md:text-6xl group-hover:scale-110 transition-transform duration-300">🛍️</div>
               <div className="text-left">
-                <div className="text-2xl md:text-3xl font-black text-white mb-1 group-hover:text-purple-200 transition-colors">Browse Marketplace</div>
-                <div className="text-sm md:text-base text-white/70 group-hover:text-white/90 transition-colors">Discover amazing digital content & products</div>
+                <div className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-1 group-hover:text-purple-700 dark:group-hover:text-purple-200 transition-colors">Browse Marketplace</div>
+                <div className="text-sm md:text-base text-gray-600 dark:text-white/70 group-hover:text-gray-900 dark:group-hover:text-slate-800 dark:group-hover:text-white/90 transition-colors">Discover amazing digital content & products</div>
               </div>
             </div>
-            <div className="hidden md:flex items-center gap-2 text-white/80 group-hover:text-white group-hover:translate-x-2 transition-all">
+            <div className="hidden md:flex items-center gap-2 text-slate-700 dark:text-white/80 group-hover:text-slate-900 dark:group-hover:text-white group-hover:translate-x-2 transition-all">
               <span className="font-semibold">Explore Now</span>
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -444,7 +459,7 @@ export default function BuyerDashboard() {
             variant="buyer"
             title="My Purchases"
             description="View order history"
-            icon={<Package className="h-8 w-8 md:h-9 md:w-9 text-blue-200" strokeWidth={2} />}
+            icon={<Package className="h-8 w-8 md:h-9 md:w-9 text-blue-600 dark:text-blue-200" strokeWidth={2} />}
             href="/dashboard/buyer/purchases"
             gradientFrom="from-blue-600/20"
             gradientTo="to-cyan-600/20"
@@ -465,9 +480,9 @@ export default function BuyerDashboard() {
             href="/cart"
             icon={
               <div className="flex items-center gap-1 md:gap-2">
-                <ShoppingCart className="h-8 w-8 md:h-9 md:w-9 text-emerald-200" strokeWidth={2} />
+                <ShoppingCart className="h-8 w-8 md:h-9 md:w-9 text-emerald-600 dark:text-emerald-200" strokeWidth={2} />
                 {cartCount > 0 && (
-                  <span className="text-xs bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold shadow-lg">
+                  <span className="text-xs bg-emerald-500 text-slate-900 dark:text-white px-1.5 py-0.5 rounded-full font-bold shadow-lg">
                     {cartCount}
                   </span>
                 )}
@@ -485,7 +500,7 @@ export default function BuyerDashboard() {
             variant="buyer"
             title="My Disputes"
             description="Track dispute status"
-            icon={<Scale className="h-8 w-8 md:h-9 md:w-9 text-rose-200" strokeWidth={2} />}
+            icon={<Scale className="h-8 w-8 md:h-9 md:w-9 text-rose-600 dark:text-rose-200" strokeWidth={2} />}
             href="/dashboard/buyer/disputes"
             gradientFrom="from-rose-600/20"
             gradientTo="to-orange-600/20"
@@ -499,7 +514,7 @@ export default function BuyerDashboard() {
             variant="buyer"
             title="Wishlist"
             description={`${wishlistCount} item${wishlistCount !== 1 ? "s" : ""} saved`}
-            icon={<Heart className="h-8 w-8 md:h-9 md:w-9 text-fuchsia-200" strokeWidth={2} />}
+            icon={<Heart className="h-8 w-8 md:h-9 md:w-9 text-fuchsia-600 dark:text-fuchsia-200" strokeWidth={2} />}
             href="/wishlist"
             gradientFrom="from-fuchsia-600/20"
             gradientTo="to-pink-600/20"
@@ -528,19 +543,19 @@ export default function BuyerDashboard() {
                   return (
                     <div
                       key={o.id}
-                      className="flex items-center justify-between gap-3 group-hover:bg-white/5 px-3 py-2.5 -mx-3 rounded-lg transition flex-wrap sm:flex-nowrap"
+                      className="flex items-center justify-between gap-3 group-hover:bg-gray-50 dark:group-hover:bg-slate-100 dark:group-hover:bg-white/5 px-3 py-2.5 -mx-3 rounded-lg transition flex-wrap sm:flex-nowrap"
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-white text-sm truncate">
+                        <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">
                           {o.product}
                         </p>
-                        <p className="text-xs text-white/60 mt-0.5">
+                        <p className="text-xs text-gray-500 dark:text-white/60 mt-0.5">
                           {formattedDate}
                         </p>
                       </div>
                       <div className="text-right ml-4 shrink-0">
                         <p className="font-bold text-lg text-green-400">
-                          ₹{o.amount.toLocaleString()}
+                          {o.amount.toString().includes("₹") ? o.amount : `₹${Number(o.amount).toLocaleString()}`}
                         </p>
                       </div>
                     </div>
@@ -549,16 +564,16 @@ export default function BuyerDashboard() {
               </div>
             ) : (
               <div className="text-center py-6">
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-white/15 bg-white/5 mb-2">
-                  <ClipboardList className="h-6 w-6 text-cyan-300" />
+                <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-gray-200 dark:border-white/15 bg-gray-50 dark:bg-white/5 mb-2">
+                  <ClipboardList className="h-6 w-6 text-cyan-500 dark:text-cyan-300" />
                 </div>
-                <p className="text-white/60 text-sm mb-3">No orders yet</p>
+                <p className="text-gray-500 dark:text-white/60 text-sm mb-3">No orders yet</p>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     router.push("/marketplace");
                   }}
-                  className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition text-sm"
+                  className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-slate-900 dark:text-white rounded-lg font-semibold transition text-sm"
                 >
                   Start Shopping
                 </button>
@@ -607,8 +622,8 @@ export default function BuyerDashboard() {
 
 function BuyerDashboardSkeleton() {
   return (
-    <main className="min-h-screen bg-[#05050a] text-white">
-      <header className="sticky top-0 z-40 bg-linear-to-r from-purple-900/80 via-indigo-900/80 to-cyan-900/80 backdrop-blur-xl border-b border-purple-500/40">
+    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
+      <header className="sticky top-0 z-40 bg-white/80 dark:bg-linear-to-r dark:from-purple-900/80 dark:via-indigo-900/80 dark:to-cyan-900/80 backdrop-blur-xl border-b border-gray-200 dark:border-purple-500/40">
         <div className="max-w-7xl mx-auto h-16 px-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-6 w-28 rounded-full bg-linear-to-r from-cyan-400/70 via-purple-400/70 to-indigo-400/70 animate-pulse" />
@@ -622,13 +637,13 @@ function BuyerDashboardSkeleton() {
       </header>
 
       <section className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-        <div className="h-28 rounded-2xl bg-slate-900/90 border border-purple-500/40 shadow-lg shadow-purple-500/30 animate-pulse" />
+        <div className="h-28 rounded-2xl bg-white dark:bg-slate-900/90 border border-gray-200 dark:border-purple-500/40 shadow-sm dark:shadow-lg dark:shadow-purple-500/30 animate-pulse" />
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="h-24 rounded-2xl bg-slate-800/90 border border-cyan-500/40 shadow-md shadow-cyan-500/25 animate-pulse"
+              className="h-24 rounded-2xl bg-white dark:bg-slate-800/90 border border-gray-200 dark:border-cyan-500/40 shadow-sm dark:shadow-md dark:shadow-cyan-500/25 animate-pulse"
             />
           ))}
         </div>
@@ -637,14 +652,14 @@ function BuyerDashboardSkeleton() {
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="h-24 rounded-xl bg-slate-800/90 border border-indigo-500/40 shadow-md shadow-indigo-500/25 animate-pulse"
+              className="h-24 rounded-xl bg-white dark:bg-slate-800/90 border border-gray-200 dark:border-indigo-500/40 shadow-sm dark:shadow-md dark:shadow-indigo-500/25 animate-pulse"
             />
           ))}
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="h-64 rounded-2xl bg-slate-900/90 border border-purple-500/40 shadow-lg shadow-purple-500/30 animate-pulse" />
-          <div className="h-64 rounded-2xl bg-slate-900/90 border border-cyan-500/40 shadow-lg shadow-cyan-500/30 animate-pulse" />
+          <div className="h-64 rounded-2xl bg-white dark:bg-slate-900/90 border border-gray-200 dark:border-purple-500/40 shadow-sm dark:shadow-lg dark:shadow-purple-500/30 animate-pulse" />
+          <div className="h-64 rounded-2xl bg-white dark:bg-slate-900/90 border border-gray-200 dark:border-cyan-500/40 shadow-sm dark:shadow-lg dark:shadow-cyan-500/30 animate-pulse" />
         </div>
       </section>
     </main>
@@ -656,12 +671,12 @@ function ChartArea({ data, keyName }: any) {
   
   if (!hasData) {
     return (
-      <div style={{ height: "180px" }} className="flex flex-col items-center justify-center rounded-lg bg-linear-to-br from-cyan-500/5 to-blue-500/5 border border-cyan-500/10">
-        <div className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-cyan-400/20 bg-cyan-400/10 mb-2">
-          <BarChart3 className="h-5 w-5 text-cyan-300" />
+      <div style={{ height: "180px" }} className="flex flex-col items-center justify-center rounded-lg bg-gray-50 dark:bg-linear-to-br dark:from-cyan-500/5 dark:to-blue-500/5 border border-gray-200 dark:border-cyan-500/10">
+        <div className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-cyan-500/20 bg-cyan-50 dark:bg-cyan-400/10 mb-2">
+          <BarChart3 className="h-5 w-5 text-cyan-600 dark:text-cyan-300" />
         </div>
-        <p className="text-white/60 text-center text-sm">
-          <span className="block font-semibold text-white mb-1">No spending yet</span>
+        <p className="text-gray-500 dark:text-white/60 text-center text-sm">
+          <span className="block font-semibold text-gray-900 dark:text-white mb-1">No spending yet</span>
           <span className="text-xs">Start exploring the marketplace</span>
         </p>
       </div>
@@ -705,12 +720,12 @@ function ChartBar({ data, keyName }: any) {
   
   if (!hasData) {
     return (
-      <div style={{ height: "180px" }} className="flex flex-col items-center justify-center rounded-lg bg-linear-to-br from-indigo-500/5 to-purple-500/5 border border-indigo-500/10">
-        <div className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-indigo-400/20 bg-indigo-400/10 mb-2">
-          <TrendingUp className="h-5 w-5 text-indigo-300" />
+      <div style={{ height: "180px" }} className="flex flex-col items-center justify-center rounded-lg bg-gray-50 dark:bg-linear-to-br dark:from-indigo-500/5 dark:to-purple-500/5 border border-gray-200 dark:border-indigo-500/10">
+        <div className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-indigo-500/20 bg-indigo-50 dark:bg-indigo-400/10 mb-2">
+          <TrendingUp className="h-5 w-5 text-indigo-600 dark:text-indigo-300" />
         </div>
-        <p className="text-white/60 text-center text-sm">
-          <span className="block font-semibold text-white mb-1">No purchases yet</span>
+        <p className="text-gray-500 dark:text-white/60 text-center text-sm">
+          <span className="block font-semibold text-gray-900 dark:text-white mb-1">No purchases yet</span>
           <span className="text-xs">Your purchase history will appear here</span>
         </p>
       </div>

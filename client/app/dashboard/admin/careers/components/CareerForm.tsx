@@ -119,21 +119,21 @@ export default function CareerForm({ initialData, isEditing = false }: CareerFor
     }
   };
 
-  const inputClasses = "w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 sm:px-4 sm:py-3 text-sm text-white placeholder:text-white/30 transition-all focus:border-cyan-500/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 hover:bg-white/[0.07]";
-  const labelClasses = "mb-1.5 block text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-white/50";
+  const inputClasses = "w-full rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 px-3 py-2 sm:px-4 sm:py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30 transition-all focus:border-cyan-500/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 hover:bg-slate-50 dark:hover:bg-white/[0.07]";
+  const labelClasses = "mb-1.5 block text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/50";
 
   return (
     <form onSubmit={handleSubmit} className="mx-auto max-w-4xl pb-10">
       <div className="space-y-5 sm:space-y-8">
         {/* Section: Basic Info */}
-        <section className="relative z-40 rounded-2xl sm:rounded-3xl border border-white/10 bg-white/[0.02] p-4 sm:p-8 backdrop-blur-sm">
+        <section className="relative z-40 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.02] p-4 sm:p-8 backdrop-blur-sm shadow-sm dark:shadow-none">
           <div className="mb-4 sm:mb-6 flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-400">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-white">Basic Information</h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Basic Information</h3>
           </div>
 
           <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
@@ -190,14 +190,14 @@ export default function CareerForm({ initialData, isEditing = false }: CareerFor
         </section>
 
         {/* Section: Description & Role */}
-        <section className="relative z-30 rounded-2xl sm:rounded-3xl border border-white/10 bg-white/[0.02] p-4 sm:p-8 backdrop-blur-sm">
+        <section className="relative z-30 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.02] p-4 sm:p-8 backdrop-blur-sm shadow-sm dark:shadow-none">
           <div className="mb-4 sm:mb-6 flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/20 text-violet-400">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-white">Job Description</h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Job Description</h3>
           </div>
 
           <div className="space-y-4 sm:space-y-6">
@@ -239,14 +239,14 @@ export default function CareerForm({ initialData, isEditing = false }: CareerFor
         </section>
 
         {/* Section: Compensation & Benefits */}
-        <section className="relative z-20 rounded-2xl sm:rounded-3xl border border-white/10 bg-white/[0.02] p-4 sm:p-8 backdrop-blur-sm">
+        <section className="relative z-20 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.02] p-4 sm:p-8 backdrop-blur-sm shadow-sm dark:shadow-none">
           <div className="mb-4 sm:mb-6 flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-white">Compensation & Perks</h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Compensation & Perks</h3>
           </div>
 
           <div className="space-y-4 sm:space-y-6">
@@ -307,14 +307,14 @@ export default function CareerForm({ initialData, isEditing = false }: CareerFor
         </section>
 
         {/* Section: Application & Status */}
-        <section className="relative z-10 rounded-2xl sm:rounded-3xl border border-white/10 bg-white/[0.02] p-4 sm:p-8 backdrop-blur-sm">
+        <section className="relative z-10 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.02] p-4 sm:p-8 backdrop-blur-sm shadow-sm dark:shadow-none">
           <div className="mb-4 sm:mb-6 flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500/20 text-orange-400">
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-white">Application & Settings</h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Application & Settings</h3>
           </div>
 
           <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
@@ -368,9 +368,9 @@ export default function CareerForm({ initialData, isEditing = false }: CareerFor
                     type="checkbox"
                     checked={formData.featured}
                     onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                    className="h-5 w-5 rounded border-white/10 bg-white/5 text-cyan-500 focus:ring-cyan-500/20"
+                    className="h-5 w-5 rounded border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-cyan-500 focus:ring-cyan-500/20"
                   />
-                  <span className="text-sm font-medium text-white/80">Feature this role</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-white/80">Feature this role</span>
                 </label>
               </div>
             </div>
@@ -382,7 +382,7 @@ export default function CareerForm({ initialData, isEditing = false }: CareerFor
           <button
             type="button"
             onClick={() => router.back()}
-            className="w-full rounded-2xl border border-white/10 bg-white/5 px-6 py-3 sm:px-8 sm:py-4 text-sm font-bold text-white transition-all hover:bg-white/10 sm:w-auto"
+            className="w-full rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 px-6 py-3 sm:px-8 sm:py-4 text-sm font-bold text-slate-900 dark:text-white transition-all hover:bg-slate-200 dark:hover:bg-white/10 sm:w-auto"
           >
             Cancel
           </button>
