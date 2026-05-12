@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { cartAPI } from "@/lib/api";
+import { cartAPI, searchAPI } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
 import { useInfiniteProducts } from "@/lib/useInfiniteProducts";
 import toast from "react-hot-toast";
@@ -352,12 +352,22 @@ export default function MarketplaceClient() {
     });
   };
 
+  // ── Committed search: update query state + save history ─────────────────
+  const handleSearch = (term?: string) => {
+    const q = (term ?? searchTerm).trim();
+    if (term) setSearchTerm(term);
+    setSearchQuery(q);
+    if (q.length >= 2 && isAuthenticated) {
+      searchAPI.saveHistory(q).catch(() => {});
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-[#020617] text-gray-900 dark:text-slate-50 transition-colors duration-200 flex flex-col">
       <BuyerHeader
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
-        handleSearch={() => setSearchQuery(searchTerm)}
+        handleSearch={handleSearch}
         cartCount={cartItems.length}
         wishlistCount={wishlist.length}
         isCollectionPage={isGridView}

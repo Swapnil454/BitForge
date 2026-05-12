@@ -838,3 +838,28 @@ export const reviewAPI = {
 };
 
 export default api;
+
+// Search API functions
+export const searchAPI = {
+    getSuggestions: async (q: string): Promise<{ suggestions: { text: string; category: string }[] }> => {
+        const response = await api.get('/marketplace/search/suggestions', { params: { q } });
+        return response.data;
+    },
+
+    getHistory: async (): Promise<{ history: { query: string; searchedAt: string }[] }> => {
+        const response = await api.get('/marketplace/search/history');
+        return response.data;
+    },
+
+    saveHistory: async (query: string): Promise<void> => {
+        await api.post('/marketplace/search/history', { query });
+    },
+
+    deleteHistoryItem: async (query: string): Promise<void> => {
+        await api.delete('/marketplace/search/history/' + encodeURIComponent(query));
+    },
+
+    clearHistory: async (): Promise<void> => {
+        await api.delete('/marketplace/search/history/all');
+    },
+};

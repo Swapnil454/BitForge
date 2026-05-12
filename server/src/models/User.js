@@ -224,6 +224,14 @@ const userSchema = new mongoose.Schema(
       },
     },
 
+    // ── Search History ───────────────────────────────────────────────────────
+    searchHistory: [
+      {
+        query: { type: String, required: true },
+        searchedAt: { type: Date, default: Date.now },
+      },
+    ],
+
   },
   { timestamps: true }
 );
