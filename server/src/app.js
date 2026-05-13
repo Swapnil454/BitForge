@@ -27,6 +27,7 @@ import orderFixRoutes from "./routes/orderFix.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
 import sellerProfileRoutes from "./routes/sellerProfile.routes.js";
 import reportRoutes from "./routes/report.routes.js";
+import promotionRoutes from "./routes/promotions.routes.js";
 
 const app = express();
 
@@ -63,6 +64,10 @@ app.use(
   })
 );
 
+// Mount webhook routes before the global JSON parser so signature verification can use the raw body.
+app.use("/api/webhooks", webhookRoutes);
+app.use("/api/webhooks", payoutWebhookRoutes);
+
 app.use(express.json());
 app.use(express.urlencoded({extended: false}))
 
@@ -90,11 +95,9 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/marketplace", marketplaceRoutes);
 app.use("/api/payments", paymentRoutes);
-app.use("/api/webhooks", webhookRoutes);
 app.use("/api/download", downloadRoutes);
 app.use("/api/seller", sellerRoutes);
 app.use("/api/bank", bankRoutes);
-app.use("/api/webhooks", payoutWebhookRoutes);
 app.use("/api/disputes", disputeRoutes);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/buyer", buyerRoutes);
@@ -108,6 +111,7 @@ app.use("/api/order-fix", orderFixRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/sellers", sellerProfileRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/promotions", promotionRoutes);
 
 
 export default app;

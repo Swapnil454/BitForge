@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 import PageHeader from "../../buyer/transactions/components/PageHeader";
-import { MoreVertical, Calendar, Package, Plus, Pencil, Trash2, X } from "lucide-react";
+import { MoreVertical, Calendar, Package, Plus, Pencil, Trash2, X, Megaphone } from "lucide-react";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
@@ -431,6 +431,16 @@ export default function MyProductsPage() {
                       {new Date(p.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </div>
                   </div>
+
+                  {approved && (
+                    <button
+                      onClick={() => router.push(`/dashboard/seller/promotions/create?productId=${p._id}`)}
+                      className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-400/30 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-300 transition hover:border-cyan-300/50 hover:bg-cyan-500/15"
+                    >
+                      <Megaphone className="h-4 w-4" />
+                      Promote Product
+                    </button>
+                  )}
                 </div>
               </motion.div>
             );

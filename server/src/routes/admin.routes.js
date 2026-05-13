@@ -49,6 +49,18 @@ import {
   approveRefund,
   rejectDispute
 } from "../controllers/refund.controller.js"
+import {
+  approvePromotionAdmin,
+  getAdSettingsAdmin,
+  getAllPromotionsAdmin,
+  getPromotionAdminById,
+  pausePromotionAdmin,
+  rejectPromotionAdmin,
+  resumePromotionAdmin,
+  updateAdSettingsAdmin,
+  updatePromotionPriorityAdmin,
+  verifyPromotionPaymentAdmin,
+} from "../controllers/promotion.controller.js";
 import authMiddleware from "../middleware/auth.js";
 import requireRole from "../middleware/requireRole.js";
 
@@ -120,6 +132,20 @@ router.get("/security/content-review/queue", getContentReviewQueue);
 router.post("/security/content-review/:id/resolve", resolveContentReview);
 router.get("/security/identity/pending", getPendingIdentityVerifications);
 router.post("/security/identity/:sellerId/verify", verifySellerIdentity);
+
+// Promotions
+router.get("/promotions", getAllPromotionsAdmin);
+router.get("/promotions/:id", getPromotionAdminById);
+router.patch("/promotions/:id/approve", approvePromotionAdmin);
+router.patch("/promotions/:id/reject", rejectPromotionAdmin);
+router.patch("/promotions/:id/verify-payment", verifyPromotionPaymentAdmin);
+router.patch("/promotions/:id/pause", pausePromotionAdmin);
+router.patch("/promotions/:id/resume", resumePromotionAdmin);
+router.patch("/promotions/:id/priority", updatePromotionPriorityAdmin);
+
+// Ad settings
+router.get("/ad-settings", getAdSettingsAdmin);
+router.put("/ad-settings", updateAdSettingsAdmin);
 
 
 export default router;

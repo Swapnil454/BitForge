@@ -712,6 +712,140 @@ export const contactAPI = {
     }
 };
 
+// Promotion API functions
+export const promotionAPI = {
+    createSellerPromotion: async (formData: FormData) => {
+        const response = await api.post('/seller/promotions', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+        return response.data;
+    },
+
+    getSellerPromotions: async (params?: { status?: string }) => {
+        const response = await api.get('/seller/promotions', { params });
+        return response.data;
+    },
+
+    getSellerPromotion: async (id: string) => {
+        const response = await api.get(`/seller/promotions/${id}`);
+        return response.data;
+    },
+
+    cancelSellerPromotion: async (id: string) => {
+        const response = await api.patch(`/seller/promotions/${id}/cancel`);
+        return response.data;
+    },
+
+    uploadSellerPaymentProof: async (id: string, formData: FormData) => {
+        const response = await api.post(`/seller/promotions/${id}/payment-proof`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+        return response.data;
+    },
+
+    createPromotionPaymentOrder: async (id: string) => {
+        const response = await api.post(`/seller/promotions/${id}/create-payment-order`);
+        return response.data;
+    },
+
+    verifySellerPromotionPayment: async (id: string, payload: {
+        razorpay_order_id: string;
+        razorpay_payment_id: string;
+        razorpay_signature: string;
+    }) => {
+        const response = await api.post(`/seller/promotions/${id}/verify-payment`, payload);
+        return response.data;
+    },
+
+    getAdminPromotions: async (params?: { status?: string; placement?: string }) => {
+        const response = await api.get('/admin/promotions', { params });
+        return response.data;
+    },
+
+    getAdminPromotion: async (id: string) => {
+        const response = await api.get(`/admin/promotions/${id}`);
+        return response.data;
+    },
+
+    approvePromotion: async (id: string, payload: {
+        amount: number;
+        approvedDurationDays?: number;
+        priority?: number;
+        placement?: string;
+        maxImpressions?: number;
+        adminNote?: string;
+    }) => {
+        const response = await api.patch(`/admin/promotions/${id}/approve`, payload);
+        return response.data;
+    },
+
+    rejectPromotion: async (id: string, payload: { rejectedReason: string; adminNote?: string }) => {
+        const response = await api.patch(`/admin/promotions/${id}/reject`, payload);
+        return response.data;
+    },
+
+    verifyPromotionPayment: async (id: string, payload?: {
+        paymentMethod?: string;
+        transactionId?: string;
+        adminNote?: string;
+    }) => {
+        const response = await api.patch(`/admin/promotions/${id}/verify-payment`, payload || {});
+        return response.data;
+    },
+
+    pausePromotion: async (id: string, payload?: { adminNote?: string }) => {
+        const response = await api.patch(`/admin/promotions/${id}/pause`, payload || {});
+        return response.data;
+    },
+
+    resumePromotion: async (id: string, payload?: { adminNote?: string }) => {
+        const response = await api.patch(`/admin/promotions/${id}/resume`, payload || {});
+        return response.data;
+    },
+
+    updatePromotionPriority: async (id: string, priority: number) => {
+        const response = await api.patch(`/admin/promotions/${id}/priority`, { priority });
+        return response.data;
+    },
+
+    getAdSettings: async () => {
+        const response = await api.get('/admin/ad-settings');
+        return response.data;
+    },
+
+    updateAdSettings: async (payload: {
+        marketplaceHeroMaxAds: number;
+        autoRotate: boolean;
+        defaultDurationDays: number;
+        minimumPrice: number;
+        maximumActiveAdsPerSeller: number;
+    }) => {
+        const response = await api.put('/admin/ad-settings', payload);
+        return response.data;
+    },
+
+    getActivePromotions: async (placement: string = 'MARKETPLACE_HERO') => {
+        const response = await api.get('/promotions/active', {
+            params: { placement }
+        });
+        return response.data;
+    },
+
+    trackPromotionImpression: async (id: string) => {
+        const response = await api.post(`/promotions/${id}/impression`);
+        return response.data;
+    },
+
+    trackPromotionClick: async (id: string) => {
+        const response = await api.post(`/promotions/${id}/click`);
+        return response.data;
+    },
+};
+
 
 
 // User API functions

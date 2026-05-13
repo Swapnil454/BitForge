@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { promotionAPI } from "@/lib/api";
+import type { ActivePromotionBanner } from "@/lib/promotions";
+import HeroSkeleton from "./HeroSkeleton";
 
 export interface Banner {
   id: string;
@@ -12,6 +15,8 @@ export interface Banner {
   buttonText: string;
   link: string;
   gradientClass: string;
+  bannerImage?: string;
+  promotionId?: string;
 }
 
 const defaultBanners: Banner[] = [
@@ -50,31 +55,146 @@ interface HeroAdsProps {
 
 export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [liveBanners, setLiveBanners] = useState<Banner[]>(banners);
+  const [loading, setLoading] = useState(!banners || banners === defaultBanners);
+  const [autoRotate, setAutoRotate] = useState(true);
   const router = useRouter();
+  const trackedPromotionsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    let ignore = false;
+
+    if (banners !== defaultBanners || banners.length !== defaultBanners.length) {
+      setLiveBanners(banners);
+      setLoading(false);
+      return;
+    }
+
+    const gradients = [
+      "from-blue-600 via-indigo-700 to-slate-900",
+      "from-cyan-600 via-blue-700 to-slate-900",
+      "from-emerald-600 via-teal-700 to-slate-900",
+    ];
+
+    const fetchPromotions = async () => {
+      try {
+        setLoading(true);
+        const data = await promotionAPI.getActivePromotions("MARKETPLACE_HERO");
+        const promotions: ActivePromotionBanner[] = data.promotions || [];
+
+        if (ignore) return;
+
+        if (promotions.length > 0) {
+          setLiveBanners(
+            promotions.map((promotion, index: number) => ({
+              id: promotion.id,
+              promotionId: promotion.id,
+              title: promotion.title,
+              subtitle: promotion.subtitle,
+              badge: "Sponsored",
+              buttonText: promotion.buttonText || "View Product",
+              link: promotion.targetLink || `/marketplace/${promotion.productId}`,
+              gradientClass: gradients[index % gradients.length],
+              bannerImage: promotion.bannerImage,
+            }))
+          );
+          setAutoRotate(data.settings?.autoRotate !== false);
+        } else {
+          setLiveBanners(defaultBanners);
+          setAutoRotate(true);
+        }
+      } catch {
+        if (!ignore) {
+          setLiveBanners(defaultBanners);
+          setAutoRotate(true);
+        }
+      } finally {
+        if (!ignore) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchPromotions();
+
+    return () => {
+      ignore = true;
+    };
+  }, [banners]);
+
+  const resolvedBanners = liveBanners.length > 0 ? liveBanners : defaultBanners;
 
   // Auto-slide effect
   useEffect(() => {
+    if (!autoRotate || resolvedBanners.length <= 1) {
+      return;
+    }
+
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % banners.length);
+      setCurrentIndex((prev) => (prev + 1) % resolvedBanners.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, [banners.length]);
+  }, [autoRotate, resolvedBanners.length]);
+
+  useEffect(() => {
+    if (currentIndex >= resolvedBanners.length) {
+      setCurrentIndex(0);
+    }
+  }, [currentIndex, resolvedBanners.length]);
+
+  useEffect(() => {
+    const currentBanner = resolvedBanners[currentIndex];
+    if (!currentBanner?.promotionId) {
+      return;
+    }
+
+    if (trackedPromotionsRef.current.has(currentBanner.promotionId)) {
+      return;
+    }
+
+    trackedPromotionsRef.current.add(currentBanner.promotionId);
+    void promotionAPI.trackPromotionImpression(currentBanner.promotionId).catch(() => {});
+  }, [currentIndex, resolvedBanners]);
 
   const prevSlide = () => {
-    setCurrentIndex((prev) => (prev === 0 ? banners.length - 1 : prev - 1));
+    setCurrentIndex((prev) => (prev === 0 ? resolvedBanners.length - 1 : prev - 1));
   };
 
   const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % banners.length);
+    setCurrentIndex((prev) => (prev + 1) % resolvedBanners.length);
   };
 
-  const currentBanner = banners[currentIndex];
+  const currentBanner = resolvedBanners[currentIndex];
+
+  const handleBannerClick = async () => {
+    if (currentBanner.promotionId) {
+      void promotionAPI.trackPromotionClick(currentBanner.promotionId).catch(() => {});
+    }
+
+    router.push(currentBanner.link);
+  };
+
+  if (loading) {
+    return <HeroSkeleton />;
+  }
 
   return (
     <div className="relative w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mt-4 sm:mt-6">
       <div 
         className={`relative overflow-hidden rounded-xl sm:rounded-2xl md:rounded-3xl h-[170px] sm:h-[200px] lg:h-[240px] bg-gradient-to-r ${currentBanner.gradientClass} shadow-lg transition-all duration-700 flex items-center group`}
       >
+        {currentBanner.bannerImage ? (
+          <>
+            <img
+              src={currentBanner.bannerImage}
+              alt={currentBanner.title}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-slate-950/55" />
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/55 to-slate-950/20" />
+          </>
+        ) : null}
+
         {/* Abstract background shapes */}
         <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-slate-200 dark:bg-white/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 left-10 -mb-20 w-48 h-48 bg-cyan-400/20 rounded-full blur-3xl"></div>
@@ -92,7 +212,7 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
             {currentBanner.subtitle}
           </p>
           <button 
-            onClick={() => router.push(currentBanner.link)}
+            onClick={handleBannerClick}
             className="w-fit px-5 py-2 sm:px-8 sm:py-3.5 bg-white text-gray-900 font-bold rounded-full hover:bg-gray-50 hover:scale-105 transition-all duration-200 shadow-md text-xs sm:text-base"
           >
             {currentBanner.buttonText}
@@ -117,7 +237,7 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
 
         {/* Dots */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-          {banners.map((_, idx) => (
+          {resolvedBanners.map((_, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentIndex(idx)}

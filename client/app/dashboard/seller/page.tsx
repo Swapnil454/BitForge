@@ -23,6 +23,7 @@ import {
   Moon,
   Sun,
   TrendingUp,
+  Megaphone,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useQueryClient } from "@tanstack/react-query";
@@ -467,6 +468,20 @@ export default function Dashboard() {
             hoverBorderColor="border-purple-500 dark:border-purple-400/60"
             hoverShadow="hover:shadow-purple-400/20 dark:hover:shadow-purple-500/30"
             hoverTextColor="text-purple-700 dark:text-purple-200"
+          />
+
+          <DashboardActionCard
+            variant="seller"
+            title="Promotions"
+            description="Request hero banner ads"
+            icon={<Megaphone className="h-8 w-8 md:h-9 md:w-9 text-amber-600 dark:text-amber-300" strokeWidth={2} />}
+            href="/dashboard/seller/promotions"
+            gradientFrom="from-amber-500/15"
+            gradientTo="to-orange-500/15"
+            borderColor="border-amber-400/50 dark:border-amber-500/40"
+            hoverBorderColor="border-amber-500 dark:border-amber-400/60"
+            hoverShadow="hover:shadow-amber-400/20 dark:hover:shadow-amber-500/30"
+            hoverTextColor="text-amber-700 dark:text-amber-200"
           />
         </div>
 

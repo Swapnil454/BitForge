@@ -16,6 +16,7 @@ import {
   University,
   Users,
   Wallet,
+  Megaphone,
   Moon,
   Sun,
   UserRound,
@@ -500,6 +501,20 @@ export default function AdminDashboard() {
             hoverBorderColor="border-indigo-400/60"
             hoverShadow="hover:shadow-indigo-500/30"
             hoverTextColor="text-indigo-700 dark:text-indigo-200"
+          />
+
+          <DashboardActionCard
+            variant="buyer"
+            title="Promotions"
+            description="Review paid ad requests"
+            icon={<Megaphone className="h-8 w-8 md:h-9 md:w-9 text-amber-600 dark:text-amber-200" strokeWidth={2} />}
+            href="/dashboard/admin/promotions"
+            gradientFrom="from-amber-600/20"
+            gradientTo="to-orange-600/20"
+            borderColor="border-amber-500/40"
+            hoverBorderColor="border-amber-400/60"
+            hoverShadow="hover:shadow-amber-500/30"
+            hoverTextColor="text-amber-700 dark:text-amber-200"
           />
 
         </div>

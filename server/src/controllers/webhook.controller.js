@@ -6,6 +6,11 @@ import Product from "../models/Product.js";
 import User from "../models/User.js";
 import { createNotification } from "./notification.controller.js";
 import Invoice from "../models/Invoice.js";
+import {
+  handlePromotionOrderPaid,
+  handlePromotionPaymentCaptured,
+  handlePromotionPaymentFailed,
+} from "./promotion.controller.js";
 
 // Tax rates aligned with Invoice model
 const GST_RATE = 0.05; // 5% GST
@@ -159,9 +164,11 @@ export const razorpayWebhook = async (req, res) => {
     }
 
     const receivedSignature = req.headers["x-razorpay-signature"];
+    const payloadBuffer =
+      req.rawBody || Buffer.from(JSON.stringify(req.body || {}), "utf8");
     const generatedSignature = crypto
       .createHmac("sha256", secret)
-      .update(JSON.stringify(req.body))
+      .update(payloadBuffer)
       .digest("hex");
 
     if (generatedSignature !== receivedSignature) {
@@ -180,6 +187,13 @@ export const razorpayWebhook = async (req, res) => {
       console.log("==> 💰 Payment captured:", payment.id);
       console.log("==> Order ID:", payment.order_id);
       console.log("==> Amount:", payment.amount / 100, "INR");
+
+      const promotion = await handlePromotionPaymentCaptured(payment);
+      if (promotion) {
+        console.log("==> Promotion payment captured:", promotion._id);
+        console.log("==> ///////////////////////////////////////////////////////////");
+        return res.json({ status: "ok" });
+      }
 
       // Check if this is a CART order
       const cartOrder = await CartOrder.findOne({ razorpayOrderId: payment.order_id });
@@ -324,12 +338,30 @@ export const razorpayWebhook = async (req, res) => {
       console.log("==> ///////////////////////////////////////////////////////////");
     }
 
+    if (event === "order.paid") {
+      const orderEntity = req.body.payload.order?.entity;
+      const promotion = await handlePromotionOrderPaid(orderEntity);
+
+      if (promotion) {
+        console.log("==> Promotion order paid:", promotion._id);
+        console.log("==> ///////////////////////////////////////////////////////////");
+        return res.json({ status: "ok" });
+      }
+    }
+
     if (event === "payment.failed") {
       const payment = req.body.payload.payment.entity;
       const failureReason =
         payment.error_description ||
         payment.error_reason ||
         "Payment could not be completed.";
+
+      const promotion = await handlePromotionPaymentFailed(payment, failureReason);
+      if (promotion) {
+        console.log("==> Promotion payment failed:", promotion._id);
+        console.log("==> ///////////////////////////////////////////////////////////");
+        return res.json({ status: "ok" });
+      }
 
       const cartOrder = await CartOrder.findOneAndUpdate(
         { razorpayOrderId: payment.order_id },
