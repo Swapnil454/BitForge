@@ -778,6 +778,14 @@ export const promotionAPI = {
         placement?: string;
         maxImpressions?: number;
         adminNote?: string;
+        heroBgColor?: string;
+        heroTextColor?: string;
+        heroTitleColor?: string;
+        heroSubtitleColor?: string;
+        heroButtonBgColor?: string;
+        heroButtonTextColor?: string;
+        heroFontFamily?: string;
+        heroLayout?: string;
     }) => {
         const response = await api.patch(`/admin/promotions/${id}/approve`, payload);
         return response.data;
@@ -809,6 +817,20 @@ export const promotionAPI = {
 
     updatePromotionPriority: async (id: string, priority: number) => {
         const response = await api.patch(`/admin/promotions/${id}/priority`, { priority });
+        return response.data;
+    },
+
+    updatePromotionStyle: async (id: string, payload: { 
+        heroBgColor?: string, 
+        heroTextColor?: string, 
+        heroLayout?: string,
+        heroTitleColor?: string,
+        heroSubtitleColor?: string,
+        heroButtonBgColor?: string,
+        heroButtonTextColor?: string,
+        heroFontFamily?: string
+    }) => {
+        const response = await api.patch(`/admin/promotions/${id}/style`, payload);
         return response.data;
     },
 

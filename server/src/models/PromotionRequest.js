@@ -69,12 +69,63 @@ const promotionRequestSchema = new mongoose.Schema(
     },
     bannerImage: {
       type: String,
-      required: true,
     },
     bannerImageKey: {
       type: String,
-      required: true,
     },
+    heroBgColor: {
+      type: String,
+      default: "#2563EB",
+      validate: {
+        validator: function(v) {
+          if (!v) return true;
+          return /^#[0-9A-Fa-f]{6}$/i.test(v);
+        },
+        message: props => `${props.value} is not a valid hex color!`
+      }
+    },
+    heroTextColor: {
+      type: String,
+      enum: ["light", "dark", "auto"],
+      default: "auto",
+    },
+    heroTitleColor: {
+      type: String,
+      default: "",
+    },
+    heroSubtitleColor: {
+      type: String,
+      default: "",
+    },
+    heroButtonBgColor: {
+      type: String,
+      default: "",
+    },
+    heroButtonTextColor: {
+      type: String,
+      default: "",
+    },
+    heroFontFamily: {
+      type: String,
+      default: "inherit",
+    },
+    heroLayout: {
+      type: String,
+      enum: ["floating", "single", "minimal"],
+      default: "floating",
+    },
+    adImages: [
+      {
+        url: String,
+        key: String,
+        position: { type: Number, default: 0 },
+        type: {
+          type: String,
+          enum: ["product", "transparent", "logo"],
+          default: "product"
+        }
+      }
+    ],
     buttonText: {
       type: String,
       default: "View Product",

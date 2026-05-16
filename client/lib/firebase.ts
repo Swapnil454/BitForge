@@ -20,6 +20,63 @@ const firebaseConfig = {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 
+const isExpectedPushServiceError = (error: unknown) => {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return (
+    error.name === "AbortError" ||
+    message.includes("push service error") ||
+    message.includes("registration failed") ||
+    message.includes("subscription failed")
+  );
+};
+
+const waitForServiceWorkerActivation = async (
+  registration: ServiceWorkerRegistration,
+  timeoutMs = 10000
+) => {
+  if (registration.active) {
+    return registration;
+  }
+
+  const activatingWorker =
+    registration.installing || registration.waiting || registration.active;
+
+  if (!activatingWorker) {
+    throw new Error("Messaging service worker did not start installing.");
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => {
+      reject(new Error("Messaging service worker activation timed out."));
+    }, timeoutMs);
+
+    const finish = () => {
+      window.clearTimeout(timeoutId);
+      resolve();
+    };
+
+    if (registration.active || activatingWorker.state === "activated") {
+      finish();
+      return;
+    }
+
+    const handleStateChange = () => {
+      if (registration.active || activatingWorker.state === "activated") {
+        activatingWorker.removeEventListener("statechange", handleStateChange);
+        finish();
+      }
+    };
+
+    activatingWorker.addEventListener("statechange", handleStateChange);
+  });
+
+  return registration;
+};
+
 export const isFirebaseMessagingAvailable = async () => {
   if (typeof window === "undefined") return false;
   return isSupported();
@@ -50,23 +107,43 @@ export const registerMessagingServiceWorker = async () => {
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID!,
   });
 
-  return navigator.serviceWorker.register(
+  const registration = await navigator.serviceWorker.register(
     `/firebase-messaging-sw.js?${swParams.toString()}`
   );
+
+  await waitForServiceWorkerActivation(registration);
+  return navigator.serviceWorker.ready;
 };
 
 export const getFirebasePushToken = async () => {
   const messaging = await getFirebaseMessaging();
   if (!messaging) return null;
 
-  const registration = await registerMessagingServiceWorker();
+  let registration: ServiceWorkerRegistration | null = null;
+
+  try {
+    registration = await registerMessagingServiceWorker();
+  } catch (error) {
+    console.error("Failed to activate messaging service worker:", error);
+    return null;
+  }
+
   const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
   if (!registration || !vapidKey) return null;
 
-  return getToken(messaging, {
-    vapidKey,
-    serviceWorkerRegistration: registration,
-  });
+  try {
+    return await getToken(messaging, {
+      vapidKey,
+      serviceWorkerRegistration: registration,
+    });
+  } catch (error) {
+    if (isExpectedPushServiceError(error)) {
+      console.warn("Push subscription is temporarily unavailable:", error);
+      return null;
+    }
+
+    throw error;
+  }
 };
 
 export const removeFirebasePushToken = async () => {

@@ -246,7 +246,7 @@ export default function SellerPromotionDetailPage() {
       <section className="mx-auto grid max-w-7xl gap-6 px-4 py-8 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="space-y-6">
           <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/5">
-            <img src={promotion.bannerImage} alt={promotion.title} className="h-72 w-full object-cover" />
+            <img src={promotion.bannerImage || undefined} alt={promotion.title} className="h-72 w-full object-cover" />
             <div className="space-y-5 p-6">
               <div className="flex flex-wrap items-center gap-3">
                 <span

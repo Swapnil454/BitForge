@@ -119,6 +119,8 @@ function InfiniteProductGrid({
 // ─── HomeView — the main landing page rows (unchanged, fast, client-side) ────
 // We still load a "reasonable" set of products for the home sliders.
 function HomeView({
+  homeProducts,
+  homeLoading,
   searchQuery,
   wishlist,
   cartItems,
@@ -127,6 +129,8 @@ function HomeView({
   onAddToCart,
   onBuyNow,
 }: {
+  homeProducts: ProductType[];
+  homeLoading: boolean;
   searchQuery: string;
   wishlist: string[];
   cartItems: string[];
@@ -135,19 +139,8 @@ function HomeView({
   onAddToCart: (e: React.MouseEvent, id: string) => void;
   onBuyNow: (e: React.MouseEvent, id: string) => void;
 }) {
-  const [homeProducts, setHomeProducts] = useState<ProductType[]>([]);
-  const [homeLoading, setHomeLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    // Load a wider set for the home-page rows (limit 50 — enough for all sections)
-    import("@/lib/api").then(({ marketplaceAPI }) => {
-      marketplaceAPI.getAllProducts({ limit: 50 })
-        .then((data) => setHomeProducts(data.products || []))
-        .catch(() => {})
-        .finally(() => setHomeLoading(false));
-    });
-  }, []);
 
   // Section filtering + padding logic
   const getSectionProducts = (type: string, categoryFilter?: string, limit?: number) => {
@@ -197,8 +190,6 @@ function HomeView({
 
   return (
     <>
-      {!searchQuery && <HeroAds />}
-      {!searchQuery && <CategoryPills products={homeProducts} />}
       {!searchQuery && <CategoryShowcaseGrid products={homeProducts} />}
 
       {marketplaceSections.map((section) => {
@@ -241,6 +232,19 @@ export default function MarketplaceClient() {
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [cartItems, setCartItems] = useState<string[]>([]);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
+  
+  // Hoisted state for home products so CategoryPills can use it everywhere
+  const [homeProducts, setHomeProducts] = useState<ProductType[]>([]);
+  const [homeLoading, setHomeLoading] = useState(true);
+
+  useEffect(() => {
+    import("@/lib/api").then(({ marketplaceAPI }) => {
+      marketplaceAPI.getAllProducts({ limit: 50 })
+        .then((data) => setHomeProducts(data.products || []))
+        .catch(() => {})
+        .finally(() => setHomeLoading(false));
+    });
+  }, []);
 
   const { isAuthenticated, requireAuth } = useAuth();
   const router = useRouter();
@@ -263,19 +267,19 @@ export default function MarketplaceClient() {
   // Grid view title/subtitle
   const gridTitle = () => {
     if (searchQuery) return `Results for "${searchQuery}"`;
-    if (categoryParam) return `${categoryParam}s`;
+    if (categoryParam) return ""; // Replaced by highlighted CategoryPill
     if (collectionParam === "Trending") return "Trending Products";
     if (collectionParam === "Recommended") return "Best Selling & Highly Rated";
-    if (collectionParam === "All") return "All Products";
+    if (collectionParam === "All") return ""; // Replaced by Explore All Pill
     return "";
   };
 
   const gridSubtitle = () => {
     if (searchQuery) return "Scroll to load more results";
-    if (categoryParam) return `Explore all ${categoryParam} products`;
+    if (categoryParam) return ""; // Replaced by highlighted CategoryPill
     if (collectionParam === "Trending") return "The most popular products right now";
     if (collectionParam === "Recommended") return "Our top picks for you";
-    if (collectionParam === "All") return "Explore our recently uploaded products";
+    if (collectionParam === "All") return ""; // Replaced by Explore All Pill
     return "";
   };
 
@@ -375,13 +379,18 @@ export default function MarketplaceClient() {
       />
 
       <main className="flex-grow">
+        {/* Global Hero Ads and Category Pills */}
+        {!searchQuery && <HeroAds />}
+        {!searchQuery && (
+          <div className="-mt-8 sm:-mt-10 mb-8">
+            <CategoryPills products={homeProducts} />
+          </div>
+        )}
+
         {/* Grid view: search / category / collection / all */}
         {isGridView ? (
-          <>
-            {/* Hero ads banner on all grid views */}
-            <HeroAds />
-            <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 py-8">
-              <InfiniteProductGrid
+          <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 py-8">
+            <InfiniteProductGrid
                 title={gridTitle()}
                 subtitle={gridSubtitle()}
                 category={categoryParam}
@@ -395,10 +404,11 @@ export default function MarketplaceClient() {
                 onBuyNow={handleBuyNow}
               />
             </div>
-          </>
         ) : (
           /* Home view: hero + sections + rows */
           <HomeView
+            homeProducts={homeProducts}
+            homeLoading={homeLoading}
             searchQuery={searchQuery}
             wishlist={wishlist}
             cartItems={cartItems}

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Heart, ShoppingCart, Zap, Star, TrendingUp, Sparkles, Award } from "lucide-react";
+import { useHeroBgColor } from "@/lib/useHeroBgColor";
 
 export interface ProductType {
   _id: string;
@@ -60,6 +61,7 @@ export default function ProductCard({
   badge: badgeProp,
 }: ProductCardProps) {
   const router = useRouter();
+  const { heroBgColor, heroIsDarkText } = useHeroBgColor();
 
   const finalPrice =
     product.discount && product.discount > 0
@@ -72,10 +74,18 @@ export default function ProductCard({
   return (
     <div
       onClick={() => router.push(`/marketplace/${product._id}`)}
-      className="w-full h-full group flex flex-col cursor-pointer bg-transparent"
+      className="relative w-full h-full group flex flex-col cursor-pointer bg-white/75 dark:bg-[#05050a]/75 border border-white/80 dark:border-white/10 shadow-[0_8px_30px_rgba(15,23,42,0.04)] hover:shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl rounded-[1.25rem] p-3 transition-all duration-300"
     >
+      {/* Dynamic Hero Tint Overlay */}
+      {heroBgColor && (
+        <div 
+          className="absolute inset-0 pointer-events-none transition-colors duration-700 z-0 rounded-[1.25rem]" 
+          style={{ backgroundColor: heroBgColor, opacity: heroIsDarkText ? 0.15 : 0.25 }}
+        />
+      )}
+
       {/* ── Thumbnail Area ── */}
-      <div className="relative w-full aspect-square bg-[#F7F7F7] dark:bg-[#0A101D] rounded-xl overflow-hidden flex items-center justify-center group-hover:shadow-md transition-shadow duration-300">
+      <div className="relative z-10 w-full aspect-square bg-[#F7F7F7] dark:bg-[#0A101D] rounded-xl overflow-hidden flex items-center justify-center group-hover:shadow-md transition-shadow duration-300">
         {product.thumbnailUrl ? (
           <img
             src={product.thumbnailUrl}
@@ -109,7 +119,7 @@ export default function ProductCard({
       </div>
 
       {/* ── Info Area ── */}
-      <div className="flex flex-col flex-grow pt-3 px-1">
+      <div className="relative z-10 flex flex-col flex-grow pt-3 sm:pt-4">
         {/* Category (Like "Sponsored") */}
         <p className="text-[11px] sm:text-xs text-gray-500 dark:text-slate-400 font-medium mb-1 truncate">
           {product.category}

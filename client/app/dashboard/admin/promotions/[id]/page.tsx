@@ -18,6 +18,7 @@ import {
   type PromotionRecord,
   type PromotionSettings,
 } from "@/lib/promotions";
+import { getAutoTextColor, isValidHexColor } from "@/lib/colorUtils";
 
 const inputClass =
   "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/35";
@@ -37,6 +38,15 @@ export default function AdminPromotionDetailPage() {
   const [adminNote, setAdminNote] = useState("");
   const [rejectReason, setRejectReason] = useState("");
   const [verifyTransactionId, setVerifyTransactionId] = useState("");
+
+  const [heroBgColor, setHeroBgColor] = useState("#2563EB");
+  const [heroTextColor, setHeroTextColor] = useState<"light" | "dark" | "auto">("auto");
+  const [heroTitleColor, setHeroTitleColor] = useState("");
+  const [heroSubtitleColor, setHeroSubtitleColor] = useState("");
+  const [heroButtonBgColor, setHeroButtonBgColor] = useState("");
+  const [heroButtonTextColor, setHeroButtonTextColor] = useState("");
+  const [heroFontFamily, setHeroFontFamily] = useState("inherit");
+  const [heroLayout, setHeroLayout] = useState<"floating" | "single" | "minimal">("floating");
 
   const loadPage = useCallback(async () => {
     try {
@@ -63,6 +73,14 @@ export default function AdminPromotionDetailPage() {
       setAdminNote(nextPromotion?.adminNote || "");
       setRejectReason(nextPromotion?.rejectedReason || "");
       setVerifyTransactionId(nextPromotion?.transactionId || "");
+      setHeroBgColor(nextPromotion?.heroBgColor || "#2563EB");
+      setHeroTextColor(nextPromotion?.heroTextColor || "auto");
+      setHeroTitleColor(nextPromotion?.heroTitleColor || "");
+      setHeroSubtitleColor(nextPromotion?.heroSubtitleColor || "");
+      setHeroButtonBgColor(nextPromotion?.heroButtonBgColor || "");
+      setHeroButtonTextColor(nextPromotion?.heroButtonTextColor || "");
+      setHeroFontFamily(nextPromotion?.heroFontFamily || "inherit");
+      setHeroLayout(nextPromotion?.heroLayout || "floating");
     } catch {
       showError("Failed to load promotion");
       router.push("/dashboard/admin/promotions");
@@ -147,7 +165,15 @@ export default function AdminPromotionDetailPage() {
       <section className="mx-auto grid max-w-7xl gap-6 px-4 py-8 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="space-y-6">
           <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/5">
-            <img src={promotion.bannerImage} alt={promotion.title} className="h-72 w-full object-cover" />
+            {promotion.bannerImage && !promotion.adImages?.length ? (
+              <img src={promotion.bannerImage} alt={promotion.title} className="h-72 w-full object-cover" />
+            ) : promotion.adImages?.length ? (
+              <div className="flex h-72 w-full gap-2 p-4 bg-slate-100 dark:bg-slate-900 overflow-x-auto items-center justify-center">
+                {promotion.adImages.sort((a, b) => a.position - b.position).map((img) => (
+                  <img key={img.key} src={img.url} alt="Ad content" className="h-full w-auto max-w-[30%] object-contain rounded-xl shadow-md bg-white/5" />
+                ))}
+              </div>
+            ) : null}
             <div className="space-y-5 p-6">
               <div className="flex flex-wrap items-center gap-3">
                 <span
@@ -277,6 +303,14 @@ export default function AdminPromotionDetailPage() {
                             priority,
                             maxImpressions: maxImpressions ? Number(maxImpressions) : undefined,
                             adminNote,
+                            heroBgColor,
+                            heroTextColor,
+                            heroTitleColor,
+                            heroSubtitleColor,
+                            heroButtonBgColor,
+                            heroButtonTextColor,
+                            heroFontFamily,
+                            heroLayout,
                           }),
                         "Promotion approved"
                       )
@@ -427,6 +461,232 @@ export default function AdminPromotionDetailPage() {
               <MetricCard label="Clicks" value={promotion.metrics.clicks.toLocaleString("en-IN")} />
               <MetricCard label="CTR" value={`${promotion.metrics.ctr}%`} />
               <MetricCard label="Revenue" value={formatPromotionCurrency(promotion.metrics.revenueGenerated)} />
+            </div>
+          </section>
+
+          <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
+            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-cyan-500">Style Configuration</p>
+            <div className="mt-5 space-y-4">
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Background Color (Hex)</span>
+                <input
+                  type="text"
+                  value={heroBgColor}
+                  onChange={(e) => setHeroBgColor(e.target.value)}
+                  className={inputClass}
+                />
+                {!isValidHexColor(heroBgColor) && (
+                  <p className="mt-1 text-xs text-red-500">Invalid hex color format.</p>
+                )}
+              </label>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Text Color</span>
+                  <select
+                    value={heroTextColor}
+                    onChange={(e) => setHeroTextColor(e.target.value as "light" | "dark" | "auto")}
+                    className={inputClass}
+                  >
+                    <option value="auto">Auto (Luminance Based)</option>
+                    <option value="light">Always Light</option>
+                    <option value="dark">Always Dark</option>
+                  </select>
+                  {heroTextColor !== "auto" && isValidHexColor(heroBgColor) && heroTextColor !== getAutoTextColor(heroBgColor) && (
+                    <p className="mt-1 text-xs text-amber-500">Warning: Text may be hard to read on this background.</p>
+                  )}
+                </label>
+                
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Layout Structure</span>
+                  <select
+                    value={heroLayout}
+                    onChange={(e) => setHeroLayout(e.target.value as "floating" | "single" | "minimal")}
+                    className={inputClass}
+                  >
+                    <option value="floating">Floating (1-3 Images)</option>
+                    <option value="single">Single Featured Image</option>
+                    <option value="minimal">Minimal (Text Focus)</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Title Color (Optional Hex)</span>
+                  <input
+                    type="text"
+                    value={heroTitleColor}
+                    onChange={(e) => setHeroTitleColor(e.target.value)}
+                    placeholder="e.g. #FFFFFF"
+                    className={inputClass}
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Subtitle Color (Optional Hex)</span>
+                  <input
+                    type="text"
+                    value={heroSubtitleColor}
+                    onChange={(e) => setHeroSubtitleColor(e.target.value)}
+                    placeholder="e.g. #E2E8F0"
+                    className={inputClass}
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Button BG Color (Optional Hex)</span>
+                  <input
+                    type="text"
+                    value={heroButtonBgColor}
+                    onChange={(e) => setHeroButtonBgColor(e.target.value)}
+                    placeholder="e.g. #10B981"
+                    className={inputClass}
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Button Text Color (Optional Hex)</span>
+                  <input
+                    type="text"
+                    value={heroButtonTextColor}
+                    onChange={(e) => setHeroButtonTextColor(e.target.value)}
+                    placeholder="e.g. #000000"
+                    className={inputClass}
+                  />
+                </label>
+              </div>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Custom Font Family</span>
+                <select
+                  value={heroFontFamily}
+                  onChange={(e) => setHeroFontFamily(e.target.value)}
+                  className={inputClass}
+                >
+                  <option value="inherit">Default UI Font</option>
+                  <option value="'Inter', sans-serif">Inter</option>
+                  <option value="'Roboto', sans-serif">Roboto</option>
+                  <option value="'Montserrat', sans-serif">Montserrat</option>
+                  <option value="'Playfair Display', serif">Playfair Display</option>
+                  <option value="'Outfit', sans-serif">Outfit</option>
+                  <option value="'Oswald', sans-serif">Oswald</option>
+                </select>
+              </label>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setHeroBgColor("#2563EB");
+                    setHeroTextColor("auto");
+                    setHeroTitleColor("");
+                    setHeroSubtitleColor("");
+                    setHeroButtonBgColor("");
+                    setHeroButtonTextColor("");
+                    setHeroFontFamily("inherit");
+                    setHeroLayout("floating");
+                  }}
+                  disabled={processing}
+                  className="flex-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/10"
+                >
+                  Reset Defaults
+                </button>
+                <button
+                  onClick={() =>
+                    void runAction(
+                      () => promotionAPI.updatePromotionStyle(promotion._id, {
+                        heroBgColor,
+                        heroTextColor,
+                        heroTitleColor,
+                        heroSubtitleColor,
+                        heroButtonBgColor,
+                        heroButtonTextColor,
+                        heroFontFamily,
+                        heroLayout
+                      }),
+                      "Style updated successfully"
+                    )
+                  }
+                  disabled={processing || !isValidHexColor(heroBgColor)}
+                  className="flex-1 rounded-2xl bg-cyan-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:opacity-50"
+                >
+                  Save Style
+                </button>
+              </div>
+            </div>
+            
+            <div className="mt-6 border-t border-slate-200 pt-6 dark:border-white/10">
+              <p className="mb-4 text-sm font-semibold text-slate-600 dark:text-white/75">Live Preview</p>
+              <div 
+                className="relative overflow-hidden rounded-3xl" 
+                style={{ backgroundColor: isValidHexColor(heroBgColor) ? heroBgColor : "#2563EB" }}
+              >
+                <div className="absolute -left-1/4 -top-1/4 h-1/2 w-1/2 rounded-full bg-white/20 blur-3xl mix-blend-overlay"></div>
+                <div className="absolute -bottom-1/4 -right-1/4 h-1/2 w-1/2 rounded-full bg-black/20 blur-3xl mix-blend-overlay"></div>
+                
+                <div 
+                  className={`relative flex min-h-[300px] flex-col p-6 md:flex-row ${heroLayout === "minimal" ? "items-center justify-center text-center" : "items-center"}`}
+                  style={{ fontFamily: heroFontFamily }}
+                >
+                  
+                  {/* Left Images Area */}
+                  {heroLayout !== "minimal" && promotion.adImages && promotion.adImages.length > 1 && (
+                    <div className="hidden md:flex relative z-10 w-1/4 h-full items-end justify-start gap-2">
+                      {promotion.adImages.sort((a, b) => a.position - b.position).slice(1, 3).map((img, i) => (
+                        <div
+                          key={img.key}
+                          className="relative transition-all duration-500 ease-out flex-shrink-0 origin-bottom"
+                          style={{ height: i === 0 ? "85%" : "70%", zIndex: 9 - i, marginLeft: i > 0 ? "-2rem" : "0" }}
+                        >
+                          <img src={img.url} alt="" className="h-full w-auto object-contain drop-shadow-2xl" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className={`relative z-10 w-full flex flex-col ${heroLayout === "minimal" ? "max-w-2xl items-center" : "md:flex-1 items-center px-4"}`}>
+                    <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-white">
+                      Sponsored
+                    </span>
+                    <h3 
+                      className={`mt-3 text-2xl font-black leading-tight drop-shadow-md ${heroLayout !== "minimal" ? "text-center" : ""}`}
+                      style={{ color: isValidHexColor(heroTitleColor) ? heroTitleColor : (heroTextColor === "auto" ? (getAutoTextColor(heroBgColor) === "dark" ? "#000" : "#fff") : (heroTextColor === "dark" ? "#000" : "#fff")) }}
+                    >
+                      {promotion.title}
+                    </h3>
+                    <p 
+                      className={`mt-2 text-sm drop-shadow-md ${heroLayout !== "minimal" ? "text-center" : ""}`}
+                      style={{ color: isValidHexColor(heroSubtitleColor) ? heroSubtitleColor : (heroTextColor === "auto" ? (getAutoTextColor(heroBgColor) === "dark" ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.8)") : (heroTextColor === "dark" ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.8)")) }}
+                    >
+                      {promotion.subtitle}
+                    </p>
+                    <button 
+                      className="mt-6 rounded-full px-6 py-2.5 text-xs font-bold transition hover:scale-105 shadow-xl"
+                      style={{ 
+                        backgroundColor: isValidHexColor(heroButtonBgColor) ? heroButtonBgColor : "#ffffff", 
+                        color: isValidHexColor(heroButtonTextColor) ? heroButtonTextColor : "#000000" 
+                      }}
+                    >
+                      {promotion.buttonText || "View Product"}
+                    </button>
+                  </div>
+                  
+                  {/* Right Image Area */}
+                  {heroLayout !== "minimal" && (
+                    <div className="relative mt-6 h-40 w-full md:mt-0 md:w-1/4 md:flex items-end justify-end">
+                      {promotion.adImages?.length ? (
+                        <div className="relative h-full w-full flex justify-end" style={{ zIndex: 10 }}>
+                          <img src={promotion.adImages.sort((a, b) => a.position - b.position)[0].url} alt="" className="h-full w-auto object-contain drop-shadow-2xl" />
+                        </div>
+                      ) : promotion.bannerImage ? (
+                        <div className="absolute inset-0 flex items-center justify-end pointer-events-none">
+                          <img src={promotion.bannerImage} className="max-h-[90%] w-auto object-contain drop-shadow-2xl rounded-2xl" alt="" />
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </section>
 

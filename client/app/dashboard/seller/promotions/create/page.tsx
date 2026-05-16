@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ImagePlus, Megaphone, Sparkles } from "lucide-react";
+import { ImagePlus, Megaphone, Sparkles, GripVertical, Trash2 } from "lucide-react";
 import PageHeader from "../../../buyer/transactions/components/PageHeader";
 import { productAPI, promotionAPI } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
@@ -42,8 +42,9 @@ function CreatePromotionForm() {
   const [promotionGoal, setPromotionGoal] = useState("");
   const [requestedDurationDays, setRequestedDurationDays] = useState(7);
   const [sellerNote, setSellerNote] = useState("");
-  const [bannerImage, setBannerImage] = useState<File | null>(null);
-  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [heroBgColor, setHeroBgColor] = useState("#2563EB");
+  const [adImages, setAdImages] = useState<File[]>([]);
+  const [adImagePreviews, setAdImagePreviews] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -76,17 +77,58 @@ function CreatePromotionForm() {
     [productId, products]
   );
 
-  const handleBannerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    if (!files.length) return;
 
-    if (!file.type.startsWith("image/")) {
-      showError("Banner must be an image");
+    if (adImages.length + files.length > 3) {
+      showError("Maximum 3 images allowed");
       return;
     }
 
-    setBannerImage(file);
-    setBannerPreview(URL.createObjectURL(file));
+    const validFiles = files.filter(file => {
+      if (!["image/png", "image/webp"].includes(file.type)) {
+        showError(`${file.name} is not a supported format (PNG/WEBP only)`);
+        return false;
+      }
+      if (file.size > 9 * 1024 * 1024) {
+        showError(`${file.name} exceeds 9MB limit`);
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length) {
+      setAdImages(prev => [...prev, ...validFiles]);
+      setAdImagePreviews(prev => [...prev, ...validFiles.map(f => URL.createObjectURL(f))]);
+    }
+    
+    event.target.value = "";
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.setData("text/plain", index.toString());
+  };
+  
+  const handleDrop = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    const sourceIndex = parseInt(e.dataTransfer.getData("text/plain"), 10);
+    if (sourceIndex === index || isNaN(sourceIndex)) return;
+    
+    const newImages = [...adImages];
+    const [movedImage] = newImages.splice(sourceIndex, 1);
+    newImages.splice(index, 0, movedImage);
+    setAdImages(newImages);
+
+    const newPreviews = [...adImagePreviews];
+    const [movedPreview] = newPreviews.splice(sourceIndex, 1);
+    newPreviews.splice(index, 0, movedPreview);
+    setAdImagePreviews(newPreviews);
+  };
+  
+  const removeImage = (index: number) => {
+    setAdImages(prev => prev.filter((_, i) => i !== index));
+    setAdImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async () => {
@@ -100,8 +142,8 @@ function CreatePromotionForm() {
       return;
     }
 
-    if (!bannerImage) {
-      showError("Upload a banner image");
+    if (adImages.length === 0) {
+      showError("Upload at least one image");
       return;
     }
 
@@ -115,9 +157,13 @@ function CreatePromotionForm() {
       formData.append("buttonText", buttonText.trim() || "View Product");
       formData.append("targetLink", targetLink.trim());
       formData.append("promotionGoal", promotionGoal.trim());
-      formData.append("requestedDurationDays", String(requestedDurationDays));
-      formData.append("sellerNote", sellerNote.trim());
-      formData.append("bannerImage", bannerImage);
+      formData.append("requestedDurationDays", requestedDurationDays.toString());
+      formData.append("sellerNote", sellerNote);
+      formData.append("heroBgColor", heroBgColor);
+
+      adImages.forEach((file) => {
+        formData.append("adImages", file);
+      });
 
       const response = await promotionAPI.createSellerPromotion(formData);
       showSuccess("Promotion request submitted");
@@ -236,17 +282,80 @@ function CreatePromotionForm() {
                 />
               </Field>
 
-              <Field label="Banner Image Upload">
-                <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center transition hover:border-cyan-400/60 hover:bg-cyan-500/5 dark:border-white/15 dark:bg-white/5">
-                  <ImagePlus className="h-10 w-10 text-cyan-400" />
-                  <div>
-                    <p className="font-semibold">Upload banner artwork</p>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-white/55">
-                      Recommended wide image for hero placement
-                    </p>
+              <Field label="Background Color (Hex)">
+                <div className="flex gap-4">
+                  <input
+                    type="color"
+                    value={heroBgColor}
+                    onChange={(e) => setHeroBgColor(e.target.value)}
+                    className="h-12 w-12 flex-shrink-0 cursor-pointer appearance-none rounded-xl border-0 p-0"
+                  />
+                  <input
+                    type="text"
+                    value={heroBgColor}
+                    onChange={(e) => setHeroBgColor(e.target.value)}
+                    className={inputClass}
+                    placeholder="#2563EB"
+                  />
+                </div>
+              </Field>
+
+              <Field label="Floating Product Images (Up to 3)">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 dark:border-white/10 dark:bg-white/5">
+                  <div className="mb-4 text-sm text-slate-500 dark:text-white/60">
+                    <p className="font-semibold text-slate-700 dark:text-white">Seller Guidelines for Premium Ads:</p>
+                    <ul className="mt-2 list-disc pl-5 space-y-1">
+                      <li>Use transparent PNG or WEBP images for the best floating effect.</li>
+                      <li>Avoid text near the edges of your images.</li>
+                      <li>Square or portrait crops work best.</li>
+                      <li>Max 9MB per image. You can reorder images by dragging them.</li>
+                    </ul>
                   </div>
-                  <input type="file" accept="image/*" onChange={handleBannerChange} className="hidden" />
-                </label>
+
+                  {adImages.length > 0 && (
+                    <div className="mb-4 grid gap-3">
+                      {adImagePreviews.map((preview, idx) => (
+                        <div 
+                          key={preview}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, idx)}
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={(e) => handleDrop(e, idx)}
+                          className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition hover:border-cyan-400 dark:border-white/10 dark:bg-[#0a0a0f]"
+                        >
+                          <GripVertical className="h-5 w-5 cursor-grab text-slate-400" />
+                          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 dark:bg-white/5">
+                            <img src={preview} alt="Upload preview" className="h-full w-full object-contain" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold">Image {idx + 1}</p>
+                            <p className="text-xs text-slate-500 dark:text-white/50">{(adImages[idx].size / 1024 / 1024).toFixed(2)} MB</p>
+                          </div>
+                          <button
+                            onClick={() => removeImage(idx)}
+                            className="p-2 text-slate-400 hover:text-red-500 transition"
+                            title="Remove image"
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {adImages.length < 3 && (
+                    <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-300 bg-white px-6 py-8 text-center transition hover:border-cyan-400/60 hover:bg-cyan-500/5 dark:border-white/15 dark:bg-[#0a0a0f]">
+                      <ImagePlus className="h-8 w-8 text-cyan-400" />
+                      <div>
+                        <p className="font-semibold text-sm">Upload transparent image</p>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-white/55">
+                          PNG/WEBP up to 9MB ({3 - adImages.length} slots remaining)
+                        </p>
+                      </div>
+                      <input type="file" accept="image/png, image/webp" multiple onChange={handleImageChange} className="hidden" />
+                    </label>
+                  )}
+                </div>
               </Field>
 
               <button
@@ -277,23 +386,59 @@ function CreatePromotionForm() {
           </PreviewCard>
 
           <PreviewCard title="Banner Preview" subtitle="This is how your request looks before admin review">
-            {bannerPreview ? (
-              <img src={bannerPreview} alt="Banner preview" className="h-56 w-full rounded-3xl object-cover" />
-            ) : (
-              <div className="flex h-56 items-center justify-center rounded-3xl bg-slate-100 text-slate-400 dark:bg-white/5">
-                <ImagePlus className="h-10 w-10" />
-              </div>
-            )}
+            <div className="relative overflow-hidden rounded-3xl" style={{ backgroundColor: heroBgColor }}>
+              {/* Fake glow and bottom fade to simulate the real hero ad */}
+              <div className="absolute -left-1/4 -top-1/4 h-1/2 w-1/2 rounded-full bg-white/20 blur-3xl mix-blend-overlay"></div>
+              <div className="absolute -bottom-1/4 -right-1/4 h-1/2 w-1/2 rounded-full bg-black/20 blur-3xl mix-blend-overlay"></div>
+              
+              <div className="relative flex min-h-[300px] flex-col items-center justify-center p-8 text-white md:flex-row">
+                
+                {/* Left Images Area */}
+                {adImagePreviews.length > 1 && (
+                  <div className="hidden md:flex relative z-10 w-1/4 h-full items-end justify-start gap-2">
+                    {adImagePreviews.slice(1, 3).map((preview, i) => (
+                      <div
+                        key={preview}
+                        className="relative transition-all duration-500 ease-out flex-shrink-0 origin-bottom"
+                        style={{ height: i === 0 ? "85%" : "70%", zIndex: 9 - i, marginLeft: i > 0 ? "-2rem" : "0" }}
+                      >
+                        <img src={preview} alt="" className="h-full w-auto object-contain drop-shadow-2xl" />
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-            <div className="mt-4 rounded-3xl bg-slate-950 px-6 py-6 text-white">
-              <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em]">
-                Sponsored
-              </span>
-              <h3 className="mt-4 text-2xl font-black">{title || "Your banner title"}</h3>
-              <p className="mt-2 text-sm text-white/70">{subtitle || "Your banner subtitle will appear here."}</p>
-              <button className="mt-5 rounded-full bg-white px-5 py-2 text-sm font-bold text-slate-950">
-                {buttonText || "View Product"}
-              </button>
+                {/* Content Area */}
+                <div className="relative z-10 w-full md:flex-1 flex flex-col items-center text-center px-4">
+                  <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em]">
+                    Sponsored
+                  </span>
+                  <h3 className="mt-4 text-3xl font-black leading-tight drop-shadow-md">
+                    {title || "Your banner title"}
+                  </h3>
+                  <p className="mt-4 text-base text-white/80 drop-shadow-md">
+                    {subtitle || "Your banner subtitle will appear here."}
+                  </p>
+                  <button className="mt-8 rounded-full bg-white px-6 py-3 text-sm font-bold text-slate-950 transition hover:bg-slate-100 shadow-xl shadow-black/10">
+                    {buttonText || "View Product"}
+                  </button>
+                </div>
+                
+                {/* Right Image Area */}
+                <div className="relative mt-8 h-48 w-full md:mt-0 md:w-1/4 md:flex items-end justify-end">
+                  {adImagePreviews.length > 0 ? (
+                    <div className="relative h-full w-full flex justify-end" style={{ zIndex: 10 }}>
+                      <img src={adImagePreviews[0]} alt="" className="h-full w-auto object-contain drop-shadow-2xl" />
+                    </div>
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center rounded-2xl border-2 border-dashed border-white/30 bg-white/5 backdrop-blur-sm">
+                      <ImagePlus className="h-8 w-8 text-white/50" />
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="absolute bottom-0 left-0 h-24 w-full bg-gradient-to-t from-slate-50 to-transparent dark:from-[#05050a]"></div>
             </div>
           </PreviewCard>
         </div>

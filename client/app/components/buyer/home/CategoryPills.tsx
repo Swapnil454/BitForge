@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BookOpen, Book, LayoutTemplate, Box, Palette, Sparkles } from "lucide-react";
 import { ProductType } from "../product/ProductCard";
 
@@ -15,50 +15,57 @@ const categories = [
 
 export default function CategoryPills({ products = [] }: { products?: ProductType[] }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentCategory = searchParams.get("category");
+  const isAllActive = !currentCategory || searchParams.get("collection") === "All";
 
   const getCount = (id: string) => products.filter((p) => p.category === id).length;
 
+  const activeClasses = "flex-shrink-0 flex items-center gap-1.5 sm:gap-2.5 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-[1.25rem] transition-all duration-300 snap-start group cursor-pointer shadow-md hover:shadow-lg shadow-indigo-500/20 border border-transparent";
+  const getInactiveClasses = (hoverClass: string) => `flex-shrink-0 flex items-center gap-1.5 sm:gap-2.5 bg-white dark:bg-[#0D1B2A] border border-gray-200 dark:border-slate-800 px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-[1.25rem] transition-all duration-200 snap-start group cursor-pointer ${hoverClass} dark:hover:text-white`;
+
   return (
-    <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mt-2 mb-2 sm:mb-4 sm:mt-4">
-      <div className="flex overflow-x-auto gap-2.5 pb-1 scrollbar-hide snap-x">
-        <button
-          onClick={() => router.push(`/marketplace?collection=All`)}
-          className="flex-shrink-0 flex items-center gap-1.5 sm:gap-2.5 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-full transition-all duration-300 snap-start group cursor-pointer shadow-md hover:shadow-lg shadow-indigo-500/20 hover:-translate-y-0.5 border border-transparent"
-        >
-          <div className="flex flex-col items-start leading-tight">
-            <span className="text-xs sm:text-sm font-bold text-white whitespace-nowrap drop-shadow-sm">
-              Explore All
-            </span>
-            {products.length > 0 && (
-              <span className="text-[9px] sm:text-[10px] text-white/80 font-medium">
-                {products.length} {products.length === 1 ? "product" : "products"}
+    <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8">
+      <div className="rounded-[2rem] border border-white/80 bg-white/75 p-3 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/45">
+        <div className="flex overflow-x-auto gap-2.5 pb-1 scrollbar-hide snap-x">
+          <button
+            onClick={() => router.push(`/marketplace?collection=All`)}
+            className={isAllActive ? activeClasses : getInactiveClasses("hover:border-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20")}
+          >
+            <div className="flex flex-col items-start leading-tight">
+              <span className={`text-xs sm:text-sm font-semibold whitespace-nowrap ${isAllActive ? "text-white drop-shadow-sm font-bold" : "text-gray-900 dark:text-white"}`}>
+                Explore All
               </span>
-            )}
-          </div>
-        </button>
-        {categories.map((cat) => {
-          const Icon = cat.icon;
-          const count = getCount(cat.id);
-          return (
-            <button
-              key={cat.id}
-              onClick={() => router.push(`/marketplace?category=${encodeURIComponent(cat.id)}`)}
-              className={`flex-shrink-0 flex items-center gap-1.5 sm:gap-2.5 bg-white dark:bg-[#0D1B2A] border border-gray-200 dark:border-slate-800 px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-full transition-all duration-200 snap-start group cursor-pointer ${cat.hover} dark:hover:text-slate-900 dark:hover:text-white`}
-            >
-              {/* <Icon size={15} className={`${cat.color} group-hover:scale-110 transition-transform duration-200`} /> */}
-              <div className="flex flex-col items-start leading-tight">
-                <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                  {cat.label}
+              {products.length > 0 && (
+                <span className={`text-[9px] sm:text-[10px] font-medium ${isAllActive ? "text-white/80" : "text-gray-400 dark:text-slate-500"}`}>
+                  {products.length} {products.length === 1 ? "product" : "products"}
                 </span>
-                {count > 0 && (
-                  <span className="text-[9px] sm:text-[10px] text-gray-400 dark:text-slate-500">
-                    {count} {count === 1 ? "product" : "products"}
+              )}
+            </div>
+          </button>
+          {categories.map((cat) => {
+            const count = getCount(cat.id);
+            const isActive = currentCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => router.push(`/marketplace?category=${encodeURIComponent(cat.id)}`)}
+                className={isActive ? activeClasses : getInactiveClasses(cat.hover)}
+              >
+                <div className="flex flex-col items-start leading-tight">
+                  <span className={`text-xs sm:text-sm font-semibold whitespace-nowrap ${isActive ? "text-white drop-shadow-sm font-bold" : "text-gray-900 dark:text-white"}`}>
+                    {cat.label}
                   </span>
-                )}
-              </div>
-            </button>
-          );
-        })}
+                  {count > 0 && (
+                    <span className={`text-[9px] sm:text-[10px] font-medium ${isActive ? "text-white/80" : "text-gray-400 dark:text-slate-500"}`}>
+                      {count} {count === 1 ? "product" : "products"}
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

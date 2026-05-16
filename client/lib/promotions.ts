@@ -49,7 +49,21 @@ export interface PromotionRecord {
   placement: PromotionPlacement;
   title: string;
   subtitle: string;
-  bannerImage: string;
+  bannerImage?: string | null;
+  adImages?: {
+    url: string;
+    key: string;
+    position: number;
+    type: "product" | "transparent" | "logo";
+  }[];
+  heroBgColor?: string;
+  heroTextColor?: "light" | "dark" | "auto";
+  heroTitleColor?: string;
+  heroSubtitleColor?: string;
+  heroButtonBgColor?: string;
+  heroButtonTextColor?: string;
+  heroFontFamily?: string;
+  heroLayout?: "floating" | "single" | "minimal" | "legacy";
   buttonText: string;
   targetLink?: string | null;
   promotionGoal?: string;
@@ -95,9 +109,24 @@ export interface ActivePromotionBanner {
   id: string;
   title: string;
   subtitle: string;
-  bannerImage: string;
+  bannerImage?: string | null;
+  adImages?: {
+    url: string;
+    key: string;
+    position: number;
+    type: "product" | "transparent" | "logo";
+  }[];
+  heroBgColor?: string;
+  heroTextColor?: "light" | "dark" | "auto";
+  heroLayout?: "floating" | "single" | "minimal" | "legacy";
+  heroTitleColor?: string;
+  heroSubtitleColor?: string;
+  heroButtonBgColor?: string;
+  heroButtonTextColor?: string;
+  heroFontFamily?: string;
   productId: string;
   productTitle: string;
+  productPrice?: number;
   buttonText: string;
   priority: number;
   targetLink: string;

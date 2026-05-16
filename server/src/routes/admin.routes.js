@@ -60,6 +60,7 @@ import {
   updateAdSettingsAdmin,
   updatePromotionPriorityAdmin,
   verifyPromotionPaymentAdmin,
+  updatePromotionStyleAdmin,
 } from "../controllers/promotion.controller.js";
 import authMiddleware from "../middleware/auth.js";
 import requireRole from "../middleware/requireRole.js";
@@ -142,6 +143,7 @@ router.patch("/promotions/:id/verify-payment", verifyPromotionPaymentAdmin);
 router.patch("/promotions/:id/pause", pausePromotionAdmin);
 router.patch("/promotions/:id/resume", resumePromotionAdmin);
 router.patch("/promotions/:id/priority", updatePromotionPriorityAdmin);
+router.patch("/promotions/:id/style", updatePromotionStyleAdmin);
 
 // Ad settings
 router.get("/ad-settings", getAdSettingsAdmin);

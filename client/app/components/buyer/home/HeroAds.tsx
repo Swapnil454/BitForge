@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { promotionAPI } from "@/lib/api";
 import type { ActivePromotionBanner } from "@/lib/promotions";
 import HeroSkeleton from "./HeroSkeleton";
+import { getAutoTextColor, isValidHexColor } from "@/lib/colorUtils";
 
 export interface Banner {
   id: string;
@@ -14,8 +15,23 @@ export interface Banner {
   badge?: string;
   buttonText: string;
   link: string;
-  gradientClass: string;
+  gradientClass?: string;
+  heroBgColor?: string;
+  heroTextColor?: "light" | "dark" | "auto";
+  heroLayout?: "floating" | "single" | "minimal" | "legacy";
+  heroTitleColor?: string;
+  heroSubtitleColor?: string;
+  heroButtonBgColor?: string;
+  heroButtonTextColor?: string;
+  heroFontFamily?: string;
+  productPrice?: number;
   bannerImage?: string;
+  adImages?: {
+    url: string;
+    key: string;
+    position: number;
+    type: "product" | "transparent" | "logo";
+  }[];
   promotionId?: string;
 }
 
@@ -95,7 +111,17 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
               buttonText: promotion.buttonText || "View Product",
               link: promotion.targetLink || `/marketplace/${promotion.productId}`,
               gradientClass: gradients[index % gradients.length],
-              bannerImage: promotion.bannerImage,
+              bannerImage: promotion.bannerImage || undefined,
+              heroBgColor: promotion.heroBgColor,
+              heroTextColor: promotion.heroTextColor,
+              heroLayout: promotion.heroLayout,
+              heroTitleColor: promotion.heroTitleColor,
+              heroSubtitleColor: promotion.heroSubtitleColor,
+              heroButtonBgColor: promotion.heroButtonBgColor,
+              heroButtonTextColor: promotion.heroButtonTextColor,
+              heroFontFamily: promotion.heroFontFamily,
+              productPrice: promotion.productPrice,
+              adImages: promotion.adImages,
             }))
           );
           setAutoRotate(data.settings?.autoRotate !== false);
@@ -142,6 +168,29 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
     }
   }, [currentIndex, resolvedBanners.length]);
 
+  // Sync background color with global header
+  useEffect(() => {
+    const banner = resolvedBanners[currentIndex];
+    const hasModernStyling = banner?.heroLayout && banner.heroLayout !== "legacy";
+    const bgColor = hasModernStyling && banner?.heroBgColor ? banner.heroBgColor : undefined;
+    const isDarkTextLocal = bgColor ? getAutoTextColor(bgColor) === "dark" : true;
+    
+    const timer = setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('hero-bg-change', { 
+        detail: { bgColor, isDarkText: isDarkTextLocal } 
+      }));
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [currentIndex, resolvedBanners]);
+
+  useEffect(() => {
+    return () => {
+      window.dispatchEvent(new CustomEvent('hero-bg-change', { 
+        detail: { bgColor: undefined, isDarkText: true } 
+      }));
+    };
+  }, []);
+
   useEffect(() => {
     const currentBanner = resolvedBanners[currentIndex];
     if (!currentBanner?.promotionId) {
@@ -178,12 +227,51 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
     return <HeroSkeleton />;
   }
 
+  // Determine styling based on legacy vs new schema
+  const hasModernStyling = !!currentBanner.heroBgColor && isValidHexColor(currentBanner.heroBgColor);
+  const bgColor = hasModernStyling ? currentBanner.heroBgColor : undefined;
+  
+  // Determine Text Color Mode (W3C Luminance Logic)
+  let isDarkText = false;
+  if (hasModernStyling && currentBanner.heroBgColor) {
+    if (currentBanner.heroTextColor === "auto" || !currentBanner.heroTextColor) {
+      isDarkText = getAutoTextColor(currentBanner.heroBgColor) === "dark";
+    } else {
+      isDarkText = currentBanner.heroTextColor === "dark";
+    }
+  }
+
+  const textColorClass = isDarkText ? "text-slate-900" : "text-white";
+  const subtextColorClass = isDarkText ? "text-slate-800" : "text-slate-100";
+  const buttonClass = isDarkText 
+    ? "bg-slate-900 text-white hover:bg-slate-800" 
+    : "bg-white text-slate-900 hover:bg-slate-50";
+
+  const layout = currentBanner.heroLayout || "floating";
+  const adImages = currentBanner.adImages ? [...currentBanner.adImages].sort((a, b) => a.position - b.position) : [];
+
   return (
-    <div className="relative w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mt-4 sm:mt-6">
+    <div className="relative z-0 w-full mb-8 sm:mb-12">
+      {/* Subtle global page tint matching the hero banner */}
+      {hasModernStyling && bgColor && (
+        <div 
+          className="fixed inset-0 w-full h-full pointer-events-none -z-50 transition-colors duration-700" 
+          style={{ backgroundColor: bgColor, opacity: isDarkText ? 0.04 : 0.08 }}
+        />
+      )}
+      {/* Background bleed layer */}
+      {hasModernStyling && bgColor && (
+        <div 
+          className="absolute top-0 left-0 w-full h-[800px] sm:h-[1200px] lg:h-[1400px] pointer-events-none -z-10" 
+          style={{ backgroundImage: `linear-gradient(to bottom, ${bgColor} 320px, ${bgColor}00 100%)` }}
+        />
+      )}
       <div 
-        className={`relative overflow-hidden rounded-xl sm:rounded-2xl md:rounded-3xl h-[170px] sm:h-[200px] lg:h-[240px] bg-gradient-to-r ${currentBanner.gradientClass} shadow-lg transition-all duration-700 flex items-center group`}
+        className={`relative w-full overflow-hidden h-[240px] sm:h-[300px] lg:h-[360px] transition-all duration-700 flex items-center group ${!hasModernStyling ? `bg-gradient-to-r ${currentBanner.gradientClass}` : ""}`}
+        style={hasModernStyling ? { backgroundColor: 'transparent' } : {}}
       >
-        {currentBanner.bannerImage ? (
+        {/* Legacy Banner Image Support */}
+        {!hasModernStyling && currentBanner.bannerImage ? (
           <>
             <img
               src={currentBanner.bannerImage}
@@ -195,57 +283,142 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
           </>
         ) : null}
 
-        {/* Abstract background shapes */}
-        <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-slate-200 dark:bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-10 -mb-20 w-48 h-48 bg-cyan-400/20 rounded-full blur-3xl"></div>
-        
-        <div className="relative z-10 px-5 sm:px-10 md:px-16 lg:px-24 flex flex-col justify-center h-full max-w-3xl">
-          {currentBanner.badge && (
-            <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 bg-white/20 backdrop-blur-sm text-white text-[10px] sm:text-xs font-bold rounded-full mb-2.5 sm:mb-4 w-fit border border-white/20">
-              {currentBanner.badge}
-            </span>
+        {/* Abstract Glow Background for Premium Themes */}
+        {hasModernStyling && (
+          <>
+            <div className="absolute -left-1/4 -top-1/4 h-[120%] w-[120%] md:h-full md:w-1/2 rounded-full bg-white/20 blur-3xl mix-blend-overlay"></div>
+            <div className="absolute -bottom-1/4 -right-1/4 h-[120%] w-[120%] md:h-full md:w-1/2 rounded-full bg-black/20 blur-3xl mix-blend-overlay"></div>
+          </>
+        )}
+
+        <div className={`relative z-10 w-full max-w-[1440px] mx-auto h-full flex flex-col md:flex-row items-center px-4 md:px-6 lg:px-8`}>
+          
+          {/* Left Images Area (Images 2 and 3) */}
+          {hasModernStyling && layout !== "minimal" && adImages.length > 1 && (
+            <div className="hidden md:flex relative z-10 w-[25%] h-full items-end justify-start pb-6 pl-4 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-left-8 duration-700">
+              {adImages.slice(1, 3).map((img, i) => {
+                const cdnUrl = img.url.includes("cloudinary.com") 
+                  ? img.url.replace("/upload/", "/upload/f_auto,q_auto,w_800/") 
+                  : img.url;
+
+                return (
+                  <div
+                    key={img.key}
+                    className="relative transition-all duration-700 ease-out hover:-translate-y-4 cursor-pointer flex-shrink-0 origin-bottom"
+                    style={{
+                      height: i === 0 ? "80%" : "65%",
+                      zIndex: 9 - i,
+                      marginLeft: i > 0 ? "-4rem" : "0",
+                    }}
+                    onClick={handleBannerClick}
+                  >
+                    <img src={cdnUrl} alt="" className="h-full w-auto object-contain drop-shadow-2xl" />
+                  </div>
+                );
+              })}
+            </div>
           )}
-          <h2 className="text-[22px] leading-tight sm:text-4xl lg:text-5xl font-extrabold text-white mb-1.5 sm:mb-4 tracking-tight">
-            {currentBanner.title}
-          </h2>
-          <p className="text-[13px] sm:text-lg text-slate-100 mb-4 sm:mb-8 line-clamp-2 md:line-clamp-none max-w-2xl font-medium sm:leading-relaxed">
-            {currentBanner.subtitle}
-          </p>
-          <button 
-            onClick={handleBannerClick}
-            className="w-fit px-5 py-2 sm:px-8 sm:py-3.5 bg-white text-gray-900 font-bold rounded-full hover:bg-gray-50 hover:scale-105 transition-all duration-200 shadow-md text-xs sm:text-base"
+
+          {/* Content Area */}
+          <div 
+            className={`relative z-20 flex flex-col justify-center h-full ${layout === "minimal" || (hasModernStyling && adImages.length > 0) ? "w-full md:flex-1 items-center text-center max-w-3xl mx-auto px-4" : "w-full md:w-[55%] max-w-2xl items-start"} motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-8 duration-700`}
+            style={{ fontFamily: currentBanner.heroFontFamily || "inherit" }}
           >
-            {currentBanner.buttonText}
-          </button>
+            {currentBanner.badge && (
+              <span className={`inline-block px-3 py-1 text-[10px] sm:text-xs font-bold rounded-full mb-3 sm:mb-5 w-fit uppercase tracking-widest ${isDarkText ? "bg-black/10 text-slate-800 border-black/10" : "bg-white/20 text-white border-white/20"} backdrop-blur-sm border`}>
+                {currentBanner.badge}
+              </span>
+            )}
+            
+            <h2 
+              className={`text-3xl sm:text-5xl lg:text-6xl font-black mb-3 sm:mb-4 tracking-tight drop-shadow-sm ${currentBanner.heroTitleColor ? "" : textColorClass} ${layout === "minimal" ? "leading-tight" : "leading-[1.1]"}`}
+              style={currentBanner.heroTitleColor ? { color: currentBanner.heroTitleColor } : {}}
+            >
+              {currentBanner.title}
+            </h2>
+
+            {currentBanner.productPrice !== undefined && (
+              <div className={`text-xl sm:text-2xl font-black mb-3 sm:mb-5 tracking-tight ${isDarkText ? "text-slate-800" : "text-white"}`}>
+                ₹{currentBanner.productPrice.toLocaleString("en-IN")}
+              </div>
+            )}
+            
+            <p 
+              className={`text-sm sm:text-lg mb-6 sm:mb-8 line-clamp-2 md:line-clamp-3 font-medium sm:leading-relaxed drop-shadow-sm min-h-[1.5rem] sm:min-h-[1.75rem] ${currentBanner.heroSubtitleColor ? "" : subtextColorClass}`}
+              style={currentBanner.heroSubtitleColor ? { color: currentBanner.heroSubtitleColor } : {}}
+            >
+              {currentBanner.subtitle || "\u00A0"}
+            </p>
+            
+            <button 
+              onClick={handleBannerClick}
+              className={`w-fit flex items-center gap-2 px-6 py-3 sm:px-8 sm:py-3.5 font-bold rounded-full transition-all duration-300 shadow-xl ${!currentBanner.heroButtonBgColor ? buttonClass : ""} hover:-translate-y-0.5 hover:scale-105 active:scale-95 text-xs sm:text-base group/btn`}
+              style={{
+                ...(currentBanner.heroButtonBgColor ? { backgroundColor: currentBanner.heroButtonBgColor } : {}),
+                ...(currentBanner.heroButtonTextColor ? { color: currentBanner.heroButtonTextColor } : {}),
+              }}
+            >
+              {currentBanner.buttonText}
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover/btn:translate-x-1" />
+            </button>
+          </div>
+
+          {/* Right Image Area (Image 1 or Legacy) */}
+          {hasModernStyling && layout !== "minimal" && (
+            <div className="hidden md:flex relative z-10 w-[22%] h-full items-end justify-end pb-6 pr-0 lg:-mr-4 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-8 duration-700">
+              {adImages.length > 0 ? (
+                <div
+                  className="relative transition-all duration-700 ease-out hover:-translate-y-4 cursor-pointer flex-shrink-0 origin-bottom h-[95%]"
+                  style={{ zIndex: 10 }}
+                  onClick={handleBannerClick}
+                >
+                  <img 
+                    src={adImages[0].url.includes("cloudinary.com") ? adImages[0].url.replace("/upload/", "/upload/f_auto,q_auto,w_800/") : adImages[0].url} 
+                    alt="" 
+                    className="h-full w-auto object-contain drop-shadow-2xl" 
+                  />
+                </div>
+              ) : currentBanner.bannerImage ? (
+                // Fallback if they selected modern styling but only have a legacy bannerImage
+                <div className="absolute inset-0 flex items-center justify-end pr-4 pointer-events-none">
+                  <img src={currentBanner.bannerImage} className="max-h-[90%] w-auto object-contain drop-shadow-2xl rounded-2xl" alt="" />
+                </div>
+              ) : null}
+            </div>
+          )}
         </div>
 
         {/* Navigation Arrows */}
         <button 
           onClick={prevSlide}
-          className="hidden sm:flex absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-white/30 backdrop-blur-md text-slate-900 dark:text-white border border-slate-300 dark:border-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          className={`hidden sm:flex absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-3 rounded-full backdrop-blur-md transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110 ${isDarkText ? "bg-black/5 text-slate-800 hover:bg-black/10" : "bg-white/10 text-white hover:bg-white/20"}`}
           aria-label="Previous banner"
         >
           <ChevronLeft size={24} />
         </button>
         <button 
           onClick={nextSlide}
-          className="hidden sm:flex absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-white/30 backdrop-blur-md text-slate-900 dark:text-white border border-slate-300 dark:border-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          className={`hidden sm:flex absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-3 rounded-full backdrop-blur-md transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110 ${isDarkText ? "bg-black/5 text-slate-800 hover:bg-black/10" : "bg-white/10 text-white hover:bg-white/20"}`}
           aria-label="Next banner"
         >
           <ChevronRight size={24} />
         </button>
+      </div>
 
-        {/* Dots */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-          {resolvedBanners.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentIndex(idx)}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === currentIndex ? "bg-white w-6" : "bg-slate-100 dark:bg-white/50"}`}
-              aria-label={`Go to slide ${idx + 1}`}
-            />
-          ))}
-        </div>
+      {/* Dots safely below the banner */}
+      <div className="absolute -bottom-5 sm:-bottom-7 left-1/2 -translate-x-1/2 flex gap-3 z-30">
+        {resolvedBanners.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => setCurrentIndex(idx)}
+            className={`h-2.5 rounded-full transition-all duration-300 shadow-sm ${
+              idx === currentIndex 
+                ? `w-8 ${isDarkText ? "bg-slate-800" : "bg-cyan-500"}` 
+                : `w-2.5 ${isDarkText ? "bg-slate-800/30 hover:bg-slate-800/50" : "bg-slate-300 hover:bg-slate-400 dark:bg-white/40 dark:hover:bg-white/60"}`
+            }`}
+            aria-label={`Go to slide ${idx + 1}`}
+          />
+        ))}
       </div>
     </div>
   );

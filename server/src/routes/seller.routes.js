@@ -34,7 +34,7 @@ router.get("/sales", getAllSales);
 router.get("/growth-analytics", getGrowthAnalytics);
 router.post("/withdraw", requestWithdrawal);
 router.delete("/withdraw/:payoutId", cancelPayoutRequest);
-router.post("/promotions", upload.single("bannerImage"), createPromotionRequest);
+router.post("/promotions", upload.array("adImages", 3), createPromotionRequest);
 router.get("/promotions", getSellerPromotions);
 router.get("/promotions/:id", getSellerPromotionById);
 router.patch("/promotions/:id/cancel", cancelSellerPromotion);

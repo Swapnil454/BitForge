@@ -59,6 +59,19 @@ export default function BuyerHeader({
 
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
 
+  // ── Hero banner color sync for seamless header blending ─────────
+  const [heroBgColor, setHeroBgColor] = useState<string | undefined>();
+  const [heroIsDarkText, setHeroIsDarkText] = useState<boolean>(true);
+
+  useEffect(() => {
+    const handleHeroBgChange = (e: any) => {
+      setHeroBgColor(e.detail.bgColor);
+      setHeroIsDarkText(e.detail.isDarkText);
+    };
+    window.addEventListener('hero-bg-change', handleHeroBgChange);
+    return () => window.removeEventListener('hero-bg-change', handleHeroBgChange);
+  }, []);
+
   useEffect(() => {
     if (isAuthenticated) {
       notificationAPI
@@ -110,6 +123,12 @@ export default function BuyerHeader({
   return (
     <>
       <header className="sticky top-0 z-50 w-full bg-white/90 dark:bg-[#05050a]/90 border-b border-gray-200/50 dark:border-white/5 shadow-sm backdrop-blur-xl transition-all duration-300">
+        {heroBgColor && (
+          <div 
+            className="absolute inset-0 w-full h-full pointer-events-none transition-colors duration-700" 
+            style={{ backgroundColor: heroBgColor, opacity: heroIsDarkText ? 0.12 : 0.18 }}
+          />
+        )}
         <div className="max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 relative">
 
           {/* Desktop & Tablet Header */}

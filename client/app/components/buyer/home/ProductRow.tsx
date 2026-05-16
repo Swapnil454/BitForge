@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { useHeroBgColor } from "@/lib/useHeroBgColor";
 import ThumbnailCard from "../product/ThumbnailCard";
 import { ProductType } from "../product/ProductCard";
 
@@ -21,6 +22,7 @@ export default function ProductRow({
   onSeeAll
 }: ProductRowProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { heroBgColor, heroIsDarkText } = useHeroBgColor();
 
   const scrollLeft  = () => scrollRef.current?.scrollBy({ left: -640, behavior: "smooth" });
   const scrollRight = () => scrollRef.current?.scrollBy({ left: 640,  behavior: "smooth" });
@@ -29,10 +31,18 @@ export default function ProductRow({
 
   return (
     <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mb-6 sm:mb-8">
-      <div className="bg-white dark:bg-[#0B1221] border border-gray-100 dark:border-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 relative group transition-all duration-300 hover:bg-gray-50 dark:hover:bg-[#131F37] shadow-sm hover:shadow-md">
+      <div className="relative bg-white/80 dark:bg-[#0B1221]/80 backdrop-blur-xl border border-gray-100 dark:border-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 group transition-all duration-300 hover:bg-white dark:hover:bg-[#131F37] shadow-sm hover:shadow-md z-10">
+        
+        {/* Dynamic Hero Tint Overlay */}
+        {heroBgColor && (
+          <div 
+            className="absolute inset-0 pointer-events-none transition-colors duration-700 -z-10 rounded-xl sm:rounded-2xl" 
+            style={{ backgroundColor: heroBgColor, opacity: heroIsDarkText ? 0.15 : 0.25 }}
+          />
+        )}
 
         {/* Header */}
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-4 relative z-10">
           <div>
             <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white tracking-tight">
               {title}
@@ -68,7 +78,7 @@ export default function ProductRow({
         {/* Scroll container */}
         <div
           ref={scrollRef}
-          className="flex overflow-x-auto gap-2 md:gap-3 pb-1 scrollbar-hide snap-x"
+          className="flex overflow-x-auto gap-2 md:gap-3 pb-1 scrollbar-hide snap-x relative z-10"
         >
           {isLoading
             ? Array(8).fill(0).map((_, idx) => (

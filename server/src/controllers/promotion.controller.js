@@ -459,6 +459,7 @@ export const createPromotionRequest = async (req, res) => {
       promotionGoal,
       requestedDurationDays,
       sellerNote,
+      heroBgColor,
     } = req.body;
 
     if (!isValidObjectId(productId)) {
@@ -469,8 +470,12 @@ export const createPromotionRequest = async (req, res) => {
       return res.status(400).json({ message: "Title and subtitle are required" });
     }
 
-    if (!req.file) {
-      return res.status(400).json({ message: "Banner image is required" });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "At least one image is required" });
+    }
+
+    if (req.files.length > 3) {
+      return res.status(400).json({ message: "Maximum 3 images allowed" });
     }
 
     const product = await getApprovedOwnedProduct(productId, req.user.id);
@@ -487,11 +492,21 @@ export const createPromotionRequest = async (req, res) => {
       ? parsePositiveNumber(requestedDurationDays, "Requested duration")
       : settings.defaultDurationDays;
 
-    const uploadResult = await uploadBuffer({
-      buffer: req.file.buffer,
-      folder: "bitforge/promotions/banners",
-      transformation: [{ width: 1600, height: 700, crop: "limit" }],
-    });
+    const adImages = await Promise.all(
+      req.files.map(async (file, index) => {
+        const uploadResult = await uploadBuffer({
+          buffer: file.buffer,
+          folder: "bitforge/promotions/banners",
+          transformation: [{ width: 1200, height: 1200, crop: "limit" }],
+        });
+        return {
+          url: uploadResult.secure_url,
+          key: uploadResult.public_id,
+          position: index,
+          type: "transparent"
+        };
+      })
+    );
 
     const promotion = await PromotionRequest.create({
       sellerId: req.user.id,
@@ -502,13 +517,20 @@ export const createPromotionRequest = async (req, res) => {
       placement,
       title: title.trim(),
       subtitle: subtitle.trim(),
-      bannerImage: uploadResult.secure_url,
-      bannerImageKey: uploadResult.public_id,
+      adImages,
       buttonText: buttonText?.trim() || "View Product",
       targetLink: normalizeTargetLink(targetLink, product._id),
       promotionGoal: promotionGoal?.trim() || "",
       requestedDurationDays: duration,
       sellerNote: sellerNote?.trim() || "",
+      heroBgColor: heroBgColor && /^#[0-9A-Fa-f]{6}$/i.test(heroBgColor) ? heroBgColor : "#2563EB",
+      heroTextColor: req.body.heroTextColor || "auto",
+      heroLayout: req.body.heroLayout || "floating",
+      heroTitleColor: req.body.heroTitleColor || "",
+      heroSubtitleColor: req.body.heroSubtitleColor || "",
+      heroButtonBgColor: req.body.heroButtonBgColor || "",
+      heroButtonTextColor: req.body.heroButtonTextColor || "",
+      heroFontFamily: req.body.heroFontFamily || "inherit",
     });
 
     await notifyAdmins(
@@ -592,6 +614,19 @@ export const cancelSellerPromotion = async (req, res) => {
     }
 
     promotion.status = "CANCELLED";
+
+    if (promotion.bannerImageKey) {
+      cloudinary.uploader.destroy(promotion.bannerImageKey).catch(console.error);
+      promotion.bannerImageKey = null;
+      promotion.bannerImage = null;
+    }
+    if (promotion.adImages && promotion.adImages.length > 0) {
+      promotion.adImages.forEach(img => {
+        if (img.key) cloudinary.uploader.destroy(img.key).catch(console.error);
+      });
+      promotion.adImages = [];
+    }
+
     await promotion.save();
 
     await notifyAdmins(
@@ -758,6 +793,14 @@ export const approvePromotionAdmin = async (req, res) => {
     promotion.priority = priority;
     promotion.maxImpressions = maxImpressions;
     promotion.adminNote = req.body.adminNote?.trim() || "";
+    promotion.heroBgColor = req.body.heroBgColor || promotion.heroBgColor;
+    promotion.heroTextColor = req.body.heroTextColor || promotion.heroTextColor;
+    promotion.heroLayout = req.body.heroLayout || promotion.heroLayout;
+    if (req.body.heroTitleColor !== undefined) promotion.heroTitleColor = req.body.heroTitleColor;
+    if (req.body.heroSubtitleColor !== undefined) promotion.heroSubtitleColor = req.body.heroSubtitleColor;
+    if (req.body.heroButtonBgColor !== undefined) promotion.heroButtonBgColor = req.body.heroButtonBgColor;
+    if (req.body.heroButtonTextColor !== undefined) promotion.heroButtonTextColor = req.body.heroButtonTextColor;
+    if (req.body.heroFontFamily !== undefined) promotion.heroFontFamily = req.body.heroFontFamily;
     promotion.rejectedReason = "";
     promotion.status = "APPROVED_WAITING_PAYMENT";
     promotion.paymentMethod = req.body.paymentMethod === "MANUAL" ? "MANUAL" : "RAZORPAY";
@@ -822,6 +865,18 @@ export const rejectPromotionAdmin = async (req, res) => {
     promotion.status = "REJECTED";
     promotion.rejectedReason = rejectedReason;
     promotion.adminNote = req.body.adminNote?.trim() || promotion.adminNote || "";
+
+    if (promotion.bannerImageKey) {
+      cloudinary.uploader.destroy(promotion.bannerImageKey).catch(console.error);
+      promotion.bannerImageKey = null;
+      promotion.bannerImage = null;
+    }
+    if (promotion.adImages && promotion.adImages.length > 0) {
+      promotion.adImages.forEach(img => {
+        if (img.key) cloudinary.uploader.destroy(img.key).catch(console.error);
+      });
+      promotion.adImages = [];
+    }
 
     await promotion.save();
 
@@ -1242,7 +1297,7 @@ export const getActivePromotions = async (req, res) => {
     })
       .sort({ priority: 1, createdAt: -1 })
       .limit(settings.marketplaceHeroMaxAds * 5)
-      .populate({ path: "productId", select: "title thumbnailUrl status changeRequest isDeleted" });
+      .populate({ path: "productId", select: "title thumbnailUrl status changeRequest isDeleted price" });
 
     const promotions = candidatePromotions
       .filter((promotion) => {
@@ -1260,6 +1315,7 @@ export const getActivePromotions = async (req, res) => {
       bannerImage: promotion.bannerImage,
       productId: promotion.productId?._id || promotion.productId,
       productTitle: promotion.productTitle,
+      productPrice: promotion.productId?.price,
       buttonText: promotion.buttonText || "View Product",
       priority: promotion.priority,
       targetLink: normalizeTargetLink(
@@ -1268,7 +1324,18 @@ export const getActivePromotions = async (req, res) => {
       ),
       sellerName: promotion.sellerName,
       placement: promotion.placement,
+      heroBgColor: promotion.heroBgColor,
+      heroTextColor: promotion.heroTextColor,
+      heroTitleColor: promotion.heroTitleColor,
+      heroSubtitleColor: promotion.heroSubtitleColor,
+      heroButtonBgColor: promotion.heroButtonBgColor,
+      heroButtonTextColor: promotion.heroButtonTextColor,
+      heroFontFamily: promotion.heroFontFamily,
+      heroLayout: promotion.heroLayout,
+      adImages: promotion.adImages,
     }));
+
+    res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=30");
 
     return res.json({
       promotions: payload,
@@ -1280,6 +1347,55 @@ export const getActivePromotions = async (req, res) => {
   } catch (error) {
     console.error("Get active promotions error:", error);
     return res.status(500).json({ message: "Failed to fetch active promotions" });
+  }
+};
+
+export const updatePromotionStyleAdmin = async (req, res) => {
+  try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: "Invalid promotion id" });
+    }
+
+    const promotion = await PromotionRequest.findById(req.params.id);
+    if (!promotion) {
+      return res.status(404).json({ message: "Promotion not found" });
+    }
+
+    const { 
+      heroBgColor, heroTextColor, heroLayout, 
+      heroTitleColor, heroSubtitleColor, 
+      heroButtonBgColor, heroButtonTextColor, 
+      heroFontFamily 
+    } = req.body;
+
+    if (heroBgColor !== undefined) {
+      if (heroBgColor && !/^#[0-9A-Fa-f]{6}$/i.test(heroBgColor)) {
+        return res.status(400).json({ message: "Invalid hex color format" });
+      }
+      promotion.heroBgColor = heroBgColor;
+    }
+
+    if (heroTextColor !== undefined) promotion.heroTextColor = heroTextColor;
+    if (heroLayout !== undefined) promotion.heroLayout = heroLayout;
+    if (heroTitleColor !== undefined) promotion.heroTitleColor = heroTitleColor;
+    if (heroSubtitleColor !== undefined) promotion.heroSubtitleColor = heroSubtitleColor;
+    if (heroButtonBgColor !== undefined) promotion.heroButtonBgColor = heroButtonBgColor;
+    if (heroButtonTextColor !== undefined) promotion.heroButtonTextColor = heroButtonTextColor;
+    if (heroFontFamily !== undefined) promotion.heroFontFamily = heroFontFamily;
+
+    await promotion.save();
+
+    const populatedPromotion = await applyPromotionPopulate(
+      PromotionRequest.findById(promotion._id)
+    );
+
+    return res.json({
+      message: "Promotion style updated successfully",
+      promotion: mapPromotionMetrics(populatedPromotion.toObject()),
+    });
+  } catch (error) {
+    console.error("Update promotion style error:", error);
+    return res.status(500).json({ message: "Failed to update promotion style" });
   }
 };
 

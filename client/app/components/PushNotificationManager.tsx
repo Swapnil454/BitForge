@@ -27,6 +27,20 @@ const EXCLUDED_PATH_PREFIXES = [
   "/reset-password",
 ];
 
+const isExpectedPushSetupError = (error: unknown) => {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return (
+    error.name === "AbortError" ||
+    message.includes("push service error") ||
+    message.includes("registration failed") ||
+    message.includes("subscription failed")
+  );
+};
+
 const getDeviceId = () => {
   if (typeof window === "undefined") return "server";
   const existing = window.localStorage.getItem(DEVICE_ID_KEY);
@@ -70,7 +84,7 @@ export default function PushNotificationManager() {
     try {
       setSyncing(true);
       const pushToken = await getFirebasePushToken();
-      if (!pushToken) return;
+      if (!pushToken) return false;
 
       await notificationAPI.registerPushToken({
         token: pushToken,
@@ -80,8 +94,12 @@ export default function PushNotificationManager() {
       });
 
       window.localStorage.setItem(TOKEN_KEY, pushToken);
+      return true;
     } catch (error) {
-      console.error("Failed to sync push token:", error);
+      if (!isExpectedPushSetupError(error)) {
+        console.error("Failed to sync push token:", error);
+      }
+      return false;
     } finally {
       setSyncing(false);
     }
@@ -256,13 +274,19 @@ export default function PushNotificationManager() {
                 setShowPrompt(false);
 
                 if (nextPermission === "granted") {
-                  await syncPushToken();
-                  toast.success("Browser notifications enabled");
+                  const synced = await syncPushToken();
+                  if (synced) {
+                    toast.success("Browser notifications enabled");
+                  } else {
+                    toast("Notifications permission was granted, but push setup is still unavailable. Please try again in a moment.");
+                  }
                 } else {
                   window.localStorage.setItem(DISMISS_KEY, String(Date.now()));
                 }
               } catch (error) {
-                console.error("Notification permission request failed:", error);
+                if (!isExpectedPushSetupError(error)) {
+                  console.error("Notification permission request failed:", error);
+                }
               }
             }}
             disabled={syncing}
