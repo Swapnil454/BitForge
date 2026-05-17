@@ -127,6 +127,8 @@ export interface ActivePromotionBanner {
   productId: string;
   productTitle: string;
   productPrice?: number;
+  productDiscount?: number;
+  promotionGoal?: string;
   buttonText: string;
   priority: number;
   targetLink: string;

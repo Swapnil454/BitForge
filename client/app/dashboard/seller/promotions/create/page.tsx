@@ -45,6 +45,9 @@ function CreatePromotionForm() {
   const [heroBgColor, setHeroBgColor] = useState("#2563EB");
   const [adImages, setAdImages] = useState<File[]>([]);
   const [adImagePreviews, setAdImagePreviews] = useState<string[]>([]);
+  const [bannerCard, setBannerCard] = useState<File | null>(null);
+  const [bannerCardPreview, setBannerCardPreview] = useState<string | null>(null);
+  const [bannerCardWarning, setBannerCardWarning] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -106,6 +109,43 @@ function CreatePromotionForm() {
     event.target.value = "";
   };
 
+  const handleBannerCardChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setBannerCardWarning(null);
+
+    if (!file.type.startsWith("image/")) {
+      showError(`${file.name} is not a valid image`);
+      return;
+    }
+    if (file.size > 9 * 1024 * 1024) {
+      showError(`${file.name} exceeds 9MB limit`);
+      return;
+    }
+
+    // Check aspect ratio — warn if not wide (16:9, 2:1, etc.)
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      const ratio = img.naturalWidth / img.naturalHeight;
+      if (ratio < 1.5) {
+        setBannerCardWarning(
+          `⚠️ This image looks portrait or square (${img.naturalWidth}×${img.naturalHeight}). For the best mobile card display, please upload a rectangular (landscape) image with at least a 16:9 ratio (e.g. 1200×525 px).`
+        );
+      } else if (ratio > 4) {
+        setBannerCardWarning(
+          `⚠️ This image is very wide (${img.naturalWidth}×${img.naturalHeight}). It may get cropped on small screens. A 16:9 or 2:1 ratio is ideal.`
+        );
+      }
+      URL.revokeObjectURL(objectUrl);
+    };
+    img.src = objectUrl;
+
+    setBannerCard(file);
+    setBannerCardPreview(URL.createObjectURL(file));
+    event.target.value = "";
+  };
+
   const handleDragStart = (e: React.DragEvent, index: number) => {
     e.dataTransfer.setData("text/plain", index.toString());
   };
@@ -160,6 +200,10 @@ function CreatePromotionForm() {
       formData.append("requestedDurationDays", requestedDurationDays.toString());
       formData.append("sellerNote", sellerNote);
       formData.append("heroBgColor", heroBgColor);
+
+      if (bannerCard) {
+        formData.append("bannerCard", bannerCard);
+      }
 
       adImages.forEach((file) => {
         formData.append("adImages", file);
@@ -310,6 +354,9 @@ function CreatePromotionForm() {
                       <li>Square or portrait crops work best.</li>
                       <li>Max 9MB per image. You can reorder images by dragging them.</li>
                     </ul>
+                    <p className="mt-3 text-xs text-amber-600 dark:text-amber-400 font-medium bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl px-3 py-2">
+                      ℹ️ These floating images appear on large screens (desktop/tablet) only.
+                    </p>
                   </div>
 
                   {adImages.length > 0 && (
@@ -353,6 +400,65 @@ function CreatePromotionForm() {
                         </p>
                       </div>
                       <input type="file" accept="image/png, image/webp" multiple onChange={handleImageChange} className="hidden" />
+                    </label>
+                  )}
+                </div>
+              </Field>
+
+              {/* ── Mobile Banner Card ── */}
+              <Field label="Mobile Banner Card (Shown on Phones)">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 dark:border-white/10 dark:bg-white/5">
+                  {/* Warning notice */}
+                  <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/20 dark:bg-amber-500/8">
+                    <p className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-1">⚠️ Important — Rectangular Card Required</p>
+                    <p className="text-xs text-amber-700 dark:text-amber-300/80 leading-relaxed">
+                      This image is displayed exclusively on <strong>mobile devices</strong> as a full-width card over the hero background color.
+                      Please upload a <strong>landscape/rectangular image</strong> with a <strong>16:9</strong> (e.g. 1200×675 px) or <strong>2:1</strong> (e.g. 1200×600 px) aspect ratio.
+                      Portrait or square images will appear cropped and distorted.
+                    </p>
+                  </div>
+
+                  {bannerCardWarning && (
+                    <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-500/20 dark:bg-red-500/8">
+                      <p className="text-xs text-red-700 dark:text-red-300 leading-relaxed">{bannerCardWarning}</p>
+                    </div>
+                  )}
+
+                  {bannerCardPreview ? (
+                    <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
+                      <div className="relative w-full" style={{ aspectRatio: "16/7" }}>
+                        <img src={bannerCardPreview} alt="Mobile banner card" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent pointer-events-none" />
+                        <div className="absolute top-2 left-2">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white border border-white/20 backdrop-blur-md">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white inline-block" />
+                            Mobile Preview
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between px-4 py-2.5 bg-slate-900 text-white">
+                        <p className="text-xs font-bold truncate flex-1 pr-2">{title || "Your title here"}</p>
+                        <span className="flex-shrink-0 text-xs font-bold bg-white text-slate-900 px-3 py-1.5 rounded-full">
+                          {buttonText || "View Product"}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => { setBannerCard(null); setBannerCardPreview(null); setBannerCardWarning(null); }}
+                        className="absolute top-2 right-2 p-1.5 rounded-full bg-red-500 text-white hover:bg-red-600 transition"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-300 bg-white px-6 py-8 text-center transition hover:border-amber-400/60 hover:bg-amber-500/5 dark:border-white/15 dark:bg-[#0a0a0f]">
+                      <ImagePlus className="h-8 w-8 text-amber-500" />
+                      <div>
+                        <p className="font-semibold text-sm">Upload rectangular banner card</p>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-white/55">
+                          Recommended: 1200×675 px (16:9) or 1200×600 px (2:1) · Max 9MB
+                        </p>
+                      </div>
+                      <input type="file" accept="image/*" onChange={handleBannerCardChange} className="hidden" />
                     </label>
                   )}
                 </div>

@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { Heart, ShoppingCart, Zap, Star, TrendingUp, Sparkles, Award } from "lucide-react";
-import { useHeroBgColor } from "@/lib/useHeroBgColor";
 
 export interface ProductType {
   _id: string;
@@ -61,7 +60,6 @@ export default function ProductCard({
   badge: badgeProp,
 }: ProductCardProps) {
   const router = useRouter();
-  const { heroBgColor, heroIsDarkText } = useHeroBgColor();
 
   const finalPrice =
     product.discount && product.discount > 0
@@ -70,45 +68,42 @@ export default function ProductCard({
 
   const rating = product.rating ? Number(product.rating).toFixed(1) : null;
   const badge  = getBadge(product, badgeProp);
+  const catStyle = categoryColors[product.category] ?? defaultCat;
 
   return (
     <div
       onClick={() => router.push(`/marketplace/${product._id}`)}
-      className="relative w-full h-full group flex flex-col cursor-pointer bg-white/75 dark:bg-[#05050a]/75 border border-white/80 dark:border-white/10 shadow-[0_8px_30px_rgba(15,23,42,0.04)] hover:shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl rounded-[1.25rem] p-3 transition-all duration-300"
+      className={`
+        w-full group cursor-pointer bg-white dark:bg-[#0f0f17] transition-all duration-200
+        flex flex-row items-stretch gap-0
+        rounded-2xl border border-gray-100/80 dark:border-white/5 shadow-sm
+        sm:flex-col sm:items-start sm:rounded-[1.25rem] sm:border sm:border-gray-100 sm:dark:border-white/8
+        sm:shadow-sm sm:hover:shadow-lg sm:hover:-translate-y-0.5 sm:p-3
+      `}
     >
-      {/* Dynamic Hero Tint Overlay */}
-      {heroBgColor && (
-        <div 
-          className="absolute inset-0 pointer-events-none transition-colors duration-700 z-0 rounded-[1.25rem]" 
-          style={{ backgroundColor: heroBgColor, opacity: heroIsDarkText ? 0.15 : 0.25 }}
-        />
-      )}
-
-      {/* ── Thumbnail Area ── */}
-      <div className="relative z-10 w-full aspect-square bg-[#F7F7F7] dark:bg-[#0A101D] rounded-xl overflow-hidden flex items-center justify-center group-hover:shadow-md transition-shadow duration-300">
+      {/* ── Thumbnail ── */}
+      <div className={`
+        relative flex-shrink-0 bg-[#F7F7F7] dark:bg-[#0A101D] overflow-hidden
+        flex items-center justify-center self-stretch
+        w-[125px] sm:w-full sm:h-auto sm:aspect-square
+        m-3 rounded-xl sm:m-0 sm:rounded-xl
+        transition-shadow duration-300 group-hover:shadow-md
+      `}>
         {product.thumbnailUrl ? (
           <img
             src={product.thumbnailUrl}
             alt={product.title}
-            className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal group-hover:scale-105 transition-transform duration-500 p-2 sm:p-4"
+            className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal group-hover:scale-105 transition-transform duration-500 p-2 sm:p-3"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-[#0A101D]">
-            <span className="text-gray-400 dark:text-slate-600 text-xs font-medium uppercase tracking-widest">{product.category}</span>
+            <span className="text-gray-400 dark:text-slate-600 text-[9px] font-medium uppercase tracking-wider text-center px-1">{product.category}</span>
           </div>
         )}
 
-        {/* Floating Wishlist Button (Matches the bottom-left icon in the reference) */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onToggleWishlist(e, product._id); }}
-          className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 w-8 h-8 sm:w-10 sm:h-10 bg-white dark:bg-slate-800/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all active:scale-95 border border-gray-100 dark:border-white/10"
-        >
-          <Heart size={16} className={`${isInWishlist ? "fill-pink-500 text-pink-500" : "text-gray-700 dark:text-gray-300"}`} />
-        </button>
-
-        {/* Badge Overlay */}
+        {/* Badge */}
         {badge && (
-          <span className={`absolute top-2 left-2 sm:top-3 sm:left-3 px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold shadow-sm ${
+          <span className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-bold shadow-sm ${
             badge === "bestseller" ? "bg-orange-500 text-white" :
             badge === "trending"   ? "bg-cyan-500 text-white" :
                                      "bg-green-500 text-white"
@@ -116,104 +111,114 @@ export default function ProductCard({
             {badge === "bestseller" ? "Bestseller" : badge === "trending" ? "Trending" : "New"}
           </span>
         )}
+
+        {/* Wishlist — sm+ only inside thumbnail */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleWishlist(e, product._id); }}
+          className="hidden sm:flex absolute bottom-2 left-2 w-8 h-8 bg-white dark:bg-slate-800/80 backdrop-blur-md rounded-full items-center justify-center shadow-md hover:shadow-lg transition-all active:scale-95 border border-gray-100 dark:border-white/10"
+        >
+          <Heart size={14} className={`${isInWishlist ? "fill-pink-500 text-pink-500" : "text-gray-700 dark:text-gray-300"}`} />
+        </button>
       </div>
 
       {/* ── Info Area ── */}
-      <div className="relative z-10 flex flex-col flex-grow pt-3 sm:pt-4">
-        {/* Category (Like "Sponsored") */}
-        <p className="text-[11px] sm:text-xs text-gray-500 dark:text-slate-400 font-medium mb-1 truncate">
-          {product.category}
-        </p>
+      <div className="flex flex-col flex-1 min-w-0 py-3.5 pr-3 sm:py-0 sm:pr-0 sm:pt-3">
 
-        {/* Brand / Seller */}
-        <h3 className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white truncate">
-          {product.sellerId?.name || "Unknown Seller"}
+        {/* Category pill — visible on mobile */}
+        <span className={`self-start text-[10px] font-semibold px-2 py-0.5 rounded-full mb-1 ${catStyle.pill}`}>
+          {product.category}
+        </span>
+
+        {/* Title — bold & prominent */}
+        <h3 className="font-extrabold text-[14.5px] sm:text-sm text-gray-900 dark:text-white line-clamp-2 leading-snug tracking-tight">
+          {product.title}
         </h3>
 
-        {/* Title */}
-        <p className="text-xs sm:text-sm text-gray-700 dark:text-slate-300 line-clamp-2 mt-0.5 leading-snug font-medium">
-          {product.title}
-        </p>
-
-        {/* Description (1-2 lines) */}
+        {/* Description — 3 lines */}
         {product.description && (
-          <p className="text-[10px] sm:text-[11px] text-gray-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed">
+          <p className="text-[11.5px] text-gray-500 dark:text-slate-400 line-clamp-3 mt-0.5 leading-relaxed">
             {product.description}
           </p>
         )}
 
-        {/* Rating */}
-        <div className="flex items-center gap-1 mt-1.5 mb-1">
+        {/* Rating — now visible on mobile too */}
+        <div className="flex items-center gap-1 mt-1.5">
           {rating ? (
             <>
               <div className="flex items-center gap-0.5">
                 {[1,2,3,4,5].map((s) => (
-                  <Star key={s} size={12} className={
+                  <Star key={s} size={11} className={
                     s <= Math.round(Number(rating))
                       ? "fill-[#FFA41C] text-[#FFA41C]"
                       : "fill-gray-200 text-gray-200 dark:fill-slate-700 dark:text-slate-700"
                   } />
                 ))}
               </div>
-              <span className="text-[11px] sm:text-xs text-[#007185] dark:text-cyan-400 hover:underline cursor-pointer ml-0.5">
-                ({product.buyers || 0})
+              <span className="text-[10px] font-medium text-[#007185] dark:text-cyan-400 ml-0.5">
+                {rating} <span className="text-gray-400">({product.buyers || 0})</span>
               </span>
             </>
           ) : (
-            <span className="text-[11px] sm:text-xs text-gray-400 dark:text-slate-500 italic">No ratings yet</span>
+            <span className="text-[10px] text-gray-400 dark:text-slate-500 italic">No ratings yet</span>
           )}
         </div>
 
-        {/* Spacer to push price and button to bottom */}
-        <div className="flex-grow" />
-
-        {/* Price & Discounts */}
-        <div className="flex flex-col mt-2">
-          <div className="flex items-baseline gap-1.5 flex-wrap">
-            <span className="font-bold text-lg sm:text-2xl text-gray-900 dark:text-white tracking-tight">
-              <span className="text-sm sm:text-base mr-0.5 font-medium">₹</span>
-              {finalPrice.toLocaleString()}
-            </span>
-            {(product.discount ?? 0) > 0 && (
-              <span className="text-[10px] sm:text-xs text-gray-500 dark:text-slate-400 line-through decoration-gray-400">
-                M.R.P: ₹{product.price.toLocaleString()}
-              </span>
-            )}
-          </div>
+        {/* Price + discount inline */}
+        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+          <span className="font-extrabold text-base sm:text-xl text-gray-900 dark:text-white tracking-tight">
+            <span className="text-[11px] font-semibold mr-0.5">₹</span>
+            {finalPrice.toLocaleString()}
+          </span>
           {(product.discount ?? 0) > 0 && (
-            <p className="text-[11px] sm:text-xs text-gray-700 dark:text-slate-300 mt-1 line-clamp-2">
-              <span className="bg-[#CC0C39] text-white px-1.5 py-0.5 rounded text-[10px] font-bold mr-1">
-                Save {product.discount}%
-              </span>
-              with selected offers
-            </p>
+            <span className="text-[10px] text-gray-400 dark:text-slate-500 line-through">
+              ₹{product.price.toLocaleString()}
+            </span>
+          )}
+          {(product.discount ?? 0) > 0 && (
+            <span className="bg-[#CC0C39] text-white px-1.5 py-0.5 rounded-md text-[9px] font-bold tracking-wide">
+              -{product.discount}%
+            </span>
           )}
         </div>
+        
+        {/* Seller Info */}
+        <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1 flex items-center gap-1">
+          <span className="italic">by</span> 
+          <span className="font-medium text-gray-700 dark:text-slate-300 tracking-wide text-[10.5px]">{product.sellerId?.name || "Unknown"}</span>
+        </p>
 
-        {/* Delivery info */}
-        <p className="text-[10px] sm:text-xs text-gray-500 dark:text-slate-400 mt-2">
+        {/* Delivery — sm+ only */}
+        <p className="hidden sm:block text-[10px] text-gray-500 dark:text-slate-400 mt-1">
           FREE delivery <span className="font-bold text-gray-700 dark:text-slate-300">Tomorrow</span>
         </p>
 
-        {/* Add to Cart Button */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onAddToCart(e, product._id); }}
-          disabled={isAddingToCart}
-          className={`w-full mt-3 py-2.5 sm:py-3 rounded-full font-bold text-[13px] sm:text-sm transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2 active:scale-95 ${
-            isInCart
-              ? "bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-200 border border-gray-300 dark:border-slate-600"
-              : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-blue-500/25"
-          }`}
-        >
-          {isAddingToCart ? (
-            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          ) : isInCart ? (
-            "Added to cart"
-          ) : (
-            "Add to cart"
-          )}
-        </button>
+        {/* Actions */}
+        <div className="flex items-center gap-2 mt-2.5 sm:mt-3">
+          {/* Mobile wishlist */}
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleWishlist(e, product._id); }}
+            className="sm:hidden flex-shrink-0 w-8 h-8 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center border border-gray-200 dark:border-white/10 active:scale-95 transition-all"
+          >
+            <Heart size={13} className={`${isInWishlist ? "fill-pink-500 text-pink-500" : "text-gray-500 dark:text-gray-400"}`} />
+          </button>
+
+          {/* Add to Cart */}
+          <button
+            onClick={(e) => { e.stopPropagation(); onAddToCart(e, product._id); }}
+            disabled={isAddingToCart}
+            className={`flex-1 py-2 sm:py-2.5 rounded-full font-bold text-[11.5px] sm:text-sm transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center gap-1.5 active:scale-95 ${
+              isInCart
+                ? "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-200 border border-gray-300 dark:border-slate-600"
+                : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-blue-500/20"
+            }`}
+          >
+            {isAddingToCart ? (
+              <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : isInCart ? "Added to cart" : "Add to cart"}
+          </button>
+        </div>
       </div>
     </div>
   );
 }
+

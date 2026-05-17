@@ -21,12 +21,12 @@ export default function CategoryPills({ products = [] }: { products?: ProductTyp
 
   const getCount = (id: string) => products.filter((p) => p.category === id).length;
 
-  const activeClasses = "flex-shrink-0 flex items-center gap-1.5 sm:gap-2.5 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-[1.25rem] transition-all duration-300 snap-start group cursor-pointer shadow-md hover:shadow-lg shadow-indigo-500/20 border border-transparent";
-  const getInactiveClasses = (hoverClass: string) => `flex-shrink-0 flex items-center gap-1.5 sm:gap-2.5 bg-white dark:bg-[#0D1B2A] border border-gray-200 dark:border-slate-800 px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-[1.25rem] transition-all duration-200 snap-start group cursor-pointer ${hoverClass} dark:hover:text-white`;
+  const activeClasses = "flex-shrink-0 flex items-center gap-1.5 sm:gap-2.5 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full sm:rounded-[1.25rem] transition-all duration-300 snap-start group cursor-pointer shadow-md hover:shadow-lg shadow-indigo-500/20 border border-transparent";
+  const getInactiveClasses = (hoverClass: string) => `flex-shrink-0 flex items-center gap-1.5 sm:gap-2.5 bg-white dark:bg-[#0D1B2A] border border-gray-200 dark:border-slate-800 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full sm:rounded-[1.25rem] transition-all duration-200 snap-start group cursor-pointer ${hoverClass} dark:hover:text-white`;
 
   return (
     <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8">
-      <div className="rounded-[2rem] border border-white/80 bg-white/75 p-3 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/45">
+      <div className="rounded-[2rem] border border-white/80 bg-white/75 px-2 py-1.5 sm:p-3 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/45">
         <div className="flex overflow-x-auto gap-2.5 pb-1 scrollbar-hide snap-x">
           <button
             onClick={() => router.push(`/marketplace?collection=All`)}
@@ -37,7 +37,7 @@ export default function CategoryPills({ products = [] }: { products?: ProductTyp
                 Explore All
               </span>
               {products.length > 0 && (
-                <span className={`text-[9px] sm:text-[10px] font-medium ${isAllActive ? "text-white/80" : "text-gray-400 dark:text-slate-500"}`}>
+                <span className={`hidden sm:inline text-[9px] sm:text-[10px] font-medium ${isAllActive ? "text-white/80" : "text-gray-400 dark:text-slate-500"}`}>
                   {products.length} {products.length === 1 ? "product" : "products"}
                 </span>
               )}
@@ -57,7 +57,7 @@ export default function CategoryPills({ products = [] }: { products?: ProductTyp
                     {cat.label}
                   </span>
                   {count > 0 && (
-                    <span className={`text-[9px] sm:text-[10px] font-medium ${isActive ? "text-white/80" : "text-gray-400 dark:text-slate-500"}`}>
+                    <span className={`hidden sm:inline text-[9px] sm:text-[10px] font-medium ${isActive ? "text-white/80" : "text-gray-400 dark:text-slate-500"}`}>
                       {count} {count === 1 ? "product" : "products"}
                     </span>
                   )}

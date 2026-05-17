@@ -462,6 +462,16 @@ export const createPromotionRequest = async (req, res) => {
       heroBgColor,
     } = req.body;
 
+    const uploadedFiles = Array.isArray(req.files)
+      ? req.files
+      : Array.isArray(req.files?.adImages)
+        ? req.files.adImages
+        : [];
+    const bannerCardFile =
+      !Array.isArray(req.files) && Array.isArray(req.files?.bannerCard)
+        ? req.files.bannerCard[0] || null
+        : null;
+
     if (!isValidObjectId(productId)) {
       return res.status(400).json({ message: "Valid product is required" });
     }
@@ -470,11 +480,11 @@ export const createPromotionRequest = async (req, res) => {
       return res.status(400).json({ message: "Title and subtitle are required" });
     }
 
-    if (!req.files || req.files.length === 0) {
+    if (uploadedFiles.length === 0) {
       return res.status(400).json({ message: "At least one image is required" });
     }
 
-    if (req.files.length > 3) {
+    if (uploadedFiles.length > 3) {
       return res.status(400).json({ message: "Maximum 3 images allowed" });
     }
 
@@ -492,8 +502,16 @@ export const createPromotionRequest = async (req, res) => {
       ? parsePositiveNumber(requestedDurationDays, "Requested duration")
       : settings.defaultDurationDays;
 
+    const bannerImageUpload = bannerCardFile
+      ? await uploadBuffer({
+          buffer: bannerCardFile.buffer,
+          folder: "bitforge/promotions/banner-cards",
+          transformation: [{ width: 1600, height: 900, crop: "limit" }],
+        })
+      : null;
+
     const adImages = await Promise.all(
-      req.files.map(async (file, index) => {
+      uploadedFiles.map(async (file, index) => {
         const uploadResult = await uploadBuffer({
           buffer: file.buffer,
           folder: "bitforge/promotions/banners",
@@ -517,6 +535,8 @@ export const createPromotionRequest = async (req, res) => {
       placement,
       title: title.trim(),
       subtitle: subtitle.trim(),
+      bannerImage: bannerImageUpload?.secure_url || null,
+      bannerImageKey: bannerImageUpload?.public_id || null,
       adImages,
       buttonText: buttonText?.trim() || "View Product",
       targetLink: normalizeTargetLink(targetLink, product._id),
@@ -1297,7 +1317,7 @@ export const getActivePromotions = async (req, res) => {
     })
       .sort({ priority: 1, createdAt: -1 })
       .limit(settings.marketplaceHeroMaxAds * 5)
-      .populate({ path: "productId", select: "title thumbnailUrl status changeRequest isDeleted price" });
+      .populate({ path: "productId", select: "title thumbnailUrl status changeRequest isDeleted price discount" });
 
     const promotions = candidatePromotions
       .filter((promotion) => {
@@ -1316,6 +1336,8 @@ export const getActivePromotions = async (req, res) => {
       productId: promotion.productId?._id || promotion.productId,
       productTitle: promotion.productTitle,
       productPrice: promotion.productId?.price,
+      productDiscount: promotion.productId?.discount,
+      promotionGoal: promotion.promotionGoal,
       buttonText: promotion.buttonText || "View Product",
       priority: promotion.priority,
       targetLink: normalizeTargetLink(

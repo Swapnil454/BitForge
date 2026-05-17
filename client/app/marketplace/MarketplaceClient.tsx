@@ -86,7 +86,7 @@ function InfiniteProductGrid({
         </div>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         {products.map((product) => (
           <ProductCard
             key={product._id}
@@ -108,7 +108,7 @@ function InfiniteProductGrid({
 
       {/* Spinner while fetching more */}
       {isFetchingMore && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mt-3">
           <GridSkeleton count={4} />
         </div>
       )}
@@ -382,14 +382,14 @@ export default function MarketplaceClient() {
         {/* Global Hero Ads and Category Pills */}
         {!searchQuery && <HeroAds />}
         {!searchQuery && (
-          <div className="-mt-8 sm:-mt-10 mb-8">
+          <div className="mt-3 sm:mt-4 mb-3 sm:mb-5 relative z-10">
             <CategoryPills products={homeProducts} />
           </div>
         )}
 
         {/* Grid view: search / category / collection / all */}
         {isGridView ? (
-          <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 py-8">
+          <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 py-6">
             <InfiniteProductGrid
                 title={gridTitle()}
                 subtitle={gridSubtitle()}
@@ -406,17 +406,19 @@ export default function MarketplaceClient() {
             </div>
         ) : (
           /* Home view: hero + sections + rows */
-          <HomeView
-            homeProducts={homeProducts}
-            homeLoading={homeLoading}
-            searchQuery={searchQuery}
-            wishlist={wishlist}
-            cartItems={cartItems}
-            addingToCart={addingToCart}
-            onToggleWishlist={toggleWishlist}
-            onAddToCart={handleAddToCart}
-            onBuyNow={handleBuyNow}
-          />
+          <div className="relative z-10">
+            <HomeView
+              homeProducts={homeProducts}
+              homeLoading={homeLoading}
+              searchQuery={searchQuery}
+              wishlist={wishlist}
+              cartItems={cartItems}
+              addingToCart={addingToCart}
+              onToggleWishlist={toggleWishlist}
+              onAddToCart={handleAddToCart}
+              onBuyNow={handleBuyNow}
+            />
+          </div>
         )}
       </main>
 

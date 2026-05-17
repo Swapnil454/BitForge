@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useHeroBgColor } from "@/lib/useHeroBgColor";
 
 export interface SubCategory {
   title: string;
@@ -18,19 +17,10 @@ export interface CategoryShowcaseProps {
 
 export default function CategoryShowcaseCard({ title, categoryId, items, linkText }: CategoryShowcaseProps) {
   const router = useRouter();
-  const { heroBgColor, heroIsDarkText } = useHeroBgColor();
 
   return (
-    <div className="relative bg-white/80 dark:bg-[#0B1221]/80 backdrop-blur-xl border border-gray-100 dark:border-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 h-full flex flex-col transition-all duration-300 hover:bg-white dark:hover:bg-[#131F37] shadow-sm hover:shadow-md z-10">
-      {/* Dynamic Hero Tint Overlay */}
-      {heroBgColor && (
-        <div 
-          className="absolute inset-0 pointer-events-none transition-colors duration-700 -z-10 rounded-xl sm:rounded-2xl" 
-          style={{ backgroundColor: heroBgColor, opacity: heroIsDarkText ? 0.15 : 0.25 }}
-        />
-      )}
-
-      <div className="flex items-center justify-between mb-3 sm:mb-4 relative z-10">
+    <div className="bg-white dark:bg-[#0B1221] border border-gray-100 dark:border-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 h-full flex flex-col transition-all duration-300 hover:bg-gray-50 dark:hover:bg-[#131F37] shadow-sm hover:shadow-md">
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
         <h3 className="font-bold text-lg sm:text-xl text-gray-900 dark:text-white tracking-tight">{title}</h3>
       </div>
       
@@ -58,7 +48,7 @@ export default function CategoryShowcaseCard({ title, categoryId, items, linkTex
 
       <button 
         onClick={() => router.push(`/marketplace?category=${encodeURIComponent(categoryId)}`)}
-        className="text-xs sm:text-sm font-bold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors w-fit mt-auto relative z-10"
+        className="text-xs sm:text-sm font-bold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors w-fit mt-auto"
       >
         {linkText}
       </button>

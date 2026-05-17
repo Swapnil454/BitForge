@@ -41,39 +41,45 @@ export default function WishlistPage() {
     setAuthChecked(true);
   }, [router]);
 
-  // Load wishlist from localStorage (only after auth check)
+  const [hasFetchedInitial, setHasFetchedInitial] = useState(false);
+
+  // Load wishlist from localStorage and fetch products (only after auth check)
   useEffect(() => {
     if (!authChecked) return;
     
+    let currentWishlist: string[] = [];
     const saved = localStorage.getItem("wishlist");
     if (saved) {
       try {
-        setWishlist(JSON.parse(saved));
+        currentWishlist = JSON.parse(saved);
+        setWishlist(currentWishlist);
       } catch (e) {
         console.error("Failed to parse wishlist", e);
       }
     }
-    setLoading(false);
-  }, [authChecked]);
-
-  // Fetch all products
-  useEffect(() => {
+    
     const fetchProducts = async () => {
+      if (currentWishlist.length === 0) {
+        setLoading(false);
+        setHasFetchedInitial(true);
+        return;
+      }
+      
       try {
-        const data = await marketplaceAPI.getAllProducts();
-        const allProducts = data.products || data || [];
-        // Filter to only show wishlist items
-        const wishlistItems = allProducts.filter((p: Product) => wishlist.includes(p._id));
-        setProducts(wishlistItems);
+        // Fetch all specific products by their IDs
+        const promises = currentWishlist.map(id => marketplaceAPI.getProductById(id).catch(() => null));
+        const results = await Promise.all(promises);
+        setProducts(results.filter(Boolean));
       } catch (error: any) {
-        toast.error(error.response?.data?.message || "Failed to load products");
+        toast.error("Failed to load wishlist products");
+      } finally {
+        setLoading(false);
+        setHasFetchedInitial(true);
       }
     };
 
-    if (wishlist.length > 0) {
-      fetchProducts();
-    }
-  }, [wishlist]);
+    fetchProducts();
+  }, [authChecked]);
 
   const removeFromWishlist = (productId: string, silent = false) => {
     const updated = wishlist.filter(id => id !== productId);
