@@ -39,7 +39,7 @@ export default function PageHeader({
           </button>
 
           <div className="px-16 text-center">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight bg-linear-to-r from-fuchsia-600 via-violet-600 to-indigo-600 dark:from-fuchsia-300 dark:via-violet-300 dark:to-indigo-300 bg-clip-text text-transparent">
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
               {title}
             </h1>
             {subtitle && <p className="text-slate-500 dark:text-white/55 text-xs sm:text-sm mt-0.5">{subtitle}</p>}

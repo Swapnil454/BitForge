@@ -154,13 +154,13 @@ export default function InvoicePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#06070b]">
+      <div className="min-h-screen bg-slate-100 dark:bg-[#06070b]">
         {/* Skeleton Header */}
         <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-white/10 bg-white dark:bg-black/95">
           <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
             <div className="relative flex min-h-[58px] items-center justify-center">
-              <div className="h-8 w-24 bg-slate-100 dark:bg-white/5 rounded absolute left-0 animate-pulse"></div>
-              <div className="h-6 w-48 bg-slate-100 dark:bg-white/5 rounded animate-pulse"></div>
+              <div className="h-8 w-24 bg-slate-200 dark:bg-white/5 rounded absolute left-0 animate-pulse"></div>
+              <div className="h-6 w-48 bg-slate-200 dark:bg-white/5 rounded animate-pulse"></div>
             </div>
           </div>
         </header>
@@ -181,7 +181,7 @@ export default function InvoicePage() {
 
   if (error || !invoice || !totals) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#06070b] px-4">
+      <div className="flex min-h-screen items-center justify-center bg-slate-100 dark:bg-[#06070b] px-4">
         <div className="w-full max-w-md rounded-[28px] border border-slate-200 dark:border-white/10 bg-slate-900/75 p-8 text-center text-slate-900 dark:text-white shadow-2xl">
           <p className="mb-4 text-red-400">{error || "Invoice not found"}</p>
           <button
@@ -194,6 +194,47 @@ export default function InvoicePage() {
       </div>
     );
   }
+
+  const actionButtons = (
+    <>
+      <button
+        onClick={handlePrint}
+        className="w-full rounded-xl border border-slate-300 dark:border-cyan-400/20 bg-slate-200 dark:bg-cyan-400/10 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-cyan-100 transition hover:bg-slate-300 dark:hover:bg-cyan-400/15 sm:w-auto flex items-center justify-center gap-2"
+      >
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="6 9 6 2 18 2 18 9"></polyline>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+          <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
+        Print
+      </button>
+      <button
+        onClick={handleDownloadPdf}
+        disabled={downloading}
+        className="w-full rounded-xl bg-cyan-400 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto flex items-center justify-center gap-2"
+      >
+        {downloading ? (
+          <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="2" x2="12" y2="6"></line>
+            <line x1="12" y1="18" x2="12" y2="22"></line>
+            <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+            <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+            <line x1="2" y1="12" x2="6" y2="12"></line>
+            <line x1="18" y1="12" x2="22" y2="12"></line>
+            <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+            <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+          </svg>
+        ) : (
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        )}
+        {downloading ? "Downloading..." : "Download PDF"}
+      </button>
+    </>
+  );
 
   return (
     <>
@@ -223,6 +264,7 @@ export default function InvoicePage() {
             border: 0 !important;
             border-radius: 0 !important;
             box-shadow: none !important;
+            page-break-inside: avoid !important;
           }
 
           .print-area > div {
@@ -245,68 +287,34 @@ export default function InvoicePage() {
         backLabel="Back"
         title="Tax Invoice"
         subtitle={invoice?.invoiceNumber ? `Invoice #${invoice.invoiceNumber}` : ""}
+        rightSlot={<div className="hidden sm:flex gap-3">{actionButtons}</div>}
       />
 
-      <main className="min-h-screen bg-[#06070b] px-4 py-5 text-slate-900 dark:text-white sm:px-6 sm:py-8">
+      <main className="min-h-screen bg-slate-100 dark:bg-[#06070b] px-4 py-5 text-slate-900 dark:text-white sm:px-6 sm:py-8">
         <div className="mx-auto max-w-4xl">
           <div className="no-print mb-5 flex justify-end">
-            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row w-full sm:w-auto">
-              <button
-                onClick={handlePrint}
-                className="w-full rounded-xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-2.5 text-sm font-medium text-cyan-100 transition hover:bg-cyan-400/15 sm:w-auto flex items-center justify-center gap-2"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="6 9 6 2 18 2 18 9"></polyline>
-                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                  <rect x="6" y="14" width="12" height="8"></rect>
-                </svg>
-                Print
-              </button>
-              <button
-                onClick={handleDownloadPdf}
-                disabled={downloading}
-                className="w-full rounded-xl bg-cyan-400 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto flex items-center justify-center gap-2"
-              >
-                {downloading ? (
-                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="12" y1="2" x2="12" y2="6"></line>
-                    <line x1="12" y1="18" x2="12" y2="22"></line>
-                    <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
-                    <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
-                    <line x1="2" y1="12" x2="6" y2="12"></line>
-                    <line x1="18" y1="12" x2="22" y2="12"></line>
-                    <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
-                    <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
-                  </svg>
-                ) : (
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                  </svg>
-                )}
-                {downloading ? "Downloading..." : "Download PDF"}
-              </button>
+            <div className="grid grid-cols-2 gap-3 w-full sm:hidden">
+              {actionButtons}
             </div>
           </div>
 
           <section className="print-area overflow-hidden rounded-[30px] border border-slate-200 bg-white text-slate-900 shadow-[0_28px_80px_rgba(15,23,42,0.32)]">
-            <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#0f172a,#1e293b)] px-5 py-6 text-slate-900 dark:text-white sm:px-8">
+            <div className="border-b border-slate-200 bg-slate-50 px-5 py-6 text-slate-900 sm:px-8">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-3xl font-bold tracking-tight">BitForge</p>
-                  <p className="mt-1 text-sm text-slate-300">India&apos;s Trusted Digital Marketplace</p>
-                  <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">Tax Invoice</p>
+                  <p className="text-3xl font-extrabold tracking-tight text-slate-900">BitForge</p>
+                  <p className="mt-1 text-sm text-slate-500">India&apos;s Trusted Digital Marketplace</p>
+                  <p className="mt-4 text-xs font-black uppercase tracking-[0.2em] text-violet-600">Tax Invoice</p>
                 </div>
 
                 <div className="grid gap-3 text-sm sm:text-right">
                   <div>
-                    <p className="text-slate-400">Invoice Number</p>
-                    <p className="font-semibold text-slate-900 dark:text-white">{invoice.invoiceNumber}</p>
+                    <p className="text-slate-500">Invoice Number</p>
+                    <p className="font-bold text-slate-900">{invoice.invoiceNumber}</p>
                   </div>
                   <div>
-                    <p className="text-slate-400">Invoice Date</p>
-                    <p className="font-medium text-slate-900 dark:text-white">{formatDate(invoice.invoiceDate || invoice.createdAt)}</p>
+                    <p className="text-slate-500">Invoice Date</p>
+                    <p className="font-semibold text-slate-900">{formatDate(invoice.invoiceDate || invoice.createdAt)}</p>
                   </div>
                 </div>
               </div>

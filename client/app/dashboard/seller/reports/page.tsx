@@ -86,25 +86,43 @@ export default function MyReportsPage() {
             <div className="h-8 w-8 border-t-2 border-indigo-500 rounded-full animate-spin"></div>
           </div>
         ) : filteredReports.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center py-20 bg-white dark:bg-transparent dark:bg-linear-to-b dark:from-indigo-500/5 dark:to-transparent rounded-3xl border border-slate-200 dark:border-indigo-500/10 text-center shadow-sm dark:shadow-none"
-          >
-            <div className="p-4 bg-indigo-500/10 rounded-full border border-indigo-500/20 mb-4">
-              <FileText className="h-8 w-8 text-indigo-400" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No Reports Found</h3>
-            <p className="text-slate-500 dark:text-white/60 max-w-sm mb-6">
-              You haven't submitted any reports yet, or none match your search.
+          <div className="flex flex-col items-center justify-center text-center max-w-md mx-auto py-16 sm:py-24 px-4">
+            {/* Animated floating empty state icon */}
+            <motion.div
+              animate={{ 
+                y: [0, -8, 0],
+                rotate: [0, -1.5, 1.5, 0]
+              }}
+              transition={{ 
+                duration: 4.5, 
+                repeat: Infinity,
+                ease: "easeInOut" 
+              }}
+              className="relative w-20 h-20 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-slate-100/50 dark:shadow-none"
+            >
+              <FileText className="h-9 w-9 text-slate-400 dark:text-white/40" />
+            </motion.div>
+
+            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">No Reports Found</h3>
+            <p className="text-slate-500 dark:text-white/50 text-sm max-w-xs mb-8 leading-relaxed">
+              You haven't submitted any reports yet, or none match your search criteria.
             </p>
             <button
               onClick={() => router.push("/report")}
-              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all shadow-lg shadow-indigo-600/30"
+              className="group relative px-8 py-3.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 active:scale-[0.98] transition-all duration-200 shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.45)] flex items-center gap-2"
             >
-              Submit a Report
+              <span>Submit a Report</span>
+              <svg 
+                className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor" 
+                strokeWidth={2.5}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
             </button>
-          </motion.div>
+          </div>
         ) : (
           <div className="grid lg:grid-cols-3 gap-6">
             {/* List */}

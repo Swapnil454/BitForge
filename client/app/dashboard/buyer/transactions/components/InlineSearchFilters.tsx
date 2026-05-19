@@ -60,7 +60,7 @@ export default function InlineSearchFilters({
           placeholder="Search by product, seller, or order ID"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full h-11 rounded-xl border border-white/12 bg-slate-100 dark:bg-white/5 pl-10 pr-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/40 focus:outline-none focus:border-violet-400/50 focus:ring-2 focus:ring-violet-500/20 transition"
+          className="w-full h-11 rounded-xl border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 pl-10 pr-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/35 focus:outline-none focus:border-violet-500 dark:focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 transition"
         />
       </div>
 

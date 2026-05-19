@@ -27,10 +27,9 @@ export default function BitForgeBrand({ role }: BitForgeBrandProps) {
         className="
           -ml-3 sm:-ml-6
           text-lg sm:text-3xl
-          font-bold
+          font-black
           tracking-tight
-          bg-linear-to-r from-cyan-400 to-indigo-400
-          bg-clip-text text-transparent
+          text-slate-900 dark:text-white
           leading-tight
           translate-y-[1px]
           pb-[2px]
@@ -39,19 +38,17 @@ export default function BitForgeBrand({ role }: BitForgeBrandProps) {
         BitForge
       </span>
 
-      {role && (
+      {/* {role && (
         <span
           className="
             ml-4 mt-2
-            text-sm
-            bg-linear-to-r from-cyan-400 to-indigo-400
-            bg-clip-text text-transparent
-            opacity-80
+            text-sm font-bold
+            text-slate-500 dark:text-slate-400
           "
         >
           ({role})
         </span>
-      )}
+      )} */}
     </div>
   );
 }

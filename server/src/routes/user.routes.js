@@ -11,6 +11,7 @@ import {
   confirmAccountDeletion,
   requestReactivationOtp,
   reactivateAccount,
+  updatePreferences,
 } from "../controllers/user.controller.js";
 
 const router = express.Router();
@@ -18,6 +19,7 @@ const router = express.Router();
 // Protected routes
 router.get("/profile", authMiddleware, getCurrentUser);
 router.patch("/profile", authMiddleware, upload.single("profilePicture"), updateProfile);
+router.patch("/preferences", authMiddleware, updatePreferences);
 router.post("/change-password", authMiddleware, changePassword);
 
 // Public routes (for password reset)

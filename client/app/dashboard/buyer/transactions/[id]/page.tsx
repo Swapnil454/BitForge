@@ -8,7 +8,6 @@ import toast from "react-hot-toast";
 import { buyerAPI } from "@/lib/api";
 import { copyText } from "@/lib/clipboard";
 import PageHeader from "../components/PageHeader";
-import PrintInvoice from "./components/PrintInvoice";
 import TransactionActionBar from "./components/TransactionActionBar";
 import TransactionInfoStrip from "./components/TransactionInfoStrip";
 import TransactionSummaryPanel from "./components/TransactionSummaryPanel";
@@ -86,17 +85,21 @@ export default function TransactionDetailsPage() {
   };
 
   const handleDownloadInvoice = () => {
-    const productName = transaction?.productName
-      ?.replace(/[^a-zA-Z0-9\s]/g, "")
-      .replace(/\s+/g, "_")
-      .toLowerCase() || "invoice";
+    if (!transaction) return;
 
-    const originalTitle = document.title;
-    document.title = `${productName}_invoice`;
-    window.print();
-    setTimeout(() => {
-      document.title = originalTitle;
-    }, 1000);
+    if (transaction.status === "created") {
+      toast("Invoice will be generated once payment is confirmed.", {
+        icon: "⏳",
+      });
+      return;
+    }
+
+    if (transaction.status === "failed") {
+      toast.error("Invoice is not available for failed transactions.");
+      return;
+    }
+
+    router.push(`/dashboard/buyer/invoice/${transaction._id}`);
   };
 
   if (loading) {
@@ -135,9 +138,6 @@ export default function TransactionDetailsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
-      <PrintInvoice transaction={transaction} />
-
-      <div className="screen-content">
         <PageHeader
           backHref="/dashboard/buyer/transactions"
           backLabel="Transactions"
@@ -163,37 +163,6 @@ export default function TransactionDetailsPage() {
             onDownloadInvoice={handleDownloadInvoice}
           />
         </main>
-      </div>
-
-      <style jsx global>{`
-        @media print {
-          html, body {
-            background: #fff !important;
-            color: #111 !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-
-          .screen-content {
-            display: none !important;
-          }
-
-          .print-invoice {
-            display: block !important;
-          }
-
-          @page {
-            margin: 14mm;
-            size: A4;
-          }
-        }
-
-        @media screen {
-          .print-invoice {
-            display: none !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }

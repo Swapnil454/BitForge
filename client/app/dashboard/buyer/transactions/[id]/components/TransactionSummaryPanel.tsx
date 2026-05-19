@@ -27,7 +27,7 @@ export default function TransactionSummaryPanel({ transaction }: TransactionSumm
               {status.shortLabel}
             </span>
           </div>
-          <p className="text-white/75 text-sm sm:text-base">{status.message}</p>
+          <p className="text-slate-600 dark:text-white/75 text-sm sm:text-base">{status.message}</p>
 
           <div className="mt-4 flex flex-wrap gap-3 text-xs text-slate-600 dark:text-white/70">
             <span className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-slate-100 dark:bg-white/5 px-2.5 py-1.5">

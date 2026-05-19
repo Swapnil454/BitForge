@@ -22,6 +22,7 @@ import {
   X,
   Moon,
   Sun,
+  Monitor,
   TrendingUp,
   Megaphone,
 } from "lucide-react";
@@ -62,8 +63,26 @@ export default function Dashboard() {
   const [loadingNotifs, setLoadingNotifs] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [showRecentSalesModal, setShowRecentSalesModal] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
+    setProfileOpen(false);
+    
+    userAPI.updatePreferences({ theme: newTheme }).then((res) => {
+      const userStr = getCookie("user");
+      if (userStr && userStr !== '""') {
+        try {
+          const userObj = JSON.parse(userStr as string);
+          userObj.preferences = res.preferences || { theme: newTheme };
+          setCookie("user", JSON.stringify(userObj), 7);
+        } catch(e) {}
+      }
+    }).catch(() => {
+      toast.error("Failed to sync theme preference", { id: "theme-sync-error" });
+    });
+  };
 
   useEffect(() => setMounted(true), []);
 
@@ -361,11 +380,23 @@ export default function Dashboard() {
                       }}
                     />
                     {mounted && (
-                      <MenuItem 
-                        label={theme === 'dark' ? "Light Mode" : "Dark Mode"} 
-                        icon={theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
-                      />
+                      <div className="py-1">
+                        <MenuItem 
+                          label="Light Mode" 
+                          icon={<Sun className="h-4 w-4" />}
+                          onClick={() => handleThemeChange('light')} 
+                        />
+                        <MenuItem 
+                          label="Dark Mode" 
+                          icon={<Moon className="h-4 w-4" />}
+                          onClick={() => handleThemeChange('dark')} 
+                        />
+                        <MenuItem 
+                          label="System Theme" 
+                          icon={<Monitor className="h-4 w-4" />}
+                          onClick={() => handleThemeChange('system')} 
+                        />
+                      </div>
                     )}
                     <div className="h-px bg-linear-to-r from-transparent via-indigo-500/20 to-transparent" />
                     <MenuItem

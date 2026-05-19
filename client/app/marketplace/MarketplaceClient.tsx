@@ -12,6 +12,7 @@ import BuyerFooter from "@/app/components/buyer/layout/BuyerFooter";
 import HeroAds from "@/app/components/buyer/home/HeroAds";
 import HeroSkeleton from "@/app/components/buyer/home/HeroSkeleton";
 import CategoryPills from "@/app/components/buyer/home/CategoryPills";
+import MobileBottomNav from "@/app/components/buyer/layout/MobileBottomNav";
 import CategoryShowcaseGrid from "@/app/components/buyer/home/CategoryShowcaseGrid";
 import ProductRow from "@/app/components/buyer/home/ProductRow";
 import PromoGridRow from "@/app/components/buyer/home/PromoGridRow";
@@ -423,6 +424,7 @@ export default function MarketplaceClient() {
       </main>
 
       {!isGridView && <BuyerFooter />}
+      <MobileBottomNav />
     </div>
   );
 }

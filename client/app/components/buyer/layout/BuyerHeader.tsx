@@ -7,12 +7,14 @@ import Image from "next/image";
 import {
   Search, Heart, ShoppingCart, User, Menu, X,
   Moon, Sun, ChevronDown, ChevronLeft, Bell,
+  Settings, CircleHelp, Flag, FileText, LogOut,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/lib/useAuth";
 import { getStoredUser } from "@/lib/cookies";
 import { notificationAPI } from "@/lib/api";
 import AuthModal from "@/app/components/AuthModal";
+import LogoutModal from "@/app/dashboard/components/LogoutModal";
 import SearchDropdown from "@/app/components/buyer/search/SearchDropdown";
 import MobileSearchPage from "@/app/components/buyer/search/MobileSearchPage";
 
@@ -37,7 +39,8 @@ export default function BuyerHeader({
 }: BuyerHeaderProps) {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   // ── Search dropdown state ──────────────────────────────────────────────────
@@ -103,6 +106,13 @@ export default function BuyerHeader({
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
+  // ── Listen for custom event from MobileBottomNav to open search ─────────
+  useEffect(() => {
+    const handleOpenSearch = () => setMobileSearchOpen(true);
+    window.addEventListener('open-mobile-search', handleOpenSearch);
+    return () => window.removeEventListener('open-mobile-search', handleOpenSearch);
+  }, []);
+
   // ── Handle search from both desktop and mobile ─────────────────────────────
   const commitSearch = useCallback(
     (term?: string) => {
@@ -163,7 +173,7 @@ export default function BuyerHeader({
 
             {/* Middle: Desktop Search Bar */}
             <div className="hidden md:flex flex-1 max-w-2xl mx-auto items-center relative" ref={desktopSearchRef}>
-              <div className="flex w-full relative group shadow-sm rounded-2xl transition-shadow hover:shadow-md hover:shadow-indigo-500/5 dark:hover:shadow-indigo-500/10 bg-gray-50 dark:bg-[#0d1320] border border-gray-200 dark:border-white/10 focus-within:border-indigo-500/50 dark:focus-within:border-indigo-500/50 focus-within:ring-2 focus-within:ring-indigo-500/20">
+              <div className="flex w-full relative group shadow-sm rounded-2xl transition-all duration-200 hover:shadow-md hover:shadow-violet-500/5 dark:hover:shadow-violet-500/10 bg-gray-50 dark:bg-[#0d1320] border border-slate-300 dark:border-white/20 focus-within:border-violet-500 dark:focus-within:border-violet-400 focus-within:ring-2 focus-within:ring-violet-500/20">
                 <div className="hidden lg:flex items-center relative border-r border-gray-200 dark:border-white/10">
                   <select
                     onChange={(e) => {
@@ -298,38 +308,100 @@ export default function BuyerHeader({
                       }}
                       className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-white/10 dark:hover:text-white rounded-xl w-full text-left font-medium transition-all"
                     >
-                      <User size={16} /> Profile & Settings
+                      <User size={16} /> {isAuthenticated ? "Dashboard" : "Profile & Settings"}
                     </button>
 
                     {isAuthenticated && (
-                      <button
-                        onClick={() => { setIsMobileMenuOpen(false); router.push("/notifications"); }}
-                        className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-white/10 dark:hover:text-white rounded-xl w-full text-left font-medium transition-all"
-                      >
-                        <div className="relative">
-                          <Bell size={16} />
+                      <>
+                        <button
+                          onClick={() => { setIsMobileMenuOpen(false); router.push("/notifications"); }}
+                          className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-white/10 dark:hover:text-white rounded-xl w-full text-left font-medium transition-all"
+                        >
+                          <div className="relative">
+                            <Bell size={16} />
+                            {unreadNotificationsCount > 0 && (
+                              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full" />
+                            )}
+                          </div>
+                          Notifications
                           {unreadNotificationsCount > 0 && (
-                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full" />
+                            <span className="ml-auto bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                              {unreadNotificationsCount}
+                            </span>
                           )}
-                        </div>
-                        Notifications
-                        {unreadNotificationsCount > 0 && (
-                          <span className="ml-auto bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
-                            {unreadNotificationsCount}
-                          </span>
-                        )}
-                      </button>
+                        </button>
+
+                        <div className="h-px bg-slate-100 dark:bg-white/10 my-1 mx-2" />
+
+                        <button
+                          onClick={() => { setIsMobileMenuOpen(false); router.push("/wishlist"); }}
+                          className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-white/10 dark:hover:text-white rounded-xl w-full text-left font-medium transition-all"
+                        >
+                          <Heart size={16} /> Wishlist
+                          {wishlistCount > 0 && (
+                            <span className="ml-auto bg-indigo-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                              {wishlistCount}
+                            </span>
+                          )}
+                        </button>
+                        
+                        <button
+                          onClick={() => { setIsMobileMenuOpen(false); router.push("/dashboard/settings"); }}
+                          className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-white/10 dark:hover:text-white rounded-xl w-full text-left font-medium transition-all"
+                        >
+                          <Settings size={16} /> Settings
+                        </button>
+                        
+                        <button
+                          onClick={() => { setIsMobileMenuOpen(false); router.push("/dashboard/buyer/help-center"); }}
+                          className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-white/10 dark:hover:text-white rounded-xl w-full text-left font-medium transition-all"
+                        >
+                          <CircleHelp size={16} /> Help Center
+                        </button>
+                        
+                        <button
+                          onClick={() => { setIsMobileMenuOpen(false); router.push("/report"); }}
+                          className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-white/10 dark:hover:text-white rounded-xl w-full text-left font-medium transition-all"
+                        >
+                          <Flag size={16} /> Submit Report
+                        </button>
+                        
+                        <button
+                          onClick={() => { setIsMobileMenuOpen(false); router.push("/dashboard/buyer/reports"); }}
+                          className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-white/10 dark:hover:text-white rounded-xl w-full text-left font-medium transition-all"
+                        >
+                          <FileText size={16} /> My Reports
+                        </button>
+                      </>
                     )}
 
                     <div className="h-px bg-slate-100 dark:bg-white/10 my-1 mx-2" />
 
                     <button
-                      onClick={toggleTheme}
+                      onClick={() => {
+                        toggleTheme();
+                        setIsMobileMenuOpen(false);
+                      }}
                       className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-white/10 dark:hover:text-white rounded-xl w-full text-left font-medium transition-all"
                     >
-                      {mounted && theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-                      {mounted && theme === "dark" ? "Light Mode" : "Dark Mode"}
+                      {mounted && resolvedTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+                      {mounted && resolvedTheme === "dark" ? "Light Mode" : "Dark Mode"}
                     </button>
+                    
+                    {isAuthenticated && (
+                      <>
+                        <div className="h-px bg-slate-100 dark:bg-white/10 my-1 mx-2" />
+                        <button
+                          onClick={() => {
+                            setIsLogoutModalOpen(true);
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl w-full text-left font-medium transition-all"
+                        >
+                          <LogOut size={16} /> Logout
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -360,6 +432,17 @@ export default function BuyerHeader({
         onLogin={goToLogin}
         onRegister={goToRegister}
         action={pendingAction}
+      />
+
+      {/* Logout Modal */}
+      <LogoutModal 
+        isOpen={isLogoutModalOpen} 
+        onClose={() => setIsLogoutModalOpen(false)} 
+        onConfirm={() => {
+          document.cookie = 'token=; Max-Age=0; path=/;';
+          document.cookie = 'user=; Max-Age=0; path=/;';
+          window.location.href = '/login';
+        }}
       />
     </>
   );

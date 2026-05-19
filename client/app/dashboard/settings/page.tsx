@@ -20,6 +20,7 @@ import {
   LifeBuoy,
   ChevronLeft
 } from "lucide-react";
+import MobileBottomNav from "@/app/components/buyer/layout/MobileBottomNav";
 
 interface User {
   id: string;
@@ -310,7 +311,7 @@ function SettingsContent() {
         onBack={handleHeaderBack}
       />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 md:py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-28 md:py-8">
         <AnimatePresence mode="wait">
           
           {/* ================= MAIN LIST VIEW ================= */}
@@ -720,6 +721,8 @@ function SettingsContent() {
 
         </AnimatePresence>
       </div>
+      
+      {user?.role === 'buyer' && <MobileBottomNav />}
     </main>
   );
 }

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { ChevronLeft, ChevronRight, CheckCheck } from "lucide-react";
+import { CheckCheck, Bell, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 import { notificationAPI } from "@/lib/api";
 import { getStoredUser } from "@/lib/cookies";
 import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
@@ -14,12 +15,15 @@ export default function NotificationsPage() {
   const ITEMS_PER_PAGE = 20;
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalNotifications, setTotalNotifications] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
   const router = useRouter();
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const user = getStoredUser();
@@ -31,32 +35,58 @@ export default function NotificationsPage() {
     fetchNotifications(1);
   }, [router]);
 
-  const fetchNotifications = async (page = 1, showLoader = true) => {
+  const fetchNotifications = async (page = 1, append = false) => {
     try {
-      if (showLoader) setLoading(true);
+      if (page === 1) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
       const data = await notificationAPI.getNotifications({
         page,
         limit: ITEMS_PER_PAGE,
       });
 
-      setNotifications(data.notifications || []);
+      const incoming = data.notifications || [];
+      setNotifications((prev) => (append ? [...prev, ...incoming] : incoming));
       setUnreadCount(data.unreadCount || 0);
       setCurrentPage(data.pagination?.page || page);
       setTotalPages(data.pagination?.totalPages || 1);
       setTotalNotifications(data.pagination?.total || 0);
+      setHasNextPage((data.pagination?.page || page) < (data.pagination?.totalPages || 1));
     } catch (error) {
       console.error("Error fetching notifications:", error);
       toast.error("Failed to load notifications");
     } finally {
-      if (showLoader) setLoading(false);
+      setLoading(false);
+      setLoadingMore(false);
     }
   };
+
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !loadingMore && !loading) {
+          void fetchNotifications(currentPage + 1, true);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, loadingMore, loading, currentPage]);
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
       setActionLoading(true);
       await notificationAPI.markAsRead(notificationId);
-      await fetchNotifications(currentPage, false);
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === notificationId ? { ...n, isRead: true } : n))
+      );
+      setUnreadCount((prev) => Math.max(prev - 1, 0));
     } catch {
       toast.error("Failed to mark notification as read");
     } finally {
@@ -68,7 +98,8 @@ export default function NotificationsPage() {
     try {
       setActionLoading(true);
       await notificationAPI.markAllAsRead();
-      await fetchNotifications(currentPage, false);
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0);
       toast.success("All notifications marked as read");
     } catch {
       toast.error("Failed to mark all notifications as read");
@@ -81,22 +112,18 @@ export default function NotificationsPage() {
     try {
       setActionLoading(true);
       await notificationAPI.deleteNotification(notificationId);
-      const nextPage =
-        notifications.length === 1 && currentPage > 1 ? currentPage - 1 : currentPage;
-      await fetchNotifications(nextPage, false);
+      const deletedNotif = notifications.find((n) => n._id === notificationId);
+      if (deletedNotif && !deletedNotif.isRead) {
+        setUnreadCount((prev) => Math.max(prev - 1, 0));
+      }
+      setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
+      setTotalNotifications((prev) => Math.max(prev - 1, 0));
       toast.success("Notification deleted");
     } catch {
       toast.error("Failed to delete notification");
     } finally {
       setActionLoading(false);
     }
-  };
-
-  const handlePageChange = async (page: number) => {
-    if (page < 1 || page > totalPages || page === currentPage || loading || actionLoading) {
-      return;
-    }
-    await fetchNotifications(page, true);
   };
 
   return (
@@ -124,13 +151,34 @@ export default function NotificationsPage() {
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="h-32 rounded-2xl border border-slate-200 bg-white/80 animate-pulse dark:border-white/10 dark:bg-white/5" />
+              <div
+                key={index}
+                className="h-32 rounded-2xl border border-slate-200 bg-white/80 animate-pulse dark:border-white/10 dark:bg-white/5"
+              />
             ))}
           </div>
         ) : notifications.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-slate-200 bg-white/70 px-8 py-20 text-center shadow-sm dark:border-white/10 dark:bg-white/5">
-            <p className="text-xl font-semibold text-slate-900 dark:text-white">No notifications yet</p>
-            <p className="mt-2 text-sm text-slate-500 dark:text-white/55">
+          <div className="flex flex-col items-center justify-center text-center max-w-md mx-auto py-16 sm:py-24 px-4">
+            {/* Animated floating empty state icon */}
+            <motion.div
+              animate={{
+                y: [0, -8, 0],
+                rotate: [0, -2, 2, 0],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="relative w-20 h-20 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-slate-100/50 dark:shadow-none"
+            >
+              <Bell className="h-9 w-9 text-slate-400 dark:text-white/40" />
+            </motion.div>
+
+            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">
+              No Notifications Yet
+            </h3>
+            <p className="text-slate-500 dark:text-white/50 text-sm max-w-xs leading-relaxed">
               When something important happens on BitForge, it will show up here.
             </p>
           </div>
@@ -148,9 +196,11 @@ export default function NotificationsPage() {
                   router.push(getNotificationDestination(notification));
                 }}
                 onMarkAsRead={
-                  notification.isRead ? undefined : () => {
-                    void handleMarkAsRead(notification._id);
-                  }
+                  notification.isRead
+                    ? undefined
+                    : () => {
+                        void handleMarkAsRead(notification._id);
+                      }
                 }
                 onDelete={() => {
                   void handleDelete(notification._id);
@@ -160,33 +210,12 @@ export default function NotificationsPage() {
           </div>
         )}
 
-        {!loading && totalNotifications > 0 && (
-          <div className="mt-8 flex flex-col items-center gap-3">
-            <p className="text-sm text-slate-500 dark:text-white/55">
-              Showing {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, totalNotifications)}-
-              {Math.min(currentPage * ITEMS_PER_PAGE, totalNotifications)} of {totalNotifications}
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage <= 1 || actionLoading}
-                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:opacity-40 dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/10"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Prev
-              </button>
-              <span className="px-3 py-2 text-sm text-slate-600 dark:text-white/60">
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage >= totalPages || actionLoading}
-                className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-50 disabled:opacity-40 dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/10"
-              >
-                Next
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
+        {/* Sentinel div for Intersection Observer */}
+        <div ref={sentinelRef} className="h-10 w-full" />
+
+        {loadingMore && (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
           </div>
         )}
       </div>

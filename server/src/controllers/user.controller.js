@@ -499,3 +499,37 @@ export const reactivateAccount = async (req, res) => {
     res.status(500).json({ message: "Failed to reactivate account" });
   }
 };
+
+/**
+ * UPDATE PREFERENCES
+ * Protected endpoint — updates user preferences like theme.
+ */
+export const updatePreferences = async (req, res) => {
+  try {
+    const { theme } = req.body;
+    const userId = req.user.id;
+
+    if (!["light", "dark", "system"].includes(theme)) {
+      return res.status(400).json({ message: "Invalid theme" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { "preferences.theme": theme },
+      { new: true }
+    ).select("-password -resetPasswordOTP -resetPasswordExpire");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      success: true,
+      preferences: user.preferences,
+    });
+  } catch (error) {
+    console.error("Error updating preferences:", error);
+    res.status(500).json({ message: "Failed to update preferences" });
+  }
+};
+

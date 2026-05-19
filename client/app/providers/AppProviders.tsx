@@ -2,7 +2,7 @@
 
 import { ReactNode, useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider, useTheme } from "next-themes";
 import { getCookie, setCookie } from "@/lib/cookies";
 import QueryProvider from "./QueryProvider";
 import BannedModal from "@/app/components/BannedModal";
@@ -83,17 +83,35 @@ export default function AppProviders({ children }: AppProvidersProps) {
   const handleReactivationSuccess = (token: string, user: any) => {
     setShowReactivationModal(false);
     setCookie("token", token, 7);
+
+
     setCookie("user", JSON.stringify(user), 7);
     
     // Hard refresh to reload current page with active status
     window.location.reload();
   };
 
+  // Force dark theme on landing and authentication pages
+  const isDarkOnlyRoute = 
+    pathname === "/" || 
+    pathname?.startsWith("/login") || 
+    pathname?.startsWith("/register") || 
+    pathname?.startsWith("/forgot-password") ||
+    pathname?.startsWith("/reset-password") ||
+    pathname?.startsWith("/verify");
+
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+    <ThemeProvider 
+      attribute="class" 
+      defaultTheme="system" 
+      enableSystem={true}
+      disableTransitionOnChange
+      forcedTheme={isDarkOnlyRoute ? "dark" : undefined}
+    >
       <QueryProvider>
         {children}
         <PushNotificationManager />
+        <ThemeSync />
       
       {showBannedModal && (
         <BannedModal 
@@ -109,7 +127,27 @@ export default function AppProviders({ children }: AppProvidersProps) {
           onSuccess={handleReactivationSuccess}
         />
       )}
-    </QueryProvider>
+      </QueryProvider>
     </ThemeProvider>
   );
+}
+
+function ThemeSync() {
+  const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    try {
+      const userStr = getCookie("user");
+      if (!userStr || userStr === '""') return;
+      const user = JSON.parse(userStr);
+
+      if (user?.preferences?.theme && user.preferences.theme !== theme) {
+        setTheme(user.preferences.theme);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [theme, setTheme]);
+
+  return null;
 }

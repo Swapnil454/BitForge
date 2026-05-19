@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   Search, X, Clock, ChevronRight, Trash2,
   TrendingUp, ChevronLeft, Sparkles, Hash,
@@ -14,11 +15,11 @@ const TRENDING = [
 ];
 
 const CATEGORIES = [
-  { label: "Courses",       icon: BookOpen, q: "course"   },
-  { label: "eBooks",        icon: Code2,    q: "ebook"    },
-  { label: "Templates",     icon: Layout,   q: "template" },
-  { label: "Software",      icon: Cpu,      q: "software" },
-  { label: "Design Assets", icon: Layers,   q: "design"   },
+  { label: "Courses",       icon: BookOpen, filter: "Course"   },
+  { label: "eBooks",        icon: Code2,    filter: "eBook"    },
+  { label: "Templates",     icon: Layout,   filter: "Template" },
+  { label: "Software",      icon: Cpu,      filter: "Software" },
+  { label: "Design Assets", icon: Layers,   filter: "Design"   },
 ];
 
 interface Suggestion { text: string; category: string }
@@ -43,6 +44,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
 }
 
 export default function MobileSearchPage({ isAuthenticated, onSearch, onClose }: Props) {
+  const router = useRouter();
   const [query, setQuery]             = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [history, setHistory]         = useState<HistoryItem[]>([]);
@@ -122,27 +124,43 @@ export default function MobileSearchPage({ isAuthenticated, onSearch, onClose }:
           <ChevronLeft size={18} strokeWidth={2.5} />
         </button>
 
-        <div className="flex-1 flex items-center gap-2 bg-gray-100 dark:bg-[#0f1629] rounded-xl px-3 py-2 ring-2 ring-indigo-500/50 dark:ring-indigo-500/35">
+        <form 
+          autoComplete="off"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (query.trim()) commit(query);
+          }}
+          className="flex-1 flex items-center gap-2 bg-gray-100 dark:bg-[#0f1629] rounded-xl px-3 py-2 border border-slate-300 dark:border-white/20 focus-within:border-violet-500 dark:focus-within:border-violet-400 focus-within:ring-2 focus-within:ring-violet-500/20 transition-all duration-200"
+        >
+          {/* Dummy inputs to trap Chrome autofill */}
+          <input type="text" name="fake-email" style={{ display: 'none' }} aria-hidden="true" tabIndex={-1} />
+          <input type="password" name="fake-password" style={{ display: 'none' }} aria-hidden="true" tabIndex={-1} />
+
           <Search size={15} className="text-indigo-400 shrink-0" />
           <input
             ref={inputRef}
-            type="text"
+            type="search"
+            name={`search-${Math.random().toString(36).substring(2, 8)}`}
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => {
-              if (e.key === "Enter" && query.trim()) commit(query);
               if (e.key === "Escape") onClose();
             }}
             placeholder="Search products, topics, skills…"
             className="flex-1 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none text-[13.5px] font-medium"
-            autoComplete="off" autoCorrect="off" spellCheck="false"
+            autoComplete="nope" 
+            autoCorrect="off" 
+            autoCapitalize="none"
+            spellCheck={false}
+            inputMode="search"
+            enterKeyHint="search"
           />
           {query && (
-            <button onClick={() => setQuery("")} className="text-gray-400 dark:text-slate-500 hover:text-gray-600 transition-colors shrink-0">
+            <button type="button" onClick={() => setQuery("")} className="text-gray-400 dark:text-slate-500 hover:text-gray-600 transition-colors shrink-0">
               <X size={13} />
             </button>
           )}
-        </div>
+        </form>
       </div>
 
       {/* ── Body ────────────────────────────────────────────────────────────── */}
@@ -249,9 +267,12 @@ export default function MobileSearchPage({ isAuthenticated, onSearch, onClose }:
               <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Browse Categories</span>
             </div>
             <div className="grid grid-cols-2 gap-1.5">
-              {CATEGORIES.map(({ label, icon: Icon, q }) => (
+              {CATEGORIES.map(({ label, icon: Icon, filter }) => (
                 <button
-                  key={label} onClick={() => commit(q)}
+                  key={label} onClick={() => {
+                    onClose();
+                    router.push(`/marketplace?category=${filter}`);
+                  }}
                   className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-white/[0.04] border border-gray-100 dark:border-white/[0.05] hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:border-indigo-200 dark:hover:border-indigo-500/20 text-left transition-all group"
                 >
                   <Icon size={13} className="text-gray-400 dark:text-slate-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 shrink-0 transition-colors" />

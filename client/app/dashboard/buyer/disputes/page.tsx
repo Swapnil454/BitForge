@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { buyerAPI } from "@/lib/api";
 import { getStoredUser } from "@/lib/cookies";
 import toast from "react-hot-toast";
 import PageHeader from "../transactions/components/PageHeader";
-import { AlertCircle, ShieldAlert, CheckCircle2, XCircle, ExternalLink } from "lucide-react";
+import { AlertCircle, ShieldAlert, CheckCircle2, XCircle, ExternalLink, Loader2 } from "lucide-react";
 
 interface BuyerDispute {
   _id: string;
@@ -58,10 +58,17 @@ const getStatusConfig = (status: string) => {
   }
 };
 
+const PAGE_SIZE = 7;
+
 export default function BuyerDisputesPage() {
   const [disputes, setDisputes] = useState<BuyerDispute[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
   const router = useRouter();
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const isFetchingRef = useRef(false);
 
   useEffect(() => {
     const user = getStoredUser<{ role?: string }>();
@@ -73,19 +80,51 @@ export default function BuyerDisputesPage() {
       router.push("/dashboard");
       return;
     }
-    fetchDisputes();
+    void fetchPage(1, true);
   }, [router]);
 
-  const fetchDisputes = async () => {
+  const fetchPage = async (targetPage: number, isInitial = false) => {
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+
+    if (isInitial) setLoading(true);
+    else setLoadingMore(true);
+
     try {
-      const data = await buyerAPI.getMyDisputes();
-      setDisputes(data.disputes || []);
+      const data = await buyerAPI.getMyDisputes({
+        page: targetPage,
+        limit: PAGE_SIZE,
+      });
+      const incoming = data.disputes || [];
+      const pag = data.pagination;
+
+      setDisputes((prev) => (isInitial ? incoming : [...prev, ...incoming]));
+      setHasNextPage(pag?.hasNextPage ?? false);
+      setPage(targetPage);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to load disputes");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+      isFetchingRef.current = false;
     }
   };
+
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !loadingMore && !loading) {
+          void fetchPage(page + 1, false);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, loadingMore, loading, page]);
 
   const formatDate = (value: string) => {
     const d = new Date(value);
@@ -177,77 +216,98 @@ export default function BuyerDisputesPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-3 sm:gap-4 max-w-3xl mx-auto">
-            {disputes.map((d) => {
-              const config = getStatusConfig(d.status);
-              const StatusIcon = config.icon;
+            <AnimatePresence mode="popLayout">
+              {disputes.map((d, index) => {
+                const config = getStatusConfig(d.status);
+                const StatusIcon = config.icon;
 
-              return (
-                <motion.div
-                  key={d._id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-xl overflow-hidden relative group hover:border-slate-200 dark:hover:border-white/10 transition-all shadow-xl p-4 sm:p-5 pl-5 sm:pl-6"
-                >
-                  {/* Left accent stripe */}
-                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${config.stripe}`} />
+                return (
+                  <motion.div
+                    key={d._id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ delay: Math.min(index * 0.04, 0.3) }}
+                    className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-xl overflow-hidden relative group hover:border-slate-200 dark:hover:border-white/10 transition-all shadow-xl p-4 sm:p-5 pl-5 sm:pl-6"
+                  >
+                    {/* Left accent stripe */}
+                    <div className={`absolute left-0 top-0 bottom-0 w-1 ${config.stripe}`} />
 
-                  <div className="flex justify-between items-start gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                        <div className={`flex items-center gap-1 px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-transparent ${config.text} border ${config.border}`}>
-                          <StatusIcon className="w-3 h-3" />
-                          {d.status}
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                          <div className={`flex items-center gap-1 px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-transparent ${config.text} border ${config.border}`}>
+                            <StatusIcon className="w-3 h-3" />
+                            {d.status}
+                          </div>
+                          <span className="text-[10px] text-slate-500 font-mono">
+                            {formatDate(d.createdAt)}
+                          </span>
                         </div>
-                        <span className="text-[10px] text-slate-500 font-mono">
-                          {formatDate(d.createdAt)}
-                        </span>
+                        
+                        <h2 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white tracking-tight leading-tight mb-1 truncate">
+                          {d.productName}
+                        </h2>
+                        <p className="text-[10px] sm:text-xs text-slate-400 truncate">
+                          {d.orderId && <span className="font-mono">Order #{d.orderId.substring(0, 8)} • </span>}
+                          <span className="text-slate-300 font-medium">{d.sellerName}</span>
+                        </p>
                       </div>
-                      
-                      <h2 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white tracking-tight leading-tight mb-1 truncate">
-                        {d.productName}
-                      </h2>
-                      <p className="text-[10px] sm:text-xs text-slate-400 truncate">
-                        {d.orderId && <span className="font-mono">Order #{d.orderId.substring(0, 8)} • </span>}
-                        <span className="text-slate-300 font-medium">{d.sellerName}</span>
-                      </p>
+
+                      {/* Amount */}
+                      <div className="text-right shrink-0">
+                        <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">₹{d.amount.toLocaleString()}</p>
+                        <p className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">Disputed</p>
+                      </div>
                     </div>
 
-                    {/* Amount */}
-                    <div className="text-right shrink-0">
-                      <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">₹{d.amount.toLocaleString()}</p>
-                      <p className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">Disputed</p>
-                    </div>
-                  </div>
-
-                  {/* Reason & Notes */}
-                  <div className="mt-3.5 text-[11px] sm:text-xs leading-relaxed space-y-1.5">
-                    <p className="text-slate-300">
-                      <span className="text-slate-500 font-semibold mr-1.5">Reason:</span>
-                      {d.reason}
-                    </p>
-
-                    {d.adminNote && (
-                      <p className="text-amber-200/90">
-                        <span className="text-amber-500/70 font-semibold mr-1.5">Admin:</span>
-                        {d.adminNote}
+                    {/* Reason & Notes */}
+                    <div className="mt-3.5 text-[11px] sm:text-xs leading-relaxed space-y-1.5">
+                      <p className="text-slate-300">
+                        <span className="text-slate-500 font-semibold mr-1.5">Reason:</span>
+                        {d.reason}
                       </p>
-                    )}
-                  </div>
 
-                  {/* Action */}
-                  <div className="mt-4 pt-3 border-t border-slate-200 dark:border-white/5 flex justify-center">
-                    {d.orderId && (
-                      <button
-                        onClick={() => router.push(`/dashboard/buyer/purchases/${d.orderId}`)}
-                        className="bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white px-6 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 shrink-0"
-                      >
-                        <ExternalLink className="w-4 h-4" /> View Order
-                      </button>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })}
+                      {d.adminNote && (
+                        <p className="text-amber-200/90">
+                          <span className="text-amber-500/70 font-semibold mr-1.5">Admin:</span>
+                          {d.adminNote}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Action */}
+                    <div className="mt-4 pt-3 border-t border-slate-200 dark:border-white/5 flex justify-center">
+                      {d.orderId && (
+                        <button
+                          onClick={() => router.push(`/dashboard/buyer/purchases/${d.orderId}`)}
+                          className="bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white px-6 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 shrink-0"
+                        >
+                          <ExternalLink className="w-4 h-4" /> View Order
+                        </button>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+
+            <div ref={sentinelRef} className="h-4" />
+
+            {loadingMore && (
+              <div className="flex justify-center py-6">
+                <div className="flex items-center gap-2 text-slate-500 dark:text-white/40 text-sm">
+                  <Loader2 className="w-5 h-5 animate-spin text-cyan-500" />
+                  <span>Loading more disputes...</span>
+                </div>
+              </div>
+            )}
+
+            {!hasNextPage && !loadingMore && disputes.length > 0 && (
+              <p className="text-center text-xs text-slate-400 dark:text-white/25 py-4 tracking-wide">
+                — You've reached the end —
+              </p>
+            )}
           </div>
         )}
       </main>

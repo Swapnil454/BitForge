@@ -506,8 +506,8 @@ export const buyerAPI = {
         return response.data;
     },
 
-    getMyDisputes: async () => {
-        const response = await api.get('/disputes/my');
+    getMyDisputes: async (params?: { page?: number; limit?: number }) => {
+        const response = await api.get('/disputes/my', { params });
         return response.data;
     },
 
@@ -927,6 +927,11 @@ export const userAPI = {
 
     reactivateAccount: async (email: string, otp: string) => {
         const response = await api.post('/users/reactivate-account', { email, otp });
+        return response.data;
+    },
+
+    updatePreferences: async (preferences: { theme: string }) => {
+        const response = await api.patch('/users/preferences', preferences);
         return response.data;
     }
 };

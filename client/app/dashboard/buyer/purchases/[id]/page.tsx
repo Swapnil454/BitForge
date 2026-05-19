@@ -36,6 +36,8 @@ interface PurchaseDetails {
   razorpayPaymentId: string;
   razorpayOrderId: string;
   category: string;
+  downloadCount?: number;
+  downloadLimit?: number;
 }
 
 export default function PurchaseDetailsPage() {
@@ -260,7 +262,7 @@ export default function PurchaseDetailsPage() {
         rightSlot={
           <div className="flex items-center gap-2">
              <button 
-                onClick={() => window.print()} 
+                onClick={() => router.push(`/dashboard/buyer/invoice/${purchase._id}`)} 
                 className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-xs font-bold text-slate-900 dark:text-white transition"
              >
                 <Printer className="w-4 h-4" /> <span className="hidden md:inline">Receipt</span>
@@ -268,7 +270,7 @@ export default function PurchaseDetailsPage() {
              <button 
                 onClick={handleDownload} 
                 disabled={downloading} 
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white hover:bg-slate-200 text-slate-950 text-xs font-bold shadow-lg shadow-white/5 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-950 text-xs font-bold shadow-lg shadow-black/5 dark:shadow-white/5 transition disabled:opacity-50 disabled:cursor-not-allowed"
              >
                 <DownloadCloud className="w-4 h-4" /> 
                 <span className="hidden lg:inline">{downloading ? "Downloading..." : "Download File"}</span>
@@ -308,13 +310,13 @@ export default function PurchaseDetailsPage() {
                   </h2>
                   
                   {purchase.productDescription && (
-                    <p className="text-slate-400 text-sm leading-relaxed max-w-2xl whitespace-pre-wrap">
+                    <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed max-w-2xl whitespace-pre-wrap">
                       {purchase.productDescription}
                     </p>
                   )}
                   
                   {purchase.category && (
-                    <div className="mt-5 inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 rounded text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <div className="mt-5 inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 rounded text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">
                       <Tag className="w-3 h-3" />
                       {purchase.category}
                     </div>
@@ -332,22 +334,22 @@ export default function PurchaseDetailsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-slate-50 dark:bg-[#05050a] border border-slate-200 dark:border-white/5 rounded-xl p-4">
                   <p className="text-[11px] text-slate-500 mb-1 font-semibold uppercase tracking-wider">Product ID</p>
-                  <p className="text-sm text-slate-300 font-mono break-all">{purchase.productId}</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 font-mono break-all">{purchase.productId}</p>
                 </div>
                 <div className="bg-slate-50 dark:bg-[#05050a] border border-slate-200 dark:border-white/5 rounded-xl p-4">
                   <p className="text-[11px] text-slate-500 mb-1 font-semibold uppercase tracking-wider">Order ID</p>
-                  <p className="text-sm text-slate-300 font-mono break-all">{purchase.orderId}</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 font-mono break-all">{purchase.orderId}</p>
                 </div>
                 {purchase.razorpayOrderId && (
                   <div className="bg-slate-50 dark:bg-[#05050a] border border-slate-200 dark:border-white/5 rounded-xl p-4">
                     <p className="text-[11px] text-slate-500 mb-1 font-semibold uppercase tracking-wider">Razorpay Order</p>
-                    <p className="text-sm text-slate-300 font-mono break-all">{purchase.razorpayOrderId}</p>
+                    <p className="text-sm text-slate-700 dark:text-slate-300 font-mono break-all">{purchase.razorpayOrderId}</p>
                   </div>
                 )}
                 {purchase.razorpayPaymentId && (
                   <div className="bg-slate-50 dark:bg-[#05050a] border border-slate-200 dark:border-white/5 rounded-xl p-4">
                     <p className="text-[11px] text-slate-500 mb-1 font-semibold uppercase tracking-wider">Payment Ref</p>
-                    <p className="text-sm text-slate-300 font-mono break-all">{purchase.razorpayPaymentId}</p>
+                    <p className="text-sm text-slate-700 dark:text-slate-300 font-mono break-all">{purchase.razorpayPaymentId}</p>
                   </div>
                 )}
               </div>
@@ -367,15 +369,15 @@ export default function PurchaseDetailsPage() {
               
               <div className="flex flex-col gap-4">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Amount Paid</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Amount Paid</p>
                   <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{currency.format(purchase.amount)}</p>
                 </div>
                 
                 <div className="h-px w-full bg-emerald-500/10" />
                 
                 <div className="flex justify-between items-center">
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</p>
-                  <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-400 rounded-md text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20">
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</p>
+                  <span className="px-2.5 py-1 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-md text-[10px] font-bold uppercase tracking-wider border border-emerald-200 dark:border-emerald-500/20">
                     Completed
                   </span>
                 </div>
@@ -394,7 +396,7 @@ export default function PurchaseDetailsPage() {
                 </div>
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Contact Email</p>
-                  <p className="text-sm text-indigo-400 break-all font-medium">{purchase.sellerEmail}</p>
+                  <p className="text-sm text-indigo-600 dark:text-indigo-400 break-all font-medium">{purchase.sellerEmail}</p>
                 </div>
               </div>
             </div>
@@ -405,13 +407,13 @@ export default function PurchaseDetailsPage() {
                 <History className="w-4 h-4" /> Timeline
               </h3>
               
-              <div className="relative pl-6 space-y-5 before:absolute before:inset-y-0 before:left-[11px] before:w-px before:bg-slate-100 dark:bg-white/5">
+              <div className="relative pl-6 space-y-5 before:absolute before:inset-y-0 before:left-[11px] before:w-px before:bg-slate-200 dark:before:bg-white/10">
                 <div className="relative">
-                  <div className="absolute -left-[29px] w-6 h-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <div className="absolute -left-[29px] w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 flex items-center justify-center">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <p className="text-xs font-bold text-slate-900 dark:text-white mb-0.5">Purchase Completed</p>
-                  <p className="text-[11px] text-slate-400 font-medium">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                     {purchaseDate.toLocaleString('en-US', {
                       month: 'short',
                       day: 'numeric',
@@ -423,11 +425,11 @@ export default function PurchaseDetailsPage() {
                 </div>
                 
                 <div className="relative">
-                  <div className="absolute -left-[29px] w-6 h-6 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-                    <DownloadCloud className="w-3.5 h-3.5 text-indigo-400" />
+                  <div className="absolute -left-[29px] w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 flex items-center justify-center">
+                    <DownloadCloud className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                   </div>
                   <p className="text-xs font-bold text-slate-900 dark:text-white mb-0.5">Product Available</p>
-                  <p className="text-[11px] text-slate-400 font-medium">Ready for instant download</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Ready for instant download</p>
                 </div>
               </div>
             </div>
@@ -440,10 +442,10 @@ export default function PurchaseDetailsPage() {
                 <p className="text-xs text-slate-900 dark:text-white font-bold">{purchaseDate.toLocaleDateString()}</p>
               </div>
               <div className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-xl p-4 flex flex-col justify-center items-center text-center shadow-lg">
-                <Clock className="w-4 h-4 text-slate-500 mb-2" />
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Days Ago</p>
+                <DownloadCloud className="w-4 h-4 text-slate-500 mb-2" />
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Downloads</p>
                 <p className="text-xs text-slate-900 dark:text-white font-bold">
-                  {Math.floor((Date.now() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24))}
+                  {purchase.downloadCount || 0} / {purchase.downloadLimit || 5}
                 </p>
               </div>
             </div>

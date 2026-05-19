@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { reportAPI } from "@/lib/api";
 import { 
@@ -11,8 +11,10 @@ import {
   Loader2, 
   ArrowLeft,
   ShieldAlert,
-  FileText
+  FileText,
+  ChevronDown
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { getCookie, getStoredUser } from "@/lib/cookies";
 import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
@@ -39,6 +41,18 @@ export default function ReportPage() {
     description: "",
   });
   const [files, setFiles] = useState<File[]>([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -178,7 +192,7 @@ export default function ReportPage() {
                     value={formData.reporterName}
                     onChange={handleInputChange}
                     placeholder="John Doe"
-                    className="w-full px-4 py-3 bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl focus:border-cyan-400 focus:bg-slate-100 dark:focus:bg-white/5 outline-none transition-all"
+                    className="w-full px-4 py-3 bg-white dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-xl focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition-all duration-200 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -190,7 +204,7 @@ export default function ReportPage() {
                     onChange={handleInputChange}
                     required
                     placeholder="Email linked to your account"
-                    className="w-full px-4 py-3 bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl focus:border-cyan-400 focus:bg-slate-100 dark:focus:bg-white/5 outline-none transition-all"
+                    className="w-full px-4 py-3 bg-white dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-xl focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition-all duration-200 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30"
                   />
                 </div>
               </div>
@@ -203,37 +217,87 @@ export default function ReportPage() {
                 Issue Details
               </h3>
               
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 relative" ref={dropdownRef}>
                 <label className="text-sm font-medium text-slate-600 dark:text-white/70">What do you need help with? <span className="text-red-400">*</span></label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-                  {ISSUE_TYPES.map(type => (
-                    <div 
-                      key={type.id}
-                      onClick={() => setFormData(prev => ({ ...prev, issueType: type.id }))}
-                      className={`cursor-pointer p-4 rounded-xl border transition-all ${
-                        formData.issueType === type.id 
-                          ? 'bg-cyan-500/10 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.15)]' 
-                          : 'bg-white dark:bg-black/40 border-slate-200 dark:border-white/10 hover:border-white/30'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className={`font-semibold ${formData.issueType === type.id ? 'text-cyan-400' : 'text-slate-900 dark:text-white'}`}>
-                          {type.label}
-                        </span>
-                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${formData.issueType === type.id ? 'border-cyan-400' : 'border-white/30'}`}>
-                          {formData.issueType === type.id && <div className="w-2 h-2 rounded-full bg-cyan-400" />}
+                
+                {/* Custom Premium Dropdown Button */}
+                <button
+                  type="button"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="w-full flex items-center justify-between px-4 py-3.5 bg-white dark:bg-[#0f1422] border border-slate-300 dark:border-white/20 rounded-xl hover:border-cyan-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition-all text-left group"
+                >
+                  <div className="flex-1 min-w-0 pr-4">
+                    {formData.issueType ? (
+                      <>
+                        <div className="font-semibold text-slate-900 dark:text-white text-sm truncate">
+                          {ISSUE_TYPES.find(t => t.id === formData.issueType)?.label}
                         </div>
+                        <div className="text-xs text-slate-500 dark:text-white/40 mt-0.5 truncate">
+                          {ISSUE_TYPES.find(t => t.id === formData.issueType)?.description}
+                        </div>
+                      </>
+                    ) : (
+                      <span className="text-slate-400 dark:text-white/35 text-sm font-medium">Select an issue type...</span>
+                    )}
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-300 shrink-0 ${dropdownOpen ? 'rotate-180 text-cyan-400' : 'group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
+                </button>
+
+                {/* Animated Dropdown Menu */}
+                <AnimatePresence>
+                  {dropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
+                      className="absolute left-0 right-0 mt-2 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl p-1.5 shadow-2xl z-40 max-h-[320px] overflow-y-auto custom-scrollbar"
+                    >
+                      <div className="space-y-1">
+                        {ISSUE_TYPES.map(type => {
+                          const isSelected = formData.issueType === type.id;
+                          return (
+                            <button
+                              key={type.id}
+                              type="button"
+                              onClick={() => {
+                                setFormData(prev => ({ ...prev, issueType: type.id }));
+                                setDropdownOpen(false);
+                              }}
+                              className={`w-full text-left p-3 rounded-xl transition-all flex items-center justify-between group ${
+                                isSelected 
+                                  ? 'bg-cyan-500/10 dark:bg-cyan-500/15 text-cyan-500 dark:text-cyan-400 font-semibold' 
+                                  : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-white/80'
+                              }`}
+                            >
+                              <div className="pr-4 min-w-0 flex-1">
+                                <span className={`block text-sm font-semibold truncate ${isSelected ? 'text-cyan-500 dark:text-cyan-400' : 'text-slate-900 dark:text-white'}`}>
+                                  {type.label}
+                                </span>
+                                <span className={`block text-xs mt-0.5 truncate ${isSelected ? 'text-cyan-500/70 dark:text-cyan-400/60' : 'text-slate-500 dark:text-white/40'}`}>
+                                  {type.description}
+                                </span>
+                              </div>
+                              {isSelected && (
+                                <div className="w-5 h-5 rounded-full bg-cyan-500 dark:bg-cyan-400 flex items-center justify-center shrink-0 shadow-lg shadow-cyan-500/25 ml-2">
+                                  <svg className="w-3 h-3 text-white dark:text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
-                      <p className="text-xs text-white/50">{type.description}</p>
-                    </div>
-                  ))}
-                </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
-              <div className="space-y-1.5 mt-6">
+              <div className="space-y-1.5 pt-4">
                 <label className="text-sm font-medium text-slate-600 dark:text-white/70 flex justify-between">
                   <span>Description <span className="text-red-400">*</span></span>
-                  <span className={`text-xs ${formData.description.length < 20 ? 'text-red-400' : 'text-green-400'}`}>
+                  <span className={`text-xs ${formData.description.length < 20 ? 'text-red-400' : 'text-green-400 font-semibold'}`}>
                     {formData.description.length}/2000
                   </span>
                 </label>
@@ -244,12 +308,12 @@ export default function ReportPage() {
                   required
                   rows={5}
                   placeholder="Please provide as much detail as possible. If appealing a suspension, explain why you believe it was an error..."
-                  className="w-full px-4 py-3 bg-white dark:bg-black/40 border border-slate-200 dark:border-white/10 rounded-xl focus:border-cyan-400 focus:bg-slate-100 dark:focus:bg-white/5 outline-none transition-all resize-none"
+                  className="w-full px-4 py-3 bg-white dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-xl focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition-all resize-none text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30"
                   maxLength={2000}
                 />
                 {formData.description.length > 0 && formData.description.length < 20 && (
-                  <p className="text-xs text-red-400 flex items-center gap-1 mt-1">
-                    <AlertCircle className="w-3 h-3" /> Minimum 20 characters required.
+                  <p className="text-xs text-red-400 flex items-center gap-1 mt-1 font-medium animate-pulse">
+                    <AlertCircle className="w-3.5 h-3.5" /> Minimum 20 characters required.
                   </p>
                 )}
               </div>
@@ -263,7 +327,7 @@ export default function ReportPage() {
               </h3>
               
               <div className="space-y-4">
-                <div className="relative border-2 border-dashed border-slate-300 dark:border-white/20 rounded-2xl p-8 hover:border-cyan-400/50 hover:bg-cyan-400/5 transition-all group">
+                <div className="relative border-2 border-dashed border-slate-300 dark:border-white/20 bg-slate-100/50 dark:bg-white/[0.02] rounded-2xl p-8 hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-all duration-300 group flex flex-col items-center justify-center cursor-pointer">
                   <input
                     type="file"
                     multiple
@@ -273,36 +337,36 @@ export default function ReportPage() {
                     disabled={files.length >= 5}
                   />
                   <div className="flex flex-col items-center justify-center text-center pointer-events-none">
-                    <div className="w-12 h-12 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-3 group-hover:bg-cyan-400/10 transition-colors">
-                      <Upload className="w-6 h-6 text-slate-500 dark:text-white/60 group-hover:text-cyan-400" />
+                    <div className="w-12 h-12 bg-white dark:bg-white/5 rounded-full flex items-center justify-center mb-3 group-hover:bg-cyan-500/10 dark:group-hover:bg-cyan-500/15 group-hover:scale-105 group-hover:rotate-6 transition-all duration-300 shadow-sm border border-slate-200 dark:border-white/5">
+                      <Upload className="w-6 h-6 text-slate-500 dark:text-white/60 group-hover:text-cyan-400 transition-colors" />
                     </div>
-                    <p className="font-medium text-slate-900 dark:text-white mb-1">Click or drag files to upload</p>
-                    <p className="text-xs text-white/50">JPG, PNG, PDF (Max 5 files)</p>
+                    <p className="font-semibold text-slate-900 dark:text-white mb-1 group-hover:text-cyan-500 dark:group-hover:text-cyan-400 transition-colors">Click or drag files to upload</p>
+                    <p className="text-xs text-slate-400 dark:text-white/40">JPG, PNG, PDF (Max 5 files)</p>
                   </div>
                 </div>
 
                 {/* Uploaded Files Preview */}
                 {files.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-slate-600 dark:text-white/70">Attached Files ({files.length}/5)</p>
+                    <p className="text-sm font-semibold text-slate-600 dark:text-white/70">Attached Files ({files.length}/5)</p>
                     <div className="space-y-2">
                       {files.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl">
+                        <div key={index} className="flex items-center justify-between p-3 bg-white dark:bg-white/[0.03] border border-slate-300 dark:border-white/20 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-white/[0.05]">
                           <div className="flex items-center gap-3 overflow-hidden">
-                            <div className="w-10 h-10 bg-white dark:bg-black/40 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <div className="w-10 h-10 bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
                               <span className="text-xs font-bold text-slate-400 dark:text-white/40 uppercase">{file.name.split('.').pop()}</span>
                             </div>
                             <div className="truncate">
-                              <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{file.name}</p>
+                              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{file.name}</p>
                               <p className="text-xs text-slate-400 dark:text-white/40">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                             </div>
                           </div>
                           <button
                             type="button"
                             onClick={() => removeFile(index)}
-                            className="p-2 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
+                            className="p-2 hover:bg-red-500/10 dark:hover:bg-red-500/20 group/btn rounded-lg transition-colors flex-shrink-0"
                           >
-                            <X className="w-4 h-4 text-slate-500 dark:text-white/60" />
+                            <X className="w-4 h-4 text-slate-400 group-hover/btn:text-red-500 transition-colors" />
                           </button>
                         </div>
                       ))}
@@ -313,11 +377,11 @@ export default function ReportPage() {
             </div>
 
             {/* Submit Actions */}
-            <div className="pt-6 border-t border-slate-200 dark:border-white/5">
+            <div className="pt-6 border-t border-slate-200 dark:border-white/5 flex items-center justify-end">
               <button
                 type="submit"
                 disabled={isSubmitting || !formData.issueType || formData.description.length < 20}
-                className="w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-black bg-gradient-to-r from-cyan-400 to-blue-500 hover:opacity-90 disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(34,211,238,0.2)] ml-auto"
+                className="w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-black bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 active:scale-[0.98] hover:scale-[1.01] disabled:scale-100 disabled:opacity-50 disabled:pointer-events-none transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(34,211,238,0.2)] dark:shadow-[0_0_25px_rgba(34,211,238,0.15)] hover:shadow-[0_0_25px_rgba(34,211,238,0.4)]"
               >
                 {isSubmitting ? (
                   <>

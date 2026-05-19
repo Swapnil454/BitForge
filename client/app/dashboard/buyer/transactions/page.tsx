@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { CalendarDays, Check, Copy, MoreVertical } from "lucide-react";
+import { CalendarDays, Check, Copy, MoreVertical, Loader2 } from "lucide-react";
 import { buyerAPI } from "@/lib/api";
 import { copyText } from "@/lib/clipboard";
 import toast from "react-hot-toast";
@@ -23,15 +23,6 @@ interface Transaction {
   date: string;
 }
 
-interface PaginationState {
-  page: number;
-  limit: number;
-  totalRecords: number;
-  totalPages: number;
-  hasPrevPage: boolean;
-  hasNextPage: boolean;
-}
-
 const PAGE_SIZE = 10;
 
 export default function TransactionsPage() {
@@ -41,34 +32,32 @@ export default function TransactionsPage() {
   const [filterBy, setFilterBy] = useState<FilterOption>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState<PaginationState>({
-    page: 1,
-    limit: PAGE_SIZE,
-    totalRecords: 0,
-    totalPages: 1,
-    hasPrevPage: false,
-    hasNextPage: false,
-  });
+  const [hasNextPage, setHasNextPage] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
 
   const router = useRouter();
   const headerMenuRef = useRef<HTMLDivElement>(null);
-  const initialLoadDoneRef = useRef(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const isFetchingRef = useRef(false);
 
+  // Search debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery.trim());
     }, 350);
-
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // Handle filter/search changes (reset to page 1)
   useEffect(() => {
-    void fetchTransactions();
-  }, [page, sortBy, filterBy, debouncedSearch]);
+    void fetchPage(1, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortBy, filterBy, debouncedSearch]);
 
+  // Click outside for header menu
   useEffect(() => {
     const handleOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -76,44 +65,57 @@ export default function TransactionsPage() {
         setHeaderMenuOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleOutside);
     return () => document.removeEventListener("mousedown", handleOutside);
   }, []);
 
-  const fetchTransactions = async () => {
-    setLoading(true);
+  const fetchPage = async (targetPage: number, isInitial = false) => {
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+
+    if (isInitial) setLoading(true);
+    else setLoadingMore(true);
+
     try {
       const data = await buyerAPI.getAllTransactions({
-        page,
+        page: targetPage,
         limit: PAGE_SIZE,
         status: filterBy,
         sortBy,
         search: debouncedSearch,
       });
 
-      setTransactions(data.transactions || []);
-      setPagination(
-        data.pagination || {
-          page: 1,
-          limit: PAGE_SIZE,
-          totalRecords: 0,
-          totalPages: 1,
-          hasPrevPage: false,
-          hasNextPage: false,
-        }
-      );
+      const incoming: Transaction[] = data.transactions || [];
+      const pag = data.pagination;
 
-      if (initialLoadDoneRef.current && typeof window !== "undefined") {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-      initialLoadDoneRef.current = true;
+      setTransactions((prev) => (isInitial ? incoming : [...prev, ...incoming]));
+      setHasNextPage(pag?.hasNextPage ?? false);
+      setPage(targetPage);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to load transactions");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+      isFetchingRef.current = false;
     }
   };
+
+  // IntersectionObserver for infinite scroll
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !loadingMore && !loading) {
+          void fetchPage(page + 1, false);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, loadingMore, loading, page, sortBy, filterBy, debouncedSearch]);
 
   const handleCopyOrderId = async (e: React.MouseEvent, orderId: string) => {
     e.stopPropagation();
@@ -351,34 +353,21 @@ export default function TransactionsPage() {
           )}
         </motion.div>
 
-        {!loading && pagination.totalRecords > 0 && (
-          <div className="mt-2 space-y-3">
-            <p className="text-center text-slate-400 dark:text-white/40 text-sm">
-              Showing page {pagination.page} of {pagination.totalPages} • {pagination.totalRecords} total
-            </p>
+        <div ref={sentinelRef} className="h-4" />
 
-            <div className="flex items-center justify-center gap-3">
-              <button
-                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                disabled={!pagination.hasPrevPage}
-                className="px-4 py-2 rounded-xl border border-white/15 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white/80 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
-              >
-                Previous
-              </button>
-
-              <span className="px-4 py-2 rounded-xl border border-violet-200 dark:border-violet-400/30 bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-200 text-sm font-semibold min-w-16 text-center">
-                {pagination.page}
-              </span>
-
-              <button
-                onClick={() => setPage((prev) => prev + 1)}
-                disabled={!pagination.hasNextPage}
-                className="px-4 py-2 rounded-xl border border-white/15 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white/80 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
-              >
-                Next
-              </button>
+        {loadingMore && (
+          <div className="flex justify-center py-6">
+            <div className="flex items-center gap-2 text-slate-500 dark:text-white/40 text-sm">
+              <Loader2 className="w-5 h-5 animate-spin text-cyan-500" />
+              <span>Loading more transactions...</span>
             </div>
           </div>
+        )}
+
+        {!hasNextPage && !loadingMore && transactions.length > 0 && (
+          <p className="text-center text-xs text-slate-400 dark:text-white/25 py-4 tracking-wide">
+            — You've reached the end —
+          </p>
         )}
       </main>
     </div>

@@ -26,7 +26,7 @@ export default function TransactionActionBar({
         <button
           onClick={onDownload}
           disabled={downloading}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 text-slate-900 dark:text-white font-semibold px-4 py-3 hover:bg-emerald-600 transition disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white font-semibold px-4 py-3 transition disabled:opacity-60"
         >
           <Download className="h-4 w-4" />
           {downloading ? "Downloading..." : "Download Product"}
@@ -35,7 +35,7 @@ export default function TransactionActionBar({
 
       <button
         onClick={onContactSeller}
-        className="inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-400/35 bg-cyan-500/10 text-cyan-100 font-medium px-4 py-3 hover:bg-cyan-500/15 transition"
+        className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-cyan-600 dark:border-cyan-400/35 bg-cyan-100 dark:bg-cyan-500/10 text-cyan-800 dark:text-cyan-300 font-semibold px-4 py-3 hover:bg-cyan-200 dark:hover:bg-cyan-500/15 transition"
       >
         <LifeBuoy className="h-4 w-4" />
         Contact Seller
@@ -44,7 +44,7 @@ export default function TransactionActionBar({
       {transaction.status === "failed" && (
         <button
           onClick={onRetryPayment}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 text-slate-900 dark:text-white font-semibold px-4 py-3 hover:bg-amber-600 transition"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 text-white font-semibold px-4 py-3 transition"
         >
           <RotateCcw className="h-4 w-4" />
           Retry Payment
@@ -53,7 +53,7 @@ export default function TransactionActionBar({
 
       <button
         onClick={onDownloadInvoice}
-        className="inline-flex items-center justify-center gap-2 rounded-xl border border-violet-400/35 bg-violet-500/10 text-violet-100 font-medium px-4 py-3 hover:bg-violet-500/15 transition"
+        className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-violet-600 dark:border-violet-400/35 bg-violet-100 dark:bg-violet-500/10 text-violet-800 dark:text-violet-300 font-semibold px-4 py-3 hover:bg-violet-200 dark:hover:bg-violet-500/15 transition"
       >
         <FileText className="h-4 w-4" />
         Download Invoice

@@ -224,6 +224,14 @@ const userSchema = new mongoose.Schema(
       },
     },
 
+    preferences: {
+      theme: {
+        type: String,
+        enum: ["light", "dark", "system"],
+        default: "system",
+      },
+    },
+
     // ── Search History ───────────────────────────────────────────────────────
     searchHistory: [
       {

@@ -263,7 +263,7 @@ export const generateInvoicePDF = (invoice, res) => {
      .text(`Transaction: ${invoice.razorpayPaymentId || 'N/A'}`, 50, summaryY + 45);
 
   // ========== FOOTER SECTION ==========
-  const footerY = 520;
+  const footerY = 620;
   
   // Thank you message
   doc.font('Helvetica-Bold')
@@ -295,7 +295,7 @@ export const generateInvoicePDF = (invoice, res) => {
   doc.font('Helvetica')
      .fontSize(8)
      .fillColor('#9CA3AF')
-     .text(`© ${new Date().getFullYear()} BitForge Technologies. All rights reserved.`, 50, 750, { align: 'center', width: 512 });
+     .text(`© ${new Date().getFullYear()} BitForge Technologies. All rights reserved.`, 50, 745, { align: 'center', width: 512 });
 
   doc.end();
 };
