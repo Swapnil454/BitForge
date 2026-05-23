@@ -66,6 +66,17 @@ export function BarMetricChart<T extends { month: string }>({
               boxShadow: "0 4px 24px #6366f1aa",
             }}
             cursor={{ fill: "#6366f122" }}
+            formatter={(value: any) => {
+              const num = Number(value);
+              const label = String(dataKey).charAt(0).toUpperCase() + String(dataKey).slice(1);
+              if (!isNaN(num)) {
+                if (dataKey === "revenue") {
+                  return [`₹${num.toFixed(2)}`, label];
+                }
+                return [Number.isInteger(num) ? num : num.toFixed(2), label];
+              }
+              return [value, label];
+            }}
           />
           <Bar
             dataKey={dataKey as string}

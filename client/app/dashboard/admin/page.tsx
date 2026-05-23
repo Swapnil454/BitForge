@@ -362,29 +362,9 @@ export default function AdminDashboard() {
                       }} 
                     />
                     {mounted && (() => {
-                      let nextTheme = "light";
-                      let label = "Light Mode";
-                      let icon = <Sun className="h-4 w-4" />;
-
-                      if (theme === "light") {
-                        nextTheme = "dark";
-                        label = "Dark Mode";
-                        icon = <Moon className="h-4 w-4" />;
-                      } else if (theme === "dark") {
-                        nextTheme = "system";
-                        label = "System Theme";
-                        icon = <Monitor className="h-4 w-4" />;
-                      } else {
-                        if (resolvedTheme === "dark") {
-                          nextTheme = "light";
-                          label = "Light Mode";
-                          icon = <Sun className="h-4 w-4" />;
-                        } else {
-                          nextTheme = "dark";
-                          label = "Dark Mode";
-                          icon = <Moon className="h-4 w-4" />;
-                        }
-                      }
+                      let nextTheme = resolvedTheme === "dark" ? "light" : "dark";
+                      let label = resolvedTheme === "dark" ? "Light Mode" : "Dark Mode";
+                      let icon = resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />;
 
                       return (
                         <MenuItem 

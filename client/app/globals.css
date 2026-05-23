@@ -181,3 +181,12 @@ html, body {
   }
 }
 
+/* Remove outline from Recharts */
+.recharts-wrapper,
+.recharts-surface,
+.recharts-wrapper *,
+.recharts-surface * { 
+  outline: none !important; 
+  -webkit-tap-highlight-color: transparent !important;
+}
+

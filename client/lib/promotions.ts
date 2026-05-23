@@ -37,6 +37,11 @@ export interface PromotionMetrics {
   ctr: number;
   ordersGenerated: number;
   revenueGenerated: number;
+  history?: {
+    date: string;
+    impressions: number;
+    clicks: number;
+  }[];
 }
 
 export interface PromotionRecord {

@@ -46,7 +46,7 @@ export const createCartCheckout = async (req, res) => {
 
       const gst = finalPrice * 0.05; // 5% GST
       const platformFee = finalPrice * 0.02; // 2% platform fee
-      const sellerAmount = finalPrice + gst - platformFee;
+      const sellerAmount = finalPrice * 0.90; // Seller gets 90% of base product price
       const itemTotal = finalPrice + gst + platformFee;
 
       cartItems.push({
@@ -145,8 +145,8 @@ export const createOrder = async (req, res) => {
   // Calculate total amount
   const totalAmount = finalPrice + gst + platformFee;
 
-  // Calculate seller amount (final price - platform fee, GST goes to seller)
-  const sellerAmount = finalPrice + gst - platformFee;
+  // Calculate seller amount (Seller gets 90% of the base product price)
+  const sellerAmount = finalPrice * 0.90;
 
   // Convert to paise for Razorpay (keep exact decimal, Razorpay accepts paise)
   const amountInPaise = Math.round(totalAmount * 100);

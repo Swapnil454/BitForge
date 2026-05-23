@@ -206,6 +206,7 @@ const mapPromotionMetrics = (promotion) => {
       ctr,
       ordersGenerated: promotion.ordersGenerated || 0,
       revenueGenerated: promotion.revenueGenerated || 0,
+      history: promotion.history || [],
     },
   };
 };

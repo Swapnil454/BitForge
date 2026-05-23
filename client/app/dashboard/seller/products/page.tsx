@@ -1,13 +1,12 @@
-
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 import PageHeader from "../../buyer/transactions/components/PageHeader";
-import { MoreVertical, Calendar, Package, Plus, Pencil, Trash2, X, Megaphone } from "lucide-react";
+import { MoreVertical, Calendar, Package, Plus, Pencil, Trash2, X, Megaphone, Star, Eye } from "lucide-react";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
@@ -20,6 +19,9 @@ interface Product {
   price: number;
   discount: number;
   status: ProductStatus;
+  category?: string;
+  rating?: number;
+  buyers?: number;
   changeRequest?: "none" | "pending_update" | "pending_deletion";
   fileUrl: string;
   fileKey: string;
@@ -28,22 +30,26 @@ interface Product {
   createdAt: string;
 }
 
+const categoryColors: Record<string, { pill: string; glow: string }> = {
+  Course:        { pill: "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",   glow: "group-hover:shadow-blue-100 dark:group-hover:shadow-blue-900/30" },
+  eBook:         { pill: "bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400", glow: "group-hover:shadow-violet-100 dark:group-hover:shadow-violet-900/30" },
+  Template:      { pill: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400", glow: "group-hover:shadow-emerald-100 dark:group-hover:shadow-emerald-900/30" },
+  Software:      { pill: "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",  glow: "group-hover:shadow-amber-100 dark:group-hover:shadow-amber-900/30" },
+  "Design Asset":{ pill: "bg-pink-50 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400",    glow: "group-hover:shadow-pink-100 dark:group-hover:shadow-pink-900/30" },
+};
+const defaultCat = { pill: "bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-400", glow: "group-hover:shadow-cyan-100 dark:group-hover:shadow-cyan-900/20" };
+
 export default function MyProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const router = useRouter();
+  
+  const observerTarget = useRef<HTMLDivElement>(null);
 
-  /* ================= EDIT STATE ================= */
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [editTitle, setEditTitle] = useState("");
-  const [editDescription, setEditDescription] = useState("");
-  const [editPrice, setEditPrice] = useState(0);
-  const [editDiscount, setEditDiscount] = useState(0);
-  const [editFile, setEditFile] = useState<File | null>(null);
-  const [editFileError, setEditFileError] = useState("");
-  const [editThumbnail, setEditThumbnail] = useState<File | null>(null);
-  const [editThumbnailPreview, setEditThumbnailPreview] = useState<string | null>(null);
-  const [editLoading, setEditLoading] = useState(false);
+
 
   /* ================= DELETE STATE ================= */
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
@@ -52,176 +58,83 @@ export default function MyProductsPage() {
   /* ================= MENU STATE ================= */
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async (pageToFetch: number) => {
     try {
-      setLoading(true);
-      const res = await api.get("/products/mine");
-      setProducts(res.data || []);
+      if (pageToFetch === 1) setLoading(true);
+      else setLoadingMore(true);
+
+      const res = await api.get(`/products/mine?page=${pageToFetch}&limit=8`);
+      
+      const newProducts = res.data.products || res.data || [];
+      const totalPages = res.data.totalPages || 1;
+
+      if (pageToFetch === 1) {
+        setProducts(newProducts);
+      } else {
+        setProducts((prev) => {
+          const existingIds = new Set(prev.map(p => p._id));
+          const uniqueNew = newProducts.filter((p: Product) => !existingIds.has(p._id));
+          return [...prev, ...uniqueNew];
+        });
+      }
+
+      setHasMore(pageToFetch < totalPages && newProducts.length > 0);
+      setPage(pageToFetch);
     } catch {
       showError("Failed to load products");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchProducts(1);
+  }, [fetchProducts]);
+
+  useEffect(() => {
+    const closeMenu = () => setOpenMenuId(null);
+    document.addEventListener("click", closeMenu);
+    return () => document.removeEventListener("click", closeMenu);
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+          fetchProducts(page + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadingMore, page, fetchProducts]);
 
   /* ================= HANDLERS ================= */
-
-  const handleEditClick = (p: Product) => {
-    setEditingProduct(p);
-    setEditTitle(p.title);
-    setEditDescription(p.description);
-    setEditPrice(p.price);
-    setEditDiscount(p.discount);
-    setEditFile(null);
-    setEditFileError("");
-    setEditThumbnail(null);
-    setEditThumbnailPreview(p.thumbnailUrl || null);
-    setOpenMenuId(null);
-  };
-
-  const handleEditFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (!selected) {
-      setEditFile(null);
-      setEditFileError("");
-      return;
-    }
-
-    if (selected.size > MAX_FILE_SIZE) {
-      setEditFileError(`File too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB)`);
-      setEditFile(null);
-      return;
-    }
-
-    setEditFileError("");
-    setEditFile(selected);
-  };
-
-  const handleEditThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (!selected) return;
-
-    if (!selected.type.startsWith("image/")) {
-      showError("Thumbnail must be an image file");
-      return;
-    }
-
-    if (selected.size > 5 * 1024 * 1024) {
-      showError("Thumbnail size must be under 5MB");
-      return;
-    }
-
-    setEditThumbnail(selected);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setEditThumbnailPreview(reader.result as string);
-    };
-    reader.readAsDataURL(selected);
-  };
-
-  const removeEditThumbnail = async () => {
-    if (!editingProduct) return;
-
-    // If there's a new thumbnail file, just remove the preview
-    if (editThumbnail) {
-      setEditThumbnail(null);
-      setEditThumbnailPreview(editingProduct.thumbnailUrl || null);
-      return;
-    }
-
-    // If there's an existing thumbnail on the server, delete it
-    if (editingProduct.thumbnailUrl) {
-      try {
-        const formData = new FormData();
-        formData.append("title", editTitle);
-        formData.append("description", editDescription);
-        formData.append("price", editPrice.toString());
-        formData.append("discount", editDiscount.toString());
-        formData.append("deleteThumbnail", "true");
-
-        const res = await api.patch(`/products/${editingProduct._id}`, formData);
-        
-        showSuccess("Thumbnail deleted");
-        setProducts((p) =>
-          p.map((x) => (x._id === editingProduct._id ? res.data.product : x))
-        );
-        setEditingProduct(res.data.product);
-        setEditThumbnailPreview(null);
-      } catch (error: any) {
-        console.error("Delete thumbnail error:", error);
-        showError("Failed to delete thumbnail");
-      }
-    }
-  };
-
   const handleDeleteClick = (id: string) => {
     setDeletingProductId(id);
     setOpenMenuId(null);
   };
 
   const handleConfirmDelete = async () => {
+    if (!deletingProductId) return;
     setDeleteLoading(true);
     try {
-      const res = await api.delete(`/products/${deletingProductId}`);
-      
-      // Check if it's a pending deletion request (202 status indicates approval needed)
-      if (res.status === 202 || res.data?.changeRequest === "pending_deletion") {
-        showSuccess("Deletion submitted for admin approval");
-      } else {
-        showSuccess("Product deleted");
-      }
-      
-      setProducts((p) => p.filter((x) => x._id !== deletingProductId));
-      setDeletingProductId(null);
-    } catch {
-      showError("Delete failed");
+      await api.delete(`/products/${deletingProductId}`);
+      setProducts((prev) => prev.filter((p) => p._id !== deletingProductId));
+      showSuccess("Product deleted successfully");
+    } catch (error: any) {
+      showError(error.response?.data?.message || "Failed to delete product");
     } finally {
       setDeleteLoading(false);
+      setDeletingProductId(null);
     }
   };
-
-  const handleUpdateProduct = async () => {
-    if (!editingProduct) return;
-
-    setEditLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append("title", editTitle);
-      formData.append("description", editDescription);
-      formData.append("price", editPrice.toString());
-      formData.append("discount", editDiscount.toString());
-      if (editFile) formData.append("file", editFile);
-      if (editThumbnail) formData.append("thumbnail", editThumbnail);
-
-      const res = await api.patch(`/products/${editingProduct._id}`, formData);
-      
-      // Check if it's a pending update request (202 status indicates approval needed)
-      if (res.status === 202 || res.data?.changeRequest === "pending_update") {
-        showSuccess("Update submitted for admin approval");
-      } else {
-        showSuccess("Product updated");
-      }
-
-      setProducts((prev) =>
-        prev.map((p) => (p._id === editingProduct._id ? res.data.product || p : p))
-      );
-
-      setEditingProduct(null);
-      setEditThumbnail(null);
-      setEditThumbnailPreview(null);
-    } catch {
-      showError("Update failed");
-    } finally {
-      setEditLoading(false);
-    }
-  };
-
-  const inputClass =
-    "w-full rounded-xl bg-slate-100 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 hover:border-slate-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-[#1f1f22] focus:border-cyan-400 dark:focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-400 dark:focus:ring-zinc-500 transition-all shadow-sm dark:shadow-none";
 
   /* ================= LOADING ================= */
 
@@ -234,14 +147,14 @@ export default function MyProductsPage() {
           title="My Products"
         />
         <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <div key={i} className="flex flex-col bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden animate-pulse">
+              <div key={i} className="flex flex-col bg-white dark:bg-[#0b0b14] border border-gray-100 dark:border-white/5 rounded-2xl overflow-hidden animate-pulse">
                 {/* Thumbnail Skeleton */}
                 <div className="w-full aspect-video bg-slate-100 dark:bg-white/5" />
                 
                 {/* Content Skeleton */}
-                <div className="p-5 flex flex-col flex-1 gap-3">
+                <div className="p-4 flex flex-col flex-1 gap-3">
                   <div className="h-5 bg-slate-200 dark:bg-white/10 rounded-md w-3/4" />
                   <div className="space-y-2 mt-1">
                     <div className="h-3 bg-slate-200 dark:bg-white/10 rounded-md w-full" />
@@ -249,9 +162,8 @@ export default function MyProductsPage() {
                   </div>
                   
                   {/* Price & Footer Skeleton */}
-                  <div className="mt-auto pt-4 flex items-end justify-between border-t border-slate-200 dark:border-white/5">
+                  <div className="mt-auto pt-4 flex items-end justify-between border-t border-slate-100 dark:border-white/5">
                     <div className="h-7 bg-slate-200 dark:bg-white/10 rounded-md w-1/3" />
-                    <div className="h-3 bg-slate-200 dark:bg-white/10 rounded-md w-1/4" />
                   </div>
                 </div>
               </div>
@@ -270,299 +182,263 @@ export default function MyProductsPage() {
         backHref="/dashboard/seller"
         backLabel="Dashboard"
         title="My Products"
-        subtitle={`${products.length} product${products.length !== 1 ? "s" : ""}`}
+        subtitle={products.length > 0 ? "Manage your listings" : "No products yet"}
         rightSlot={
           <button
             onClick={() => router.push("/dashboard/seller/upload")}
-            className="flex items-center gap-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-[#05050a] px-5 py-2 text-sm font-bold transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_25px_rgba(6,182,212,0.5)]"
+            className="flex items-center gap-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-[#05050a] px-4 sm:px-5 py-2 text-sm font-bold transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_25px_rgba(6,182,212,0.5)]"
           >
             <Plus className="w-4 h-4" strokeWidth={3} />
             <span className="hidden sm:inline">Upload Product</span>
           </button>
         }
       />
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
 
         {/* GRID */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
           {products.map((p) => {
             const approved = p.status === "approved";
             const finalPrice =
               p.discount > 0
                 ? Math.max(p.price - (p.price * p.discount) / 100, 0)
                 : p.price;
+            
+            const rating = p.rating ? Number(p.rating).toFixed(1) : null;
+            const catStyle = categoryColors[p.category || ""] ?? defaultCat;
 
             return (
-              <motion.div
+              <div
                 key={p._id}
-                whileHover={approved ? { y: -4 } : {}}
-                className={`relative flex flex-col bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden transition-all duration-300
-                  ${approved ? "hover:border-cyan-500/30 hover:shadow-[0_8px_30px_rgba(6,182,212,0.1)]" : "opacity-90"}
+                onClick={() => router.push(`/dashboard/seller/products/${p._id}`)}
+                className={`
+                  w-full group bg-white dark:bg-slate-900/40 transition-all duration-300
+                  flex flex-col cursor-pointer
+                  rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-lg hover:-translate-y-1
+                  ${!approved ? "opacity-90" : ""}
                 `}
               >
-                {/* THUMBNAIL AREA */}
-                <div className="relative w-full aspect-video bg-slate-100 dark:bg-white/5 group-hover:bg-slate-200 dark:group-hover:bg-white/10 transition-colors">
-                  {p.thumbnailUrl ? (
-                    <img
-                      src={p.thumbnailUrl}
-                      alt={p.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-slate-200 dark:text-white/20">
-                      <Package className="w-12 h-12" />
-                    </div>
-                  )}
-
-                  {/* OVERLAY GRADIENT */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-[#0b0b14] via-transparent to-transparent opacity-80" />
-
-                  {/* STATUS BADGE OVERLAY */}
-                  <div className="absolute top-3 left-3">
+                {/* TOP BAR (Status + Category + Menu) */}
+                <div className="w-full flex justify-between items-start px-3 pt-3 sm:px-4 sm:pt-4 pb-2 bg-transparent relative">
+                  <div className="flex items-center gap-2 flex-wrap z-10">
                     <span
-                      className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg backdrop-blur-md border
+                      className={`flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm
                         ${
                           approved
-                            ? "bg-green-500/20 text-green-300 border-green-500/30"
+                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
                             : p.status === "rejected"
-                            ? "bg-red-500/20 text-red-300 border-red-500/30"
-                            : "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                            ? "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400"
+                            : "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
                         }`}
                     >
-                      <span
-                        className={`h-1.5 w-1.5 rounded-full ${
-                          approved ? "bg-green-400" : p.status === "rejected" ? "bg-red-400" : "bg-amber-400"
-                        }`}
-                      />
                       {p.status}
+                    </span>
+
+                    {approved && p.changeRequest && p.changeRequest !== "none" && (
+                      <span className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400">
+                        <span className="h-1 w-1 rounded-full bg-blue-500 animate-ping" />
+                        {p.changeRequest === "pending_update" ? "Update" : "Delete"}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Category pill */}
+                  <div className="absolute left-1/2 -translate-x-1/2 top-3 sm:top-4 z-0 pointer-events-none">
+                    <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-md ${catStyle.pill}`}>
+                      {p.category || "Product"}
                     </span>
                   </div>
 
-                  {/* CHANGE REQUEST OVERLAY */}
-                  {approved && p.changeRequest && p.changeRequest !== "none" && (
-                    <div className="absolute top-3 right-3">
-                      <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 backdrop-blur-md">
-                        <span className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-ping" />
-                        {p.changeRequest === "pending_update" ? "Update" : "Delete"}
-                      </span>
-                    </div>
-                  )}
+                  {/* MENU */}
+                  <div className="relative shrink-0 z-20">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.nativeEvent.stopImmediatePropagation();
+                        setOpenMenuId(openMenuId === p._id ? null : p._id);
+                      }}
+                      className="h-8 w-8 grid place-items-center rounded-full bg-transparent hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer -mt-1 -mr-1"
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+
+                    <AnimatePresence>
+                      {openMenuId === p._id && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95, transformOrigin: "top right" }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute right-0 mt-1 w-40 bg-white dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl shadow-2xl z-30 overflow-hidden"
+                        >
+                          <MenuItem
+                            label="View Product"
+                            icon={<Eye className="w-3.5 h-3.5" />}
+                            onClick={() => router.push(`/dashboard/seller/products/${p._id}`)}
+                          />
+                          <MenuItem
+                            label="Edit Details"
+                            icon={<Pencil className="w-3.5 h-3.5" />}
+                            disabled={p.changeRequest === "pending_update" || p.changeRequest === "pending_deletion"}
+                            onClick={() => router.push(`/dashboard/seller/products/${p._id}/edit`)}
+                            tooltip={approved && p.changeRequest === "none" ? "Changes require admin approval" : undefined}
+                          />
+                          <MenuItem
+                            label="Delete Product"
+                            icon={<Trash2 className="w-3.5 h-3.5" />}
+                            danger
+                            disabled={p.changeRequest === "pending_update" || p.changeRequest === "pending_deletion"}
+                            onClick={() => handleDeleteClick(p._id)}
+                            tooltip={approved && p.changeRequest === "none" ? "Deletion requires admin approval" : undefined}
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
-                
-                <div className="p-5 flex flex-col flex-1">
-                  {/* HEADER */}
-                  <div className="flex justify-between items-start gap-4 mb-2">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-base text-slate-900 dark:text-white truncate">{p.title}</h3>
-                      <p className="text-xs text-slate-500 dark:text-zinc-400 line-clamp-2 mt-1.5 leading-relaxed">
-                        {p.description}
-                      </p>
-                    </div>
 
-                    {/* MENU */}
-                    <div className="relative shrink-0">
-                      <button
-                        onClick={() =>
-                          setOpenMenuId(openMenuId === p._id ? null : p._id)
-                        }
-                        className="h-8 w-8 grid place-items-center rounded-xl bg-slate-100 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-all"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                {/* BODY (Thumbnail + Info) */}
+                <div className="flex flex-row sm:flex-col items-start px-3 pb-3 sm:px-4 sm:pb-4 pt-1 sm:pt-0">
+                  {/* THUMBNAIL AREA */}
+                  <div className="relative w-1/3 sm:w-full shrink-0 aspect-square sm:aspect-video bg-gray-50 dark:bg-[#0A101D] overflow-hidden rounded-xl">
+                    {p.thumbnailUrl ? (
+                      <img
+                        src={p.thumbnailUrl}
+                        alt={p.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-50 dark:bg-[#0A101D]">
+                        <Package className="w-10 h-10 text-slate-300 dark:text-slate-700" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
+                  
+                  {/* INFO AREA */}
+                  <div className="flex flex-col flex-1 w-full pl-3 sm:pl-0 sm:pt-3 min-w-0">
 
-                      <AnimatePresence>
-                        {openMenuId === p._id && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.95, transformOrigin: "top right" }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ duration: 0.15 }}
-                            className="absolute right-0 mt-2 w-40 bg-white dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl shadow-2xl z-20 overflow-hidden"
-                          >
-                            <MenuItem
-                              label="Edit Details"
-                              icon={<Pencil className="w-3.5 h-3.5" />}
-                              disabled={p.changeRequest === "pending_update" || p.changeRequest === "pending_deletion"}
-                              onClick={() => handleEditClick(p)}
-                              tooltip={approved && p.changeRequest === "none" ? "Changes require admin approval" : undefined}
-                            />
-                            <MenuItem
-                              label="Delete Product"
-                              icon={<Trash2 className="w-3.5 h-3.5" />}
-                              danger
-                              disabled={p.changeRequest === "pending_update" || p.changeRequest === "pending_deletion"}
-                              onClick={() => handleDeleteClick(p._id)}
-                              tooltip={approved && p.changeRequest === "none" ? "Deletion requires admin approval" : undefined}
-                            />
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
+                  {/* Title & Description */}
+                  <h3 className="font-extrabold text-[15px] text-gray-900 dark:text-white line-clamp-2 leading-snug tracking-tight">
+                    {p.title}
+                  </h3>
+                  
+                  <p className="text-xs text-gray-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed">
+                    {p.description}
+                  </p>
+
+                  {/* Rating */}
+                  <div className="flex items-center gap-1.5 mt-2">
+                    {rating ? (
+                      <>
+                        <div className="flex items-center gap-0.5">
+                          {[1,2,3,4,5].map((s) => (
+                            <Star key={s} size={11} className={
+                              s <= Math.round(Number(rating))
+                                ? "fill-[#FFA41C] text-[#FFA41C]"
+                                : "fill-gray-200 text-gray-200 dark:fill-slate-700 dark:text-slate-700"
+                            } />
+                          ))}
+                        </div>
+                        <span className="text-[10px] font-medium text-[#007185] dark:text-cyan-400 ml-0.5">
+                          {rating} <span className="text-gray-400">({p.buyers || 0})</span>
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-[10px] text-gray-400 dark:text-slate-500 italic">No ratings yet</span>
+                    )}
                   </div>
 
-                  {/* PRICE & FOOTER STRETCH */}
-                  <div className="mt-auto pt-4 flex items-end justify-between border-t border-slate-200 dark:border-white/5">
-                    <div>
-                      {p.discount > 0 ? (
-                        <div className="flex flex-col">
-                          <span className="text-[10px] line-through text-slate-500 dark:text-zinc-500 font-medium tracking-wide">
-                            ₹{p.price}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <span className="font-black text-lg text-cyan-400 leading-none">
-                              ₹{finalPrice}
-                            </span>
-                            <span className="text-[9px] font-bold uppercase tracking-wider bg-red-500/10 border border-red-500/20 text-red-400 px-1.5 py-0.5 rounded-md">
-                              -{p.discount}%
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col justify-end h-full pb-0.5">
-                          <span className="font-black text-lg text-slate-900 dark:text-white leading-none">
-                            ₹{p.price}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                  {/* Price */}
+                  <div className="flex items-center gap-1.5 sm:gap-2 mt-auto pt-2 sm:pt-4 flex-wrap">
+                    <span className="font-extrabold text-base sm:text-lg text-gray-900 dark:text-white tracking-tight">
+                      <span className="text-[10px] sm:text-[11px] font-semibold mr-0.5">₹</span>
+                      {finalPrice.toLocaleString()}
+                    </span>
+                    {p.discount > 0 && (
+                      <span className="text-[10px] sm:text-[11px] text-gray-400 dark:text-slate-500 line-through">
+                        ₹{p.price.toLocaleString()}
+                      </span>
+                    )}
+                    {p.discount > 0 && (
+                      <span className="bg-[#CC0C39] text-white px-1 sm:px-1.5 py-0.5 rounded-md text-[8px] sm:text-[9px] font-bold tracking-wide">
+                        -{p.discount}%
+                      </span>
+                    )}
+                  </div>
 
+                  {/* Date & Actions */}
+                  <div className="flex flex-row items-center justify-between gap-2 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-slate-100 dark:border-white/5 w-full">
                     <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-medium">
                       <Calendar className="w-3 h-3" />
                       {new Date(p.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </div>
-                  </div>
 
-                  {approved && (
-                    <button
-                      onClick={() => router.push(`/dashboard/seller/promotions/create?productId=${p._id}`)}
-                      className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-400/30 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-300 transition hover:border-cyan-300/50 hover:bg-cyan-500/15"
-                    >
-                      <Megaphone className="h-4 w-4" />
-                      Promote Product
-                    </button>
-                  )}
+                    {approved && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/dashboard/seller/promotions/create?productId=${p._id}`);
+                        }}
+                        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-600 dark:text-cyan-300 transition hover:border-cyan-300/50 hover:bg-cyan-500/15"
+                      >
+                        <Megaphone className="h-3 w-3" />
+                        Promote
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </motion.div>
+              </div>
+            </div>
             );
           })}
         </div>
+
+        {/* LOADING INDICATOR / SENSOR */}
+        {hasMore && (
+          <div ref={observerTarget} className="flex justify-center items-center py-6">
+            {loadingMore ? (
+              <div className="w-6 h-6 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
+            ) : null}
+          </div>
+        )}
+        
+        {!hasMore && products.length > 0 && (
+          <div className="text-center text-sm text-slate-500 dark:text-slate-400 py-6">
+            You've reached the end of your products.
+          </div>
+        )}
+
+        {!loading && products.length === 0 && (
+          <div className="text-center py-20 bg-white dark:bg-[#0b0b14] rounded-2xl border border-slate-200 dark:border-white/5">
+            <Package className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">No products found</h3>
+            <p className="text-slate-500 dark:text-slate-400 mt-1 mb-4">You haven't uploaded any products yet.</p>
+            <button
+              onClick={() => router.push("/dashboard/seller/upload")}
+              className="inline-flex items-center gap-2 rounded-xl bg-cyan-500 text-[#05050a] px-5 py-2 text-sm font-bold transition-all hover:bg-cyan-400"
+            >
+              <Plus className="w-4 h-4" strokeWidth={3} />
+              Upload Product
+            </button>
+          </div>
+        )}
+
       </section>
 
-      {/* ================= EDIT MODAL (UNCHANGED STYLE) ================= */}
-      {editingProduct && (
-        <div className="fixed inset-0 bg-white dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/10 rounded-2xl p-6 max-w-md w-full space-y-4 max-h-[90vh] overflow-y-auto"
-          >
-            <h2 className="text-lg font-black">Edit Product</h2>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-600 dark:text-white/70 block mb-2">Title</label>
-                <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className={inputClass} />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-600 dark:text-white/70 block mb-2">Description</label>
-                <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} rows={3} className={`${inputClass} resize-none`} />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-semibold text-slate-600 dark:text-white/70 block mb-2">Price (₹)</label>
-                  <input type="number" value={editPrice} onChange={(e) => setEditPrice(+e.target.value)} className={inputClass} />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-slate-600 dark:text-white/70 block mb-2">Discount (%)</label>
-                  <input type="number" value={editDiscount} onChange={(e) => setEditDiscount(+e.target.value)} className={inputClass} />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-600 dark:text-white/70 block mb-2">Update File (Optional)</label>
-                <input
-                  type="file"
-                  onChange={handleEditFile}
-                  className="
-                    w-full text-sm text-slate-500 dark:text-zinc-400
-                    file:mr-4 file:rounded-lg
-                    file:border-0 file:bg-slate-200 dark:file:bg-[#27272a]
-                    file:px-4 file:py-2.5
-                    file:text-sm file:font-medium
-                    file:text-slate-900 dark:file:text-white
-                    hover:file:bg-slate-300 dark:hover:file:bg-[#3f3f46]
-                    cursor-pointer transition-all
-                  "
-                />
-                {editFile && (
-                  <div className="mt-2 text-xs text-slate-500 dark:text-white/60">
-                    📄 {editFile.name} • {(editFile.size / 1024 / 1024).toFixed(2)} MB
-                  </div>
-                )}
-                {editFileError && (
-                  <p className="text-xs text-red-400 mt-1">{editFileError}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-600 dark:text-white/70 block mb-2">Update Thumbnail (Optional)</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleEditThumbnail}
-                  className="
-                    w-full text-sm text-slate-500 dark:text-zinc-400
-                    file:mr-4 file:rounded-lg
-                    file:border-0 file:bg-slate-200 dark:file:bg-[#27272a]
-                    file:px-4 file:py-2.5
-                    file:text-sm file:font-medium
-                    file:text-slate-900 dark:file:text-white
-                    hover:file:bg-slate-300 dark:hover:file:bg-[#3f3f46]
-                    cursor-pointer transition-all
-                  "
-                />
-                {editThumbnailPreview && (
-                  <div className="mt-3 relative inline-block">
-                    <img
-                      src={editThumbnailPreview}
-                      alt="Thumbnail preview"
-                      className="w-32 h-24 object-cover rounded-lg border border-slate-200 dark:border-white/10"
-                    />
-                    <button
-                      type="button"
-                      onClick={removeEditThumbnail}
-                      className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-slate-900 dark:text-white rounded-full w-6 h-6 flex items-center justify-center transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" strokeWidth={3} />
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <button onClick={() => setEditingProduct(null)} disabled={editLoading} className="flex-1 py-2 bg-slate-200 dark:bg-white/10 rounded-lg disabled:opacity-50">Cancel</button>
-              <button onClick={handleUpdateProduct} disabled={editLoading} className="flex-1 py-2 bg-cyan-600/20 border border-cyan-500/30 rounded-lg disabled:opacity-50">
-                {editLoading ? "Updating..." : "Update"}
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
 
       {/* ================= DELETE MODAL ================= */}
       {deletingProductId && (
-        <div className="fixed inset-0 bg-white dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/40 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <motion.div className="bg-white dark:bg-[#0b0b14] border border-red-200 dark:border-red-500/20 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-xl">
-            <h2 className="text-lg font-black text-red-400">Delete Product?</h2>
-            <p className="text-sm text-slate-500 dark:text-white/60">This action cannot be undone.</p>
+            <h2 className="text-lg font-black text-red-500 dark:text-red-400">Delete Product?</h2>
+            <p className="text-sm text-slate-600 dark:text-white/60">This action cannot be undone.</p>
             <div className="flex gap-2">
-              <button onClick={() => setDeletingProductId(null)} className="flex-1 py-2 bg-slate-200 dark:bg-white/10 rounded-lg">
+              <button onClick={() => setDeletingProductId(null)} className="flex-1 py-2 bg-slate-200 dark:bg-white/10 rounded-lg text-sm font-medium">
                 Cancel
               </button>
-              <button onClick={handleConfirmDelete} className="flex-1 py-2 bg-red-600/20 border border-red-500/30 rounded-lg">
+              <button onClick={handleConfirmDelete} className="flex-1 py-2 bg-red-600/20 border border-red-500/30 rounded-lg text-red-600 dark:text-red-400 text-sm font-medium">
                 Delete
               </button>
             </div>
@@ -598,7 +474,7 @@ function MenuItem({
           ${disabled
             ? "opacity-40 cursor-not-allowed"
             : danger
-            ? "text-red-400 hover:bg-red-500/10 hover:text-red-300"
+            ? "text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300"
             : "text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"}
         `}
       >
@@ -606,7 +482,7 @@ function MenuItem({
         {label}
       </button>
       {tooltip && (
-        <div className="absolute hidden group-hover:block bottom-full right-0 mb-2 w-max text-[10px] uppercase font-bold tracking-wider bg-white dark:bg-black border border-zinc-800 text-zinc-300 px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-xl">
+        <div className="absolute hidden group-hover:block bottom-full right-0 mb-2 w-max text-[10px] uppercase font-bold tracking-wider bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-xl">
           {tooltip}
         </div>
       )}

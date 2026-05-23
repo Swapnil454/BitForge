@@ -52,10 +52,10 @@ export default function MobileBottomNav() {
     <nav className={`fixed bottom-0 left-0 right-0 z-[500] md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] dark:shadow-none safe-area-pb transition-transform duration-200 ${isKeyboardOpen ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
       <div className="flex items-center justify-around h-[72px] px-2 relative max-w-md mx-auto">
         
-        <button onClick={() => { setMobileSearchOpen(false); router.push("/dashboard/buyer"); }} className="flex flex-col items-center justify-center w-16 h-full gap-1 group relative">
-          <Home className={`w-6 h-6 transition-colors ${(pathname === "/dashboard/buyer" && !isMobileSearchOpen) ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"}`} />
-          <span className={`text-[10px] transition-colors ${(pathname === "/dashboard/buyer" && !isMobileSearchOpen) ? "font-semibold text-blue-600 dark:text-blue-400" : "font-medium text-slate-500 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"}`}>Home</span>
-          {(pathname === "/dashboard/buyer" && !isMobileSearchOpen) && <span className="absolute bottom-1 w-1 h-1 rounded-full bg-blue-600 dark:bg-blue-400"></span>}
+        <button onClick={() => { setMobileSearchOpen(false); router.push(user?.role === "seller" ? "/dashboard/seller" : "/dashboard/buyer"); }} className="flex flex-col items-center justify-center w-16 h-full gap-1 group relative">
+          <Home className={`w-6 h-6 transition-colors ${((pathname === "/dashboard/buyer" || pathname === "/dashboard/seller") && !isMobileSearchOpen) ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"}`} />
+          <span className={`text-[10px] transition-colors ${((pathname === "/dashboard/buyer" || pathname === "/dashboard/seller") && !isMobileSearchOpen) ? "font-semibold text-blue-600 dark:text-blue-400" : "font-medium text-slate-500 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"}`}>Home</span>
+          {((pathname === "/dashboard/buyer" || pathname === "/dashboard/seller") && !isMobileSearchOpen) && <span className="absolute bottom-1 w-1 h-1 rounded-full bg-blue-600 dark:bg-blue-400"></span>}
         </button>
 
         <button 
@@ -85,10 +85,14 @@ export default function MobileBottomNav() {
           <span className={`text-[10px] absolute bottom-3 transition-colors ${(pathname === "/marketplace" && !isMobileSearchOpen) ? "font-semibold text-indigo-600 dark:text-indigo-400" : "font-medium text-slate-500 dark:text-slate-400"}`}>Market</span>
         </div>
 
-        <button onClick={() => { setMobileSearchOpen(false); router.push("/dashboard/buyer/orders"); }} className="flex flex-col items-center justify-center w-16 h-full gap-1 group relative">
-          <ClipboardList className={`w-6 h-6 transition-colors ${(pathname === "/dashboard/buyer/orders" && !isMobileSearchOpen) ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"}`} />
-          <span className={`text-[10px] transition-colors ${(pathname === "/dashboard/buyer/orders" && !isMobileSearchOpen) ? "font-semibold text-blue-600 dark:text-blue-400" : "font-medium text-slate-500 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"}`}>Orders</span>
-          {(pathname === "/dashboard/buyer/orders" && !isMobileSearchOpen) && <span className="absolute bottom-1 w-1 h-1 rounded-full bg-blue-600 dark:bg-blue-400"></span>}
+        <button onClick={() => { setMobileSearchOpen(false); router.push(user?.role === "seller" ? "/dashboard/seller/products" : "/dashboard/buyer/orders"); }} className="flex flex-col items-center justify-center w-16 h-full gap-1 group relative">
+          {user?.role === "seller" ? (
+            <Package className={`w-6 h-6 transition-colors ${(pathname === "/dashboard/seller/products" && !isMobileSearchOpen) ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"}`} />
+          ) : (
+            <ClipboardList className={`w-6 h-6 transition-colors ${(pathname === "/dashboard/buyer/orders" && !isMobileSearchOpen) ? "text-blue-600 dark:text-blue-400" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"}`} />
+          )}
+          <span className={`text-[10px] transition-colors ${((pathname === "/dashboard/buyer/orders" || pathname === "/dashboard/seller/products") && !isMobileSearchOpen) ? "font-semibold text-blue-600 dark:text-blue-400" : "font-medium text-slate-500 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"}`}>{user?.role === "seller" ? "Products" : "Orders"}</span>
+          {((pathname === "/dashboard/buyer/orders" || pathname === "/dashboard/seller/products") && !isMobileSearchOpen) && <span className="absolute bottom-1 w-1 h-1 rounded-full bg-blue-600 dark:bg-blue-400"></span>}
         </button>
 
         <button onClick={() => { setMobileSearchOpen(false); router.push("/dashboard/settings"); }} className="flex flex-col items-center justify-center w-16 h-full gap-1 group relative">

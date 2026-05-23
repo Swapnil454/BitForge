@@ -1,5 +1,6 @@
 "use client";
 
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { sellerAPI } from "@/lib/api";
 import toast from "react-hot-toast";
@@ -78,6 +79,15 @@ export default function RevenueGrowthPage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<GrowthStats | null>(null);
 
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted && resolvedTheme === "dark";
+
   useEffect(() => {
     (async () => {
       try {
@@ -99,7 +109,7 @@ export default function RevenueGrowthPage() {
           backHref="/dashboard/seller"
           backLabel="Dashboard"
           title="Revenue Growth"
-          subtitle="Monthly performance, trends & insights"
+          subtitle="Monthly trends & insights"
         />
         <main className="max-w-3xl mx-auto px-4 py-6 space-y-4 animate-pulse">
           <div className="h-28 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5" />
@@ -138,7 +148,7 @@ export default function RevenueGrowthPage() {
         backHref="/dashboard/seller"
         backLabel="Dashboard"
         title="Revenue Growth"
-        subtitle="Monthly performance, trends & insights"
+        subtitle="Monthly trends & insights"
       />
 
       <main className="max-w-3xl mx-auto px-4 py-5 space-y-4">
@@ -199,7 +209,7 @@ export default function RevenueGrowthPage() {
           <span className="text-lg leading-none">{insight.emoji}</span>
           <div>
             <span className="font-semibold text-slate-900 dark:text-white">{insight.label}:&nbsp;</span>
-            <span className="text-white/55">{insight.msg}</span>
+            <span className="text-slate-600 dark:text-white/55">{insight.msg}</span>
           </div>
         </motion.div>
 
@@ -209,48 +219,53 @@ export default function RevenueGrowthPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="rounded-2xl border border-white/8 bg-white dark:bg-[#12141c] p-5 shadow-lg"
+            className="flex flex-col gap-2.5"
           >
-            <p className="text-xs uppercase tracking-widest text-slate-400 dark:text-white/40 font-semibold mb-4">Revenue Trend</p>
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={data.monthlyData}>
+            <h3 className="text-xs uppercase tracking-widest text-slate-500 dark:text-white/50 font-bold px-1">Revenue Trend</h3>
+            <div className="rounded-2xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#12141c] p-5 shadow-sm dark:shadow-lg">
+            <ResponsiveContainer width="100%" height={200} className="focus:outline-none [&_*]:focus:outline-none">
+              <AreaChart data={data.monthlyData} className="focus:outline-none">
                 <defs>
                   <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.2} />
                     <stop offset="95%" stopColor="#22d3ee" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="month" stroke="#334155" tick={{ fill: "#64748b", fontSize: 11 }} />
-                <YAxis stroke="#334155" tick={{ fill: "#64748b", fontSize: 11 }} width={40} />
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e2433" />
+                <XAxis dataKey="month" stroke={isDark ? "#334155" : "#cbd5e1"} tick={{ fill: "#64748b", fontSize: 11 }} />
+                <YAxis stroke={isDark ? "#334155" : "#cbd5e1"} tick={{ fill: "#64748b", fontSize: 11 }} width={40} />
+                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1e2433" : "#f1f5f9"} />
                 <Tooltip
-                  contentStyle={{ background: "#0d0f18", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "#fff", fontSize: 12 }}
+                  contentStyle={{ background: isDark ? "#0d0f18" : "#ffffff", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)", borderRadius: 10, color: isDark ? "#fff" : "#0f172a", fontSize: 12, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
                   formatter={(v: any) => [`₹${v}`, "Revenue"]}
                 />
-                <Area dataKey="revenue" stroke="#22d3ee" strokeWidth={2} fill="url(#revGrad)" dot={false} />
+                <Area dataKey="revenue" stroke="#22d3ee" strokeWidth={2} fill="url(#revGrad)" dot={false} activeDot={{ r: 4, fill: "#22d3ee", stroke: isDark ? "#0d0f18" : "#fff", strokeWidth: 2 }} />
               </AreaChart>
             </ResponsiveContainer>
+            </div>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.14 }}
-            className="rounded-2xl border border-white/8 bg-white dark:bg-[#12141c] p-5 shadow-lg"
+            className="flex flex-col gap-2.5"
           >
-            <p className="text-xs uppercase tracking-widest text-slate-400 dark:text-white/40 font-semibold mb-4">Sales Volume</p>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={data.monthlyData}>
-                <XAxis dataKey="month" stroke="#334155" tick={{ fill: "#64748b", fontSize: 11 }} />
-                <YAxis stroke="#334155" tick={{ fill: "#64748b", fontSize: 11 }} width={30} />
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e2433" />
+            <h3 className="text-xs uppercase tracking-widest text-slate-500 dark:text-white/50 font-bold px-1">Sales Volume</h3>
+            <div className="rounded-2xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#12141c] p-5 shadow-sm dark:shadow-lg">
+            <ResponsiveContainer width="100%" height={200} className="focus:outline-none [&_*]:focus:outline-none">
+              <BarChart data={data.monthlyData} className="focus:outline-none">
+                <XAxis dataKey="month" stroke={isDark ? "#334155" : "#cbd5e1"} tick={{ fill: "#64748b", fontSize: 11 }} />
+                <YAxis stroke={isDark ? "#334155" : "#cbd5e1"} tick={{ fill: "#64748b", fontSize: 11 }} width={30} />
+                <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1e2433" : "#f1f5f9"} />
                 <Tooltip
-                  contentStyle={{ background: "#0d0f18", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "#fff", fontSize: 12 }}
+                  cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', stroke: 'transparent', strokeWidth: 0 }}
+                  contentStyle={{ background: isDark ? "#0d0f18" : "#ffffff", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)", borderRadius: 10, color: isDark ? "#fff" : "#0f172a", fontSize: 12, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
                   formatter={(v: any) => [v, "Sales"]}
                 />
                 <Bar dataKey="sales" fill="#10b981" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+            </div>
           </motion.div>
         </div>
 
@@ -259,21 +274,23 @@ export default function RevenueGrowthPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.18 }}
-          className="rounded-2xl border border-white/8 bg-white dark:bg-[#12141c] p-5 shadow-lg"
+          className="flex flex-col gap-2.5 mt-2"
         >
-          <p className="text-xs uppercase tracking-widest text-slate-400 dark:text-white/40 font-semibold mb-4">Monthly Growth %</p>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={data.monthlyData}>
-              <XAxis dataKey="month" stroke="#334155" tick={{ fill: "#64748b", fontSize: 11 }} />
-              <YAxis stroke="#334155" tick={{ fill: "#64748b", fontSize: 11 }} width={40} />
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e2433" />
+          <h3 className="text-xs uppercase tracking-widest text-slate-500 dark:text-white/50 font-bold px-1">Monthly Growth %</h3>
+          <div className="rounded-2xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#12141c] p-5 shadow-sm dark:shadow-lg">
+          <ResponsiveContainer width="100%" height={200} className="focus:outline-none [&_*]:focus:outline-none">
+            <LineChart data={data.monthlyData} className="focus:outline-none">
+              <XAxis dataKey="month" stroke={isDark ? "#334155" : "#cbd5e1"} tick={{ fill: "#64748b", fontSize: 11 }} />
+              <YAxis stroke={isDark ? "#334155" : "#cbd5e1"} tick={{ fill: "#64748b", fontSize: 11 }} width={40} />
+              <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1e2433" : "#f1f5f9"} />
               <Tooltip
-                contentStyle={{ background: "#0d0f18", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "#fff", fontSize: 12 }}
+                contentStyle={{ background: isDark ? "#0d0f18" : "#ffffff", border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)", borderRadius: 10, color: isDark ? "#fff" : "#0f172a", fontSize: 12, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
                 formatter={(v: any) => [`${Number(v).toFixed(1)}%`, "Growth"]}
               />
-              <Line dataKey="growth" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 3, fill: "#f59e0b" }} activeDot={{ r: 5 }} />
+              <Line dataKey="growth" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 3, fill: "#f59e0b", strokeWidth: 0 }} activeDot={{ r: 5, fill: "#f59e0b", stroke: isDark ? "#0d0f18" : "#fff", strokeWidth: 2 }} />
             </LineChart>
           </ResponsiveContainer>
+          </div>
         </motion.div>
 
         {/* ── MONTHLY BREAKDOWN TABLE ── */}
@@ -281,39 +298,48 @@ export default function RevenueGrowthPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.22 }}
-          className="rounded-2xl border border-white/8 bg-white dark:bg-[#12141c] overflow-hidden shadow-lg"
+          className="flex flex-col gap-2.5 mt-2"
         >
-          <div className="px-5 py-3.5 border-b border-white/8">
-            <p className="text-xs uppercase tracking-widest text-slate-400 dark:text-white/40 font-semibold">Monthly Breakdown</p>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/6">
+          <h3 className="text-xs uppercase tracking-widest text-slate-500 dark:text-white/50 font-bold px-1">Monthly Breakdown</h3>
+          <div className="rounded-2xl border border-slate-200 dark:border-white/8 bg-white dark:bg-[#12141c] overflow-hidden shadow-sm dark:shadow-lg">
+            <div className="overflow-x-auto scrollbar-thin">
+            <table className="w-full text-sm whitespace-nowrap">
+              <thead className="bg-slate-50 dark:bg-white/[0.02]">
+                <tr className="border-b border-slate-200 dark:border-white/10">
                   {["Month", "Revenue", "Sales", "Avg Order", "Growth"].map((h, i) => (
                     <th
                       key={h}
-                      className={`py-2.5 px-4 text-[11px] uppercase tracking-wider font-semibold text-slate-400 dark:text-white/35 ${i === 0 ? "text-left" : "text-right"}`}
+                      className={`py-3.5 px-4 text-[11px] uppercase tracking-wider font-semibold text-slate-500 dark:text-white/40 ${
+                        i === 0 
+                          ? "text-left sticky left-0 z-20 bg-slate-50 dark:bg-[#151720] border-r border-slate-200 dark:border-white/10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]" 
+                          : "text-right"
+                      }`}
                     >
                       {h}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-200 dark:divide-white/5">
                 {data.monthlyData.map((m, i) => (
-                  <tr key={i} className="border-b border-slate-200 dark:border-white/5 hover:bg-slate-100 dark:bg-white/[0.03] transition-colors">
-                    <td className="py-2.5 px-4 font-medium text-slate-700 dark:text-white/80">{m.month}</td>
-                    <td className="py-2.5 px-4 text-right text-slate-600 dark:text-white/70">₹{m.revenue.toLocaleString()}</td>
-                    <td className="py-2.5 px-4 text-right text-slate-600 dark:text-white/70">{m.sales}</td>
-                    <td className="py-2.5 px-4 text-right text-slate-600 dark:text-white/70">₹{m.sales ? Math.round(m.revenue / m.sales).toLocaleString() : 0}</td>
-                    <td className={`py-2.5 px-4 text-right font-semibold ${growthColor(m.growth)}`}>
-                      {m.growth > 0 ? "+" : ""}{m.growth.toFixed(1)}%
+                  <tr key={i} className="group hover:bg-slate-50/80 dark:hover:bg-white/[0.03] transition-colors">
+                    <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white/90 sticky left-0 z-10 bg-white dark:bg-[#12141c] group-hover:bg-slate-50/80 dark:group-hover:bg-[#161822] transition-colors border-r border-slate-200 dark:border-white/10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
+                      {m.month}
+                    </td>
+                    <td className="py-3 px-4 text-right font-medium text-slate-600 dark:text-white/70">₹{m.revenue.toLocaleString()}</td>
+                    <td className="py-3 px-4 text-right font-medium text-slate-600 dark:text-white/70">{m.sales}</td>
+                    <td className="py-3 px-4 text-right font-medium text-slate-600 dark:text-white/70">₹{m.sales ? Math.round(m.revenue / m.sales).toLocaleString() : 0}</td>
+                    <td className="py-3 px-4 text-right">
+                      <span className={`inline-flex items-center justify-end gap-1 px-2.5 py-1 rounded-md text-xs font-bold border ${growthBg(m.growth)}`}>
+                        <GrowthIcon v={m.growth} />
+                        {Math.abs(m.growth).toFixed(1)}%
+                      </span>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
           </div>
         </motion.div>
 

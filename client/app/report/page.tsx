@@ -103,31 +103,97 @@ export default function ReportPage() {
   };
 
   if (isSuccess) {
+    const token = getCookie('token');
+    const userStr = getCookie('user');
+    let role = 'buyer';
+    if (userStr) {
+      try {
+        role = JSON.parse(userStr).role || 'buyer';
+      } catch (e) {}
+    }
+    const isAuthenticated = !!token;
+
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] flex items-center justify-center p-4">
-        <div className="w-full max-w-lg p-8 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-center relative overflow-hidden">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-32 bg-cyan-500/10 blur-[50px] rounded-full pointer-events-none" />
-          
-          <div className="w-20 h-20 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-10 h-10 text-cyan-400" />
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white selection:bg-cyan-500/30">
+        {/* Background accents */}
+        <div className="fixed top-0 inset-x-0 h-[500px] bg-gradient-to-b from-cyan-900/20 to-transparent pointer-events-none" />
+        <div className="fixed top-1/4 right-0 w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none" />
+        
+        {/* Header */}
+        <PageHeader 
+          title="Trust & Safety Support"
+          subtitle="Our team reviews all appeals manually."
+          backHref={isAuthenticated ? `/dashboard/${role}` : "/login"}
+          backLabel={isAuthenticated ? "Back to Dashboard" : "Back to Login"}
+          rightSlot={
+            <button 
+              type="button"
+              onClick={() => {
+                if (isAuthenticated) {
+                  router.push(`/dashboard/${role}/reports`);
+                } else {
+                  router.push("/login?next=/dashboard/buyer/reports");
+                }
+              }}
+              className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 rounded-xl hover:bg-indigo-500/20 transition-all shadow-lg shadow-indigo-500/10 shrink-0"
+            >
+              <FileText className="w-4 h-4" />
+              <span className="hidden sm:inline">Track My Reports</span>
+            </button>
+          }
+        />
+
+        <div className="relative max-w-2xl mx-auto px-4 py-8 sm:py-16">
+          <div className="bg-white dark:bg-[#0a0a0f] border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl p-8 sm:p-12 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-emerald-500" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-32 bg-cyan-500/10 blur-[50px] rounded-full pointer-events-none" />
+            
+            <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner shadow-emerald-500/20">
+              <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+            </div>
+            
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">Report Submitted</h2>
+            <p className="text-slate-600 dark:text-white/60 mb-8 leading-relaxed max-w-lg mx-auto">
+              Thank you for reaching out. Our Trust & Safety team has received your report and will review it shortly. We will contact you at <span className="text-slate-900 dark:text-white font-semibold">{formData.reporterEmail}</span>.
+            </p>
+            
+            <div className="bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-2xl p-6 mb-10 inline-block min-w-[280px]">
+              <span className="text-sm font-medium text-slate-500 dark:text-white/50 block mb-2 uppercase tracking-wider">Your Reference ID</span>
+              <span className="text-2xl font-mono text-cyan-600 dark:text-cyan-400 font-bold tracking-widest">{reportId}</span>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <button
+                onClick={() => {
+                  setFormData({
+                    reporterEmail: "",
+                    reporterName: "",
+                    issueType: "",
+                    description: "",
+                  });
+                  setFiles([]);
+                  setIsSuccess(false);
+                  setReportId("");
+                }}
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-slate-700 dark:text-white bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors flex items-center justify-center gap-2 border border-slate-200 dark:border-white/5"
+              >
+                Make Another Report
+              </button>
+              
+              <button
+                onClick={() => {
+                  if (isAuthenticated) {
+                    router.push(`/dashboard/${role}/reports`);
+                  } else {
+                    router.push("/login?next=/dashboard/buyer/reports");
+                  }
+                }}
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 transition-all shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2"
+              >
+                View My Reports
+              </button>
+            </div>
           </div>
-          
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Report Submitted</h2>
-          <p className="text-slate-500 dark:text-white/60 mb-6 leading-relaxed">
-            Thank you for reaching out. Our Trust & Safety team has received your report and will review it shortly. We will contact you at <span className="text-slate-900 dark:text-white font-medium">{formData.reporterEmail}</span>.
-          </p>
-          
-          <div className="bg-white dark:bg-black/30 border border-slate-200 dark:border-white/5 rounded-xl p-4 mb-8">
-            <span className="text-sm text-slate-400 dark:text-white/40 block mb-1">Your Reference ID</span>
-            <span className="text-xl font-mono text-cyan-400 font-bold tracking-wider">{reportId}</span>
-          </div>
-          
-          <button
-            onClick={() => router.push("/login")}
-            className="w-full py-3 rounded-xl font-bold text-black bg-white hover:bg-white/90 transition-colors"
-          >
-            Return to Login
-          </button>
         </div>
       </div>
     );
@@ -143,7 +209,7 @@ export default function ReportPage() {
         title="Trust & Safety Support"
         subtitle="Our team reviews all appeals manually."
         backHref="/login"
-        backLabel="Back to Login"
+        backLabel="Back"
         rightSlot={
           <button 
             type="button"

@@ -47,7 +47,7 @@ export default function TransactionAnalyticsPage() {
   }, [transactions]);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#f1f5f9_48%,#eef2f7_100%)] dark:bg-[linear-gradient(180deg,#05070c_0%,#0a1220_48%,#05070c_100%)] text-slate-900 dark:text-white pb-20">
       <PageHeader
         backHref="/dashboard/seller/transactions"
         backLabel="Transactions"
@@ -75,77 +75,86 @@ export default function TransactionAnalyticsPage() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0 }}
-              className="rounded-3xl border border-indigo-500/20 bg-white dark:bg-[#12141c] p-6 sm:p-10 shadow-2xl relative overflow-hidden group"
+              className="rounded-3xl bg-[linear-gradient(135deg,#4f46e5_0%,#7c3aed_100%)] dark:bg-[linear-gradient(135deg,#3730a3_0%,#5b21b6_100%)] p-6 sm:p-10 shadow-2xl shadow-indigo-500/20 dark:shadow-indigo-900/20 relative overflow-hidden group"
             >
+              <div className="absolute inset-0 bg-white/5 backdrop-blur-3xl z-0" />
               <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 shadow-inner">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2.5 rounded-2xl bg-white/20 text-white shadow-inner backdrop-blur-md">
                     <Wallet className="w-5 h-5" />
                   </div>
-                  <p className="text-sm uppercase tracking-widest text-indigo-600 dark:text-indigo-200/90 font-bold">Total Net Earned</p>
+                  <p className="text-sm uppercase tracking-widest text-indigo-100 font-bold">Total Net Earned</p>
                 </div>
-                <h1 className="text-5xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 via-indigo-600 to-indigo-800 dark:from-white dark:via-indigo-100 dark:to-indigo-300 tracking-tight">
+                <h1 className="text-5xl sm:text-7xl font-black text-white tracking-tight drop-shadow-md mt-2">
                   ₹{stats.earned.toLocaleString()}
                 </h1>
-                <p className="text-slate-500 dark:text-indigo-200/60 mt-4 text-sm max-w-sm leading-relaxed">
+                <p className="text-indigo-100 mt-4 text-sm max-w-sm leading-relaxed opacity-90">
                   Your total take-home revenue after deducting all platform fees and applicable taxes.
                 </p>
               </div>
             </motion.div>
 
             {/* Secondary Metrics Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c] p-6 shadow-lg relative overflow-hidden group hover:border-cyan-500/30 transition-colors"
+                className="rounded-2xl sm:rounded-3xl border border-white/40 dark:border-white/10 bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl p-4 sm:p-6 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group hover:bg-white dark:hover:bg-white/5 hover:border-cyan-500/30 transition-all flex flex-col justify-between"
               >
-                <div className="w-10 h-10 rounded-full bg-cyan-500/10 flex items-center justify-center mb-4 relative z-10">
-                  <Briefcase className="w-5 h-5 text-cyan-400" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-cyan-500/10 flex items-center justify-center mb-3 sm:mb-4 relative z-10 shrink-0">
+                  <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-500 dark:text-cyan-400" />
                 </div>
-                <p className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-white/50 mb-1 font-semibold relative z-10">Total Transactions</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white group-hover:text-cyan-700 dark:group-hover:text-cyan-50 transition-colors relative z-10">{stats.total}</p>
+                <div>
+                  <p className="text-[10px] sm:text-xs uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-1 font-bold relative z-10">Total Sales</p>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors relative z-10">{stats.total}</p>
+                </div>
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
-                className="rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c] p-6 shadow-lg relative overflow-hidden group hover:border-emerald-500/30 transition-colors"
+                className="rounded-2xl sm:rounded-3xl border border-white/40 dark:border-white/10 bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl p-4 sm:p-6 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group hover:bg-white dark:hover:bg-white/5 hover:border-emerald-500/30 transition-all flex flex-col justify-between"
               >
-                <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4 relative z-10">
-                  <TrendingUp className="w-5 h-5 text-emerald-400" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-emerald-500/10 flex items-center justify-center mb-3 sm:mb-4 relative z-10 shrink-0">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 dark:text-emerald-400" />
                 </div>
-                <p className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-white/50 mb-1 font-semibold relative z-10">Gross Revenue</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-50 transition-colors relative z-10">₹{stats.revenue.toLocaleString()}</p>
+                <div>
+                  <p className="text-[10px] sm:text-xs uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-1 font-bold relative z-10">Gross Rev</p>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors relative z-10 truncate">₹{stats.revenue.toLocaleString()}</p>
+                </div>
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c] p-6 shadow-lg relative overflow-hidden group hover:border-amber-500/30 transition-colors"
+                className="rounded-2xl sm:rounded-3xl border border-white/40 dark:border-white/10 bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl p-4 sm:p-6 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group hover:bg-white dark:hover:bg-white/5 hover:border-amber-500/30 transition-all flex flex-col justify-between"
               >
-                <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 relative z-10">
-                  <Activity className="w-5 h-5 text-amber-400" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-amber-500/10 flex items-center justify-center mb-3 sm:mb-4 relative z-10 shrink-0">
+                  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 dark:text-amber-400" />
                 </div>
-                <p className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-white/50 mb-1 font-semibold relative z-10">Platform Fees</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-50 transition-colors relative z-10">₹{stats.fee.toLocaleString()}</p>
+                <div>
+                  <p className="text-[10px] sm:text-xs uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-1 font-bold relative z-10">Platform Fee</p>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors relative z-10 truncate">₹{stats.fee.toLocaleString()}</p>
+                </div>
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
-                className="rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c] p-6 shadow-lg relative overflow-hidden group hover:border-rose-500/30 transition-colors"
+                className="rounded-2xl sm:rounded-3xl border border-white/40 dark:border-white/10 bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl p-4 sm:p-6 shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden group hover:bg-white dark:hover:bg-white/5 hover:border-rose-500/30 transition-all flex flex-col justify-between"
               >
-                <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center mb-4 relative z-10">
-                  <Percent className="w-5 h-5 text-rose-400" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-rose-500/10 flex items-center justify-center mb-3 sm:mb-4 relative z-10 shrink-0">
+                  <Percent className="w-4 h-4 sm:w-5 sm:h-5 text-rose-500 dark:text-rose-400" />
                 </div>
-                <p className="text-[11px] uppercase tracking-wider text-slate-500 dark:text-white/50 mb-1 font-semibold relative z-10">GST on Fees</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-50 transition-colors relative z-10">₹{stats.gst.toLocaleString()}</p>
+                <div>
+                  <p className="text-[10px] sm:text-xs uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-1 font-bold relative z-10">GST on Fee</p>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors relative z-10 truncate">₹{stats.gst.toLocaleString()}</p>
+                </div>
               </motion.div>
 
             </div>

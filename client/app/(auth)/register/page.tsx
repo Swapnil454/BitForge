@@ -94,8 +94,8 @@ function RegisterForm() {
 
           <div className="grid grid-cols-2 gap-2">
             {[
-              { v: "buyer", l: "Buyer", i: "🛒" },
-              { v: "seller", l: "Seller", i: "💼" },
+              { v: "buyer", l: "Buyer", i: "" },
+              { v: "seller", l: "Seller", i: "" },
             ].map((r) => (
               <button
                 key={r.v}

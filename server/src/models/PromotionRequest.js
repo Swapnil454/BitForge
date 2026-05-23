@@ -263,6 +263,13 @@ const promotionRequestSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    history: [
+      {
+        date: { type: String, required: true },
+        impressions: { type: Number, default: 0 },
+        clicks: { type: Number, default: 0 }
+      }
+    ],
     approvedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

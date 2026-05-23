@@ -378,29 +378,9 @@ export default function BuyerHeader({
                     <div className="h-px bg-slate-100 dark:bg-white/10 my-1 mx-2" />
 
                     {mounted && (() => {
-                      let nextTheme = "light";
-                      let label = "Light Mode";
-                      let icon = <Sun size={16} />;
-
-                      if (theme === "light") {
-                        nextTheme = "dark";
-                        label = "Dark Mode";
-                        icon = <Moon size={16} />;
-                      } else if (theme === "dark") {
-                        nextTheme = "system";
-                        label = "System Theme";
-                        icon = <Monitor size={16} />;
-                      } else {
-                        if (resolvedTheme === "dark") {
-                          nextTheme = "light";
-                          label = "Light Mode";
-                          icon = <Sun size={16} />;
-                        } else {
-                          nextTheme = "dark";
-                          label = "Dark Mode";
-                          icon = <Moon size={16} />;
-                        }
-                      }
+                      let nextTheme = resolvedTheme === "dark" ? "light" : "dark";
+                      let label = resolvedTheme === "dark" ? "Light Mode" : "Dark Mode";
+                      let icon = resolvedTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />;
 
                       return (
                         <button

@@ -2,6 +2,8 @@
 import cloudinary from "../config/cloudinary.js";
 import Product from "../models/Product.js";
 import User from "../models/User.js";
+import Review from "../models/Review.js";
+import Order from "../models/Order.js";
 import { createNotification } from "./notification.controller.js";
 import {
   generatePreviewPages,
@@ -193,8 +195,58 @@ export const createProduct = async (req, res) => {
 };
 
 export const getSellerProducts = async (req, res) => {
-  const products = await Product.find({ sellerId: req.user.id });
-  res.json(products);
+  try {
+    if (req.query.page) {
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 8;
+      const skip = (page - 1) * limit;
+
+      const total = await Product.countDocuments({ sellerId: req.user.id });
+      const products = await Product.find({ sellerId: req.user.id })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
+      const productsWithStats = await Promise.all(products.map(async (p) => {
+         const reviews = await Review.find({ productId: p._id }, 'rating').lean();
+         const avgRating = reviews.length ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length) : 0;
+         const buyers = await Order.countDocuments({ productId: p._id, status: 'paid' });
+
+         return {
+           ...p,
+           rating: parseFloat(avgRating.toFixed(1)),
+           buyers: buyers
+         };
+      }));
+
+      return res.json({
+        products: productsWithStats,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+        totalProducts: total
+      });
+    } else {
+      const products = await Product.find({ sellerId: req.user.id }).lean();
+      
+      const productsWithStats = await Promise.all(products.map(async (p) => {
+         const reviews = await Review.find({ productId: p._id }, 'rating').lean();
+         const avgRating = reviews.length ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length) : 0;
+         const buyers = await Order.countDocuments({ productId: p._id, status: 'paid' });
+
+         return {
+           ...p,
+           rating: parseFloat(avgRating.toFixed(1)),
+           buyers: buyers
+         };
+      }));
+
+      res.json(productsWithStats);
+    }
+  } catch (error) {
+    console.error("Get seller products error:", error);
+    res.status(500).json({ message: "Failed to fetch products" });
+  }
 };
 
 export const uploadProduct = async (req, res) => {
