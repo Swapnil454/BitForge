@@ -489,25 +489,39 @@ export default function BuyerDashboard() {
                       icon={<FileText className="h-4 w-4" />}
                       onClick={() => { router.push("/dashboard/buyer/reports"); setProfileOpen(false); }} 
                     />
-                    {mounted && (
-                      <div className="py-1">
+                    {mounted && (() => {
+                      let nextTheme = "light";
+                      let label = "Light Mode";
+                      let icon = <Sun className="h-4 w-4" />;
+
+                      if (theme === "light") {
+                        nextTheme = "dark";
+                        label = "Dark Mode";
+                        icon = <Moon className="h-4 w-4" />;
+                      } else if (theme === "dark") {
+                        nextTheme = "system";
+                        label = "System Theme";
+                        icon = <Monitor className="h-4 w-4" />;
+                      } else {
+                        if (resolvedTheme === "dark") {
+                          nextTheme = "light";
+                          label = "Light Mode";
+                          icon = <Sun className="h-4 w-4" />;
+                        } else {
+                          nextTheme = "dark";
+                          label = "Dark Mode";
+                          icon = <Moon className="h-4 w-4" />;
+                        }
+                      }
+
+                      return (
                         <MenuItem 
-                          label="Light Mode" 
-                          icon={<Sun className="h-4 w-4" />}
-                          onClick={() => handleThemeChange('light')} 
+                          label={label} 
+                          icon={icon}
+                          onClick={() => handleThemeChange(nextTheme)} 
                         />
-                        <MenuItem 
-                          label="Dark Mode" 
-                          icon={<Moon className="h-4 w-4" />}
-                          onClick={() => handleThemeChange('dark')} 
-                        />
-                        <MenuItem 
-                          label="System Theme" 
-                          icon={<Monitor className="h-4 w-4" />}
-                          onClick={() => handleThemeChange('system')} 
-                        />
-                      </div>
-                    )}
+                      );
+                    })()}
                     <div className="h-px bg-slate-100 dark:bg-slate-800" />
                     <MenuItem label="Logout" icon={<LogOut className="h-4 w-4" />} danger onClick={() => { setIsLogoutModalOpen(true); setProfileOpen(false); }} />
                   </motion.div>

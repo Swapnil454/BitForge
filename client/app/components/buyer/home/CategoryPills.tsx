@@ -17,7 +17,7 @@ export default function CategoryPills({ products = [] }: { products?: ProductTyp
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentCategory = searchParams.get("category");
-  const isAllActive = !currentCategory || searchParams.get("collection") === "All";
+  const isAllActive = searchParams.get("collection") === "All";
 
   const getCount = (id: string) => products.filter((p) => p.category === id).length;
 

@@ -133,7 +133,7 @@ export default function AppProviders({ children }: AppProvidersProps) {
 }
 
 function ThemeSync() {
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
 
   useEffect(() => {
     try {
@@ -141,13 +141,13 @@ function ThemeSync() {
       if (!userStr || userStr === '""') return;
       const user = JSON.parse(userStr);
 
-      if (user?.preferences?.theme && user.preferences.theme !== theme) {
+      if (user?.preferences?.theme) {
         setTheme(user.preferences.theme);
       }
     } catch (e) {
       // ignore
     }
-  }, [theme, setTheme]);
+  }, [setTheme]);
 
   return null;
 }

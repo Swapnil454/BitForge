@@ -7,7 +7,7 @@ import Image from "next/image";
 import {
   Search, Heart, ShoppingCart, User, Menu, X,
   Moon, Sun, ChevronDown, ChevronLeft, Bell,
-  Settings, CircleHelp, Flag, FileText, LogOut,
+  Settings, CircleHelp, Flag, FileText, LogOut, Monitor,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/lib/useAuth";
@@ -377,16 +377,44 @@ export default function BuyerHeader({
 
                     <div className="h-px bg-slate-100 dark:bg-white/10 my-1 mx-2" />
 
-                    <button
-                      onClick={() => {
-                        toggleTheme();
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-white/10 dark:hover:text-white rounded-xl w-full text-left font-medium transition-all"
-                    >
-                      {mounted && resolvedTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-                      {mounted && resolvedTheme === "dark" ? "Light Mode" : "Dark Mode"}
-                    </button>
+                    {mounted && (() => {
+                      let nextTheme = "light";
+                      let label = "Light Mode";
+                      let icon = <Sun size={16} />;
+
+                      if (theme === "light") {
+                        nextTheme = "dark";
+                        label = "Dark Mode";
+                        icon = <Moon size={16} />;
+                      } else if (theme === "dark") {
+                        nextTheme = "system";
+                        label = "System Theme";
+                        icon = <Monitor size={16} />;
+                      } else {
+                        if (resolvedTheme === "dark") {
+                          nextTheme = "light";
+                          label = "Light Mode";
+                          icon = <Sun size={16} />;
+                        } else {
+                          nextTheme = "dark";
+                          label = "Dark Mode";
+                          icon = <Moon size={16} />;
+                        }
+                      }
+
+                      return (
+                        <button
+                          onClick={() => {
+                            setTheme(nextTheme);
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-white/10 dark:hover:text-white rounded-xl w-full text-left font-medium transition-all"
+                        >
+                          {icon}
+                          {label}
+                        </button>
+                      );
+                    })()}
                     
                     {isAuthenticated && (
                       <>

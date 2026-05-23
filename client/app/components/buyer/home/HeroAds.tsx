@@ -300,11 +300,11 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
         )}
 
         {/* All content area: hidden on mobile, shown from md+ */}
-        <div className={`hidden md:flex relative z-10 w-full max-w-[1440px] mx-auto h-full flex-row items-center px-4 md:px-6 lg:px-8`}>
+        <div className={`hidden md:flex relative z-10 w-full max-w-[1440px] mx-auto h-full flex-row items-center px-4 md:px-12 lg:px-16`}>
           
           {/* Left Images Area (Images 2 and 3) — side by side, centered */}
           {hasModernStyling && layout !== "minimal" && adImages.length > 1 && (
-            <div className="hidden md:flex relative z-10 w-[26%] h-full items-center justify-center gap-2 px-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-left-8 duration-700">
+            <div className="hidden md:flex relative z-10 w-[29%] h-full items-center justify-center gap-2 px-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-left-8 duration-700">
               {adImages.slice(1, 3).map((img) => {
                 const cdnUrl = img.url.includes("cloudinary.com") 
                   ? img.url.replace("/upload/", "/upload/f_auto,q_auto,w_400/") 
@@ -319,7 +319,7 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
                       src={cdnUrl}
                       alt=""
                       className="w-full h-auto object-contain drop-shadow-xl rounded-lg"
-                      style={{ maxHeight: "220px" }}
+                      style={{ maxHeight: "240px" }}
                     />
                   </div>
                 );
@@ -423,7 +423,7 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
 
           {/* Right Image Area (Image 1) — centered */}
           {hasModernStyling && layout !== "minimal" && (
-            <div className="hidden md:flex relative z-10 w-[24%] h-full items-center justify-center px-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-8 duration-700">
+            <div className="hidden md:flex relative z-10 w-[27%] h-full items-center justify-center px-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-8 duration-700">
               {adImages.length > 0 ? (
                 <div
                   className="w-full flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300"
@@ -433,12 +433,12 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
                     src={adImages[0].url.includes("cloudinary.com") ? adImages[0].url.replace("/upload/", "/upload/f_auto,q_auto,w_400/") : adImages[0].url} 
                     alt="" 
                     className="w-full h-auto object-contain drop-shadow-xl rounded-lg"
-                    style={{ maxHeight: "240px" }}
+                    style={{ maxHeight: "260px" }}
                   />
                 </div>
               ) : currentBanner.bannerImage ? (
                 <div className="w-full flex items-center justify-center pointer-events-none">
-                  <img src={currentBanner.bannerImage} className="w-full h-auto object-contain drop-shadow-2xl rounded-2xl" style={{ maxHeight: "240px" }} alt="" />
+                  <img src={currentBanner.bannerImage} className="w-full h-auto object-contain drop-shadow-2xl rounded-2xl" style={{ maxHeight: "260px" }} alt="" />
                 </div>
               ) : null}
             </div>
@@ -447,18 +447,32 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
 
         {/* Navigation Arrows */}
         <button 
-          onClick={prevSlide}
-          className={`hidden sm:flex absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-3 rounded-full backdrop-blur-md transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110 ${isDarkText ? "bg-black/5 text-slate-800 hover:bg-black/10" : "bg-white/10 text-white hover:bg-white/20"}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            prevSlide();
+          }}
+          className={`hidden sm:flex absolute left-2 md:left-2 lg:left-4 top-1/2 -translate-y-1/2 p-2 rounded-full backdrop-blur-md transition-all duration-300 opacity-60 group-hover:opacity-100 hover:scale-110 z-30 shadow-md border ${
+            isDarkText 
+              ? "bg-slate-950/70 text-white hover:bg-slate-950/90 border-slate-800/40 shadow-black/10" 
+              : "bg-white/70 text-slate-900 hover:bg-white border-slate-200/40 shadow-black/10"
+          }`}
           aria-label="Previous banner"
         >
-          <ChevronLeft size={24} />
+          <ChevronLeft size={20} />
         </button>
         <button 
-          onClick={nextSlide}
-          className={`hidden sm:flex absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-3 rounded-full backdrop-blur-md transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110 ${isDarkText ? "bg-black/5 text-slate-800 hover:bg-black/10" : "bg-white/10 text-white hover:bg-white/20"}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            nextSlide();
+          }}
+          className={`hidden sm:flex absolute right-2 md:right-2 lg:right-4 top-1/2 -translate-y-1/2 p-2 rounded-full backdrop-blur-md transition-all duration-300 opacity-60 group-hover:opacity-100 hover:scale-110 z-30 shadow-md border ${
+            isDarkText 
+              ? "bg-slate-950/70 text-white hover:bg-slate-950/90 border-slate-800/40 shadow-black/10" 
+              : "bg-white/70 text-slate-900 hover:bg-white border-slate-200/40 shadow-black/10"
+          }`}
           aria-label="Next banner"
         >
-          <ChevronRight size={24} />
+          <ChevronRight size={20} />
         </button>
       </div>
 
