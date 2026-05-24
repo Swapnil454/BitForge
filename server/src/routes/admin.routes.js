@@ -34,8 +34,11 @@ import {
   updateUserProfile,
   deleteUserByAdmin,
   getUserById,
+  banUser,
   unbanUser,
+  updateUserLimit,
   getAllTransactions,
+  bulkMarkTransactionsReviewed,
   getMalwareFlaggedProducts,
   getMalwareDashboardStats,
   getContentReviewQueue,
@@ -45,10 +48,12 @@ import {
   getProductAnalytics,
   getProductReport
 } from "../controllers/admin.controller.js";
+
 import {
   approveRefund,
   rejectDispute
-} from "../controllers/refund.controller.js"
+} from "../controllers/refund.controller.js";
+
 import {
   approvePromotionAdmin,
   getAdSettingsAdmin,
@@ -62,6 +67,7 @@ import {
   verifyPromotionPaymentAdmin,
   updatePromotionStyleAdmin,
 } from "../controllers/promotion.controller.js";
+
 import authMiddleware from "../middleware/auth.js";
 import requireRole from "../middleware/requireRole.js";
 
@@ -74,11 +80,14 @@ router.get("/dashboard-stats", getDashboardStats);
 
 // Transactions
 router.get("/transactions", getAllTransactions);
+router.post("/transactions/bulk-review", bulkMarkTransactionsReviewed);
 
+// Sellers
 router.get("/sellers/pending", getPendingSellers);
 router.post("/sellers/:id/approve", approveSeller);
 router.post("/sellers/:id/reject", rejectSeller);
 
+// Products
 router.get("/products/pending", getPendingProducts);
 router.get("/products/all", getAllProducts);
 router.get("/products/:id/details", getProductDetails);
@@ -93,6 +102,7 @@ router.get("/products/changes/pending", getPendingProductChanges);
 router.post("/products/:id/changes/approve", approveProductChange);
 router.post("/products/:id/changes/reject", rejectProductChange);
 
+// Payouts
 router.get("/payouts/pending", getPendingPayouts);
 router.get("/payouts/all", getAllPayouts);
 router.get("/payouts/:id", getPayoutDetails);
@@ -102,11 +112,12 @@ router.post("/payouts/:id/reject", rejectPayout);
 // Commission and financial reports
 router.get("/commission-summary", getCommissionSummary);
 
+// Disputes
 router.get("/disputes/open", getOpenDisputes);
-
 router.post("/disputes/:disputeId/refund", approveRefund);
 router.post("/disputes/:disputeId/reject", rejectDispute);
 
+// GST reports
 router.get("/reports/gst", getMonthlyGSTReport);
 
 // Bank account management routes
@@ -123,7 +134,9 @@ router.post("/sellers/:id/deletions/reject", rejectSellerDeletion);
 router.get("/users", getAllUsers);
 router.get("/users/:id", getUserById);
 router.put("/users/:id/profile", updateUserProfile);
+router.put("/users/:id/limit", updateUserLimit);
 router.delete("/users/:id", deleteUserByAdmin);
+router.post("/users/:id/suspend", banUser);
 router.post("/users/:id/unban", unbanUser);
 
 // Trust & Security Features
@@ -148,6 +161,5 @@ router.patch("/promotions/:id/style", updatePromotionStyleAdmin);
 // Ad settings
 router.get("/ad-settings", getAdSettingsAdmin);
 router.put("/ad-settings", updateAdSettingsAdmin);
-
 
 export default router;

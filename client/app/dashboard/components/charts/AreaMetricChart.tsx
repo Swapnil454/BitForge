@@ -1,6 +1,6 @@
-
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -29,10 +29,21 @@ export function AreaMetricChart<T extends { month: string }>({
   emptyIcon = "📉",
   emptyText = "No data to display",
 }: AreaMetricChartProps<T>) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile(); // Check on mount
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const displayData = isMobile ? data.slice(-4) : data.slice(-6);
+
   const hasData =
-    Array.isArray(data) &&
-    data.length > 0 &&
-    data.some((d) => Number(d[dataKey]) > 0);
+    Array.isArray(displayData) &&
+    displayData.length > 0 &&
+    displayData.some((d) => Number(d[dataKey]) > 0);
 
   if (!hasData) {
     return (
@@ -49,12 +60,13 @@ export function AreaMetricChart<T extends { month: string }>({
   return (
     <div style={{ height }} className="focus:outline-none [&_.recharts-wrapper]:outline-none [&_.recharts-surface]:outline-none [&_*]:focus:outline-none">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+        <AreaChart data={displayData} margin={{ top: 8, right: 16, left: 16, bottom: 0 }}>
           <XAxis
             dataKey="month"
-            tick={{ fill: "#67e8f9", fontSize: 12, fontWeight: 600 }}
+            tick={{ fill: "#67e8f9", fontSize: 11, fontWeight: 600 }}
             axisLine={false}
             tickLine={false}
+            interval="preserveStartEnd"
           />
           <YAxis hide />
           <Tooltip

@@ -26,7 +26,6 @@ export const downloadProduct = async (req, res) => {
       return res.status(403).json({ message: "Payment not completed" });
     }
 
-    // 4️⃣ Check download limit
     const downloadLimit = order.downloadLimit || 5;
     const downloadCount = order.downloadCount || 0;
 
@@ -38,18 +37,18 @@ export const downloadProduct = async (req, res) => {
       });
     }
 
-    // 5️⃣ Get product
+    // 4️⃣ Get product
     const product = await Product.findById(order.productId);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // 6️⃣ Validate file exists
+    // 5️⃣ Validate file exists
     if (!product.fileKey) {
       return res.status(400).json({ message: "Download not available for this product" });
     }
 
-    // 7️⃣ Construct safe filename using product title
+    // 6️⃣ Construct safe filename using product title
     let filename = "download.pdf";
     if (product.title) {
       const safeName = product.title
@@ -69,7 +68,7 @@ export const downloadProduct = async (req, res) => {
     console.log(`   File Key: ${product.fileKey}`);
     console.log(`   Product: ${product.title}`);
 
-    // 8️⃣ Try to get the resource - handle both authenticated and upload types
+    // 7️⃣ Try to get the resource - handle both authenticated and upload types
     let downloadUrl;
 
     try {
@@ -120,7 +119,7 @@ export const downloadProduct = async (req, res) => {
 
     console.log(`Generated download URL: ${downloadUrl.substring(0, 80)}...`);
 
-    // 9️⃣ Fetch from Cloudinary
+    // 8️⃣ Fetch from Cloudinary
     const response = await fetch(downloadUrl);
 
     if (!response.ok) {
@@ -130,10 +129,10 @@ export const downloadProduct = async (req, res) => {
       throw new Error(`Cloudinary returned ${response.status}: ${response.statusText}`);
     }
 
-    // 🔟 Get original file buffer
+    // 9️⃣ Get original file buffer
     let fileBuffer = Buffer.from(await response.arrayBuffer());
 
-    // 1️⃣1️⃣ Apply watermark with buyer info
+    // 10️⃣ Apply watermark with buyer info
     const buyerInfo = {
       buyerName: order.buyerId.name || "Unknown",
       buyerEmail: order.buyerId.email || "Unknown",
@@ -153,7 +152,7 @@ export const downloadProduct = async (req, res) => {
       buyerInfo
     );
 
-    // 1️⃣2️⃣ Track download
+    // 11️⃣ Track download
     const ipAddress = req.ip || req.headers["x-forwarded-for"] || "unknown";
     const userAgent = req.headers["user-agent"] || "unknown";
 
@@ -171,7 +170,7 @@ export const downloadProduct = async (req, res) => {
 
     console.log(` Download tracked: ${downloadCount + 1}/${downloadLimit}`);
 
-    // 1️⃣3️⃣ Set download headers
+    // 12️⃣ Set download headers
     const contentType = finalFilename.toLowerCase().endsWith(".zip")
       ? "application/zip"
       : "application/pdf";
@@ -185,7 +184,7 @@ export const downloadProduct = async (req, res) => {
 
     console.log(`📤 Sending watermarked file: "${finalFilename}"`);
 
-    // 1️⃣4️⃣ Send watermarked file
+    // 13️⃣ Send watermarked file
     res.send(watermarkedBuffer);
 
     console.log(` Download completed for: ${finalFilename} (watermarked)`);
@@ -199,7 +198,7 @@ export const downloadProduct = async (req, res) => {
   }
 };
 
-// Get download info for an order (remaining downloads, history)
+// Get download info for an order
 export const getDownloadInfo = async (req, res) => {
   const { orderId } = req.params;
 

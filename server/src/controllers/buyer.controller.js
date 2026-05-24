@@ -474,8 +474,8 @@ export const getPurchasedProductDetails = async (req, res) => {
         razorpayOrderId: order.razorpayOrderId,
         amount: order.amount,
         purchaseDate: order.createdAt,
-      downloadCount: order.downloadCount || 0,
-      downloadLimit: order.downloadLimit || 5,
+        downloadCount: order.downloadCount || 0,
+        downloadLimit: order.downloadLimit || 5,
         downloadAvailable: !!product.fileKey
       }
     });

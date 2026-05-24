@@ -64,6 +64,12 @@ const userSchema = new mongoose.Schema(
       type: String,
     },
 
+    // User Product Limits
+    productLimit: {
+      type: Number,
+      default: 10,
+    },
+
     emailOtp: String,
     emailOtpExpires: Date,
     

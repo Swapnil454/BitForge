@@ -1453,12 +1453,26 @@ export const rejectSellerDeletion = async (req, res) => {
 // Get all users with pagination and filtering
 export const getAllUsers = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = "", role = "all" } = req.query;
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      role = "all",
+      sort = "newest",
+      isVerified = "all",
+    } = req.query;
+    const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
+    const limitNumber = Math.max(parseInt(limit, 10) || 10, 1);
 
     const query = {};
     if (role !== "all") {
       query.role = role;
+    }
+
+    if (isVerified === "true") {
+      query.isVerified = true;
+    } else if (isVerified === "false") {
+      query.isVerified = false;
     }
 
     if (search) {
@@ -1470,25 +1484,198 @@ export const getAllUsers = async (req, res) => {
 
     const users = await User.find(query)
       .select("-password -deletionOTP -deletionOTPExpire")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
+      .lean();
 
-    const total = await User.countDocuments(query);
-    const totalBuyers = await User.countDocuments({ role: "buyer" });
-    const totalSellers = await User.countDocuments({ role: "seller" });
+    const buyerIds = users
+      .filter((user) => user.role === "buyer")
+      .map((user) => user._id);
+    const sellerIds = users
+      .filter((user) => user.role === "seller")
+      .map((user) => user._id);
+
+    const buyerOrderStats = buyerIds.length > 0
+      ? await Order.aggregate([
+          {
+            $match: {
+              buyerId: { $in: buyerIds },
+              status: "paid",
+            }
+          },
+          {
+            $group: {
+              _id: "$buyerId",
+              purchases: { $sum: 1 },
+              totalSpent: { $sum: { $ifNull: ["$amount", 0] } },
+              lastPurchaseAt: { $max: "$createdAt" },
+            }
+          }
+        ])
+      : [];
+    const sellerOrderStats = sellerIds.length > 0
+      ? await Order.aggregate([
+          {
+            $match: {
+              sellerId: { $in: sellerIds },
+              status: "paid",
+            }
+          },
+          {
+            $group: {
+              _id: "$sellerId",
+              sales: { $sum: 1 },
+              totalEarnings: {
+                $sum: {
+                  $ifNull: ["$sellerAmount", { $ifNull: ["$amount", 0] }]
+                }
+              },
+              lastSaleAt: { $max: "$createdAt" },
+            }
+          }
+        ])
+      : [];
+
+    const buyerStatsMap = new Map(
+      buyerOrderStats.map((item) => [
+        String(item._id),
+        {
+          purchases: item.purchases || 0,
+          totalSpent: item.totalSpent || 0,
+          lastPurchaseAt: item.lastPurchaseAt || null,
+        }
+      ])
+    );
+    const sellerStatsMap = new Map(
+      sellerOrderStats.map((item) => [
+        String(item._id),
+        {
+          sales: item.sales || 0,
+          totalEarnings: item.totalEarnings || 0,
+          lastSaleAt: item.lastSaleAt || null,
+        }
+      ])
+    );
+
+    const usersWithStats = users.map((user) => {
+      const buyerStats = buyerStatsMap.get(String(user._id)) || {
+        purchases: 0,
+        totalSpent: 0,
+        lastPurchaseAt: null,
+      };
+      const sellerStats = sellerStatsMap.get(String(user._id)) || {
+        sales: 0,
+        totalEarnings: 0,
+        lastSaleAt: null,
+      };
+
+      return {
+        ...user,
+        purchases: user.role === "buyer" ? buyerStats.purchases : sellerStats.sales,
+        totalSpent: user.role === "buyer" ? buyerStats.totalSpent : sellerStats.totalEarnings,
+        lastPurchaseAt: user.role === "buyer" ? buyerStats.lastPurchaseAt : sellerStats.lastSaleAt,
+      };
+    });
+
+    usersWithStats.sort((a, b) => {
+      if (sort === "oldest") {
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      }
+
+      if (sort === "az") {
+        return (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" });
+      }
+
+      if (sort === "spend") {
+        return (b.totalSpent || 0) - (a.totalSpent || 0)
+          || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+
+      if (sort === "purchases") {
+        return (b.purchases || 0) - (a.purchases || 0)
+          || (b.totalSpent || 0) - (a.totalSpent || 0)
+          || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    const total = usersWithStats.length;
+    const skip = (pageNumber - 1) * limitNumber;
+    const paginatedUsers = usersWithStats.slice(skip, skip + limitNumber);
+
+    const [
+      totalBuyers,
+      verifiedBuyers,
+      unverifiedBuyers,
+      totalSellers,
+      verifiedSellers,
+      unverifiedSellers,
+      platformSpendSummary,
+      sellerEarningsSummary,
+    ] = await Promise.all([
+      User.countDocuments({ role: "buyer" }),
+      User.countDocuments({ role: "buyer", isVerified: true }),
+      User.countDocuments({ role: "buyer", isVerified: false }),
+      User.countDocuments({ role: "seller" }),
+      User.countDocuments({ role: "seller", isVerified: true }),
+      User.countDocuments({ role: "seller", isVerified: false }),
+      Order.aggregate([
+        { $match: { status: "paid" } },
+        {
+          $group: {
+            _id: null,
+            totalSpent: { $sum: { $ifNull: ["$amount", 0] } },
+          }
+        }
+      ]),
+      Order.aggregate([
+        { $match: { status: "paid" } },
+        {
+          $group: {
+            _id: null,
+            totalEarnings: {
+              $sum: {
+                $ifNull: ["$sellerAmount", { $ifNull: ["$amount", 0] }]
+              }
+            },
+          }
+        }
+      ]),
+    ]);
+
+    const platformTotalSpent = platformSpendSummary[0]?.totalSpent || 0;
+    const sellerTotalEarnings = sellerEarningsSummary[0]?.totalEarnings || 0;
+    const statsByRole = role === "seller"
+      ? {
+          totalUsersForRole: totalSellers,
+          verifiedUsersForRole: verifiedSellers,
+          unverifiedUsersForRole: unverifiedSellers,
+          totalValueForRole: sellerTotalEarnings,
+        }
+      : {
+          totalUsersForRole: totalBuyers,
+          verifiedUsersForRole: verifiedBuyers,
+          unverifiedUsersForRole: unverifiedBuyers,
+          totalValueForRole: platformTotalSpent,
+        };
 
     res.json({
-      users,
+      users: paginatedUsers,
       pagination: {
         total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        pages: Math.ceil(total / parseInt(limit))
+        page: pageNumber,
+        limit: limitNumber,
+        pages: Math.max(Math.ceil(total / limitNumber), 1)
       },
       stats: {
         totalBuyers,
-        totalSellers
+        verifiedBuyers,
+        unverifiedBuyers,
+        totalSellers,
+        verifiedSellers,
+        unverifiedSellers,
+        platformTotalSpent,
+        sellerTotalEarnings,
+        ...statsByRole,
       }
     });
   } catch (error) {
@@ -1561,18 +1748,51 @@ export const getUserById = async (req, res) => {
     // Get stats based on role
     let stats = {};
     if (user.role === 'seller') {
-      const Product = (await import("../models/Product.js")).default;
-      const Order = (await import("../models/Order.js")).default;
-      
-      const totalProducts = await Product.countDocuments({ seller: id });
-      const totalOrders = await Order.countDocuments({ seller: id, status: 'completed' });
-      
-      stats = { totalProducts, totalOrders };
+      const [totalProducts, sellerOrderSummary] = await Promise.all([
+        Product.countDocuments({ sellerId: user._id }),
+        Order.aggregate([
+          {
+            $match: {
+              sellerId: user._id,
+              status: "paid",
+            }
+          },
+          {
+            $group: {
+              _id: null,
+              totalOrders: { $sum: 1 },
+              totalSpent: { $sum: { $ifNull: ["$amount", 0] } },
+            }
+          }
+        ]),
+      ]);
+
+      stats = {
+        totalProducts,
+        totalOrders: sellerOrderSummary[0]?.totalOrders || 0,
+        totalSpent: sellerOrderSummary[0]?.totalSpent || 0,
+      };
     } else if (user.role === 'buyer') {
-      const Order = (await import("../models/Order.js")).default;
-      const totalOrders = await Order.countDocuments({ user: id });
-      
-      stats = { totalOrders };
+      const buyerOrderSummary = await Order.aggregate([
+        {
+          $match: {
+            buyerId: user._id,
+            status: "paid",
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalOrders: { $sum: 1 },
+            totalSpent: { $sum: { $ifNull: ["$amount", 0] } },
+          }
+        }
+      ]);
+
+      stats = {
+        totalOrders: buyerOrderSummary[0]?.totalOrders || 0,
+        totalSpent: buyerOrderSummary[0]?.totalSpent || 0,
+      };
     }
 
     res.json({ user, stats });
@@ -1582,8 +1802,8 @@ export const getUserById = async (req, res) => {
   }
 };
 
-// Ban user by admin (replaces hard-delete — preserves data, blocks login)
-export const deleteUserByAdmin = async (req, res) => {
+// Ban/Suspend user by admin
+export const banUser = async (req, res) => {
   try {
     const { id } = req.params;
     const { reason } = req.body;
@@ -1602,33 +1822,46 @@ export const deleteUserByAdmin = async (req, res) => {
       return res.status(400).json({ message: "You cannot ban your own account" });
     }
 
-    // Apply ban — do NOT delete the document
     user.accountStatus = 'banned';
     user.accountStatusUpdatedAt = new Date();
     user.bannedReason = String(reason).trim();
     await user.save();
 
-    // Notify user about the ban
-    try {
-      await createNotification(
-        user._id,
-        'account_banned_by_admin',
-        'Account Suspended',
-        `Your account has been suspended by an administrator. Reason: ${String(reason).trim()}`,
-        user._id,
-        'User'
-      );
-    } catch (notifyErr) {
-      console.error("Error notifying user about account ban:", notifyErr);
-    }
-
     res.json({
-      message: "User account banned successfully",
+      message: "User account suspended successfully",
       bannedUser: { name: user.name, email: user.email, bannedReason: user.bannedReason },
     });
   } catch (error) {
     console.error("Error banning user:", error);
     res.status(500).json({ message: "Failed to ban user" });
+  }
+};
+
+// Soft delete user by admin
+export const deleteUserByAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user._id.toString() === req.user.id) {
+      return res.status(400).json({ message: "You cannot delete your own account" });
+    }
+
+    user.accountStatus = 'deleted';
+    user.accountStatusUpdatedAt = new Date();
+    user.bannedReason = "Account deleted by admin";
+    await user.save();
+
+    res.json({
+      message: "User account deleted successfully"
+    });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ message: "Failed to delete user" });
   }
 };
 
@@ -1671,19 +1904,61 @@ export const unbanUser = async (req, res) => {
     res.status(500).json({ message: "Failed to unban user" });
   }
 };
+// Update user product limit
+export const updateUserLimit = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { productLimit } = req.body;
+
+    if (productLimit === undefined || isNaN(Number(productLimit)) || Number(productLimit) < 0) {
+      return res.status(400).json({ message: "Invalid product limit value" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      { productLimit: Number(productLimit) },
+      { new: true, select: "-password" }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ message: "Product limit updated successfully", user });
+  } catch (error) {
+    console.error("Error updating user limit:", error);
+    res.status(500).json({ message: "Failed to update user limit" });
+  }
+};
 
 // Get all transactions (buyer payments + seller payouts)
 export const getAllTransactions = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = "", type = "all", status = "all", sortBy = "date_desc" } = req.query;
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      type = "all",
+      status = "all",
+      sortBy = "date_desc",
+      userId,
+    } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    let scopedUser = null;
+    if (userId) {
+      scopedUser = await User.findById(userId).select("role");
+      if (!scopedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+    }
     
     // Build filters for Orders
     const orderFilter = {};
     if (status !== "all") {
       if (status === "success") orderFilter.status = "paid";
       else if (status === "failed") orderFilter.status = "failed";
-      else orderFilter.status = "pending";
+      else orderFilter.status = "created";
     }
     
     // Build filters for Payouts
@@ -1700,6 +1975,15 @@ export const getAllTransactions = async (req, res) => {
     // Fetch Orders if type is 'all' or 'buyer_to_admin'
     if (type === "all" || type === "buyer_to_admin") {
       const query = { ...orderFilter };
+
+      if (userId) {
+        if (scopedUser.role === "buyer") {
+          query.buyerId = userId;
+        } else if (scopedUser.role === "seller") {
+          query.sellerId = userId;
+        }
+      }
+
       if (search) {
         query.$or = [
           { productName: { $regex: search, $options: "i" } },
@@ -1714,8 +1998,13 @@ export const getAllTransactions = async (req, res) => {
     }
 
     // Fetch Payouts if type is 'all' or 'admin_to_seller'
-    if (type === "all" || type === "admin_to_seller") {
+    if ((type === "all" || type === "admin_to_seller") && scopedUser?.role !== "buyer") {
       const query = { ...payoutFilter };
+
+      if (userId && scopedUser?.role === "seller") {
+        query.sellerId = userId;
+      }
+
       if (search) {
         query.$or = [
           { paymentReference: { $regex: search, $options: "i" } },
@@ -1738,6 +2027,7 @@ export const getAllTransactions = async (req, res) => {
       amount: order.amount || 0,
       status: order.status === "paid" ? "success" : order.status === "failed" ? "failed" : "pending",
       date: order.createdAt,
+      createdAt: order.createdAt,
       razorpayOrderId: order.razorpayOrderId,
       razorpayPaymentId: order.razorpayPaymentId,
       paymentMethod: "razorpay"
@@ -1753,6 +2043,7 @@ export const getAllTransactions = async (req, res) => {
       amount: payout.netPayableAmount || payout.amount || 0,
       status: payout.status === "paid" ? "success" : payout.status === "rejected" ? "failed" : "pending",
       date: payout.paidAt || payout.createdAt,
+      createdAt: payout.paidAt || payout.createdAt,
       paymentMethod: payout.paymentMethod || "manual",
       paymentReference: payout.paymentReference,
       errorReason: payout.rejectionReason
@@ -1784,6 +2075,9 @@ export const getAllTransactions = async (req, res) => {
 
     const total = allTransactions.length;
     const paginatedTransactions = allTransactions.slice(skip, skip + parseInt(limit));
+    const successTransactions = allTransactions.filter((t) => t.status === "success");
+    const pendingTransactions = allTransactions.filter((t) => t.status === "pending");
+    const failedTransactions = allTransactions.filter((t) => t.status === "failed");
 
     res.json({
       transactions: paginatedTransactions,
@@ -1794,17 +2088,59 @@ export const getAllTransactions = async (req, res) => {
         pages: Math.ceil(total / parseInt(limit))
       },
       summary: {
-        total,
+        total: {
+          count: total,
+          amount: allTransactions.reduce((sum, t) => sum + (t.amount || 0), 0),
+        },
+        success: {
+          count: successTransactions.length,
+          amount: successTransactions.reduce((sum, t) => sum + (t.amount || 0), 0),
+        },
+        pending: {
+          count: pendingTransactions.length,
+          amount: pendingTransactions.reduce((sum, t) => sum + (t.amount || 0), 0),
+        },
+        failed: {
+          count: failedTransactions.length,
+          amount: failedTransactions.reduce((sum, t) => sum + (t.amount || 0), 0),
+        },
         buyerPayments: buyerTransactions.length,
         sellerPayouts: sellerTransactions.length,
-        successCount: allTransactions.filter(t => t.status === "success").length,
-        failedCount: allTransactions.filter(t => t.status === "failed").length,
-        totalAmount: allTransactions.filter(t => t.status === "success").reduce((sum, t) => sum + t.amount, 0)
+        successCount: successTransactions.length,
+        failedCount: failedTransactions.length,
+        totalAmount: successTransactions.reduce((sum, t) => sum + (t.amount || 0), 0)
       }
     });
   } catch (error) {
     console.error("Error fetching all transactions:", error);
     res.status(500).json({ message: "Failed to fetch transactions" });
+  }
+};
+
+// Bulk mark transactions as reviewed by admin
+export const bulkMarkTransactionsReviewed = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: "Valid array of IDs is required" });
+    }
+
+    const updateQuery = { 
+      reviewedByAdmin: true, 
+      reviewedAt: new Date() 
+    };
+
+    // Update both Order and Payout collections because transactions can be from either
+    await Promise.all([
+      Order.updateMany({ _id: { $in: ids } }, { $set: updateQuery }),
+      Payout.updateMany({ _id: { $in: ids } }, { $set: updateQuery })
+    ]);
+
+    res.json({ message: "Transactions marked as reviewed successfully" });
+  } catch (error) {
+    console.error("Error marking transactions as reviewed:", error);
+    res.status(500).json({ message: "Failed to mark transactions as reviewed" });
   }
 };
 
@@ -2118,10 +2454,7 @@ export const getPendingIdentityVerifications = async (req, res) => {
       .select('-password')
       .sort({ createdAt: -1 });
     
-    res.json({
-      sellers,
-      total: sellers.length
-    });
+    res.json(sellers);
   } catch (error) {
     console.error("Error fetching pending identity verifications:", error);
     res.status(500).json({ message: "Failed to fetch pending identity verifications" });

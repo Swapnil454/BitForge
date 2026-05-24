@@ -37,6 +37,13 @@ const payoutSchema = new mongoose.Schema({
   paymentReference: String, // UTR number or reference from admin
   paymentNotes: String, // Admin notes about the payment
   
+  // Admin review flag
+  reviewedByAdmin: {
+    type: Boolean,
+    default: false,
+  },
+  reviewedAt: Date,
+  
   // Legacy RazorpayX fields (commented out for future use)
   // razorpayPayoutId: String,
   // failureReason: String,

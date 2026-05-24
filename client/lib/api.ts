@@ -131,8 +131,15 @@ export const adminAPI = {
         type?: string;
         status?: string;
         sortBy?: string;
+        dateRange?: string;
+        userId?: string;
     }) => {
         const response = await api.get('/admin/transactions', { params });
+        return response.data;
+    },
+
+    bulkMarkTransactionsReviewed: async (ids: string[]) => {
+        const response = await api.post('/admin/transactions/bulk-review', { ids });
         return response.data;
     },
 
@@ -241,6 +248,8 @@ export const adminAPI = {
         limit?: number;
         search?: string;
         role?: string;
+        sort?: string;
+        isVerified?: string;
     }) => {
         const response = await api.get('/admin/users', { params });
         return response.data;
@@ -251,8 +260,13 @@ export const adminAPI = {
         return response.data;
     },
 
-    deleteUser: async (id: string, reason: string) => {
-        const response = await api.delete(`/admin/users/${id}`, { data: { reason } });
+    deleteUser: async (id: string) => {
+        const response = await api.delete(`/admin/users/${id}`);
+        return response.data;
+    },
+
+    suspendUser: async (id: string, reason: string) => {
+        const response = await api.post(`/admin/users/${id}/suspend`, { reason });
         return response.data;
     },
 
@@ -263,6 +277,11 @@ export const adminAPI = {
 
     unbanUser: async (id: string) => {
         const response = await api.post(`/admin/users/${id}/unban`);
+        return response.data;
+    },
+
+    updateUserLimit: async (id: string, productLimit: number) => {
+        const response = await api.put(`/admin/users/${id}/limit`, { productLimit });
         return response.data;
     },
 

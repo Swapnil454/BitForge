@@ -35,7 +35,6 @@ interface PurchaseDetails {
   sellerEmail?: string;
   amount?: number;
   purchaseDate?: string;
-  downloadUrl?: string;
   razorpayPaymentId?: string;
   razorpayOrderId?: string;
   category?: string;

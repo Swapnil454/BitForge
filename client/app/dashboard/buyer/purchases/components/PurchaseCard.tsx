@@ -45,7 +45,6 @@ export default function PurchaseCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const [downloadLocked, setDownloadLocked] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
   const downloadCount = purchase.downloadCount || 0;
   const downloadLimit = purchase.downloadLimit || 5;
   const remaining = Math.max(downloadLimit - downloadCount, 0);

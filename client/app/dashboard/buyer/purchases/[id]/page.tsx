@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { buyerAPI } from "@/lib/api";
+import api, { buyerAPI } from "@/lib/api";
 import toast from "react-hot-toast";
 import PageHeader from "../../transactions/components/PageHeader";
 import { 
@@ -32,7 +32,6 @@ interface PurchaseDetails {
   sellerEmail: string;
   amount: number;
   purchaseDate: string;
-  downloadUrl: string;
   razorpayPaymentId: string;
   razorpayOrderId: string;
   category: string;
@@ -68,27 +67,24 @@ export default function PurchaseDetailsPage() {
   };
 
   const handleDownload = async () => {
-    if (!purchase?.downloadUrl) {
-      toast.error("Download URL not available");
+    if (!purchase?._id) {
+      toast.error("Download not available");
       return;
     }
 
     try {
       setDownloading(true);
-      const response = await fetch(purchase.downloadUrl);
-      if (!response.ok) {
-        throw new Error("Failed to fetch file");
-      }
-
-      const blob = await response.blob();
+      const response = await api.get(`/download/${purchase._id}`, { responseType: "blob" });
+      const contentType = response.headers["content-type"] || "application/pdf";
+      const blob = new Blob([response.data], { type: contentType });
       const url = window.URL.createObjectURL(blob);
 
-      const baseName = purchase.productName
-        ? purchase.productName.replace(/[^a-z0-9_\-]/gi, "_")
-        : "download";
-      const filename = baseName.toLowerCase().endsWith(".pdf")
-        ? baseName
-        : `${baseName}.pdf`;
+      const contentDisposition = response.headers["content-disposition"];
+      let filename = "download.pdf";
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="(.+?)"|filename=([^;\s]+)/);
+        if (match) filename = match[1] || match[2];
+      }
 
       const link = document.createElement("a");
       link.href = url;

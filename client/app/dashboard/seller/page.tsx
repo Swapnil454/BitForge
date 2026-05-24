@@ -31,6 +31,7 @@ import {
   CloudDownload,
   WalletCards,
   ClipboardCheck,
+  Home,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useQueryClient } from "@tanstack/react-query";
@@ -67,6 +68,20 @@ export default function Dashboard() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [activeRing, setActiveRing] = useState<number>(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveRing(prev => {
+        let next = Math.floor(Math.random() * 4);
+        while (next === prev) {
+          next = Math.floor(Math.random() * 4);
+        }
+        return next;
+      });
+    }, 4500); // 4.5 seconds
+    return () => clearInterval(interval);
+  }, []);
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -345,7 +360,7 @@ export default function Dashboard() {
                       label="Profile"
                       icon={<UserRound className="h-4 w-4" />}
                       onClick={() => {
-                        router.push("/dashboard/settings?tab=profile");
+                        router.push("/dashboard/seller/settings?tab=profile");
                         setProfileOpen(false);
                       }}
                     />
@@ -353,7 +368,7 @@ export default function Dashboard() {
                       label="Settings"
                       icon={<Settings className="h-4 w-4" />}
                       onClick={() => {
-                        router.push("/dashboard/settings");
+                        router.push("/dashboard/seller/settings");
                         setProfileOpen(false);
                       }}
                     />
@@ -539,38 +554,34 @@ export default function Dashboard() {
             -webkit-mask: radial-gradient(closest-side, transparent 88%, black 94%);
             mask: radial-gradient(closest-side, transparent 88%, black 94%);
           }
-          .rb-cw  { animation: rbSpinCw 32s linear infinite; }
-          .rb-ccw { animation: rbSpinCcw 32s linear infinite; }
-          @keyframes rbSpinCw {
-            0%       { opacity: 0; transform: rotate(0deg); }
-            0.5%     { opacity: 1; transform: rotate(0deg); }
-            3%       { opacity: 1; transform: rotate(720deg); }
-            5.5%     { opacity: 1; transform: rotate(720deg); }
-            8%       { opacity: 1; transform: rotate(1440deg); }
-            8.5%     { opacity: 0; transform: rotate(1440deg); }
-            100%     { opacity: 0; transform: rotate(1440deg); }
+          @keyframes svgMergeAnim {
+            0% { opacity: 0; stroke-dasharray: 20 15 20 246; transform: rotate(0deg); }
+            3% { opacity: 0.3; stroke-dasharray: 20 15 20 246; transform: rotate(0deg); animation-timing-function: ease-in; }
+            20% { opacity: 0.3; stroke-dasharray: 151 0 151 0; transform: rotate(180deg); animation-timing-function: ease-out; }
+            36% { opacity: 0.3; stroke-dasharray: 20 15 20 246; transform: rotate(360deg); }
+            40% { opacity: 0.3; stroke-dasharray: 20 15 20 246; transform: rotate(360deg); }
+            60% { opacity: 0.3; stroke-dasharray: 20 15 20 246; transform: rotate(360deg); animation-timing-function: ease-in; }
+            76% { opacity: 0.3; stroke-dasharray: 151 0 151 0; transform: rotate(540deg); animation-timing-function: ease-out; }
+            93% { opacity: 0.3; stroke-dasharray: 20 15 20 246; transform: rotate(720deg); }
+            98% { opacity: 0; stroke-dasharray: 20 15 20 246; transform: rotate(720deg); }
+            100% { opacity: 0; transform: rotate(720deg); }
           }
-          @keyframes rbSpinCcw {
-            0%       { opacity: 0; transform: rotate(0deg); }
-            0.5%     { opacity: 1; transform: rotate(0deg); }
-            3%       { opacity: 1; transform: rotate(-720deg); }
-            5.5%     { opacity: 1; transform: rotate(-720deg); }
-            8%       { opacity: 1; transform: rotate(-1440deg); }
-            8.5%     { opacity: 0; transform: rotate(-1440deg); }
-            100%     { opacity: 0; transform: rotate(-1440deg); }
+          @keyframes iconSyncAnim {
+            0%   { transform: scale(1); }
+            3%   { transform: scale(1); animation-timing-function: ease-in; }
+            20%  { transform: scale(1.15); animation-timing-function: ease-out; }
+            36%  { transform: scale(1); }
+            40%  { transform: scale(1); }
+            60%  { transform: scale(1); animation-timing-function: ease-in; }
+            76%  { transform: scale(1.15); animation-timing-function: ease-out; }
+            93%  { transform: scale(1); }
+            100% { transform: scale(1); }
           }
-          .rb-blue   { background: conic-gradient(from 0deg, var(--rb-base) 0%, var(--rb-base) 12%, transparent 12%, transparent 15%, #3b82f6 15%, #3b82f6 27%, transparent 27%); }
-          .rb-green  { background: conic-gradient(from 0deg, var(--rb-base) 0%, var(--rb-base) 12%, transparent 12%, transparent 15%, #10b981 15%, #10b981 27%, transparent 27%); }
-          .rb-rose   { background: conic-gradient(from 0deg, var(--rb-base) 0%, var(--rb-base) 12%, transparent 12%, transparent 15%, #f43f5e 15%, #f43f5e 27%, transparent 27%); }
-          .rb-violet { background: conic-gradient(from 0deg, var(--rb-base) 0%, var(--rb-base) 12%, transparent 12%, transparent 15%, #8b5cf6 15%, #8b5cf6 27%, transparent 27%); }
-          .rb-s1 { background: conic-gradient(from 0deg, var(--rb-base) 0%, var(--rb-base) 12%, transparent 12%, transparent 15%, #64748b 15%, #64748b 27%, transparent 27%); }
-          .rb-s2 { background: conic-gradient(from 0deg, var(--rb-base) 0%, var(--rb-base) 12%, transparent 12%, transparent 15%, #64748b 15%, #64748b 27%, transparent 27%); }
-          .rb-s3 { background: conic-gradient(from 0deg, var(--rb-base) 0%, var(--rb-base) 12%, transparent 12%, transparent 15%, #64748b 15%, #64748b 27%, transparent 27%); }
-          .rb-s4 { background: conic-gradient(from 0deg, var(--rb-base) 0%, var(--rb-base) 12%, transparent 12%, transparent 15%, #64748b 15%, #64748b 27%, transparent 27%); }
-          .rb-d1 { animation-delay:20s; } .rb-d2 { animation-delay:8s;  }
-          .rb-d3 { animation-delay:24s; } .rb-d4 { animation-delay:12s;  }
-          .rb-d5 { animation-delay:28s; } .rb-d6 { animation-delay:4s;  }
-          .rb-d7 { animation-delay:16s; }
+          .svg-merge-anim {
+            animation: svgMergeAnim 3s forwards;
+            transform-origin: center;
+          }
+          .anim-icon-sync { animation: iconSyncAnim 3s forwards; }
         `}</style>
 
 
@@ -582,72 +593,76 @@ export default function Dashboard() {
           <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[24px] border border-white dark:border-slate-800 shadow-[0_8px_30px_rgba(15,23,42,0.06)] dark:shadow-none p-5">
             <div className="grid grid-cols-4 gap-2 md:grid-cols-2 lg:grid-cols-4 md:gap-3">
 
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.96 }} onClick={() => router.push("/dashboard/seller/upload")} className="flex flex-col items-center gap-2 group md:flex-row md:items-center md:justify-between md:gap-3 md:p-4 md:rounded-2xl bg-transparent md:bg-cyan-600/10 dark:md:bg-cyan-900/40 md:border md:border-cyan-200/60 dark:md:border-cyan-700/30 md:hover:bg-cyan-600/15 dark:md:hover:bg-cyan-900/60 transition-all w-full">
-                <div className="flex flex-col items-center gap-2 md:flex-row md:items-center md:gap-3">
-                  <div className="rb-parent w-[56px] h-[56px] md:w-[50px] md:h-[50px] shrink-0">
-                    <span className="rb-ring rb-cw rb-blue"></span>
-                    <div className="relative z-[1] w-full h-full rounded-full flex items-center justify-center bg-cyan-100 dark:bg-cyan-900/60 border border-cyan-200/50 dark:border-cyan-700/40 shadow-sm transition-all">
-                      <span className="anim-wrapper anim-float inline-flex"><Upload className="w-6 h-6 text-cyan-700 dark:text-cyan-300" strokeWidth={1.5} /></span>
-                    </div>
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/upload")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+                <div className="relative w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0">
+                  <div className="absolute inset-[-4px] z-10 pointer-events-none">
+                    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible -rotate-90">
+                      <circle cx="50" cy="50" r="48" stroke="currentColor" strokeWidth="4" fill="none" strokeLinecap="round" className={`text-blue-500 dark:text-blue-400 transition-opacity duration-300 ${activeRing === 0 ? 'svg-merge-anim' : 'opacity-0 group-hover:opacity-30'}`} />
+                    </svg>
                   </div>
-                  <div className="hidden md:flex flex-col items-start text-left">
-                    <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Upload Product</span>
-                    <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Add new content</span>
+                  <div className="relative z-[1] w-full h-full rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden">
+                    <span className={`anim-wrapper inline-flex relative z-10 ${activeRing === 0 ? 'anim-icon-sync' : ''}`}><Upload className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                   </div>
+                </div>
+                <div className="hidden md:flex flex-col items-start text-left ml-3">
+                  <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Upload Product</span>
+                  <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Add new content</span>
                 </div>
                 <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Upload</span>
-                <ChevronRight className="hidden md:block w-4 h-4 text-cyan-400 dark:text-cyan-500 shrink-0 group-hover:translate-x-0.5 transition-transform" />
               </motion.button>
 
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.96 }} onClick={() => router.push("/dashboard/seller/products")} className="flex flex-col items-center gap-2 group md:flex-row md:items-center md:justify-between md:gap-3 md:p-4 md:rounded-2xl bg-transparent md:bg-blue-600/10 dark:md:bg-blue-900/40 md:border md:border-blue-200/60 dark:md:border-blue-700/30 md:hover:bg-blue-600/15 dark:md:hover:bg-blue-900/60 transition-all w-full">
-                <div className="flex flex-col items-center gap-2 md:flex-row md:items-center md:gap-3">
-                  <div className="rb-parent w-[56px] h-[56px] md:w-[50px] md:h-[50px] shrink-0">
-                    <span className="rb-ring rb-ccw rb-blue rb-d1"></span>
-                    <div className="relative z-[1] w-full h-full rounded-full flex items-center justify-center bg-blue-100 dark:bg-blue-900/60 border border-blue-200/50 dark:border-blue-700/40 shadow-sm transition-all">
-                      <span className="anim-wrapper anim-wiggle delay-1 inline-flex"><Package className="w-6 h-6 text-blue-700 dark:text-blue-300" strokeWidth={1.5} /></span>
-                    </div>
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/products")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+                <div className="relative w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0">
+                  <div className="absolute inset-[-4px] z-10 pointer-events-none">
+                    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible -rotate-90">
+                      <circle cx="50" cy="50" r="48" stroke="currentColor" strokeWidth="4" fill="none" strokeLinecap="round" className={`text-emerald-500 dark:text-emerald-400 transition-opacity duration-300 ${activeRing === 1 ? 'svg-merge-anim' : 'opacity-0 group-hover:opacity-30'}`} />
+                    </svg>
                   </div>
-                  <div className="hidden md:flex flex-col items-start text-left">
-                    <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">My Products</span>
-                    <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Manage listings</span>
+                  <div className="relative z-[1] w-full h-full rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden">
+                    <span className={`anim-wrapper inline-flex relative z-10 ${activeRing === 1 ? 'anim-icon-sync' : ''}`}><Package className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                   </div>
+                </div>
+                <div className="hidden md:flex flex-col items-start text-left ml-3">
+                  <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">My Products</span>
+                  <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Manage listings</span>
                 </div>
                 <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Products</span>
-                <ChevronRight className="hidden md:block w-4 h-4 text-blue-400 dark:text-blue-500 shrink-0 group-hover:translate-x-0.5 transition-transform" />
               </motion.button>
 
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.96 }} onClick={() => router.push("/dashboard/seller/earnings")} className="flex flex-col items-center gap-2 group md:flex-row md:items-center md:justify-between md:gap-3 md:p-4 md:rounded-2xl bg-transparent md:bg-emerald-600/10 dark:md:bg-emerald-900/40 md:border md:border-emerald-200/60 dark:md:border-emerald-700/30 md:hover:bg-emerald-600/15 dark:md:hover:bg-emerald-900/60 transition-all w-full">
-                <div className="flex flex-col items-center gap-2 md:flex-row md:items-center md:gap-3">
-                  <div className="rb-parent w-[56px] h-[56px] md:w-[50px] md:h-[50px] shrink-0">
-                    <span className="rb-ring rb-cw rb-green rb-d2"></span>
-                    <div className="relative z-[1] w-full h-full rounded-full flex items-center justify-center bg-emerald-100 dark:bg-emerald-900/60 border border-emerald-200/50 dark:border-emerald-700/40 shadow-sm transition-all">
-                      <span className="anim-wrapper anim-pulse delay-2 inline-flex"><IndianRupee className="w-6 h-6 text-emerald-700 dark:text-emerald-300" strokeWidth={1.5} /></span>
-                    </div>
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/earnings")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+                <div className="relative w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0">
+                  <div className="absolute inset-[-4px] z-10 pointer-events-none">
+                    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible -rotate-90">
+                      <circle cx="50" cy="50" r="48" stroke="currentColor" strokeWidth="4" fill="none" strokeLinecap="round" className={`text-rose-500 dark:text-rose-400 transition-opacity duration-300 ${activeRing === 2 ? 'svg-merge-anim' : 'opacity-0 group-hover:opacity-30'}`} />
+                    </svg>
                   </div>
-                  <div className="hidden md:flex flex-col items-start text-left">
-                    <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Earnings</span>
-                    <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Withdraw money</span>
+                  <div className="relative z-[1] w-full h-full rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden">
+                    <span className={`anim-wrapper inline-flex relative z-10 ${activeRing === 2 ? 'anim-icon-sync' : ''}`}><IndianRupee className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                   </div>
+                </div>
+                <div className="hidden md:flex flex-col items-start text-left ml-3">
+                  <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Earnings</span>
+                  <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Withdraw money</span>
                 </div>
                 <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Earnings</span>
-                <ChevronRight className="hidden md:block w-4 h-4 text-emerald-400 dark:text-emerald-500 shrink-0 group-hover:translate-x-0.5 transition-transform" />
               </motion.button>
 
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.96 }} onClick={() => router.push("/dashboard/seller/bank-account")} className="flex flex-col items-center gap-2 group md:flex-row md:items-center md:justify-between md:gap-3 md:p-4 md:rounded-2xl bg-transparent md:bg-purple-600/10 dark:md:bg-purple-900/40 md:border md:border-purple-200/60 dark:md:border-purple-700/30 md:hover:bg-purple-600/15 dark:md:hover:bg-purple-900/60 transition-all w-full">
-                <div className="flex flex-col items-center gap-2 md:flex-row md:items-center md:gap-3">
-                  <div className="rb-parent w-[56px] h-[56px] md:w-[50px] md:h-[50px] shrink-0">
-                    <span className="rb-ring rb-ccw rb-violet rb-d3"></span>
-                    <div className="relative z-[1] w-full h-full rounded-full flex items-center justify-center bg-purple-100 dark:bg-purple-900/60 border border-purple-200/50 dark:border-purple-700/40 shadow-sm transition-all">
-                      <span className="anim-wrapper anim-bounce delay-3 inline-flex"><Landmark className="w-6 h-6 text-purple-700 dark:text-purple-300" strokeWidth={1.5} /></span>
-                    </div>
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/bank-account")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+                <div className="relative w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0">
+                  <div className="absolute inset-[-4px] z-10 pointer-events-none">
+                    <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible -rotate-90">
+                      <circle cx="50" cy="50" r="48" stroke="currentColor" strokeWidth="4" fill="none" strokeLinecap="round" className={`text-violet-500 dark:text-violet-400 transition-opacity duration-300 ${activeRing === 3 ? 'svg-merge-anim' : 'opacity-0 group-hover:opacity-30'}`} />
+                    </svg>
                   </div>
-                  <div className="hidden md:flex flex-col items-start text-left">
-                    <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Bank Accounts</span>
-                    <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Manage accounts</span>
+                  <div className="relative z-[1] w-full h-full rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden">
+                    <span className={`anim-wrapper inline-flex relative z-10 ${activeRing === 3 ? 'anim-icon-sync' : ''}`}><Landmark className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                   </div>
                 </div>
+                <div className="hidden md:flex flex-col items-start text-left ml-3">
+                  <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Bank Accounts</span>
+                  <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Manage accounts</span>
+                </div>
                 <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Bank</span>
-                <ChevronRight className="hidden md:block w-4 h-4 text-purple-400 dark:text-purple-500 shrink-0 group-hover:translate-x-0.5 transition-transform" />
               </motion.button>
 
             </div>
@@ -662,11 +677,8 @@ export default function Dashboard() {
             <div className="grid grid-cols-4 gap-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4 lg:gap-5">
 
               <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/transactions")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
-                <div className="rb-parent w-[56px] h-[56px] md:w-[48px] md:h-[48px] shrink-0">
-                  <span className="rb-ring rb-ccw rb-s1 rb-d4"></span>
-                  <div className="relative z-[1] w-full h-full rounded-full flex items-center justify-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm group-hover:scale-[1.05] group-hover:-translate-y-0.5 group-hover:shadow-md group-hover:border-slate-300 dark:group-hover:border-slate-600 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 transition-all duration-300">
-                    <span className="anim-wrapper anim-flip delay-4 inline-flex"><WalletCards className="w-6 h-6 md:w-5 md:h-5 text-slate-900 dark:text-white" strokeWidth={1.5} /></span>
-                  </div>
+                <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden">
+                  <span className="anim-wrapper anim-flip delay-4 inline-flex relative z-10"><WalletCards className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                 </div>
                 <div className="hidden md:flex flex-col items-start text-left ml-3">
                   <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Total Revenue</span>
@@ -676,11 +688,8 @@ export default function Dashboard() {
               </motion.button>
 
               <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/transactions?period=month")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
-                <div className="rb-parent w-[56px] h-[56px] md:w-[48px] md:h-[48px] shrink-0">
-                  <span className="rb-ring rb-cw rb-s2 rb-d5"></span>
-                  <div className="relative z-[1] w-full h-full rounded-full flex items-center justify-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm group-hover:scale-[1.05] group-hover:-translate-y-0.5 group-hover:shadow-md group-hover:border-slate-300 dark:group-hover:border-slate-600 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 transition-all duration-300">
-                    <span className="anim-wrapper anim-float delay-5 inline-flex"><TrendingUp className="w-6 h-6 md:w-5 md:h-5 text-slate-900 dark:text-white" strokeWidth={1.5} /></span>
-                  </div>
+                <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden">
+                  <span className="anim-wrapper anim-float delay-5 inline-flex relative z-10"><TrendingUp className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                 </div>
                 <div className="hidden md:flex flex-col items-start text-left ml-3">
                   <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">This Month</span>
@@ -690,11 +699,8 @@ export default function Dashboard() {
               </motion.button>
 
               <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/sales")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
-                <div className="rb-parent w-[56px] h-[56px] md:w-[48px] md:h-[48px] shrink-0">
-                  <span className="rb-ring rb-ccw rb-s3 rb-d6"></span>
-                  <div className="relative z-[1] w-full h-full rounded-full flex items-center justify-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm group-hover:scale-[1.05] group-hover:-translate-y-0.5 group-hover:shadow-md group-hover:border-slate-300 dark:group-hover:border-slate-600 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 transition-all duration-300">
-                    <span className="anim-wrapper anim-bounce delay-6 inline-flex"><ShoppingBag className="w-6 h-6 md:w-5 md:h-5 text-slate-900 dark:text-white" strokeWidth={1.5} /></span>
-                  </div>
+                <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden">
+                  <span className="anim-wrapper anim-bounce delay-6 inline-flex relative z-10"><ShoppingBag className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                 </div>
                 <div className="hidden md:flex flex-col items-start text-left ml-3">
                   <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Total Sales</span>
@@ -704,11 +710,8 @@ export default function Dashboard() {
               </motion.button>
 
               <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/growth")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
-                <div className="rb-parent w-[56px] h-[56px] md:w-[48px] md:h-[48px] shrink-0">
-                  <span className="rb-ring rb-cw rb-s4 rb-d7"></span>
-                  <div className="relative z-[1] w-full h-full rounded-full flex items-center justify-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm group-hover:scale-[1.05] group-hover:-translate-y-0.5 group-hover:shadow-md group-hover:border-slate-300 dark:group-hover:border-slate-600 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 transition-all duration-300">
-                    <span className="anim-wrapper anim-swing delay-7 inline-flex"><BarChart3 className="w-6 h-6 md:w-5 md:h-5 text-slate-900 dark:text-white" strokeWidth={1.5} /></span>
-                  </div>
+                <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden">
+                  <span className="anim-wrapper anim-swing delay-7 inline-flex relative z-10"><BarChart3 className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                 </div>
                 <div className="hidden md:flex flex-col items-start text-left ml-3">
                   <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Growth</span>
@@ -796,10 +799,8 @@ export default function Dashboard() {
             <div className="grid grid-cols-4 gap-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4 lg:gap-5">
             
             <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/promotions")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
-              <div className="w-[56px] h-[56px] md:w-[48px] md:h-[48px] shrink-0">
-                <div className="relative z-[1] w-full h-full rounded-full flex items-center justify-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm group-hover:scale-[1.05] group-hover:-translate-y-0.5 group-hover:shadow-md group-hover:border-slate-300 dark:group-hover:border-slate-600 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 transition-all duration-300">
-                  <span className="anim-wrapper anim-swing delay-4 inline-flex"><Megaphone className="w-6 h-6 md:w-5 md:h-5 text-slate-900 dark:text-white" strokeWidth={1.5} /></span>
-                </div>
+              <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
+                <span className="anim-wrapper anim-swing delay-4 inline-flex relative z-10"><Megaphone className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
               </div>
               <div className="hidden md:flex flex-col items-start text-left ml-3">
                 <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Promotions</span>
@@ -809,10 +810,8 @@ export default function Dashboard() {
             </motion.button>
 
             <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/reports")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
-              <div className="w-[56px] h-[56px] md:w-[48px] md:h-[48px] shrink-0">
-                <div className="relative z-[1] w-full h-full rounded-full flex items-center justify-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm group-hover:scale-[1.05] group-hover:-translate-y-0.5 group-hover:shadow-md group-hover:border-slate-300 dark:group-hover:border-slate-600 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 transition-all duration-300">
-                  <span className="anim-wrapper anim-flip delay-5 inline-flex"><FileText className="w-6 h-6 md:w-5 md:h-5 text-slate-900 dark:text-white" strokeWidth={1.5} /></span>
-                </div>
+              <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
+                <span className="anim-wrapper anim-flip delay-5 inline-flex relative z-10"><FileText className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
               </div>
               <div className="hidden md:flex flex-col items-start text-left ml-3">
                 <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Reports</span>
@@ -822,10 +821,8 @@ export default function Dashboard() {
             </motion.button>
 
             <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/help-center")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
-              <div className="w-[56px] h-[56px] md:w-[48px] md:h-[48px] shrink-0">
-                <div className="relative z-[1] w-full h-full rounded-full flex items-center justify-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm group-hover:scale-[1.05] group-hover:-translate-y-0.5 group-hover:shadow-md group-hover:border-slate-300 dark:group-hover:border-slate-600 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 transition-all duration-300">
-                  <span className="anim-wrapper anim-float delay-6 inline-flex"><CircleHelp className="w-6 h-6 md:w-5 md:h-5 text-slate-900 dark:text-white" strokeWidth={1.5} /></span>
-                </div>
+              <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
+                <span className="anim-wrapper anim-float delay-6 inline-flex relative z-10"><CircleHelp className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
               </div>
               <div className="hidden md:flex flex-col items-start text-left ml-3">
                 <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Help Center</span>
@@ -834,11 +831,9 @@ export default function Dashboard() {
               <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Help</span>
             </motion.button>
 
-            <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/settings")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
-              <div className="w-[56px] h-[56px] md:w-[48px] md:h-[48px] shrink-0">
-                <div className="relative z-[1] w-full h-full rounded-full flex items-center justify-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm group-hover:scale-[1.05] group-hover:-translate-y-0.5 group-hover:shadow-md group-hover:border-slate-300 dark:group-hover:border-slate-600 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 transition-all duration-300">
-                  <span className="anim-wrapper anim-spin delay-7 inline-flex"><Settings className="w-6 h-6 md:w-5 md:h-5 text-slate-900 dark:text-white" strokeWidth={1.5} /></span>
-                </div>
+            <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/settings")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+              <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
+                <span className="anim-wrapper anim-spin delay-7 inline-flex relative z-10"><Settings className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
               </div>
               <div className="hidden md:flex flex-col items-start text-left ml-3">
                 <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Settings</span>
