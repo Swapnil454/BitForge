@@ -9,6 +9,17 @@ import Dispute from "../models/Dispute.js";
 import Invoice from "../models/Invoice.js";
 import Order from "../models/Order.js";
 import Notification from "../models/Notification.js";
+import PDFDocument from 'pdfkit';
+import Review from "../models/Review.js";
+import ModerationLog from "../models/ModerationLog.js";
+import { sendApprovalEmail, sendRejectionEmail, sendChangesRequestedEmail } from "../utils/moderationEmails.js";
+
+// Utility to write moderation log non-blocking
+function writeModerationLog(data) {
+  ModerationLog.create(data).catch(err => {
+    console.error('[ModerationLog] Failed to write log:', err.message, data);
+  });
+}
 
 export const getPendingSellers = async (req, res) => {
   const sellers = await User.find({
@@ -31,7 +42,7 @@ export const approveSeller = async (req, res) => {
   if (seller) {
     await createNotification(
       seller._id,
-      'product_approved',
+      "seller_account_approved",
       'Seller Account Approved! 🎉',
       'Congratulations! Your seller account has been approved. You can now start listing and selling products on our platform.',
       seller._id,
@@ -56,7 +67,7 @@ export const rejectSeller = async (req, res) => {
   if (seller) {
     await createNotification(
       seller._id,
-      'product_rejected',
+      "seller_account_rejected",
       'Seller Account Not Approved',
       `Your seller account application was not approved. Reason: ${reason || 'Not specified'}`,
       seller._id,
@@ -69,18 +80,197 @@ export const rejectSeller = async (req, res) => {
 
 // Get all pending products
 export const getPendingProducts = async (req, res) => {
-  const products = await Product.find({ status: "pending" })
-    .populate("sellerId", "name email");
-  res.json(products);
+  try {
+    const {
+      page = 1,
+      limit = 20,
+      search = '',
+      category = '',
+      status = 'pending',
+      sort = 'newest'
+    } = req.query;
+
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 20;
+    const skip = (pageNum - 1) * limitNum;
+
+    const matchStage = { status };
+    if (category && category !== 'all') {
+      matchStage.category = category;
+    }
+
+    const sortStage = {
+      newest:     { createdAt: -1 },
+      oldest:     { createdAt:  1 },
+      price_high: { price: -1 },
+      price_low:  { price:  1 },
+    }[sort] ?? { createdAt: -1 };
+
+    const searchStage = {};
+    if (search) {
+      searchStage.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { 'seller.email': { $regex: search, $options: 'i' } },
+        { category: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const result = await Product.aggregate([
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'sellerId',
+          foreignField: '_id',
+          as: 'seller'
+        }
+      },
+      { $unwind: '$seller' },
+      { $match: searchStage },
+      { $sort: sortStage },
+      {
+        $facet: {
+          metadata: [{ $count: "total" }],
+          data: [
+            { $skip: skip },
+            { $limit: limitNum },
+            {
+              $project: {
+                title: 1, description: 1, price: 1,
+                discount: 1, category: 1,
+                thumbnailUrl: 1, fileCount: 1, fileType: '$format',
+                finalPrice: 1,
+                uploadedAt: '$createdAt',
+                createdAt: 1,
+                status: 1,
+                'seller.name': 1,
+                'seller.email': 1,
+                'seller.emailVerified': '$seller.isVerified',
+                'seller.status': '$seller.accountStatus',
+                'seller.sellerStats': 1
+              }
+            }
+          ]
+        }
+      }
+    ]);
+
+    const total = result[0].metadata[0]?.total || 0;
+    const products = result[0].data;
+
+    res.json({
+      products,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit)
+    });
+  } catch (error) {
+    console.error("Error fetching pending products:", error);
+    res.status(500).json({ message: "Failed to fetch pending products" });
+  }
 };
 
-// Get all products with different statuses
+// Get product moderation stats
+export const getProductStats = async (req, res) => {
+  try {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const statsResult = await Product.aggregate([
+      {
+        $facet: {
+          pending: [
+            { $match: { status: 'pending' } },
+            { $count: 'count' }
+          ],
+          pendingChanges: [
+            { $match: { status: 'changes_requested' } },
+            { $count: 'count' }
+          ],
+          approvedToday: [
+            { $match: {
+              status: 'approved',
+              updatedAt: { $gte: startOfDay, $lte: endOfDay }
+            }},
+            { $count: 'count' }
+          ],
+          rejectedToday: [
+            { $match: {
+              status: 'rejected',
+              updatedAt: { $gte: startOfDay, $lte: endOfDay }
+            }},
+            { $count: 'count' }
+          ]
+        }
+      }
+    ]);
+
+    const stats = statsResult[0];
+
+    res.json({
+      pending: stats.pending[0]?.count || 0,
+      pendingChanges: stats.pendingChanges[0]?.count || 0,
+      approvedToday: stats.approvedToday[0]?.count || 0,
+      rejectedToday: stats.rejectedToday[0]?.count || 0,
+    });
+  } catch (error) {
+    console.error("Error fetching product stats:", error);
+    res.status(500).json({ message: "Failed to fetch product stats" });
+  }
+};
+
+// Get all products with pagination and filtering
 export const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find({})
+    const { page = 1, limit = 10, search = "", status = "all", category = "all", sortBy = "newest" } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const query = {};
+    if (status !== "all") query.status = status;
+    if (category !== "all") query.category = category;
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } }
+      ];
+    }
+
+    const sort = {};
+    if (sortBy === "newest") sort.createdAt = -1;
+    else if (sortBy === "oldest") sort.createdAt = 1;
+    else if (sortBy === "price_high") sort.price = -1;
+    else if (sortBy === "price_low") sort.price = 1;
+
+    const products = await Product.find(query)
       .populate("sellerId", "name email")
-      .sort({ createdAt: -1 });
-    res.json(products);
+      .sort(sort)
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Product.countDocuments(query);
+    const approvedCount = await Product.countDocuments({ status: "approved" });
+    const pendingCount = await Product.countDocuments({ status: "pending" });
+    const rejectedCount = await Product.countDocuments({ status: "rejected" });
+
+    res.json({
+      products,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(total / parseInt(limit))
+      },
+      stats: {
+        total,
+        approved: approvedCount,
+        pending: pendingCount,
+        rejected: rejectedCount
+      }
+    });
   } catch (error) {
     console.error("Error fetching all products:", error);
     res.status(500).json({ message: "Failed to fetch products" });
@@ -98,11 +288,336 @@ export const getProductDetails = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
-    
-    res.json(product);
+
+    const [orderStats, recentOrders, ratingStats] = await Promise.all([
+      Order.aggregate([
+        { $match: { productId: product._id, status: "paid" } },
+        {
+          $group: {
+            _id: null,
+            totalSales: { $sum: 1 },
+            totalRevenue: { $sum: "$amount" },
+          },
+        },
+      ]),
+      Order.find({ productId: product._id, status: "paid" })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate("buyerId", "name email")
+        .select("buyerId amount status createdAt")
+        .lean(),
+      Review.aggregate([
+        { $match: { productId: product._id, isHidden: { $ne: true } } },
+        { $group: { _id: null, avgRating: { $avg: "$rating" } } },
+      ]),
+    ]);
+
+    const totalSales = orderStats[0]?.totalSales || 0;
+    const totalRevenue = Number((orderStats[0]?.totalRevenue || 0).toFixed(2));
+    const avgRating = ratingStats[0]?.avgRating ? Number(ratingStats[0].avgRating.toFixed(1)) : 0;
+
+    const recentPurchases = recentOrders.map((order) => ({
+      _id: order._id,
+      buyerName: order.buyerId?.name || "Unknown Buyer",
+      amount: order.amount || 0,
+      status: order.status,
+      createdAt: order.createdAt,
+    }));
+
+    const productData = product.toObject();
+
+    res.json({
+      ...productData,
+      totalSales,
+      totalRevenue,
+      avgRating,
+      totalViews: productData.totalViews ?? 0,
+      recentPurchases,
+    });
   } catch (error) {
     console.error("Error fetching product details:", error);
     res.status(500).json({ message: "Failed to fetch product details" });
+  }
+};
+
+// Get advanced product analytics
+export const getProductAnalytics = async (req, res) => {
+  try {
+    const { range } = req.query;
+    const days = range && range !== "all" ? Number(range) : null;
+    const now = new Date();
+    const startDate = days ? new Date(now.getTime() - days * 24 * 60 * 60 * 1000) : null;
+
+    const [totalProducts, approved, pending, rejected] = await Promise.all([
+      Product.countDocuments(),
+      Product.countDocuments({ status: "approved" }),
+      Product.countDocuments({ status: "pending" }),
+      Product.countDocuments({ status: "rejected" }),
+    ]);
+
+    // Category breakdown
+    const categories = await Product.aggregate([
+      { $group: { _id: "$category", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]);
+
+    const submissionsQuery = startDate ? { createdAt: { $gte: startDate } } : {};
+    const revenueMatch = { status: "paid" };
+    if (startDate) {
+      revenueMatch.createdAt = { $gte: startDate };
+    }
+
+    const [orderStats] = await Order.aggregate([
+      { $match: revenueMatch },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: "$amount" },
+          revenueOrders: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const totalRevenue = Number((orderStats?.totalRevenue || 0).toFixed(2));
+    const revenueOrders = orderStats?.revenueOrders || 0;
+
+    const [recentSubmissions, recentSubmissionsCount] = await Promise.all([
+      Product.find(submissionsQuery)
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate("sellerId", "name email")
+        .select("title sellerId category status createdAt")
+        .lean(),
+      Product.countDocuments(submissionsQuery),
+    ]);
+
+    const needsAttention = await Product.find({ status: "pending" })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select("title status createdAt contentReviewed malwareScanDetails")
+      .lean();
+
+    const topSellerRevenue = await Order.aggregate([
+      { $match: revenueMatch },
+      {
+        $group: {
+          _id: "$sellerId",
+          totalRevenue: { $sum: "$amount" },
+          totalOrders: { $sum: 1 },
+        },
+      },
+      { $sort: { totalRevenue: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "seller",
+        },
+      },
+      { $unwind: "$seller" },
+      {
+        $project: {
+          _id: 1,
+          name: "$seller.name",
+          email: "$seller.email",
+          totalRevenue: 1,
+        },
+      },
+    ]);
+
+    const productCounts = await Product.aggregate([
+      { $group: { _id: "$sellerId", count: { $sum: 1 } } },
+    ]);
+
+    const productCountMap = productCounts.reduce((acc, item) => {
+      acc[item._id?.toString()] = item.count;
+      return acc;
+    }, {});
+
+    const topSellers = topSellerRevenue.map((seller) => ({
+      id: seller._id,
+      name: seller.name,
+      email: seller.email,
+      productCount: productCountMap[seller._id?.toString()] || 0,
+      revenue: Number((seller.totalRevenue || 0).toFixed(2)),
+    }));
+
+    let timelineLabels = [];
+    let timelineCounts = [];
+
+    if (days) {
+      const submissions = await Product.find(submissionsQuery).select("createdAt").lean();
+      const bucketCount = Math.max(1, Math.ceil(days / 7));
+      const counts = Array(bucketCount).fill(0);
+
+      submissions.forEach((submission) => {
+        const diff = submission.createdAt - startDate;
+        const bucketIndex = Math.min(
+          bucketCount - 1,
+          Math.max(0, Math.floor(diff / (7 * 24 * 60 * 60 * 1000)))
+        );
+        counts[bucketIndex] += 1;
+      });
+
+      timelineLabels = counts.map((_, index) => `Week ${index + 1}`);
+      timelineCounts = counts;
+    } else {
+      const monthly = await Product.aggregate([
+        {
+          $group: {
+            _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { "_id.year": 1, "_id.month": 1 } },
+      ]);
+
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      timelineLabels = monthly.map((item) => `${monthNames[item._id.month - 1]} ${item._id.year}`);
+      timelineCounts = monthly.map((item) => item.count);
+    }
+
+    const [approvalDuration] = await Product.aggregate([
+      { $match: { status: "approved" } },
+      { $project: { duration: { $subtract: ["$updatedAt", "$createdAt"] } } },
+      { $group: { _id: null, avgDuration: { $avg: "$duration" } } },
+    ]);
+
+    const approvalRate = totalProducts ? (approved / totalProducts) * 100 : 0;
+    const avgApprovalDays = approvalDuration?.avgDuration
+      ? Number((approvalDuration.avgDuration / (1000 * 60 * 60 * 24)).toFixed(1))
+      : 0;
+    const activeSellers = (await Product.distinct("sellerId", { status: "approved" })).length;
+
+    res.json({
+      stats: { 
+        total: totalProducts, 
+        approved, 
+        pending, 
+        rejected,
+        recentSubmissions: recentSubmissionsCount,
+        totalRevenue,
+        revenueOrders,
+      },
+      categories,
+      topSellers,
+      recentSubmissions: recentSubmissions.map((product) => ({
+        _id: product._id,
+        title: product.title,
+        sellerName: product.sellerId?.name || "Unknown Seller",
+        category: product.category || "Uncategorized",
+        status: product.status,
+        createdAt: product.createdAt,
+      })),
+      needsAttention: needsAttention.map((product) => ({
+        _id: product._id,
+        title: product.title,
+        status: product.status,
+        createdAt: product.createdAt,
+        reason: "Pending review",
+      })),
+      timeline: { labels: timelineLabels, counts: timelineCounts },
+      health: {
+        approvalRate: Number(approvalRate.toFixed(1)),
+        avgApprovalDays,
+        activeSellers,
+      },
+    });
+  } catch (error) {
+    console.error("Error in getProductAnalytics:", error);
+    res.status(500).json({ message: "Failed to fetch analytics" });
+  }
+};
+
+// Generate PDF Report for Products
+export const getProductReport = async (req, res) => {
+  try {
+    const products = await Product.find().populate("sellerId", "name email");
+    
+    const doc = new PDFDocument({ margin: 50 });
+    const filename = `BitForge_Product_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+    
+    res.setHeader('Content-disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-type', 'application/pdf');
+
+    // Header
+    doc.fillColor("#444444")
+       .fontSize(20)
+       .text("BitForge Catalog Report", 50, 50)
+       .fontSize(10)
+       .text(`Generated on: ${new Date().toLocaleString()}`, 200, 65, { align: "right" })
+       .moveDown();
+
+    doc.strokeColor("#aaaaaa")
+       .lineWidth(1)
+       .moveTo(50, 80)
+       .lineTo(550, 80)
+       .stroke();
+
+    doc.moveDown(2);
+
+    // Summary Section
+    doc.fontSize(16).text("Inventory Summary", { underline: true });
+    doc.moveDown();
+    
+    const stats = {
+      Total: products.length,
+      Approved: products.filter(p => p.status === 'approved').length,
+      Pending: products.filter(p => p.status === 'pending').length,
+      Rejected: products.filter(p => p.status === 'rejected').length
+    };
+
+    Object.entries(stats).forEach(([key, val]) => {
+      doc.fontSize(12).text(`${key}: ${val}`, { indent: 20 });
+    });
+
+    doc.moveDown(2);
+
+    // Products List
+    doc.fontSize(16).text("Detailed Catalog", { underline: true });
+    doc.moveDown();
+
+    products.forEach((p, index) => {
+      // Add new page if close to bottom
+      if (doc.y > 650) doc.addPage();
+
+      doc.fontSize(11)
+         .fillColor("#000000")
+         .text(`${index + 1}. ${p.title}`, { bold: true });
+      
+      doc.fontSize(9)
+         .fillColor("#666666")
+         .text(`Status: ${p.status.toUpperCase()}`, { indent: 15 })
+         .text(`Seller: ${p.sellerId?.name || 'N/A'} (${p.sellerId?.email || 'N/A'})`, { indent: 15 })
+         .text(`Price: Rs. ${p.price}`, { indent: 15 })
+         .text(`Category: ${p.category || 'Uncategorized'}`, { indent: 15 })
+         .text(`Added: ${new Date(p.createdAt).toLocaleDateString()}`, { indent: 15 });
+      
+      doc.moveDown(1);
+    });
+
+    // Footer
+    const range = doc.bufferedPageRange();
+    for (let i = range.start; i < range.start + range.count; i++) {
+      doc.switchToPage(i);
+      doc.fontSize(8)
+         .fillColor("#999999")
+         .text(
+           `BitForge Admin Panel - Page ${i + 1} of ${range.count}`,
+           50,
+           doc.page.height - 50,
+           { align: "center", width: 500 }
+         );
+    }
+
+    doc.pipe(res);
+    doc.end();
+  } catch (error) {
+    console.error("Error in getProductReport:", error);
+    res.status(500).json({ message: "Failed to generate report" });
   }
 };
 
@@ -249,14 +764,48 @@ export const deleteProductByAdmin = async (req, res) => {
 // Approve product
 export const approveProduct = async (req, res) => {
   const { id } = req.params;
+  const { adminNote } = req.body;
 
   const product = await Product.findByIdAndUpdate(id, {
     status: "approved",
     rejectionReason: null,
   }, { new: true });
 
-  // Notify seller about product approval
   if (product && product.sellerId) {
+    const seller = await User.findByIdAndUpdate(product.sellerId, {
+      $inc: {
+        'sellerStats.totalProducts': 1,
+        'sellerStats.approvedProducts': 1
+      }
+    });
+
+    // Write audit log
+    const logData = {
+      productId: product._id,
+      productTitle: product.title,
+      adminId: req.user._id,
+      adminEmail: req.user.email,
+      action: 'approved',
+      adminNote,
+      sellerId: product.sellerId,
+      sellerEmail: seller?.email,
+      timestamp: new Date()
+    };
+    writeModerationLog(logData);
+
+    // Send email
+    if (seller) {
+      try {
+        await sendApprovalEmail(seller, product);
+        ModerationLog.findOneAndUpdate(
+          { productId: product._id, action: 'approved', timestamp: { $gte: new Date(Date.now() - 5000) } },
+          { $set: { emailSent: true, emailSentAt: new Date() } }
+        ).catch(e => console.error('Failed to update log with emailSent:', e.message));
+      } catch (emailErr) {
+        console.error('Email send failed:', emailErr.message);
+      }
+    }
+
     await createNotification(
       product.sellerId,
       "product_approved",
@@ -290,30 +839,125 @@ export const approveProduct = async (req, res) => {
 // Reject product
 export const rejectProduct = async (req, res) => {
   const { id } = req.params;
-  const { reason } = req.body;
+  const { reasons, adminNote } = req.body;
 
-  if (!reason) {
-    return res.status(400).json({ message: "Rejection reason required" });
+  if (!reasons || reasons.length === 0) {
+    return res.status(400).json({ message: "Rejection reasons required" });
   }
 
   const product = await Product.findByIdAndUpdate(id, {
     status: "rejected",
-    rejectionReason: reason,
+    rejectionReason: reasons.join(', '),
   }, { new: true });
 
-  // Notify seller about product rejection
   if (product && product.sellerId) {
+    const seller = await User.findByIdAndUpdate(product.sellerId, {
+      $inc: {
+        'sellerStats.rejectedProducts': 1
+      }
+    });
+
+    // Write audit log
+    const logData = {
+      productId: product._id,
+      productTitle: product.title,
+      adminId: req.user._id,
+      adminEmail: req.user.email,
+      action: 'rejected',
+      reasons,
+      adminNote,
+      sellerId: product.sellerId,
+      sellerEmail: seller?.email,
+      timestamp: new Date()
+    };
+    writeModerationLog(logData);
+
+    // Send email
+    if (seller) {
+      try {
+        await sendRejectionEmail(seller, product, reasons, adminNote);
+        ModerationLog.findOneAndUpdate(
+          { productId: product._id, action: 'rejected', timestamp: { $gte: new Date(Date.now() - 5000) } },
+          { $set: { emailSent: true, emailSentAt: new Date() } }
+        ).catch(e => console.error('Failed to update log with emailSent:', e.message));
+      } catch (emailErr) {
+        console.error('Email send failed:', emailErr.message);
+      }
+    }
+
     await createNotification(
       product.sellerId,
       "product_rejected",
       "Product Rejected",
-      `Your product "${product.title}" was rejected. Reason: ${reason}`,
+      `Your product "${product.title}" was rejected. Reasons: ${reasons.join(', ')}`,
       product._id,
       "Product"
     );
   }
 
   res.json({ message: "Product rejected" });
+};
+
+// Request changes for product
+export const requestProductChanges = async (req, res) => {
+  const { id } = req.params;
+  const { reasons, adminNote } = req.body;
+
+  if (!reasons || reasons.length === 0) {
+    return res.status(400).json({ message: "Change request reasons required" });
+  }
+
+  const product = await Product.findByIdAndUpdate(id, {
+    status: "changes_requested",
+    rejectionReason: reasons.join(', '), // Reusing field
+  }, { new: true });
+
+  if (product && product.sellerId) {
+    const seller = await User.findByIdAndUpdate(product.sellerId, {
+      $inc: {
+        'sellerStats.changesRequested': 1
+      }
+    });
+
+    // Write audit log
+    const logData = {
+      productId: product._id,
+      productTitle: product.title,
+      adminId: req.user._id,
+      adminEmail: req.user.email,
+      action: 'changes_requested',
+      reasons,
+      adminNote,
+      sellerId: product.sellerId,
+      sellerEmail: seller?.email,
+      timestamp: new Date()
+    };
+    writeModerationLog(logData);
+
+    // Send email
+    if (seller) {
+      try {
+        await sendChangesRequestedEmail(seller, product, reasons, adminNote);
+        ModerationLog.findOneAndUpdate(
+          { productId: product._id, action: 'changes_requested', timestamp: { $gte: new Date(Date.now() - 5000) } },
+          { $set: { emailSent: true, emailSentAt: new Date() } }
+        ).catch(e => console.error('Failed to update log with emailSent:', e.message));
+      } catch (emailErr) {
+        console.error('Email send failed:', emailErr.message);
+      }
+    }
+
+    await createNotification(
+      product.sellerId,
+      "product_changes_requested",
+      "Action Required: Changes Requested",
+      `We need you to make some updates to "${product.title}" before it can be approved. Reasons: ${reasons.join(', ')}`,
+      product._id,
+      "Product"
+    );
+  }
+
+  res.json({ message: "Changes requested" });
 };
 
 // Get pending product changes (updates/deletions)
@@ -366,7 +1010,7 @@ export const approveProductChange = async (req, res) => {
       await createNotification(
         product.sellerId,
         "product_change_approved",
-        "Product Update Approved ✅",
+        "Product Update Approved ",
         `Your update for "${product.title}" has been approved and is now live`,
         product._id,
         "Product"
@@ -431,7 +1075,7 @@ export const approveProductChange = async (req, res) => {
       await createNotification(
         product.sellerId,
         "product_change_approved",
-        "Product Deletion Approved ✅",
+        "Product Deletion Approved ",
         hasPurchases 
           ? `Your product "${product.title}" has been archived. Existing buyers retain access.`
           : `Your product "${product.title}" has been deleted as requested`,
@@ -577,12 +1221,24 @@ export const approvePayout = async (req, res) => {
     payout.paidBy = req.user.id; // Admin who processed the payment
     payout.paidAt = new Date();
     payout.paymentMethod = paymentMethod;
-    payout.paymentReference = paymentReference; // UTR or transaction reference
-    payout.paymentNotes = paymentNotes;
-    await payout.save();
+      payout.paymentReference = paymentReference; // UTR or transaction reference
+      payout.paymentNotes = paymentNotes;
+      await payout.save();
 
-    res.json({
-      message: "Payout marked as paid successfully",
+      await createNotification(
+        seller._id,
+        "payout_sent",
+        "Payout processed",
+        `Your payout of Rs. ${Number(payout.netPayableAmount || payout.amount || 0).toFixed(2)} has been marked as paid.`,
+        payout._id,
+        "Payout",
+        {
+          audienceRole: "seller",
+        }
+      );
+
+      res.json({
+        message: "Payout marked as paid successfully",
       payout: {
         id: payout._id,
         seller: {
@@ -614,20 +1270,34 @@ export const rejectPayout = async (req, res) => {
       return res.status(400).json({ message: "Rejection reason is required" });
     }
     
-    const payout = await Payout.findByIdAndUpdate(
-      req.params.id,
-      {
-        status: "rejected",
-        rejectionReason: reason,
-      },
-      { new: true }
-    );
+      const payout = await Payout.findByIdAndUpdate(
+        req.params.id,
+        {
+          status: "rejected",
+          rejectionReason: reason,
+        },
+        { new: true }
+      ).populate("sellerId", "name");
 
-    if (!payout) {
-      return res.status(404).json({ message: "Payout not found" });
-    }
+      if (!payout) {
+        return res.status(404).json({ message: "Payout not found" });
+      }
 
-    res.json({ message: "Payout rejected", payout });
+      if (payout.sellerId?._id) {
+        await createNotification(
+          payout.sellerId._id,
+          "payout_rejected",
+          "Payout rejected",
+          `Your payout request was rejected. Reason: ${reason}`,
+          payout._id,
+          "Payout",
+          {
+            audienceRole: "seller",
+          }
+        );
+      }
+
+      res.json({ message: "Payout rejected", payout });
   } catch (error) {
     console.error("Error rejecting payout:", error);
     res.status(500).json({ message: "Failed to reject payout" });
@@ -685,16 +1355,16 @@ export const getPayoutDetails = async (req, res) => {
   }
 };
 
-// Get all payouts with filters (for admin dashboard)
+// Get all payouts with filters (for admin dashboard) — returns rich format
 export const getAllPayouts = async (req, res) => {
   try {
-    const { status, limit = 50, page = 1 } = req.query;
-    
-    const filter = status ? { status } : {};
+    const { status, limit = 100, page = 1 } = req.query;
+
+    const filter = status && status !== 'all' ? { status } : {};
     const skip = (page - 1) * limit;
 
     const payouts = await Payout.find(filter)
-      .populate("sellerId", "name email")
+      .populate("sellerId", "name email bankAccounts")
       .populate("paidBy", "name email")
       .sort({ createdAt: -1 })
       .limit(parseInt(limit))
@@ -702,8 +1372,46 @@ export const getAllPayouts = async (req, res) => {
 
     const total = await Payout.countDocuments(filter);
 
+    const formattedPayouts = payouts.map(payout => {
+      const seller = payout.sellerId;
+      const primaryAccount = seller?.bankAccounts?.find(acc => acc.isPrimary);
+
+      return {
+        _id: payout._id,
+        sellerId: seller ? {
+          id: seller._id,
+          name: seller.name || 'Unknown Seller',
+          email: seller.email || 'N/A',
+        } : null,
+        primaryBankAccount: primaryAccount ? {
+          accountHolderName: primaryAccount.accountHolderName,
+          accountNumber: primaryAccount.accountNumber,
+          ifscCode: primaryAccount.ifscCode,
+          bankName: primaryAccount.bankName,
+          branchName: primaryAccount.branchName,
+        } : null,
+        financialBreakdown: {
+          requestedAmount: payout.amount,
+          platformCommission: payout.platformCommission,
+          gstOnCommission: payout.gstOnCommission,
+          totalDeductions: payout.totalDeductions,
+          netPayableAmount: payout.netPayableAmount,
+        },
+        amount: payout.amount,
+        status: payout.status,
+        paymentReference: payout.paymentReference,
+        paymentNotes: payout.paymentNotes,
+        paymentMethod: payout.paymentMethod,
+        paidBy: payout.paidBy ? { name: payout.paidBy.name, email: payout.paidBy.email } : null,
+        paidAt: payout.paidAt,
+        rejectionReason: payout.rejectionReason,
+        createdAt: payout.createdAt,
+        updatedAt: payout.updatedAt,
+      };
+    });
+
     res.json({
-      payouts,
+      payouts: formattedPayouts,
       pagination: {
         total,
         page: parseInt(page),
@@ -1105,7 +1813,7 @@ export const getPendingSellerDeletions = async (req, res) => {
   }
 };
 
-// Approve seller account deletion
+// Approve seller account deletion — soft-delete (preserve data, block login)
 export const approveSellerDeletion = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1123,13 +1831,20 @@ export const approveSellerDeletion = async (req, res) => {
       return res.status(400).json({ message: "No pending deletion request for this seller" });
     }
 
-    // Notify seller about approval before deletion
+    // Soft-delete: set accountStatus to 'deleted', preserve all data
+    seller.accountStatus = 'deleted';
+    seller.accountStatusUpdatedAt = new Date();
+    seller.deletedAt = new Date();
+    seller.deletionRequestStatus = 'approved';
+    await seller.save();
+
+    // Notify seller about approval
     try {
       await createNotification(
         seller._id,
         'seller_deletion_approved',
         'Account Deletion Approved',
-        `Your account deletion request has been approved. Your account will be removed shortly.`,
+        'Your account deletion request has been approved. Your account has been deactivated and your data has been preserved.',
         seller._id,
         'User'
       );
@@ -1137,10 +1852,7 @@ export const approveSellerDeletion = async (req, res) => {
       console.error("Error notifying seller about deletion approval:", notifyErr);
     }
 
-    // Delete the seller account
-    await User.findByIdAndDelete(id);
-
-    res.json({ message: "Seller account deleted successfully" });
+    res.json({ message: "Seller account deactivated successfully" });
   } catch (error) {
     console.error("Error approving seller deletion:", error);
     res.status(500).json({ message: "Failed to approve deletion" });
@@ -1196,11 +1908,234 @@ export const rejectSellerDeletion = async (req, res) => {
   }
 };
 
-// Get all users
+// Get all users with pagination and filtering
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({}).select("-password -deletionOTP -deletionOTPExpire").sort({ createdAt: -1 });
-    res.json(users);
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      role = "all",
+      sort = "newest",
+      isVerified = "all",
+    } = req.query;
+    const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
+    const limitNumber = Math.max(parseInt(limit, 10) || 10, 1);
+
+    const query = {};
+    if (role !== "all") {
+      query.role = role;
+    }
+
+    if (isVerified === "true") {
+      query.isVerified = true;
+    } else if (isVerified === "false") {
+      query.isVerified = false;
+    }
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } }
+      ];
+    }
+
+    const users = await User.find(query)
+      .select("-password -deletionOTP -deletionOTPExpire")
+      .lean();
+
+    const buyerIds = users
+      .filter((user) => user.role === "buyer")
+      .map((user) => user._id);
+    const sellerIds = users
+      .filter((user) => user.role === "seller")
+      .map((user) => user._id);
+
+    const buyerOrderStats = buyerIds.length > 0
+      ? await Order.aggregate([
+          {
+            $match: {
+              buyerId: { $in: buyerIds },
+              status: "paid",
+            }
+          },
+          {
+            $group: {
+              _id: "$buyerId",
+              purchases: { $sum: 1 },
+              totalSpent: { $sum: { $ifNull: ["$amount", 0] } },
+              lastPurchaseAt: { $max: "$createdAt" },
+            }
+          }
+        ])
+      : [];
+    const sellerOrderStats = sellerIds.length > 0
+      ? await Order.aggregate([
+          {
+            $match: {
+              sellerId: { $in: sellerIds },
+              status: "paid",
+            }
+          },
+          {
+            $group: {
+              _id: "$sellerId",
+              sales: { $sum: 1 },
+              totalEarnings: {
+                $sum: {
+                  $ifNull: ["$sellerAmount", { $ifNull: ["$amount", 0] }]
+                }
+              },
+              lastSaleAt: { $max: "$createdAt" },
+            }
+          }
+        ])
+      : [];
+
+    const buyerStatsMap = new Map(
+      buyerOrderStats.map((item) => [
+        String(item._id),
+        {
+          purchases: item.purchases || 0,
+          totalSpent: item.totalSpent || 0,
+          lastPurchaseAt: item.lastPurchaseAt || null,
+        }
+      ])
+    );
+    const sellerStatsMap = new Map(
+      sellerOrderStats.map((item) => [
+        String(item._id),
+        {
+          sales: item.sales || 0,
+          totalEarnings: item.totalEarnings || 0,
+          lastSaleAt: item.lastSaleAt || null,
+        }
+      ])
+    );
+
+    const usersWithStats = users.map((user) => {
+      const buyerStats = buyerStatsMap.get(String(user._id)) || {
+        purchases: 0,
+        totalSpent: 0,
+        lastPurchaseAt: null,
+      };
+      const sellerStats = sellerStatsMap.get(String(user._id)) || {
+        sales: 0,
+        totalEarnings: 0,
+        lastSaleAt: null,
+      };
+
+      return {
+        ...user,
+        purchases: user.role === "buyer" ? buyerStats.purchases : sellerStats.sales,
+        totalSpent: user.role === "buyer" ? buyerStats.totalSpent : sellerStats.totalEarnings,
+        lastPurchaseAt: user.role === "buyer" ? buyerStats.lastPurchaseAt : sellerStats.lastSaleAt,
+      };
+    });
+
+    usersWithStats.sort((a, b) => {
+      if (sort === "oldest") {
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      }
+
+      if (sort === "az") {
+        return (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" });
+      }
+
+      if (sort === "spend") {
+        return (b.totalSpent || 0) - (a.totalSpent || 0)
+          || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+
+      if (sort === "purchases") {
+        return (b.purchases || 0) - (a.purchases || 0)
+          || (b.totalSpent || 0) - (a.totalSpent || 0)
+          || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    const total = usersWithStats.length;
+    const skip = (pageNumber - 1) * limitNumber;
+    const paginatedUsers = usersWithStats.slice(skip, skip + limitNumber);
+
+    const [
+      totalBuyers,
+      verifiedBuyers,
+      unverifiedBuyers,
+      totalSellers,
+      verifiedSellers,
+      unverifiedSellers,
+      platformSpendSummary,
+      sellerEarningsSummary,
+    ] = await Promise.all([
+      User.countDocuments({ role: "buyer" }),
+      User.countDocuments({ role: "buyer", isVerified: true }),
+      User.countDocuments({ role: "buyer", isVerified: false }),
+      User.countDocuments({ role: "seller" }),
+      User.countDocuments({ role: "seller", isVerified: true }),
+      User.countDocuments({ role: "seller", isVerified: false }),
+      Order.aggregate([
+        { $match: { status: "paid" } },
+        {
+          $group: {
+            _id: null,
+            totalSpent: { $sum: { $ifNull: ["$amount", 0] } },
+          }
+        }
+      ]),
+      Order.aggregate([
+        { $match: { status: "paid" } },
+        {
+          $group: {
+            _id: null,
+            totalEarnings: {
+              $sum: {
+                $ifNull: ["$sellerAmount", { $ifNull: ["$amount", 0] }]
+              }
+            },
+          }
+        }
+      ]),
+    ]);
+
+    const platformTotalSpent = platformSpendSummary[0]?.totalSpent || 0;
+    const sellerTotalEarnings = sellerEarningsSummary[0]?.totalEarnings || 0;
+    const statsByRole = role === "seller"
+      ? {
+          totalUsersForRole: totalSellers,
+          verifiedUsersForRole: verifiedSellers,
+          unverifiedUsersForRole: unverifiedSellers,
+          totalValueForRole: sellerTotalEarnings,
+        }
+      : {
+          totalUsersForRole: totalBuyers,
+          verifiedUsersForRole: verifiedBuyers,
+          unverifiedUsersForRole: unverifiedBuyers,
+          totalValueForRole: platformTotalSpent,
+        };
+
+    res.json({
+      users: paginatedUsers,
+      pagination: {
+        total,
+        page: pageNumber,
+        limit: limitNumber,
+        pages: Math.max(Math.ceil(total / limitNumber), 1)
+      },
+      stats: {
+        totalBuyers,
+        verifiedBuyers,
+        unverifiedBuyers,
+        totalSellers,
+        verifiedSellers,
+        unverifiedSellers,
+        platformTotalSpent,
+        sellerTotalEarnings,
+        ...statsByRole,
+      }
+    });
   } catch (error) {
     console.error("Error fetching all users:", error);
     res.status(500).json({ message: "Failed to fetch users" });
@@ -1258,14 +2193,81 @@ export const updateUserProfile = async (req, res) => {
   }
 };
 
-// Delete user by admin with reason
-export const deleteUserByAdmin = async (req, res) => {
+// Get specific user by ID (for admin detailed view)
+export const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id).select("-password");
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Get stats based on role
+    let stats = {};
+    if (user.role === 'seller') {
+      const [totalProducts, sellerOrderSummary] = await Promise.all([
+        Product.countDocuments({ sellerId: user._id }),
+        Order.aggregate([
+          {
+            $match: {
+              sellerId: user._id,
+              status: "paid",
+            }
+          },
+          {
+            $group: {
+              _id: null,
+              totalOrders: { $sum: 1 },
+              totalSpent: { $sum: { $ifNull: ["$amount", 0] } },
+            }
+          }
+        ]),
+      ]);
+
+      stats = {
+        totalProducts,
+        totalOrders: sellerOrderSummary[0]?.totalOrders || 0,
+        totalSpent: sellerOrderSummary[0]?.totalSpent || 0,
+      };
+    } else if (user.role === 'buyer') {
+      const buyerOrderSummary = await Order.aggregate([
+        {
+          $match: {
+            buyerId: user._id,
+            status: "paid",
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalOrders: { $sum: 1 },
+            totalSpent: { $sum: { $ifNull: ["$amount", 0] } },
+          }
+        }
+      ]);
+
+      stats = {
+        totalOrders: buyerOrderSummary[0]?.totalOrders || 0,
+        totalSpent: buyerOrderSummary[0]?.totalSpent || 0,
+      };
+    }
+
+    res.json({ user, stats });
+  } catch (error) {
+    console.error("Error fetching user details:", error);
+    res.status(500).json({ message: "Failed to fetch user details" });
+  }
+};
+
+// Ban/Suspend user by admin
+export const banUser = async (req, res) => {
   try {
     const { id } = req.params;
     const { reason } = req.body;
 
     if (!reason || String(reason).trim().length < 5) {
-      return res.status(400).json({ message: "Deletion reason is required (min 5 characters)" });
+      return res.status(400).json({ message: "Ban reason is required (min 5 characters)" });
     }
 
     const user = await User.findById(id);
@@ -1273,53 +2275,206 @@ export const deleteUserByAdmin = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Don't allow admin to delete themselves
+    // Don't allow admin to ban themselves
+    if (user._id.toString() === req.user.id) {
+      return res.status(400).json({ message: "You cannot ban your own account" });
+    }
+
+    user.accountStatus = 'banned';
+    user.accountStatusUpdatedAt = new Date();
+    user.bannedReason = String(reason).trim();
+    await user.save();
+
+    res.json({
+      message: "User account suspended successfully",
+      bannedUser: { name: user.name, email: user.email, bannedReason: user.bannedReason },
+    });
+  } catch (error) {
+    console.error("Error banning user:", error);
+    res.status(500).json({ message: "Failed to ban user" });
+  }
+};
+
+// Soft delete user by admin
+export const deleteUserByAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     if (user._id.toString() === req.user.id) {
       return res.status(400).json({ message: "You cannot delete your own account" });
     }
 
-    // Create notification for user before deletion
-    try {
-      await createNotification(
-        user._id,
-        'account_deleted_by_admin',
-        'Account Deleted by Administrator',
-        `Your account has been deleted by an administrator. Reason: ${String(reason).trim()}`,
-        user._id,
-        'User'
-      );
-    } catch (notifyErr) {
-      console.error("Error notifying user about account deletion:", notifyErr);
-    }
+    user.accountStatus = 'deleted';
+    user.accountStatusUpdatedAt = new Date();
+    user.bannedReason = "Account deleted by admin";
+    await user.save();
 
-    // Delete user's notifications
-    await Notification.deleteMany({ userId: user._id });
-
-    // Delete the user
-    await User.findByIdAndDelete(id);
-
-    res.json({ message: "User account deleted successfully", deletedUser: { name: user.name, email: user.email } });
+    res.json({
+      message: "User account deleted successfully"
+    });
   } catch (error) {
     console.error("Error deleting user:", error);
     res.status(500).json({ message: "Failed to delete user" });
   }
 };
 
+// Unban user by admin (restore accountStatus to active)
+export const unbanUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.accountStatus !== 'banned') {
+      return res.status(400).json({ message: "User is not currently banned" });
+    }
+
+    user.accountStatus = 'active';
+    user.accountStatusUpdatedAt = new Date();
+    user.bannedReason = undefined;
+    await user.save();
+
+    // Notify user about unban
+    try {
+      await createNotification(
+        user._id,
+        'account_unbanned_by_admin',
+        'Account Reinstated',
+        'Your account suspension has been lifted. You can now log in again.',
+        user._id,
+        'User'
+      );
+    } catch (notifyErr) {
+      console.error("Error notifying user about unban:", notifyErr);
+    }
+
+    res.json({ message: "User account reinstated successfully", user: { name: user.name, email: user.email } });
+  } catch (error) {
+    console.error("Error unbanning user:", error);
+    res.status(500).json({ message: "Failed to unban user" });
+  }
+};
+// Update user product limit
+export const updateUserLimit = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { productLimit } = req.body;
+
+    if (productLimit === undefined || isNaN(Number(productLimit)) || Number(productLimit) < 0) {
+      return res.status(400).json({ message: "Invalid product limit value" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      { productLimit: Number(productLimit) },
+      { new: true, select: "-password" }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ message: "Product limit updated successfully", user });
+  } catch (error) {
+    console.error("Error updating user limit:", error);
+    res.status(500).json({ message: "Failed to update user limit" });
+  }
+};
+
 // Get all transactions (buyer payments + seller payouts)
 export const getAllTransactions = async (req, res) => {
   try {
-    // Get all buyer payments (orders)
-    const orders = await Order.find()
-      .populate("buyerId", "name email")
-      .populate("productId", "title")
-      .sort({ createdAt: -1 });
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      type = "all",
+      status = "all",
+      sortBy = "date_desc",
+      userId,
+    } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    // Get all seller payouts
-    const payouts = await Payout.find()
-      .populate("sellerId", "name email")
-      .sort({ createdAt: -1 });
+    let scopedUser = null;
+    if (userId) {
+      scopedUser = await User.findById(userId).select("role");
+      if (!scopedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+    }
+    
+    // Build filters for Orders
+    const orderFilter = {};
+    if (status !== "all") {
+      if (status === "success") orderFilter.status = "paid";
+      else if (status === "failed") orderFilter.status = "failed";
+      else orderFilter.status = "created";
+    }
+    
+    // Build filters for Payouts
+    const payoutFilter = {};
+    if (status !== "all") {
+      if (status === "success") payoutFilter.status = "paid";
+      else if (status === "failed") payoutFilter.status = "rejected";
+      else payoutFilter.status = "pending";
+    }
 
-    // Format buyer to admin transactions
+    let orders = [];
+    let payouts = [];
+
+    // Fetch Orders if type is 'all' or 'buyer_to_admin'
+    if (type === "all" || type === "buyer_to_admin") {
+      const query = { ...orderFilter };
+
+      if (userId) {
+        if (scopedUser.role === "buyer") {
+          query.buyerId = userId;
+        } else if (scopedUser.role === "seller") {
+          query.sellerId = userId;
+        }
+      }
+
+      if (search) {
+        query.$or = [
+          { productName: { $regex: search, $options: "i" } },
+          { razorpayOrderId: { $regex: search, $options: "i" } },
+          { orderId: { $regex: search, $options: "i" } }
+        ];
+      }
+      orders = await Order.find(query)
+        .populate("buyerId", "name email")
+        .populate("productId", "title")
+        .sort({ createdAt: -1 });
+    }
+
+    // Fetch Payouts if type is 'all' or 'admin_to_seller'
+    if ((type === "all" || type === "admin_to_seller") && scopedUser?.role !== "buyer") {
+      const query = { ...payoutFilter };
+
+      if (userId && scopedUser?.role === "seller") {
+        query.sellerId = userId;
+      }
+
+      if (search) {
+        query.$or = [
+          { paymentReference: { $regex: search, $options: "i" } },
+          { rejectionReason: { $regex: search, $options: "i" } }
+        ];
+      }
+      payouts = await Payout.find(query)
+        .populate("sellerId", "name email")
+        .sort({ createdAt: -1 });
+    }
+
+    // Format and Combine
     const buyerTransactions = orders.map(order => ({
       _id: order._id,
       type: "buyer_to_admin",
@@ -1330,12 +2485,12 @@ export const getAllTransactions = async (req, res) => {
       amount: order.amount || 0,
       status: order.status === "paid" ? "success" : order.status === "failed" ? "failed" : "pending",
       date: order.createdAt,
+      createdAt: order.createdAt,
       razorpayOrderId: order.razorpayOrderId,
       razorpayPaymentId: order.razorpayPaymentId,
       paymentMethod: "razorpay"
     }));
 
-    // Format admin to seller transactions (payouts)
     const sellerTransactions = payouts.map(payout => ({
       _id: payout._id,
       type: "admin_to_seller",
@@ -1346,30 +2501,104 @@ export const getAllTransactions = async (req, res) => {
       amount: payout.netPayableAmount || payout.amount || 0,
       status: payout.status === "paid" ? "success" : payout.status === "rejected" ? "failed" : "pending",
       date: payout.paidAt || payout.createdAt,
+      createdAt: payout.paidAt || payout.createdAt,
       paymentMethod: payout.paymentMethod || "manual",
       paymentReference: payout.paymentReference,
       errorReason: payout.rejectionReason
     }));
 
-    // Combine and sort by date
-    const allTransactions = [...buyerTransactions, ...sellerTransactions].sort(
-      (a, b) => new Date(b.date) - new Date(a.date)
-    );
+    let allTransactions = [...buyerTransactions, ...sellerTransactions];
+
+    // Final search filter for user names/emails (after formatting/populating)
+    if (search) {
+      const s = search.toLowerCase();
+      allTransactions = allTransactions.filter(t => 
+        (t.buyerName?.toLowerCase().includes(s)) ||
+        (t.buyerEmail?.toLowerCase().includes(s)) ||
+        (t.sellerName?.toLowerCase().includes(s)) ||
+        (t.sellerEmail?.toLowerCase().includes(s)) ||
+        (t.productName?.toLowerCase().includes(s)) ||
+        (t.orderId?.toLowerCase().includes(s))
+      );
+    }
+
+    // Sorting
+    allTransactions.sort((a, b) => {
+      if (sortBy === "date_desc") return new Date(b.date) - new Date(a.date);
+      if (sortBy === "date_asc") return new Date(a.date) - new Date(b.date);
+      if (sortBy === "amount_desc") return b.amount - a.amount;
+      if (sortBy === "amount_asc") return a.amount - b.amount;
+      return new Date(b.date) - new Date(a.date);
+    });
+
+    const total = allTransactions.length;
+    const paginatedTransactions = allTransactions.slice(skip, skip + parseInt(limit));
+    const successTransactions = allTransactions.filter((t) => t.status === "success");
+    const pendingTransactions = allTransactions.filter((t) => t.status === "pending");
+    const failedTransactions = allTransactions.filter((t) => t.status === "failed");
 
     res.json({
-      transactions: allTransactions,
+      transactions: paginatedTransactions,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(total / parseInt(limit))
+      },
       summary: {
-        total: allTransactions.length,
+        total: {
+          count: total,
+          amount: allTransactions.reduce((sum, t) => sum + (t.amount || 0), 0),
+        },
+        success: {
+          count: successTransactions.length,
+          amount: successTransactions.reduce((sum, t) => sum + (t.amount || 0), 0),
+        },
+        pending: {
+          count: pendingTransactions.length,
+          amount: pendingTransactions.reduce((sum, t) => sum + (t.amount || 0), 0),
+        },
+        failed: {
+          count: failedTransactions.length,
+          amount: failedTransactions.reduce((sum, t) => sum + (t.amount || 0), 0),
+        },
         buyerPayments: buyerTransactions.length,
         sellerPayouts: sellerTransactions.length,
-        successCount: allTransactions.filter(t => t.status === "success").length,
-        failedCount: allTransactions.filter(t => t.status === "failed").length,
-        totalAmount: allTransactions.filter(t => t.status === "success").reduce((sum, t) => sum + t.amount, 0)
+        successCount: successTransactions.length,
+        failedCount: failedTransactions.length,
+        totalAmount: successTransactions.reduce((sum, t) => sum + (t.amount || 0), 0)
       }
     });
   } catch (error) {
     console.error("Error fetching all transactions:", error);
     res.status(500).json({ message: "Failed to fetch transactions" });
+  }
+};
+
+// Bulk mark transactions as reviewed by admin
+export const bulkMarkTransactionsReviewed = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: "Valid array of IDs is required" });
+    }
+
+    const updateQuery = { 
+      reviewedByAdmin: true, 
+      reviewedAt: new Date() 
+    };
+
+    // Update both Order and Payout collections because transactions can be from either
+    await Promise.all([
+      Order.updateMany({ _id: { $in: ids } }, { $set: updateQuery }),
+      Payout.updateMany({ _id: { $in: ids } }, { $set: updateQuery })
+    ]);
+
+    res.json({ message: "Transactions marked as reviewed successfully" });
+  } catch (error) {
+    console.error("Error marking transactions as reviewed:", error);
+    res.status(500).json({ message: "Failed to mark transactions as reviewed" });
   }
 };
 
@@ -1572,7 +2801,7 @@ export const resolveContentReview = async (req, res) => {
         await createNotification(
           product.sellerId,
           'product_approved',
-          'Content Review Passed ✅',
+          'Content Review Passed ',
           `Your product "${product.title}" has been manually reviewed and approved by our team.`,
           product._id,
           'Product'
@@ -1616,6 +2845,55 @@ export const resolveContentReview = async (req, res) => {
   }
 };
 
+// Get moderation logs
+export const getModerationLogs = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 50,
+      productId,
+      adminId,
+      action,
+      from,
+      to,
+    } = req.query;
+
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 50;
+    const skip = (pageNum - 1) * limitNum;
+
+    const query = {};
+
+    if (productId) query.productId = productId;
+    if (adminId) query.adminId = adminId;
+    if (action) query.action = action;
+
+    if (from || to) {
+      query.timestamp = {};
+      if (from) query.timestamp.$gte = new Date(from);
+      if (to) query.timestamp.$lte = new Date(to);
+    }
+
+    const logs = await ModerationLog.find(query)
+      .sort({ timestamp: -1 })
+      .skip(skip)
+      .limit(limitNum)
+      .lean();
+
+    const total = await ModerationLog.countDocuments(query);
+
+    res.json({
+      logs,
+      total,
+      page: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+    });
+  } catch (error) {
+    console.error("Error fetching moderation logs:", error);
+    res.status(500).json({ message: "Failed to fetch moderation logs" });
+  }
+};
+
 /**
  * Verify seller identity
  * Updates seller's identityVerified status and timestamp
@@ -1644,7 +2922,7 @@ export const verifySellerIdentity = async (req, res) => {
     await createNotification(
       seller._id,
       verified ? 'identity_verified' : 'identity_rejected',
-      verified ? 'Identity Verified ✅' : 'Identity Verification Issue',
+      verified ? 'Identity Verified ' : 'Identity Verification Issue',
       verified
         ? 'Your identity has been verified! This badge will help build trust with buyers.'
         : `There was an issue with your identity verification. ${notes || 'Please contact support for details.'}`,
@@ -1683,10 +2961,7 @@ export const getPendingIdentityVerifications = async (req, res) => {
       .select('-password')
       .sort({ createdAt: -1 });
     
-    res.json({
-      sellers,
-      total: sellers.length
-    });
+    res.json(sellers);
   } catch (error) {
     console.error("Error fetching pending identity verifications:", error);
     res.status(500).json({ message: "Failed to fetch pending identity verifications" });

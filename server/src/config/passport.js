@@ -31,14 +31,14 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     try {
       // Check if user already exists with this Google ID
       let user = await User.findOne({ googleId: profile.id });
-      
+
       if (user) {
         return done(null, user);
       }
-      
+
       // Check if user exists with same email
       user = await User.findOne({ email: profile.emails[0].value });
-      
+
       if (user) {
         // Link Google account to existing user
         user.googleId = profile.id;
@@ -47,7 +47,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         await user.save();
         return done(null, user);
       }
-      
+
       // Create new user
       const userRole = req.session?.userRole || 'buyer';
       const newUser = await User.create({
@@ -59,16 +59,16 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         authProvider: 'google',
         role: userRole
       });
-      
+
       return done(null, newUser);
     } catch (error) {
       console.error('Google OAuth Error:', error);
       return done(error, null);
     }
   }));
-  console.log('✅ Google OAuth Strategy initialized');
+  console.log(' Google OAuth Strategy initialized');
 } else {
-  console.log('⚠️  Google OAuth credentials not found. Google authentication will not be available.');
+  console.log('  Google OAuth credentials not found. Google authentication will not be available.');
   console.log('   Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env file');
 }
 
@@ -83,15 +83,15 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
     try {
       // Check if user already exists with this GitHub ID
       let user = await User.findOne({ githubId: profile.id });
-      
+
       if (user) {
         return done(null, user);
       }
-      
+
       // Check if user exists with same email
       const email = profile.emails?.[0]?.value || `${profile.username}@github.local`;
       user = await User.findOne({ email });
-      
+
       if (user) {
         // Link GitHub account to existing user
         user.githubId = profile.id;
@@ -100,7 +100,7 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
         await user.save();
         return done(null, user);
       }
-      
+
       // Create new user
       const userRole = req.session?.userRole || 'buyer';
       const newUser = await User.create({
@@ -112,16 +112,16 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
         authProvider: 'github',
         role: userRole
       });
-      
+
       return done(null, newUser);
     } catch (error) {
       console.error('GitHub OAuth Error:', error);
       return done(error, null);
     }
   }));
-  console.log('✅ GitHub OAuth Strategy initialized');
+  console.log(' GitHub OAuth Strategy initialized');
 } else {
-  console.log('⚠️  GitHub OAuth credentials not found. GitHub authentication will not be available.');
+  console.log('  GitHub OAuth credentials not found. GitHub authentication will not be available.');
   console.log('   Add GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET to your .env file');
 }
 

@@ -1,4 +1,4 @@
-# Quick Setup Checklist ✅
+# Quick Setup Checklist 
 
 ## Step 1: Sign Up for Services (15 minutes)
 
@@ -41,7 +41,7 @@ nano .env  # or use VS Code: code .env
 ```env
 RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxx
 RAZORPAY_KEY_SECRET=xxxxxxxxxxxxx
-MONGODB_URI=mongodb://localhost:27017/contentSellify
+MONGODB_URI=mongodb://localhost:27017/Bitforge
 JWT_SECRET=your_secure_random_32_character_string
 ```
 
@@ -112,17 +112,17 @@ npm run dev
 
 ---
 
-## Database Schema Applied ✅
+## Database Schema Applied 
 
 All necessary schema changes have been made:
-- ✅ User model updated with bankAccount fields
-- ✅ RazorpayX integration fields added
-- ✅ Order model has commission calculation
-- ✅ Payout model configured
+-  User model updated with bankAccount fields
+-  RazorpayX integration fields added
+-  Order model has commission calculation
+-  Payout model configured
 
 ---
 
-## API Endpoints Available ✅
+## API Endpoints Available 
 
 **Bank Management:**
 - POST `/api/bank/add`
@@ -147,35 +147,35 @@ All necessary schema changes have been made:
 
 ---
 
-## Frontend Pages Created ✅
+## Frontend Pages Created 
 
 **Seller:**
-- `/dashboard/seller/bank-account` ✅
+- `/dashboard/seller/bank-account` 
 
 **Admin:**
-- `/dashboard/admin/bank-account` ✅
+- `/dashboard/admin/bank-account` 
 
 **Buyer:**
-- Uses existing marketplace and checkout pages ✅
+- Uses existing marketplace and checkout pages 
 
 ---
 
 ## What Works Without RazorpayX
 
 **Working immediately:**
-- ✅ User registration and authentication
-- ✅ Bank account form (add/edit/delete)
-- ✅ Bank details storage in database
-- ✅ Payment receiving via Razorpay
-- ✅ Commission calculation (10%)
-- ✅ Order tracking
-- ✅ Withdrawal requests
-- ✅ Admin dashboard statistics
+-  User registration and authentication
+-  Bank account form (add/edit/delete)
+-  Bank details storage in database
+-  Payment receiving via Razorpay
+-  Commission calculation (10%)
+-  Order tracking
+-  Withdrawal requests
+-  Admin dashboard statistics
 
 **Requires RazorpayX (after KYC):**
-- ❌ Actual payouts to sellers
-- ❌ RazorpayX fund account creation
-- ❌ Bank account verification via RazorpayX
+-  Actual payouts to sellers
+-  RazorpayX fund account creation
+-  Bank account verification via RazorpayX
 
 ---
 
@@ -263,16 +263,16 @@ Before going live:
 
 ---
 
-## Success Criteria ✅
+## Success Criteria 
 
 Your implementation is complete when:
-- ✅ Sellers can add bank accounts
-- ✅ Admin can add bank account
-- ✅ Payments are received (Razorpay)
-- ✅ 10% commission is calculated correctly
-- ✅ Admin can view statistics
-- ✅ Withdrawal requests can be created
-- ✅ Payouts work (after RazorpayX setup)
+-  Sellers can add bank accounts
+-  Admin can add bank account
+-  Payments are received (Razorpay)
+-  10% commission is calculated correctly
+-  Admin can view statistics
+-  Withdrawal requests can be created
+-  Payouts work (after RazorpayX setup)
 
 ---
 

@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { buyerAPI } from "@/lib/api";
 import { getStoredUser } from "@/lib/cookies";
 import toast from "react-hot-toast";
+import PageHeader from "../transactions/components/PageHeader";
+import { AlertCircle, ShieldAlert, CheckCircle2, XCircle, ExternalLink, Loader2 } from "lucide-react";
 
 interface BuyerDispute {
   _id: string;
@@ -19,16 +21,54 @@ interface BuyerDispute {
   createdAt: string;
 }
 
-const statusColors: Record<string, string> = {
-  open: "bg-yellow-500/20 text-yellow-300 border-yellow-500/40",
-  approved: "bg-green-500/20 text-green-300 border-green-500/40",
-  rejected: "bg-red-500/20 text-red-300 border-red-500/40",
+const getStatusConfig = (status: string) => {
+  switch (status.toLowerCase()) {
+    case "open":
+      return {
+        icon: AlertCircle,
+        bg: "bg-amber-500/10",
+        text: "text-amber-400",
+        border: "border-amber-500/20",
+        stripe: "bg-amber-500",
+      };
+    case "approved":
+      return {
+        icon: CheckCircle2,
+        bg: "bg-emerald-500/10",
+        text: "text-emerald-400",
+        border: "border-emerald-500/20",
+        stripe: "bg-emerald-500",
+      };
+    case "rejected":
+      return {
+        icon: XCircle,
+        bg: "bg-rose-500/10",
+        text: "text-rose-400",
+        border: "border-rose-500/20",
+        stripe: "bg-rose-500",
+      };
+    default:
+      return {
+        icon: ShieldAlert,
+        bg: "bg-slate-200 dark:bg-white/10",
+        text: "text-slate-300",
+        border: "border-slate-300 dark:border-white/20",
+        stripe: "bg-slate-500",
+      };
+  }
 };
+
+const PAGE_SIZE = 7;
 
 export default function BuyerDisputesPage() {
   const [disputes, setDisputes] = useState<BuyerDispute[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
   const router = useRouter();
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const isFetchingRef = useRef(false);
 
   useEffect(() => {
     const user = getStoredUser<{ role?: string }>();
@@ -40,121 +80,234 @@ export default function BuyerDisputesPage() {
       router.push("/dashboard");
       return;
     }
-    fetchDisputes();
+    void fetchPage(1, true);
   }, [router]);
 
-  const fetchDisputes = async () => {
+  const fetchPage = async (targetPage: number, isInitial = false) => {
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+
+    if (isInitial) setLoading(true);
+    else setLoadingMore(true);
+
     try {
-      const data = await buyerAPI.getMyDisputes();
-      setDisputes(data.disputes || []);
+      const data = await buyerAPI.getMyDisputes({
+        page: targetPage,
+        limit: PAGE_SIZE,
+      });
+      const incoming = data.disputes || [];
+      const pag = data.pagination;
+
+      setDisputes((prev) => (isInitial ? incoming : [...prev, ...incoming]));
+      setHasNextPage(pag?.hasNextPage ?? false);
+      setPage(targetPage);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to load disputes");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+      isFetchingRef.current = false;
     }
   };
+
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !loadingMore && !loading) {
+          void fetchPage(page + 1, false);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, loadingMore, loading, page]);
 
   const formatDate = (value: string) => {
     const d = new Date(value);
     if (isNaN(d.getTime())) return "";
-    return d.toLocaleString();
+    return d.toLocaleString(undefined, { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
-          <p className="text-white/70 text-lg">Loading disputes...</p>
-        </div>
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-20">
+        {/* Skeleton Header matching PageHeader */}
+        <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-white/10 bg-linear-to-r from-black via-slate-950 to-black/95 backdrop-blur-xl">
+          <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
+            <div className="relative flex min-h-[58px] items-center justify-center">
+              <div className="absolute left-0 flex items-center gap-2 opacity-50">
+                <div className="h-8 w-8 rounded-md bg-slate-200 dark:bg-white/10 animate-pulse" />
+                <div className="h-4 w-16 bg-slate-200 dark:bg-white/10 rounded animate-pulse hidden sm:block" />
+              </div>
+
+              <div className="px-16 text-center space-y-2 flex flex-col items-center opacity-50">
+                <div className="h-6 w-40 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+                <div className="h-3 w-32 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8 space-y-3 sm:space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white dark:bg-[#08111d] rounded-xl border border-slate-200 dark:border-white/5 p-4 sm:p-5 pl-5 sm:pl-6 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-slate-100 dark:bg-white/5 animate-pulse" />
+              
+              <div className="flex justify-between items-start gap-3 mb-4">
+                <div className="flex-1 space-y-3">
+                  {/* Top row */}
+                  <div className="flex items-center gap-2">
+                    <div className="h-5 w-16 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                    <div className="h-3 w-24 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                  </div>
+                  {/* Title */}
+                  <div className="h-5 w-3/4 max-w-[200px] bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                  {/* Subtitle */}
+                  <div className="h-3 w-1/2 max-w-[150px] bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                </div>
+                {/* Amount */}
+                <div className="flex flex-col items-end space-y-2">
+                  <div className="h-6 w-20 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                  <div className="h-3 w-16 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                </div>
+              </div>
+
+              {/* Reason line */}
+              <div className="space-y-2 mb-4">
+                <div className="h-4 w-full bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+                <div className="h-4 w-5/6 bg-slate-100 dark:bg-white/5 rounded animate-pulse" />
+              </div>
+
+              {/* Action Button */}
+              <div className="pt-3 border-t border-slate-200 dark:border-white/5 flex justify-center">
+                <div className="h-9 w-32 bg-slate-100 dark:bg-white/5 rounded-lg animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
-      <div className="sticky top-0 z-40 bg-gradient-to-r from-purple-600/20 via-indigo-600/20 to-cyan-600/20 backdrop-blur-md border-b border-white/10 py-4">
-        <div className="max-w-7xl mx-auto px-4 flex items-center gap-3">
-          <button
-            onClick={() => router.push("/dashboard/buyer")}
-            className="flex-shrink-0 w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 flex items-center justify-center transition-all hover:scale-105"
-            aria-label="Back to dashboard"
-          >
-            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold">My Disputes</h1>
-            <p className="text-white/70 text-sm md:text-base">Track the status of disputes you have raised</p>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-20">
+      <PageHeader
+        backLabel="Back"
+        title="My Disputes"
+        subtitle="Track the status of disputes you have raised"
+      />
 
-      <main className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8">
         {disputes.length === 0 ? (
-          <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-10 text-center">
-            <div className="text-5xl mb-4">✅</div>
-            <h2 className="text-xl font-semibold mb-2">No disputes</h2>
-            <p className="text-white/60">You have not raised any disputes yet.</p>
+          <div className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-3xl p-10 sm:p-12 text-center max-w-lg mx-auto shadow-2xl mt-12 sm:mt-24">
+            <ShieldAlert className="w-16 h-16 text-slate-700 mx-auto mb-6" />
+            <h2 className="text-xl font-bold tracking-tight mb-2">No disputes</h2>
+            <p className="text-slate-400 text-sm">You have not raised any disputes yet.</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {disputes.map((d) => (
-              <motion.div
-                key={d._id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl p-5 flex flex-col md:flex-row md:items-stretch gap-4"
-              >
-                <div className="flex-1 space-y-2 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={
-                        "px-3 py-1 text-xs rounded-full border font-semibold uppercase tracking-wide " +
-                        (statusColors[d.status] || "bg-white/10 text-white/70 border-white/20")
-                      }
-                    >
-                      {d.status}
-                    </span>
-                    {d.orderId && (
-                      <span className="text-xs text-white/50">Order #{d.orderId}</span>
-                    )}
-                    <span className="text-xs text-white/40">Filed {formatDate(d.createdAt)}</span>
-                  </div>
+          <div className="flex flex-col gap-3 sm:gap-4 max-w-3xl mx-auto">
+            <AnimatePresence mode="popLayout">
+              {disputes.map((d, index) => {
+                const config = getStatusConfig(d.status);
+                const StatusIcon = config.icon;
 
-                  <h2 className="text-lg font-semibold truncate">{d.productName}</h2>
-                  <p className="text-sm text-white/70">Seller: {d.sellerName}</p>
+                return (
+                  <motion.div
+                    key={d._id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ delay: Math.min(index * 0.04, 0.3) }}
+                    className="bg-white dark:bg-[#08111d] border border-slate-200 dark:border-white/5 rounded-xl overflow-hidden relative group hover:border-slate-200 dark:hover:border-white/10 transition-all shadow-xl p-4 sm:p-5 pl-5 sm:pl-6"
+                  >
+                    {/* Left accent stripe */}
+                    <div className={`absolute left-0 top-0 bottom-0 w-1 ${config.stripe}`} />
 
-                  <div className="bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-white/80">
-                    <span className="font-semibold text-white">Your reason: </span>
-                    {d.reason}
-                  </div>
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                          <div className={`flex items-center gap-1 px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-wider bg-transparent ${config.text} border ${config.border}`}>
+                            <StatusIcon className="w-3 h-3" />
+                            {d.status}
+                          </div>
+                          <span className="text-[10px] text-slate-500 font-mono">
+                            {formatDate(d.createdAt)}
+                          </span>
+                        </div>
+                        
+                        <h2 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white tracking-tight leading-tight mb-1 truncate">
+                          {d.productName}
+                        </h2>
+                        <p className="text-[10px] sm:text-xs text-slate-400 truncate">
+                          {d.orderId && <span className="font-mono">Order #{d.orderId.substring(0, 8)} • </span>}
+                          <span className="text-slate-300 font-medium">{d.sellerName}</span>
+                        </p>
+                      </div>
 
-                  {d.adminNote && (
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white/80">
-                      <span className="font-semibold text-white">Admin note: </span>
-                      {d.adminNote}
+                      {/* Amount */}
+                      <div className="text-right shrink-0">
+                        <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">₹{d.amount.toLocaleString()}</p>
+                        <p className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">Disputed</p>
+                      </div>
                     </div>
-                  )}
-                </div>
 
-                <div className="flex flex-row md:flex-col justify-between md:justify-center items-end md:items-end gap-3 min-w-[150px]">
-                  <div className="text-right">
-                    <p className="text-xs text-white/50 mb-1">Disputed amount</p>
-                    <p className="text-xl font-bold text-emerald-400">₹{d.amount.toLocaleString()}</p>
-                  </div>
-                  {d.orderId && (
-                    <button
-                      onClick={() => router.push(`/dashboard/buyer/transactions/${d.orderId}`)}
-                      className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-sm font-medium transition"
-                    >
-                      View Order
-                    </button>
-                  )}
+                    {/* Reason & Notes */}
+                    <div className="mt-3.5 text-[11px] sm:text-xs leading-relaxed space-y-1.5">
+                      <p className="text-slate-300">
+                        <span className="text-slate-500 font-semibold mr-1.5">Reason:</span>
+                        {d.reason}
+                      </p>
+
+                      {d.adminNote && (
+                        <p className="text-amber-200/90">
+                          <span className="text-amber-500/70 font-semibold mr-1.5">Admin:</span>
+                          {d.adminNote}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Action */}
+                    <div className="mt-4 pt-3 border-t border-slate-200 dark:border-white/5 flex justify-center">
+                      {d.orderId && (
+                        <button
+                          onClick={() => router.push(`/dashboard/buyer/purchases/${d.orderId}`)}
+                          className="bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white px-6 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 shrink-0"
+                        >
+                          <ExternalLink className="w-4 h-4" /> View Order
+                        </button>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+
+            <div ref={sentinelRef} className="h-4" />
+
+            {loadingMore && (
+              <div className="flex justify-center py-6">
+                <div className="flex items-center gap-2 text-slate-500 dark:text-white/40 text-sm">
+                  <Loader2 className="w-5 h-5 animate-spin text-cyan-500" />
+                  <span>Loading more disputes...</span>
                 </div>
-              </motion.div>
-            ))}
+              </div>
+            )}
+
+            {!hasNextPage && !loadingMore && disputes.length > 0 && (
+              <p className="text-center text-xs text-slate-400 dark:text-white/25 py-4 tracking-wide">
+                — You've reached the end —
+              </p>
+            )}
           </div>
         )}
       </main>

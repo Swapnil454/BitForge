@@ -1,22 +1,22 @@
 # How Buyers Can Write Reviews - Complete Guide
 
 ## Overview
-The ContentSellify marketplace allows **verified buyers** to write reviews for products they've purchased. This ensures authentic feedback and builds trust in the marketplace.
+The Bitforge marketplace allows **verified buyers** to write reviews for products they've purchased. This ensures authentic feedback and builds trust in the marketplace.
 
 ---
 
 ## Requirements to Write a Review
 
-### 1. ✅ Must Be a Buyer
+### 1.  Must Be a Buyer
 - You must have a buyer account (not seller or admin)
 - You must be logged in
 
-### 2. ✅ Must Have Purchased the Product
+### 2.  Must Have Purchased the Product
 - You must have a completed order for the product
 - Order status must be "completed" or "delivered"
 - Cannot review products you haven't purchased
 
-### 3. ✅ One Review Per Product
+### 3.  One Review Per Product
 - You can only submit one review per product
 - If you already reviewed it, you'll see an edit option
 - No duplicate reviews allowed
@@ -91,10 +91,10 @@ You'll see a **review submission form** with:
 ## What Happens After Submission
 
 ### Immediate Results:
-- ✅ Review appears in the reviews list
-- ✅ Average rating updates
-- ✅ Rating distribution chart updates
-- ✅ Seller receives notification
+-  Review appears in the reviews list
+-  Average rating updates
+-  Rating distribution chart updates
+-  Seller receives notification
 
 ### Seller Response:
 - Seller can reply to your review
@@ -111,7 +111,7 @@ You'll see a **review submission form** with:
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  📝 Write Your Review                                    │
+│   Write Your Review                                    │
 ├──────────────────────────────────────────────────────────┤
 │                                                           │
 │  Your Rating: ⭐⭐⭐⭐⭐                                  │
@@ -151,7 +151,7 @@ You'll see a **review submission form** with:
 
 3. **Already Reviewed State**
    ```
-   ✅ You've already reviewed this product
+    You've already reviewed this product
    [View your review below]
    ```
 
@@ -163,7 +163,7 @@ You'll see a **review submission form** with:
 5. **Reviews Display**
    ```
    ┌─────────────────────────────────────┐
-   │ 👤 John Doe                         │
+   │  John Doe                         │
    │ ⭐⭐⭐⭐⭐ 5.0                      │
    │                                      │
    │ Great product! Worth every penny.   │
@@ -399,14 +399,14 @@ const handleSubmitReview = async () => {
 
 ## Best Practices for Writing Reviews
 
-### ✅ Do:
+###  Do:
 - Be honest and constructive
 - Mention specific features (page count, quality, clarity)
 - Rate fairly based on value for money
 - Update your review if product gets updated
 - Help other buyers make informed decisions
 
-### ❌ Don't:
+###  Don't:
 - Post fake or spam reviews
 - Use offensive language
 - Review products you haven't purchased
@@ -455,27 +455,27 @@ const handleSubmitReview = async () => {
 ## Technical Implementation Summary
 
 ### Backend Validation:
-- ✅ Verify user is logged in
-- ✅ Verify user is a buyer
-- ✅ Verify order exists and is completed
-- ✅ Verify user bought this product
-- ✅ Verify no duplicate review
-- ✅ Validate rating (1-5)
-- ✅ Validate comment length (≤1000 chars)
+-  Verify user is logged in
+-  Verify user is a buyer
+-  Verify order exists and is completed
+-  Verify user bought this product
+-  Verify no duplicate review
+-  Validate rating (1-5)
+-  Validate comment length (≤1000 chars)
 
 ### After Submission:
-- ✅ Save review to database
-- ✅ Update seller's average rating
-- ✅ Send notification to seller
-- ✅ Return review with populated buyer info
-- ✅ Update UI in real-time
+-  Save review to database
+-  Update seller's average rating
+-  Send notification to seller
+-  Return review with populated buyer info
+-  Update UI in real-time
 
 ### Security:
-- ✅ JWT authentication required
-- ✅ Order ownership verification
-- ✅ XSS protection on comments
-- ✅ Rate limiting to prevent spam
-- ✅ Admin moderation capability
+-  JWT authentication required
+-  Order ownership verification
+-  XSS protection on comments
+-  Rate limiting to prevent spam
+-  Admin moderation capability
 
 ---
 
@@ -512,7 +512,7 @@ const handleSubmitReview = async () => {
 
 ## Success! 🎉
 
-You now know how buyers can write reviews on ContentSellify! The system ensures:
+You now know how buyers can write reviews on Bitforge! The system ensures:
 - Only verified purchasers can review
 - Authentic and trustworthy feedback
 - Seller accountability and transparency

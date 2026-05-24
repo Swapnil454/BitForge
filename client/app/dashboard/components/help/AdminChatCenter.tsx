@@ -1,11 +1,40 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTheme } from "next-themes";
 import { io, Socket } from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { adminAPI, chatAPI } from "@/lib/api";
 import { getCookie } from "@/lib/cookies";
+import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
 import toast from "react-hot-toast";
+import { 
+  MoreVertical, 
+  Paperclip, 
+  X, 
+  Trash2, 
+  Camera, 
+  Download, 
+  ChevronLeft,
+  Send,
+  FileText,
+  User,
+  Maximize,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  MessageCircle,
+  Image as ImageIcon,
+  File,
+  Paperclip as AttachmentIcon,
+  Trash
+} from "lucide-react";
+
+interface ChatAttachment {
+  url: string;
+  type: string;
+  name: string;
+}
 
 interface ConversationSummary {
   userId: string;
@@ -14,12 +43,20 @@ interface ConversationSummary {
   email?: string;
   lastMessageAt: string;
   unreadCount?: number;
+  lastIncomingMessage?: string;
+  lastIncomingAttachments?: ChatAttachment[];
+  lastIncomingAt?: string | null;
+  lastIncomingStatus?: "active" | "deleted" | "placeholderDeleted";
+  lastIncomingIsDeleted?: boolean;
 }
 
 interface ChatMessage {
   _id: string;
   message: string;
   createdAt: string;
+  isDeleted?: boolean;
+  status?: "active" | "deleted" | "placeholderDeleted";
+  attachments?: ChatAttachment[];
   from: {
     _id: string;
     name: string;
@@ -32,7 +69,39 @@ interface ChatMessage {
   };
 }
 
+interface DeleteMessagesResponse {
+  updates?: Array<{
+    _id: string;
+    status: "deleted" | "placeholderDeleted";
+  }>;
+}
+
+const handleDownload = async (url: string, filename: string, e?: React.MouseEvent) => {
+  if (e) e.preventDefault();
+  const toastId = toast.loading(`Downloading ${filename}...`);
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Network response was not ok");
+    const blob = await res.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(blobUrl);
+    toast.success("Download complete", { id: toastId });
+  } catch (error) {
+    console.error("Download failed, opening in new tab", error);
+    toast.dismiss(toastId);
+    window.open(url, '_blank');
+  }
+};
+
 export default function AdminChatCenter() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -40,6 +109,7 @@ export default function AdminChatCenter() {
   const [loadingConvos, setLoadingConvos] = useState(true);
   const [loadingThread, setLoadingThread] = useState(false);
   const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const socketRef = useRef<Socket | null>(null);
   const [roleFilter, setRoleFilter] = useState<"buyer" | "seller">("seller");
   const [allUsers, setAllUsers] = useState<{
@@ -50,29 +120,119 @@ export default function AdminChatCenter() {
     createdAt: string;
   }[]>([]);
   const [selectedMessageIds, setSelectedMessageIds] = useState<string[]>([]);
-  const [selectionMode, setSelectionMode] = useState(false);
   const [unreadByUser, setUnreadByUser] = useState<Record<string, number>>({});
   const [isMobileThreadView, setIsMobileThreadView] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
+  const [attachment, setAttachment] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<{url: string, name: string} | null>(null);
+  const [imageZoom, setImageZoom] = useState(1);
+
   const queryClient = useQueryClient();
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const shouldAutoScrollRef = useRef(true);
+  const pendingScrollBehaviorRef = useRef<ScrollBehavior | null>(null);
+  const scrollRetryTimeoutsRef = useRef<number[]>([]);
+  const settleScrollToBottomRef = useRef<(behavior?: ScrollBehavior) => void>(() => {});
+
+  const isNearBottom = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return true;
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
+    return distanceFromBottom <= 120;
+  };
+
+  const scrollToBottom = (behavior: ScrollBehavior = "auto") => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior,
+    });
+  };
+
+  const queueScrollToBottom = (behavior: ScrollBehavior = "auto") => {
+    pendingScrollBehaviorRef.current = behavior;
+  };
+
+  const clearScheduledScrolls = () => {
+    scrollRetryTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    scrollRetryTimeoutsRef.current = [];
+  };
+
+  const settleScrollToBottom = (behavior: ScrollBehavior = "auto") => {
+    queueScrollToBottom(behavior);
+    clearScheduledScrolls();
+
+    if (typeof window === "undefined") return;
+
+    [0, 120, 320, 700].forEach((delay) => {
+      const timeoutId = window.setTimeout(() => {
+        scrollToBottom(behavior);
+      }, delay);
+      scrollRetryTimeoutsRef.current.push(timeoutId);
+    });
+  };
+
+  settleScrollToBottomRef.current = settleScrollToBottom;
+
+  const handleMessagesScroll = () => {
+    shouldAutoScrollRef.current = isNearBottom();
+  };
+
+  const applyStatusUpdates = (
+    updates: Array<{ _id: string; status: "deleted" | "placeholderDeleted" }> = []
+  ) => {
+    const updatesMap = new Map(updates.map((update) => [update._id, update.status]));
+    setMessages((prev) =>
+      prev
+        .filter((m) => updatesMap.get(m._id) !== "placeholderDeleted")
+        .map((m) =>
+          updatesMap.has(m._id)
+            ? { ...m, isDeleted: true, status: updatesMap.get(m._id) }
+            : m
+        )
+    );
+  };
+
+  const getMessageStatus = (message: ChatMessage) => {
+    if (message.status) return message.status;
+    return message.isDeleted ? "deleted" : "active";
+  };
+
+  const handleAttachmentLoad = () => {
+    if (!shouldAutoScrollRef.current) return;
+    settleScrollToBottom("auto");
+  };
   
   const loadConversations = async () => {
     try {
       const [convData, usersData] = await Promise.all([
         chatAPI.adminGetConversations(),
-        adminAPI.getAllUsers(),
+        adminAPI.getAllUsers({ page: 1, limit: 10000 }),
       ]);
 
-      setConversations(convData.conversations || []);
+      const conversationList = Array.isArray(convData?.conversations)
+        ? convData.conversations
+        : [];
+      const userList = Array.isArray(usersData)
+        ? usersData
+        : Array.isArray(usersData?.users)
+          ? usersData.users
+          : [];
+
+      setConversations(conversationList);
       setAllUsers(
-        (usersData || []).filter(
+        userList.filter(
           (u: any) => u.role === "buyer" || u.role === "seller"
         )
       );
 
-      // Initialize unreadByUser from server data
       const serverUnread: Record<string, number> = {};
-      (convData.conversations || []).forEach((c: any) => {
+      conversationList.forEach((c: any) => {
         if (c.unreadCount > 0) {
           serverUnread[c.userId] = c.unreadCount;
         }
@@ -90,25 +250,24 @@ export default function AdminChatCenter() {
     try {
       setLoadingThread(true);
       const data = await chatAPI.adminGetThread(userId);
+      shouldAutoScrollRef.current = true;
+      settleScrollToBottom("auto");
       setMessages(data.messages || []);
       setSelectedMessageIds([]);
+      setAttachment(null);
       
-      // Mark this thread as read
       try {
         await chatAPI.adminMarkThreadAsRead(userId);
-        // Clear local unread count for this user
         setUnreadByUser((prev) => {
           const updated = { ...prev };
           delete updated[userId];
           return updated;
         });
-        // Update conversation list to reflect read status
         setConversations((prev) =>
           prev.map((c) =>
             c.userId === userId ? { ...c, unreadCount: 0 } : c
           )
         );
-        // Get current count and decrement by the messages we just read
         const currentCount = queryClient.getQueryData<number>(["chat", "unread"]) || 0;
         const threadUnread = conversations.find(c => c.userId === userId)?.unreadCount || 0;
         const newCount = Math.max(0, currentCount - threadUnread);
@@ -128,11 +287,26 @@ export default function AdminChatCenter() {
   }, []);
 
   useEffect(() => {
+    return () => {
+      clearScheduledScrolls();
+    };
+  }, []);
+
+  useEffect(() => {
     if (!selectedUserId) return;
     loadThread(selectedUserId);
   }, [selectedUserId]);
 
-  // Socket.IO subscription for real-time admin chat
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setActionsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -148,50 +322,73 @@ export default function AdminChatCenter() {
     socketRef.current = socket;
 
     socket.on("chat:new-message", (msg: ChatMessage) => {
-      // Determine the non-admin participant for conversation updates
       const isFromAdmin = msg.from.role === "admin";
       const otherUser = isFromAdmin ? msg.to : msg.from;
       const otherUserId = otherUser._id;
+      const isActiveThread = selectedUserId === otherUserId;
+      const shouldStickToBottom = shouldAutoScrollRef.current;
 
-      // Update messages if this thread is selected
       setMessages((prev) => {
-        if (!selectedUserId || selectedUserId !== otherUserId) return prev;
+        if (!isActiveThread) return prev;
         if (prev.some((m) => m._id === msg._id)) return prev;
         return [...prev, msg];
       });
 
-      // Update conversation summaries
       setConversations((prev) => {
         const existing = prev.find((c) => c.userId === otherUserId);
         if (existing) {
           return prev.map((c) =>
             c.userId === otherUserId
-              ? { ...c, lastMessageAt: msg.createdAt }
+              ? {
+                  ...c,
+                  lastMessageAt: msg.createdAt,
+                  ...(isFromAdmin
+                    ? {}
+                    : {
+                        lastIncomingMessage: msg.message || "",
+                        lastIncomingAttachments: msg.attachments || [],
+                        lastIncomingAt: msg.createdAt,
+                        lastIncomingStatus: msg.status || (msg.isDeleted ? "deleted" : "active"),
+                        lastIncomingIsDeleted: Boolean(msg.isDeleted),
+                      }),
+                }
               : c
           );
         }
-
-        // New conversation
         return [
           {
             userId: otherUserId,
             name: otherUser.name,
             role: otherUser.role as "buyer" | "seller",
             lastMessageAt: msg.createdAt,
+            ...(isFromAdmin
+              ? {}
+              : {
+                  lastIncomingMessage: msg.message || "",
+                  lastIncomingAttachments: msg.attachments || [],
+                  lastIncomingAt: msg.createdAt,
+                  lastIncomingStatus: msg.status || (msg.isDeleted ? "deleted" : "active"),
+                  lastIncomingIsDeleted: Boolean(msg.isDeleted),
+                }),
           },
           ...prev,
         ];
       });
 
-      // Track unread per user for messages coming from buyers/sellers to admin
       if (!isFromAdmin && msg.to.role === "admin") {
         setUnreadByUser((prev) => {
-          // If admin is currently viewing this user's thread, treat as read
           if (selectedUserId === otherUserId) return prev;
           const current = prev[otherUserId] || 0;
           return { ...prev, [otherUserId]: current + 1 };
         });
       }
+      if (isActiveThread && shouldStickToBottom) {
+        settleScrollToBottomRef.current("smooth");
+      }
+    });
+
+    socket.on("chat:messages-status-updated", (updates: DeleteMessagesResponse["updates"]) => {
+      applyStatusUpdates(updates || []);
     });
 
     socket.on("connect_error", (err) => {
@@ -203,21 +400,51 @@ export default function AdminChatCenter() {
     };
   }, [selectedUserId]);
 
+  useEffect(() => {
+    if (!pendingScrollBehaviorRef.current) return;
+    const behavior = pendingScrollBehaviorRef.current;
+    pendingScrollBehaviorRef.current = null;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => scrollToBottom(behavior));
+    });
+  }, [messages]);
+
   const handleSend = async () => {
-    if (!selectedUserId || !input.trim()) return;
+    if (!selectedUserId || (!input.trim() && !attachment)) return;
     try {
       setSending(true);
-      const data = await chatAPI.adminSendMessage(selectedUserId, input.trim());
+
+      let attachmentData = null;
+      if (attachment) {
+        setUploading(true);
+        const formData = new FormData();
+        formData.append("attachment", attachment);
+        const uploadRes = await chatAPI.uploadAttachment(formData);
+        attachmentData = {
+          url: uploadRes.url,
+          type: uploadRes.type,
+          name: uploadRes.name
+        };
+        setUploading(false);
+      }
+
+      const data = await chatAPI.adminSendMessage(selectedUserId, input.trim(), attachmentData ? [attachmentData] : undefined);
+      
       setInput("");
+      setAttachment(null);
+      
       if (data.chat) {
         setMessages((prev) => {
           if (prev.some((m) => m._id === data.chat._id)) return prev;
           return [...prev, data.chat];
         });
+        shouldAutoScrollRef.current = true;
+        settleScrollToBottom("smooth");
       } else {
         loadThread(selectedUserId);
       }
     } catch (err: any) {
+      setUploading(false);
       toast.error(err.response?.data?.message || "Failed to send message");
     } finally {
       setSending(false);
@@ -227,13 +454,18 @@ export default function AdminChatCenter() {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (!sending) handleSend();
+      if (!sending && !uploading) handleSend();
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setAttachment(e.target.files[0]);
     }
   };
 
   const selectedUser = selectedUserId
-    ?
-        allUsers.find((u) => u._id === selectedUserId) ||
+    ? allUsers.find((u) => u._id === selectedUserId) ||
         (() => {
           const conv = conversations.find((c) => c.userId === selectedUserId);
           if (!conv) return null;
@@ -247,6 +479,90 @@ export default function AdminChatCenter() {
         })()
     : null;
 
+  const chatDirectory = allUsers.map((u) => {
+    const conv = conversations.find((c) => c.userId === u._id);
+    const serverUnread = conv?.unreadCount || 0;
+    const localUnread = unreadByUser[u._id] || 0;
+    return {
+      userId: u._id,
+      name: u.name,
+      role: u.role as "buyer" | "seller",
+      email: u.email,
+      lastMessageAt: conv?.lastMessageAt || u.createdAt,
+      unreadCount: Math.max(serverUnread, localUnread),
+      lastIncomingMessage: conv?.lastIncomingMessage || "",
+      lastIncomingAttachments: conv?.lastIncomingAttachments || [],
+      lastIncomingAt: conv?.lastIncomingAt || null,
+      lastIncomingStatus: conv?.lastIncomingStatus || "active",
+      lastIncomingIsDeleted: Boolean(conv?.lastIncomingIsDeleted),
+    };
+  });
+
+  const visibleChats = chatDirectory
+    .filter((u) => u.role === roleFilter)
+    .sort(
+      (a, b) =>
+        new Date(b.lastMessageAt).getTime() -
+        new Date(a.lastMessageAt).getTime()
+    );
+
+  const unreadByRole = {
+    seller: chatDirectory
+      .filter((u) => u.role === "seller")
+      .reduce((sum, u) => sum + u.unreadCount, 0),
+    buyer: chatDirectory
+      .filter((u) => u.role === "buyer")
+      .reduce((sum, u) => sum + u.unreadCount, 0),
+  };
+
+  const totalUnread = unreadByRole.seller + unreadByRole.buyer;
+
+  const truncatePreview = (text: string, max = 32) => {
+    if (!text) return "";
+    return text.length > max ? `${text.slice(0, max).trimEnd()}.....` : text;
+  };
+
+  const getConversationPreviewData = (chat: {
+    role: "buyer" | "seller";
+    lastIncomingMessage?: string;
+    lastIncomingAttachments?: ChatAttachment[];
+    lastIncomingStatus?: "active" | "deleted" | "placeholderDeleted";
+    lastIncomingIsDeleted?: boolean;
+  }) => {
+    const incomingMessage = (chat.lastIncomingMessage || "").trim();
+    const hasIncomingMessage = Boolean(incomingMessage);
+    const attachments = chat.lastIncomingAttachments || [];
+    const hasAttachments = attachments.length > 0;
+    const isDeleted = chat.lastIncomingStatus === "deleted" || chat.lastIncomingIsDeleted;
+
+    if (isDeleted) return { text: "Message deleted", icon: Trash, type: "deleted" };
+    if (hasIncomingMessage) return { text: truncatePreview(incomingMessage), icon: MessageCircle, type: "message" };
+
+    if (hasAttachments) {
+      const hasImage = attachments.some((att) => att.type?.startsWith("image/"));
+      const hasNonImage = attachments.some((att) => !att.type?.startsWith("image/"));
+      if (hasImage && !hasNonImage) return { text: "Image sent", icon: ImageIcon, type: "image" };
+      if (!hasImage && hasNonImage) return { text: "File sent", icon: File, type: "file" };
+      return { text: "Attachment sent", icon: AttachmentIcon, type: "attachment" };
+    }
+
+    return { 
+      text: chat.role === "seller" ? "Seller" : "Buyer", 
+      icon: User, 
+      type: "role" 
+    };
+  };
+
+  const getConversationPreview = (chat: {
+    role: "buyer" | "seller";
+    lastIncomingMessage?: string;
+    lastIncomingAttachments?: ChatAttachment[];
+    lastIncomingStatus?: "active" | "deleted" | "placeholderDeleted";
+    lastIncomingIsDeleted?: boolean;
+  }) => {
+    return getConversationPreviewData(chat).text;
+  };
+
   const toggleSelectMessage = (id: string) => {
     setSelectedMessageIds((prev) =>
       prev.includes(id) ? prev.filter((mId) => mId !== id) : [...prev, id]
@@ -255,9 +571,10 @@ export default function AdminChatCenter() {
 
   const handleDeleteSelected = async () => {
     if (!selectedUserId || selectedMessageIds.length === 0) return;
+
     try {
-      await chatAPI.adminDeleteMessages(selectedMessageIds);
-      setMessages((prev) => prev.filter((m) => !selectedMessageIds.includes(m._id)));
+      const data = (await chatAPI.adminDeleteMessages(selectedMessageIds)) as DeleteMessagesResponse;
+      applyStatusUpdates(data.updates || []);
       setSelectedMessageIds([]);
       toast.success("Selected messages deleted");
       loadConversations();
@@ -291,281 +608,603 @@ export default function AdminChatCenter() {
     }
   };
 
-  return (
-    <div className="flex flex-col md:flex-row max-w-6xl mx-auto h-[calc(100vh-9rem)] min-h-[60vh] bg-gradient-to-br from-slate-950/90 via-slate-900/90 to-slate-950/95 border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/60 backdrop-blur-xl">
-      {/* Left: conversations list */}
-      <div
-        className={`w-full md:w-64 border-b md:border-b-0 md:border-r border-white/10 bg-black/70/ ${
-          isMobileThreadView && selectedUserId ? "hidden md:block" : "block"
-        } flex flex-col`}
-      >
-        <div className="px-4 py-3 border-b border-white/10 bg-gradient-to-r from-indigo-600/40 to-purple-600/30 flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-white">Help Center Chats</h2>
-            <p className="text-[11px] text-white/70">Buyers & Sellers needing support</p>
-          </div>
-        </div>
+  const isSelectionMode = selectedMessageIds.length > 0;
 
-        {/* Role filter tabs */}
-        <div className="flex text-[11px] border-b border-white/10">
-          {["seller", "buyer"].map((role) => {
-            // Count total unread for this role
-            const unreadForRole = allUsers
-              .filter((u) => u.role === role)
-              .reduce((sum, u) => {
-                const conv = conversations.find((c) => c.userId === u._id);
-                const serverUnread = conv?.unreadCount || 0;
-                const localUnread = unreadByUser[u._id] || 0;
-                return sum + Math.max(serverUnread, localUnread);
-              }, 0);
-            
-            return (
-              <button
-                key={role}
-                onClick={() => setRoleFilter(role as "seller" | "buyer")}
-                className={`flex-1 py-2 border-r last:border-r-0 border-white/10 uppercase tracking-wide font-semibold transition text-center relative ${
-                  roleFilter === role
-                    ? "bg-white/15 text-white"
-                    : "bg-black/40 text-white/60 hover:text-white"
-                }`}
-              >
-                {role === "seller" ? "Sellers" : "Buyers"}
-                {unreadForRole > 0 && (
-                  <span className="ml-1 px-1.5 py-0.5 text-[9px] bg-red-500 text-white rounded-full font-bold">
-                    {unreadForRole}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {loadingConvos ? (
-            <p className="text-xs text-white/60 px-4 py-3">Loading conversations...</p>
-          ) : (
-            // Build list of users for the selected role, merged with lastMessageAt from conversations
-            allUsers
-              .filter((u) => u.role === roleFilter)
-              .map((u) => {
-                const conv = conversations.find((c) => c.userId === u._id);
-                // Use server unreadCount if available, otherwise check local tracking
-                const serverUnread = conv?.unreadCount || 0;
-                const localUnread = unreadByUser[u._id] || 0;
-                return {
-                  userId: u._id,
-                  name: u.name,
-                  role: u.role as "buyer" | "seller",
-                  email: u.email,
-                  lastMessageAt: conv?.lastMessageAt || u.createdAt,
-                  unreadCount: Math.max(serverUnread, localUnread),
-                };
-              })
-              .sort((a, b) =>
-                new Date(b.lastMessageAt).getTime() -
-                new Date(a.lastMessageAt).getTime()
-              )
-              .map((c) => (
-              <button
-                key={c.userId}
-                onClick={() => {
-                  setSelectedUserId(c.userId);
-                  if (typeof window !== "undefined" && window.innerWidth < 768) {
-                    setIsMobileThreadView(true);
-                  }
-                  // Clear unread badge for this user when opened
-                  setUnreadByUser((prev) => {
-                    if (!prev[c.userId]) return prev;
-                    const copy = { ...prev };
-                    delete copy[c.userId];
-                    return copy;
-                  });
-                }}
-                className={`w-full text-left px-4 py-3 text-xs border-b border-white/5 hover:bg-white/5 transition flex flex-col gap-0.5 ${
-                  selectedUserId === c.userId ? "bg-white/10" : ""
-                }`}
-              >
-                <span className="font-semibold text-white flex items-center gap-1">
-                  {c.name}
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full border border-white/20 text-white/70">
-                    {c.role}
-                  </span>
-                  {c.unreadCount > 0 && (
-                    <span className="ml-auto flex items-center gap-1">
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-400 text-black font-semibold uppercase tracking-wide">
-                        New
-                      </span>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-red-500/90 text-white font-semibold">
-                        {c.unreadCount}
-                      </span>
-                    </span>
-                  )}
-                </span>
-                {c.email && (
-                  <span className="text-[10px] text-white/50 truncate">{c.email}</span>
-                )}
-                <span className="text-[10px] text-white/40">
-                  Last: {new Date(c.lastMessageAt).toLocaleString()}
-                </span>
-              </button>
-            ))
+  return (
+    <div className={`w-full h-full flex flex-col overflow-hidden ${isDark ? "bg-[#05050a] text-white" : "bg-slate-50 text-slate-900"}`}>
+      <PageHeader
+        backHref="/dashboard/admin"
+        backLabel="Dashboard"
+        title="Users Help Center"
+        subtitle="Realtime support operations"
+        rightSlot={
+          totalUnread > 0 ? (
+            <div className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-gradient-to-r from-violet-500 to-cyan-500 px-2 text-[11px] font-black text-white shadow-lg shadow-cyan-900/40">
+              {totalUnread}
+            </div>
+          ) : null
+        }
+      />
+
+      <div className="flex-1 min-h-0">
+        <div className={`w-full h-full flex flex-col md:flex-row overflow-hidden max-w-6xl mx-auto shadow-2xl md:border-x md:rounded-t-2xl relative ${isDark ? "bg-[#0B141A] border-white/10" : "bg-white border-slate-200"}`}>
+          {previewImage && (
+            <div
+              className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
+              onWheel={(e) => {
+                e.preventDefault();
+                setImageZoom((prev) => Math.min(Math.max(prev - e.deltaY * 0.001, 0.5), 5));
+              }}
+            >
+              <div className="absolute top-4 right-4 flex items-center gap-2 z-[101]">
+                <button
+                  onClick={() => setImageZoom((prev) => Math.min(prev + 0.25, 5))}
+                  className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition"
+                  title="Zoom In"
+                >
+                  <ZoomIn className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setImageZoom((prev) => Math.max(prev - 0.25, 0.5))}
+                  className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition"
+                  title="Zoom Out"
+                >
+                  <ZoomOut className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setImageZoom(1)}
+                  className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition"
+                  title="Reset Zoom"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={(e) => handleDownload(previewImage.url, previewImage.name, e)}
+                  className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition flex items-center gap-2"
+                >
+                  <Download className="w-5 h-5" />
+                  <span className="text-sm font-medium hidden md:inline">Download</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setPreviewImage(null);
+                    setImageZoom(1);
+                  }}
+                  className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="relative w-full h-full max-w-5xl max-h-[85vh] flex items-center justify-center overflow-hidden">
+                <img
+                  src={previewImage.url}
+                  alt={previewImage.name}
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl transition-transform duration-150 cursor-zoom-in"
+                  style={{ transform: `scale(${imageZoom})`, transformOrigin: "center center" }}
+                />
+              </div>
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white/70 text-xs px-3 py-1 rounded-full backdrop-blur-sm">
+                {Math.round(imageZoom * 100)}%
+              </div>
+            </div>
           )}
-        </div>
-      </div>
+
+          {/* Left: conversations list */}
+          <div
+            className={`w-full md:w-80 border-b md:border-b-0 md:border-r flex-col ${
+              isMobileThreadView && selectedUserId ? "hidden" : "flex"
+            } ${isDark ? "border-white/10 bg-gradient-to-b from-[#111B21] via-[#101A2C] to-[#0A1421]" : "border-slate-200 bg-white"}`}
+          >
+            <div className={`px-4 py-3 backdrop-blur-xl flex items-center justify-between border-b h-16 ${isDark ? "bg-black/25 border-white/10" : "bg-white border-slate-200"}`}>
+              <div className="min-w-0">
+                <h2 className={`text-base font-semibold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Support Chats</h2>
+                <p className={`text-[11px] truncate ${isDark ? "text-white/55" : "text-slate-400"}`}>Centralized inbox for buyer and seller support</p>
+              </div>
+              <span className="text-[10px] uppercase tracking-wider font-semibold text-cyan-200/90 bg-cyan-500/15 border border-cyan-500/30 rounded-full px-2 py-1">
+                Live
+              </span>
+            </div>
+
+            {/* Role filter tabs */}
+            <div className={`px-4 py-3 border-b backdrop-blur-xl space-y-2 ${isDark ? "border-white/10 bg-black/20" : "border-slate-200 bg-white"}`}>
+              <div className={`grid grid-cols-2 gap-3 rounded-xl border p-2 ${isDark ? "border-white/10 bg-black/40" : "border-slate-200 bg-slate-50"}`}>
+                {["seller", "buyer"].map((role) => {
+                  const unreadForRole = role === "seller" ? unreadByRole.seller : unreadByRole.buyer;
+
+                  return (
+                    <button
+                      key={role}
+                      onClick={() => setRoleFilter(role as "seller" | "buyer")}
+                      className={`flex-1 py-2.5 uppercase tracking-widest font-black transition text-center rounded-lg text-[10px] relative group ${
+                        roleFilter === role
+                          ? `text-white bg-gradient-to-r from-indigo-600 to-cyan-600 border border-indigo-400/60 shadow-lg shadow-indigo-900/40`
+                          : isDark
+                            ? "text-white/60 hover:text-white hover:bg-white/5 border border-transparent"
+                            : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-transparent"
+                      }`}
+                    >
+                      <span className="inline-flex items-center gap-1.5">
+                        {role === "seller" ? "Sellers" : "Buyers"}
+                      </span>
+                      {unreadForRole > 0 && (
+                        <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gradient-to-r from-violet-500 to-cyan-500 px-1.5 text-[9px] text-white font-black shadow-lg shadow-cyan-900/40">
+                          {unreadForRole}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-3 py-2 space-y-1">
+              {loadingConvos ? (
+                <div className="flex flex-col px-2 py-2 gap-3 animate-pulse">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex items-center gap-3 w-full rounded-xl border border-white/5 bg-white/[0.02] px-4 py-3.5">
+                      <div className="w-12 h-12 rounded-xl bg-white/5 shrink-0" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-white/5 rounded w-2/3" />
+                        <div className="h-3 bg-white/5 rounded w-1/2" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : visibleChats.length === 0 ? (
+                <div className="h-full min-h-[220px] grid place-items-center px-4">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-6 text-center max-w-[260px]">
+                    <p className="text-sm font-semibold text-white/90">No active {roleFilter} chats</p>
+                    <p className="text-xs text-white/55 mt-1">New conversations will appear here automatically.</p>
+                  </div>
+                </div>
+              ) : (
+                visibleChats.map((c) => {
+                  const conversationPreview = getConversationPreview(c);
+
+                  return (
+                  <button
+                    key={c.userId}
+                    onClick={() => {
+                      setSelectedUserId(c.userId);
+                      if (typeof window !== "undefined" && window.innerWidth < 768) {
+                        setIsMobileThreadView(true);
+                      }
+                      setUnreadByUser((prev) => {
+                        if (!prev[c.userId]) return prev;
+                        const copy = { ...prev };
+                        delete copy[c.userId];
+                        return copy;
+                      });
+                    }}
+                    className={`w-full text-left px-4 py-3.5 rounded-xl border transition flex items-center gap-3.5 ${
+                      selectedUserId === c.userId
+                        ? "bg-gradient-to-r from-indigo-600/25 to-cyan-600/25 border-indigo-400/40 shadow-lg shadow-indigo-900/30"
+                        : isDark
+                          ? "bg-white/[0.02] border-white/8 hover:bg-white/[0.06] hover:border-white/20"
+                          : "bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300"
+                    }`}
+                  >
+                    <div className={`w-12 h-12 rounded-xl border flex items-center justify-center shrink-0 overflow-hidden ${
+                      c.role === "seller" 
+                        ? "bg-red-600/15 border-red-400/25" 
+                        : "bg-blue-600/15 border-blue-400/25"
+                    }`}>
+                      <User className={`w-5.5 h-5.5 ${c.role === "seller" ? "text-red-300" : "text-blue-300"}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-baseline gap-2 mb-1">
+                        <span className={`font-extrabold truncate max-w-[150px] text-[15px] leading-tight ${
+                          isDark
+                            ? (c.role === "seller" ? "text-fuchsia-100" : "text-cyan-100")
+                            : "text-slate-800"
+                        }`}>
+                          {c.name}
+                        </span>
+                        <span className={`text-xs ${c.unreadCount > 0 ? "text-cyan-300 font-bold" : "text-white/40"} shrink-0`}>
+                          {new Date(c.lastMessageAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center gap-2">
+                        {(() => {
+                          const previewData = getConversationPreviewData(c);
+                          const IconComponent = previewData.icon;
+                          const isRole = previewData.type === "role";
+                          const iconColorMap: Record<string, string> = {
+                            message: c.role === "seller" ? "text-fuchsia-400" : "text-cyan-400",
+                            image: "text-purple-400",
+                            file: "text-amber-400",
+                            attachment: "text-sky-400",
+                            deleted: "text-red-400/50",
+                            role: c.role === "seller" ? "text-fuchsia-300/50" : "text-cyan-300/50",
+                          };
+                          const bgColorMap: Record<string, string> = {
+                            message: c.role === "seller" ? "bg-fuchsia-500/10" : "bg-cyan-500/10",
+                            image: "bg-purple-500/10",
+                            file: "bg-amber-500/10",
+                            attachment: "bg-sky-500/10",
+                            deleted: "bg-red-500/5",
+                            role: "transparent",
+                          };
+
+                          return (
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <div className={`p-1.5 rounded-lg ${bgColorMap[previewData.type]} shrink-0`}>
+                                <IconComponent className={`w-3.5 h-3.5 ${iconColorMap[previewData.type]}`} />
+                              </div>
+                              <span
+                                className={`text-[12px] tracking-wide font-medium truncate max-w-[110px] ${
+                                  isDark
+                                    ? isRole
+                                      ? (c.role === "seller" ? "text-fuchsia-300/60" : "text-cyan-300/60")
+                                      : (c.role === "seller" ? "text-fuchsia-200" : "text-cyan-100")
+                                    : "text-slate-500"
+                                }`}
+                                title={previewData.text}
+                              >
+                                {previewData.text}
+                              </span>
+                            </div>
+                          );
+                        })()}
+                        {c.unreadCount > 0 && (
+                          <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-gradient-to-r from-violet-500 to-cyan-500 px-1.5 text-[10px] text-white font-black shadow-lg shadow-cyan-900/40 shrink-0">
+                            {c.unreadCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                )})
+            
+              )}
+            </div>
+          </div>
 
       {/* Right: thread */}
-      {selectedUserId && (
-      <div className="flex-1 flex flex-col bg-gradient-to-br from-slate-950/60 via-slate-900/70 to-slate-950/80">
-        <div className="px-4 sm:px-6 py-3 border-b border-white/10 bg-gradient-to-r from-slate-900/70 to-slate-800/70 flex items-center justify-between gap-3 relative">
-          <div>
-              <div className="flex items-center gap-2">
-                {selectedUserId && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      // On mobile, go back to list view; on desktop just keep selection
-                      if (typeof window !== "undefined" && window.innerWidth < 768) {
+      <div className={`flex-1 min-h-0 flex flex-col relative ${isMobileThreadView && selectedUserId ? "flex" : "hidden md:flex"} ${isDark ? "bg-gradient-to-br from-[#070a12] via-[#0a1020] to-[#0d1326]" : "bg-gradient-to-br from-slate-100 via-slate-50 to-white"}`}>
+        {selectedUserId ? (
+          <>
+            {/* Thread Header */}
+            <div className="flex items-center justify-between px-5 py-4 bg-black/40 backdrop-blur-xl border-b border-white/10 h-16 z-10 shrink-0">
+              {isSelectionMode ? (
+                <div className="flex items-center gap-4 w-full">
+                  <button onClick={() => setSelectedMessageIds([])} className="p-2 -ml-2 rounded-full hover:bg-white/10 text-white transition">
+                    <X className="w-5 h-5" />
+                  </button>
+                  <span className="text-[#E9EDEF] font-semibold text-sm flex-1">{selectedMessageIds.length} selected</span>
+                  <button onClick={handleDeleteSelected} className="p-2 rounded-full hover:bg-white/10 text-red-400 transition">
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3.5">
+                    <button
+                      onClick={() => {
                         setIsMobileThreadView(false);
                         setSelectedUserId(null);
                         setSelectedMessageIds([]);
-                      }
-                    }}
-                    className="md:hidden text-[11px] px-2 py-1 rounded-full bg-white/10 border border-white/20 text-white/80 hover:bg-white/15"
-                  >
-                    ← 
-                  </button>
-                )}
-                <h1 className="text-sm sm:text-base font-semibold text-white">
-                  {selectedUser ? selectedUser.name : "Chat Thread"}
-                </h1>
-              </div>
-              <p className="text-[11px] text-white/70">Buyers & Sellers support thread</p>
-          </div>
-            <div className="flex items-center gap-2 text-[10px] sm:text-xs">
-              <button
-                type="button"
-                onClick={() => setActionsOpen((v) => !v)}
-                className="h-7 w-7 rounded-full bg-black/40 border border-white/20 flex items-center justify-center text-white/80 hover:bg-white/10 hover:border-indigo-400"
-                title="Chat actions"
-              >
-                
-              </button>
-            </div>
-
-            {actionsOpen && (
-              <div className="absolute right-3 top-full mt-2 w-40 rounded-xl bg-black/95 border border-white/10 shadow-lg shadow-black/60 text-[11px] z-20">
-                <button
-                  className="w-full text-left px-3 py-2 hover:bg-white/10 text-white/80 disabled:opacity-40 disabled:cursor-not-allowed"
-                  disabled={!selectedUserId || messages.length === 0}
-                  onClick={() => {
-                    setSelectionMode((v) => !v);
-                    setActionsOpen(false);
-                  }}
-                >
-                  {selectionMode ? "Cancel select" : "Select messages"}
-                </button>
-                <button
-                  className="w-full text-left px-3 py-2 hover:bg-red-500/10 text-red-300 disabled:opacity-40 disabled:cursor-not-allowed"
-                  disabled={!selectionMode || selectedMessageIds.length === 0}
-                  onClick={() => {
-                    handleDeleteSelected();
-                    setActionsOpen(false);
-                  }}
-                >
-                  Delete selected
-                </button>
-                <button
-                  className="w-full text-left px-3 py-2 hover:bg-amber-500/10 text-amber-200 disabled:opacity-40 disabled:cursor-not-allowed"
-                  disabled={!selectedUserId || messages.length === 0}
-                  onClick={() => {
-                    handleClearThread();
-                    setActionsOpen(false);
-                  }}
-                >
-                  Clear thread
-                </button>
-                <button
-                  className="w-full text-left px-3 py-2 hover:bg-red-600/15 text-red-200 border-t border-white/5"
-                  onClick={() => {
-                    handleClearAllChats();
-                    setActionsOpen(false);
-                  }}
-                >
-                  Clear all chats
-                </button>
-              </div>
-            )}
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-3">
-          {loadingThread ? (
-            <p className="text-sm text-white/60">Loading messages...</p>
-          ) : !selectedUserId ? (
-            <p className="text-sm text-white/60">Select a conversation to view messages.</p>
-          ) : messages.length === 0 ? (
-            <p className="text-sm text-white/60">
-              No messages in this thread yet. Start by sending a message.
-            </p>
-          ) : (
-            messages.map((m) => {
-              const isFromAdmin = m.from.role === "admin";
-              return (
-                <div
-                  key={m._id}
-                  className={`flex ${isFromAdmin ? "justify-end" : "justify-start"}`}
-                >
-                  <div className="flex items-start gap-2 max-w-[90%]">
-                    {selectionMode && (
-                      <input
-                        type="checkbox"
-                        checked={selectedMessageIds.includes(m._id)}
-                        onChange={() => toggleSelectMessage(m._id)}
-                        className="mt-1 h-3 w-3 rounded border-white/40 bg-black/40 text-indigo-400 focus:ring-0"
-                      />
-                    )}
-                    <div
-                      className={`max-w-full rounded-2xl px-3 py-2 text-sm shadow-md shadow-black/40 border border-white/10 ${
-                        isFromAdmin
-                          ? "bg-indigo-600/80 text-white"
-                          : "bg-slate-900/80 text-white"
-                      }`}
+                      }}
+                      className="p-2 -ml-2 rounded-full hover:bg-white/10 text-white transition md:hidden"
                     >
-                      <p className="text-xs text-white/60 mb-1">
-                        {isFromAdmin ? "You (Admin)" : `${m.from.name} (${m.from.role})`}
-                      </p>
-                      <p className="whitespace-pre-wrap break-words">{m.message}</p>
-                      <p className="mt-1 text-[10px] text-white/50 text-right">
-                        {new Date(m.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                      <ChevronLeft className="w-6 h-6" />
+                    </button>
+                    <div className={`w-11 h-11 rounded-lg border flex items-center justify-center shrink-0 ${
+                      selectedUser?.role === "seller" 
+                        ? "bg-red-600/15 border-red-400/25" 
+                        : "bg-blue-600/15 border-blue-400/25"
+                    }`}>
+                      <User className={`w-5.5 h-5.5 ${selectedUser?.role === "seller" ? "text-red-300" : "text-blue-300"}`} />
+                    </div>
+                    <div>
+                      <h1
+                        className={`text-[17px] font-extrabold leading-tight ${
+                          isDark
+                            ? (selectedUser?.role === "seller" ? "text-fuchsia-100" : "text-cyan-100")
+                            : "text-slate-800"
+                        }`}
+                      >
+                        {selectedUser ? selectedUser.name : "User"}
+                      </h1>
+                      <p
+                        className={`text-[10px] font-semibold uppercase tracking-wide ${
+                          isDark
+                            ? (selectedUser?.role === "seller" ? "text-fuchsia-300/80" : "text-cyan-300/80")
+                            : (selectedUser?.role === "seller" ? "text-fuchsia-600" : "text-cyan-600")
+                        }`}
+                      >
+                        {selectedUser?.role === "seller" ? "Seller" : "Buyer"}
                       </p>
                     </div>
                   </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+                  
+                  <div className="relative shrink-0" ref={dropdownRef}>
+                    <button 
+                      onClick={() => setActionsOpen(!actionsOpen)}
+                      className="p-2 rounded-full hover:bg-white/10 text-[#8696A0] transition"
+                    >
+                      <MoreVertical className="w-5 h-5" />
+                    </button>
+                    {actionsOpen && (
+                      <div className={`absolute right-0 top-full mt-2 w-48 rounded-lg shadow-xl border py-1 z-50 backdrop-blur-xl ${isDark ? "bg-slate-900/95 border-white/10" : "bg-white border-slate-200"}`}>
+                        <button
+                          className={`w-full text-left px-4 py-2.5 text-sm transition rounded-md mx-1 my-0.5 ${isDark ? "text-white/85 hover:bg-white/10" : "text-slate-700 hover:bg-slate-100"}`}
+                          onClick={() => {
+                            handleClearThread();
+                            setActionsOpen(false);
+                          }}
+                        >
+                          Clear thread
+                        </button>
+                        <button
+                          className={`w-full text-left px-4 py-2.5 text-sm transition rounded-md mx-1 my-0.5 ${isDark ? "text-red-400 hover:bg-white/10" : "text-red-500 hover:bg-red-50"}`}
+                          onClick={() => {
+                            handleClearAllChats();
+                            setActionsOpen(false);
+                          }}
+                        >
+                          Clear all chats
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
 
-        <div className="border-t border-white/10 bg-black/70 px-4 sm:px-6 py-3 flex flex-col gap-2 sm:flex-row sm:items-end">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={selectedUserId ? "Type your reply..." : "Select a conversation first"}
-            disabled={!selectedUserId}
-            className="flex-1 bg-black border border-white/10 rounded-xl px-3 py-2 text-sm text-white resize-none min-h-[44px] max-h-32 focus:outline-none focus:ring-2 focus:ring-indigo-500/80 disabled:opacity-60 disabled:cursor-not-allowed"
-          />
-          <button
-            onClick={handleSend}
-            disabled={sending || !input.trim() || !selectedUserId}
-            className="mt-1 sm:mt-0 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800/60 text-sm font-semibold text-white shadow-md shadow-indigo-500/30 disabled:cursor-not-allowed"
-          >
-            {sending ? "Sending..." : "Send"}
-          </button>
+            {/* Messages Area */}
+            <div 
+              ref={messagesContainerRef}
+              onScroll={handleMessagesScroll}
+              className={`flex-1 overflow-y-auto px-5 py-5 space-y-3 relative ${isDark ? "bg-gradient-to-br from-[#05050a] via-[#0a0a14] to-[#0f1123]" : "bg-gradient-to-br from-slate-100 via-slate-50 to-white"}`}
+            >
+              {loadingThread ? (
+                <div className="flex flex-col gap-4 animate-pulse px-2 py-4">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className={`flex w-full ${i % 2 === 0 ? "justify-end" : "justify-start"}`}>
+                      <div className={`h-16 w-2/3 md:w-1/2 rounded-2xl ${i % 2 === 0 ? "bg-[#1E293B] rounded-tr-sm" : "bg-white/5 rounded-tl-sm"}`} />
+                    </div>
+                  ))}
+                </div>
+              ) : messages.length === 0 ? (
+                <div className="flex justify-center py-12">
+                  <div className="bg-white/[0.04] border border-white/10 text-white/70 text-xs px-4 py-2.5 rounded-lg max-w-xs text-center shadow-md">
+                    Start a conversation with <span className="font-semibold">{selectedUser?.name}</span>
+                  </div>
+                </div>
+              ) : (
+                messages.map((m) => {
+                  const isFromAdmin = m.from.role === "admin";
+                  const isSelected = selectedMessageIds.includes(m._id);
+                  const messageStatus = getMessageStatus(m);
+                  
+                  return (
+                    <div 
+                      key={m._id} 
+                      className={`flex w-full group ${isFromAdmin ? "justify-end" : "justify-start"} ${isSelected ? "bg-red-500/10 -mx-5 px-5 py-1.5 rounded-lg" : ""}`}
+                      onClick={() => isSelectionMode && toggleSelectMessage(m._id)}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        toggleSelectMessage(m._id);
+                      }}
+                    >
+                      {!isFromAdmin && !isSelectionMode && (
+                        <div className="hidden md:flex items-center justify-center w-8 opacity-0 group-hover:opacity-100 transition shrink-0 mr-3">
+                          <button onClick={() => toggleSelectMessage(m._id)} className="p-1 rounded-full hover:bg-white/10 text-white/40 hover:text-white transition">
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+
+                      <div 
+                        className={`relative max-w-[85%] md:max-w-[65%] rounded-2xl px-4 py-2.5 shadow-lg select-none ${
+                          isFromAdmin
+                            ? isDark
+                              ? "bg-slate-700/85 text-white rounded-tr-sm border border-slate-600/80"
+                              : "bg-indigo-600 text-white rounded-tr-sm border border-indigo-500/50"
+                            : isDark
+                              ? "bg-white/6 backdrop-blur-md text-white rounded-tl-sm border border-white/12"
+                              : "bg-white text-slate-900 rounded-tl-sm border border-slate-200 shadow-sm"
+                        }`}
+                        style={{ WebkitUserSelect: 'none', userSelect: 'none' }}
+                      >
+                        {!isFromAdmin && (
+                          <p className={`text-[10px] font-bold mb-1 leading-tight uppercase tracking-wide ${isDark ? "text-blue-300" : "text-blue-600"}`}>
+                            {m.from.name}
+                          </p>
+                        )}
+
+                        {messageStatus === "deleted" ? (
+                          <p className="text-sm italic text-white/50">Message deleted</p>
+                        ) : (
+                          <>
+                            {m.attachments && m.attachments.length > 0 && (
+                              <div className="mb-2.5 space-y-2">
+                                {m.attachments.map((att, idx) => {
+                                  const isImage = att.type.startsWith('image/');
+                                  return isImage ? (
+                                    <div 
+                                      key={idx} 
+                                      className="relative w-full max-w-[240px] md:max-w-xs rounded-lg overflow-hidden cursor-pointer group"
+                                      onClick={() => setPreviewImage({ url: att.url, name: att.name || 'Image' })}
+                                    >
+                                      <img 
+                                        src={att.url} 
+                                        alt="attachment" 
+                                        onLoad={handleAttachmentLoad}
+                                        className="w-full h-auto max-h-64 object-contain rounded-lg bg-black/20" 
+                                      />
+                                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
+                                        <Maximize className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition shadow-lg" />
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <a key={idx} onClick={(e) => handleDownload(att.url, att.name || 'file', e)} href="#" className="flex items-center gap-3 p-3 bg-black/30 rounded-lg hover:bg-black/40 transition cursor-pointer border border-white/8">
+                                      <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center shrink-0">
+                                        <FileText className="w-5 h-5 text-blue-400" />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm truncate font-medium text-white">{att.name}</p>
+                                        <p className="text-[9px] text-white/50 uppercase font-semibold">{att.type.split('/')[1] || 'FILE'}</p>
+                                      </div>
+                                      <Download className="w-4 h-4 text-white/60 shrink-0" />
+                                    </a>
+                                  );
+                                })}
+                              </div>
+                            )}
+
+                            {m.message && (
+                              <p className="text-[14.5px] leading-relaxed whitespace-pre-wrap break-words pr-12">
+                                {m.message}
+                              </p>
+                            )}
+                          </>
+                        )}
+                        
+                        <div className={`text-[10px] text-white/50 flex items-center justify-end gap-1 mt-1 -mr-1`}>
+                          {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+
+                      {isFromAdmin && !isSelectionMode && (
+                        <div className="hidden md:flex items-center justify-center w-8 opacity-0 group-hover:opacity-100 transition shrink-0 ml-2">
+                          <button onClick={() => toggleSelectMessage(m._id)} className="p-1 rounded-full hover:bg-white/10 text-white/40 hover:text-white transition">
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Input Area */}
+            <div className={`px-3 md:px-5 py-3 flex flex-col gap-2.5 relative z-10 shrink-0 border-t ${isDark ? "bg-[#05050a] border-white/10" : "bg-white border-slate-200"}`}>
+              
+              {attachment && (
+                <div className="flex items-center gap-3 p-3.5 bg-white/6 backdrop-blur-xl border border-white/12 rounded-lg mb-1.5 mx-1">
+                  <div className="w-11 h-11 bg-black/30 rounded-lg flex items-center justify-center overflow-hidden relative shrink-0">
+                    {attachment.type.startsWith('image/') ? (
+                      <img src={URL.createObjectURL(attachment)} alt="preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <FileText className="w-5 h-5 text-white/70" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white font-medium truncate">{attachment.name}</p>
+                    <p className="text-xs text-white/50">{(attachment.size / 1024).toFixed(1)} KB</p>
+                  </div>
+                  <button onClick={() => setAttachment(null)} className="p-2 rounded-full hover:bg-white/10 text-white/70 transition shrink-0">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              <div className="flex items-end gap-2.5 max-w-4xl mx-auto w-full">
+                <div className={`flex-1 rounded-xl flex items-end min-h-[42px] px-2 md:px-3.5 border transition-all ${isDark ? "bg-white/6 backdrop-blur-xl border-white/12 focus-within:border-indigo-500/60 focus-within:bg-white/8 shadow-lg hover:border-white/15" : "bg-white border-slate-200 focus-within:border-indigo-400 shadow-sm hover:border-slate-300"}`}>
+                  
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-3 text-white/50 hover:text-white transition shrink-0"
+                    title="Attach File"
+                  >
+                    <Paperclip className="w-5 h-5" />
+                  </button>
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    ref={fileInputRef} 
+                    onChange={handleFileSelect}
+                  />
+
+                  <textarea
+                    value={input}
+                    onChange={(e) => {
+                      setInput(e.target.value);
+                      e.target.style.height = 'auto';
+                      e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                    }}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Type a message..."
+                    className={`flex-1 bg-transparent text-[14px] py-2.5 px-2 resize-none max-h-[120px] focus:outline-none custom-scrollbar leading-relaxed ${isDark ? "text-white placeholder-white/40" : "text-slate-900 placeholder-slate-400"}`}
+                    rows={1}
+                  />
+
+                  <button 
+                    onClick={() => cameraInputRef.current?.click()}
+                    className="p-3 text-white/50 hover:text-white transition shrink-0"
+                    title="Take Photo"
+                  >
+                    <Camera className="w-5 h-5" />
+                  </button>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    capture="environment" 
+                    className="hidden" 
+                    ref={cameraInputRef} 
+                    onChange={handleFileSelect}
+                  />
+                </div>
+
+                {input.trim() || attachment ? (
+                  <button
+                    onClick={handleSend}
+                    disabled={sending || uploading}
+                    className="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 flex items-center justify-center shrink-0 shadow-lg shadow-cyan-500/20 transition-transform active:scale-95 disabled:opacity-50"
+                  >
+                    {uploading || sending ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Send className="w-5 h-5 text-white ml-1" />
+                    )}
+                  </button>
+                ) : (
+                  <button className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 text-white/30 cursor-not-allowed">
+                    <Send className="w-4 h-4 ml-0.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className={`flex-1 flex items-center justify-center p-6 md:p-10 ${isDark ? "bg-gradient-to-br from-[#05050a] via-[#0a0a14] to-[#0f1123]" : "bg-gradient-to-br from-slate-100 via-slate-50 to-white"}`}>
+            <div className={`w-full max-w-xl rounded-3xl border px-8 py-10 text-center backdrop-blur-xl ${isDark ? "border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.02] shadow-2xl shadow-indigo-950/30" : "border-slate-200 bg-white shadow-xl"}`}>
+              <div className={`mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border shadow-lg ${isDark ? "bg-gradient-to-br from-indigo-500/30 via-violet-500/25 to-cyan-500/30 border-indigo-300/25 shadow-indigo-900/40" : "bg-gradient-to-br from-indigo-50 via-violet-50 to-cyan-50 border-indigo-200 shadow-indigo-200/50"}`}>
+                <MessageCircle className={`h-10 w-10 ${isDark ? "text-cyan-200" : "text-indigo-500"}`} />
+              </div>
+              <h3 className={`text-3xl font-semibold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Bitforge Help Center</h3>
+              <p className={`mx-auto mt-3 max-w-md text-sm leading-relaxed ${isDark ? "text-slate-300" : "text-slate-500"}`}>
+                Select a chat to start responding to buyers and sellers with secure, real-time messaging.
+              </p>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${isDark ? "border-cyan-400/25 bg-cyan-500/10 text-cyan-200" : "border-cyan-400/30 bg-cyan-50 text-cyan-700"}`}>
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  Live replies
+                </span>
+                <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${isDark ? "border-violet-400/25 bg-violet-500/10 text-violet-200" : "border-violet-400/30 bg-violet-50 text-violet-700"}`}>
+                  <ImageIcon className="h-3.5 w-3.5" />
+                  Image support
+                </span>
+                <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${isDark ? "border-indigo-400/25 bg-indigo-500/10 text-indigo-200" : "border-indigo-400/30 bg-indigo-50 text-indigo-700"}`}>
+                  <Paperclip className="h-3.5 w-3.5" />
+                  File sharing
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
         </div>
       </div>
-      )}
     </div>
   );
+}
+
+declare global {
+  interface Window {
+    longPressTimer: any;
+  }
 }

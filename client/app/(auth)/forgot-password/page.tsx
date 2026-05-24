@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white flex items-center justify-center px-4 relative overflow-hidden">
 
       {/* BACKGROUND GLOW */}
       <div className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full bg-indigo-600/30 blur-[160px]" />
@@ -48,7 +48,7 @@ export default function ForgotPasswordPage() {
 
       {/* CARD */}
       <div className="relative z-10 w-full max-w-md rounded-3xl p-8
-        bg-white/5 backdrop-blur-xl border border-white/10
+        bg-slate-100 dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10
         shadow-[0_30px_120px_rgba(56,189,248,0.25)]
       ">
 
@@ -74,7 +74,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         <h1 className="text-2xl font-black text-center -mt-5 sm:-mt-8 lg:-mt-12 leading-none">Forgot password</h1>
-        <p className="text-center text-sm text-white/60 mb-4 mt-1">
+        <p className="text-center text-sm text-slate-500 dark:text-white/60 mb-4 mt-1">
           Enter your email and we'll send a reset code
         </p>
 
@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
 
           {/* EMAIL */}
           <div>
-            <label className="text-xs text-white/60">
+            <label className="text-xs text-slate-500 dark:text-white/60">
               Email address
             </label>
             <input
@@ -97,7 +97,7 @@ export default function ForgotPasswordPage() {
                 px-4 py-3
                 text-sm
                 rounded-xl
-                bg-white/5 border border-white/10
+                bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10
                 outline-none
                 focus:border-cyan-400
                 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)]
@@ -126,7 +126,7 @@ export default function ForgotPasswordPage() {
         </form>
 
         {/* BACK TO LOGIN */}
-        <p className="text-center text-sm text-white/60 mt-6">
+        <p className="text-center text-sm text-slate-500 dark:text-white/60 mt-6">
           Remembered your password?{" "}
           <Link href="/login" className="text-cyan-400 font-semibold">
             Back to login

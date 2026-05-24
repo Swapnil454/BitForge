@@ -1,295 +1,255 @@
 "use client";
 
+import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
+import { ShieldCheck, Eye, Scale, AlertTriangle, Wallet, Lock, HelpCircle, FileText } from "lucide-react";
+
 export default function SellerTermsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-black text-white mb-4">
-            Seller Terms & Conditions
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0A101D] text-slate-900 dark:text-white pb-20">
+      <PageHeader 
+        title="Seller Terms & Conditions" 
+        subtitle="Platform policies and guidelines"
+      />
+
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-10">
+        {/* Intro */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-2xl mb-4">
+            <FileText className="w-8 h-8" />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">
+            Seller Guidelines & Policies
           </h1>
-          <p className="text-slate-400">
-            Understanding content security, preview generation, and platform policies
+          <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto text-sm sm:text-base">
+            Understanding content security, preview generation, and platform responsibilities. By uploading content, you agree to these terms.
           </p>
-          <p className="text-xs text-slate-500 mt-2">
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-4 font-medium uppercase tracking-wider">
             Last updated: February 11, 2026
           </p>
         </div>
 
-        {/* Content */}
-        <div className="space-y-8 bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-8">
-          
+        {/* Content Cards */}
+        <div className="space-y-6">
+
           {/* Content Security */}
-          <section>
-            <h2 className="text-2xl font-bold text-cyan-400 mb-4 flex items-center gap-2">
-              🔐 Content Security & Protection
-            </h2>
-            <div className="space-y-3 text-slate-300 leading-relaxed">
-              <p>
-                Your product files are protected with <strong>industry-leading security measures</strong>:
-              </p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>
-                  <strong>Authenticated Storage:</strong> Original files are stored with Cloudinary's 
-                  <code className="bg-slate-700/50 px-2 py-0.5 rounded mx-1 text-cyan-300">type: "authenticated"</code>
-                  access control, making them inaccessible via direct URLs.
-                </li>
-                <li>
-                  <strong>Signed URLs:</strong> After purchase, buyers receive time-limited signed URLs 
-                  (valid for 5 minutes) that cannot be shared or reused.
-                </li>
-                <li>
-                  <strong>Malware Scanning:</strong> All uploaded files are automatically scanned using 
-                  VirusTotal API to ensure platform safety.
-                </li>
-                <li>
-                  <strong>No Public Access:</strong> Your full content PDFs are never publicly accessible. 
-                  Only verified purchasers can download them.
-                </li>
-              </ul>
+          <section className="bg-white dark:bg-[#12141c]/80 border border-slate-200 dark:border-white/5 rounded-2xl p-6 sm:p-8 shadow-sm">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="p-2.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                Content Security & Protection
+              </h2>
             </div>
+            <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed mb-4">
+              Your product files are protected with <strong className="text-slate-900 dark:text-white">industry-leading security measures</strong>:
+            </p>
+            <ul className="space-y-3">
+              {[
+                { title: "Authenticated Storage", desc: "Original files are stored with Cloudinary's authenticated access control, making them inaccessible via direct URLs." },
+                { title: "Signed URLs", desc: "After purchase, buyers receive time-limited signed URLs (valid for 5 minutes) that cannot be shared or reused." },
+                { title: "Malware Scanning", desc: "All uploaded files are automatically scanned using VirusTotal API to ensure platform safety." },
+                { title: "No Public Access", desc: "Your full content PDFs are never publicly accessible. Only verified purchasers can download them." },
+              ].map((item, i) => (
+                <li key={i} className="flex gap-3 text-sm sm:text-base text-slate-600 dark:text-slate-400">
+                  <div className="mt-1 w-1.5 h-1.5 bg-emerald-500 rounded-full shrink-0" />
+                  <div>
+                    <strong className="text-slate-900 dark:text-slate-200 font-semibold">{item.title}: </strong>
+                    {item.desc}
+                  </div>
+                </li>
+              ))}
+            </ul>
           </section>
 
           {/* Preview Generation */}
-          <section>
-            <h2 className="text-2xl font-bold text-cyan-400 mb-4 flex items-center gap-2">
-              👁️ Automatic Preview Generation
-            </h2>
-            <div className="space-y-3 text-slate-300 leading-relaxed">
-              <p>
-                When you upload a PDF, our system <strong>automatically generates a watermarked preview</strong> 
-                for potential buyers. Here's how it works:
-              </p>
-              
-              <div className="bg-slate-900/50 rounded-lg p-4 my-4">
-                <h3 className="text-lg font-semibold text-white mb-3">Preview Page Count Rules:</h3>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-700">
-                      <th className="text-left py-2 text-cyan-300">Original Pages</th>
-                      <th className="text-left py-2 text-cyan-300">Preview Pages Shown</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-700/50">
-                    <tr>
-                      <td className="py-2">1-11 pages</td>
-                      <td className="py-2 text-emerald-400 font-medium">1 page</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2">12-25 pages</td>
-                      <td className="py-2 text-emerald-400 font-medium">2 pages</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2">26-50 pages</td>
-                      <td className="py-2 text-emerald-400 font-medium">3 pages</td>
-                    </tr>
-                    <tr>
-                      <td className="py-2">51+ pages</td>
-                      <td className="py-2 text-emerald-400 font-medium">4 pages</td>
-                    </tr>
-                  </tbody>
-                </table>
+          <section className="bg-white dark:bg-[#12141c]/80 border border-slate-200 dark:border-white/5 rounded-2xl p-6 sm:p-8 shadow-sm">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="p-2.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                <Eye className="w-6 h-6" />
               </div>
-
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>
-                  <strong>Watermarked Pages:</strong> Preview pages include diagonal "PREVIEW ONLY" watermark 
-                  and bottom text stating "Purchase to unlock full content".
-                </li>
-                <li>
-                  <strong>Locked Placeholder Pages:</strong> After real preview pages, 2-3 locked placeholder 
-                  pages are added showing "LOCKED" to indicate more content is available.
-                </li>
-                <li>
-                  <strong>Public Access:</strong> Preview PDFs are intentionally public so buyers can evaluate 
-                  your content quality before purchasing.
-                </li>
-                <li>
-                  <strong>Zero Seller Effort:</strong> This happens automatically - you only upload ONE file 
-                  (the full content PDF).
-                </li>
-              </ul>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                Automatic Preview Generation
+              </h2>
             </div>
+            <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+              When you upload a PDF, our system <strong className="text-slate-900 dark:text-white">automatically generates a watermarked preview</strong> for potential buyers. Here's how it works:
+            </p>
+
+            <div className="bg-slate-50 dark:bg-[#0B1221] border border-slate-100 dark:border-white/5 rounded-xl p-5 mb-6 overflow-hidden">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 uppercase tracking-wider">Preview Page Count Rules</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-xs font-bold text-slate-500 uppercase tracking-wider pb-2 border-b border-slate-200 dark:border-white/10">Original Pages</div>
+                <div className="text-xs font-bold text-slate-500 uppercase tracking-wider pb-2 border-b border-slate-200 dark:border-white/10">Preview Shown</div>
+                
+                <div className="text-sm text-slate-700 dark:text-slate-300 font-medium">1-11 pages</div>
+                <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400">1 page</div>
+                
+                <div className="text-sm text-slate-700 dark:text-slate-300 font-medium">12-25 pages</div>
+                <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400">2 pages</div>
+                
+                <div className="text-sm text-slate-700 dark:text-slate-300 font-medium">26-50 pages</div>
+                <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400">3 pages</div>
+                
+                <div className="text-sm text-slate-700 dark:text-slate-300 font-medium">51+ pages</div>
+                <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400">4 pages</div>
+              </div>
+            </div>
+
+            <ul className="space-y-3">
+              {[
+                { title: "Watermarked Pages", desc: 'Preview pages include a diagonal "PREVIEW ONLY" watermark and bottom text stating "Purchase to unlock full content".' },
+                { title: "Locked Placeholder Pages", desc: 'After real preview pages, 2-3 locked placeholder pages are added showing "LOCKED" to indicate more content is available.' },
+                { title: "Public Access", desc: 'Preview PDFs are intentionally public so buyers can evaluate your content quality before purchasing.' },
+                { title: "Zero Seller Effort", desc: 'This happens automatically - you only upload ONE file (the full content PDF).' },
+              ].map((item, i) => (
+                <li key={i} className="flex gap-3 text-sm sm:text-base text-slate-600 dark:text-slate-400">
+                  <div className="mt-1 w-1.5 h-1.5 bg-indigo-500 rounded-full shrink-0" />
+                  <div>
+                    <strong className="text-slate-900 dark:text-slate-200 font-semibold">{item.title}: </strong>
+                    {item.desc}
+                  </div>
+                </li>
+              ))}
+            </ul>
           </section>
 
           {/* Seller Responsibilities */}
-          <section>
-            <h2 className="text-2xl font-bold text-cyan-400 mb-4 flex items-center gap-2">
-              ✅ Seller Responsibilities
-            </h2>
-            <div className="space-y-3 text-slate-300 leading-relaxed">
-              <p>By uploading content to this platform, you agree to:</p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>
-                  <strong>Own or have rights</strong> to sell the content you're uploading.
-                </li>
-                <li>
-                  <strong>Ensure content quality</strong> and accuracy of product descriptions.
-                </li>
-                <li>
-                  <strong>Accept that preview pages will be publicly visible</strong> as watermarked samples.
-                </li>
-                <li>
-                  <strong>Not upload malicious, illegal, or copyrighted content</strong> without permission.
-                </li>
-                <li>
-                  <strong>Provide accurate metadata</strong> (title, description, price, page count).
-                </li>
-                <li>
-                  <strong>Understand that products require admin approval</strong> before being listed publicly.
-                </li>
-              </ul>
+          <section className="bg-white dark:bg-[#12141c]/80 border border-slate-200 dark:border-white/5 rounded-2xl p-6 sm:p-8 shadow-sm">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="p-2.5 bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 rounded-xl">
+                <Scale className="w-6 h-6" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                Seller Responsibilities
+              </h2>
             </div>
+            <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed mb-4">
+              By uploading content to this platform, you agree to:
+            </p>
+            <ul className="space-y-3">
+              {[
+                "Own or have rights to sell the content you're uploading.",
+                "Ensure content quality and accuracy of product descriptions.",
+                "Accept that preview pages will be publicly visible as watermarked samples.",
+                "Not upload malicious, illegal, or copyrighted content without permission.",
+                "Provide accurate metadata (title, description, price, page count).",
+                "Understand that products require admin approval before being listed publicly."
+              ].map((item, i) => (
+                <li key={i} className="flex gap-3 text-sm sm:text-base text-slate-600 dark:text-slate-400">
+                  <div className="mt-1.5 w-1.5 h-1.5 bg-cyan-500 rounded-full shrink-0" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
           </section>
 
-          {/* Content Restrictions */}
-          <section>
-            <h2 className="text-2xl font-bold text-red-400 mb-4 flex items-center gap-2">
-              ⚠️ Prohibited Content
-            </h2>
-            <div className="space-y-3 text-slate-300 leading-relaxed">
-              <p>The following types of content are <strong>strictly prohibited</strong>:</p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Pirated, cracked, or illegally obtained materials</li>
-                <li>Malware, viruses, or malicious code</li>
-                <li>Explicit adult content or illegal material</li>
-                <li>Content that infringes on intellectual property rights</li>
-                <li>Misleading or fraudulent products</li>
-                <li>Content promoting hate speech, violence, or discrimination</li>
-              </ul>
-              <p className="text-red-300 font-medium mt-3">
+          {/* Prohibited Content */}
+          <section className="bg-rose-50/50 dark:bg-rose-500/5 border border-rose-100 dark:border-rose-500/10 rounded-2xl p-6 sm:p-8">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="p-2.5 bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-xl">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                Prohibited Content
+              </h2>
+            </div>
+            <p className="text-slate-700 dark:text-slate-300 text-sm sm:text-base leading-relaxed mb-4">
+              The following types of content are <strong className="text-rose-600 dark:text-rose-400">strictly prohibited</strong>:
+            </p>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+              {[
+                "Pirated or cracked materials",
+                "Malware or malicious code",
+                "Explicit adult content",
+                "Copyright infringement",
+                "Misleading or fraudulent products",
+                "Hate speech or discrimination"
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-2.5 text-sm sm:text-base text-slate-700 dark:text-slate-400">
+                  <div className="w-1 h-1 bg-rose-500 rounded-full shrink-0" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="bg-rose-100/50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 rounded-xl p-4">
+              <p className="text-rose-700 dark:text-rose-300 text-sm font-bold">
                 ⚡ Violation of these terms may result in immediate account suspension and legal action.
               </p>
             </div>
           </section>
 
-          {/* Revenue & Payouts */}
-          <section>
-            <h2 className="text-2xl font-bold text-cyan-400 mb-4 flex items-center gap-2">
-              💰 Revenue & Payouts
-            </h2>
-            <div className="space-y-3 text-slate-300 leading-relaxed">
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>
-                  <strong>Platform Fee:</strong> The platform charges a commission on each sale 
-                  (percentage varies by product category).
-                </li>
-                <li>
-                  <strong>Payout Schedule:</strong> Earnings are transferred to your bank account 
-                  according to the configured payout schedule.
-                </li>
-                <li>
-                  <strong>Minimum Payout:</strong> A minimum balance threshold may apply before 
-                  payouts can be processed.
-                </li>
-                <li>
-                  <strong>Tax Responsibility:</strong> Sellers are responsible for reporting and 
-                  paying applicable taxes on their earnings.
-                </li>
+          {/* Grid Layout for remaining sections */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Revenue & Payouts */}
+            <section className="bg-white dark:bg-[#12141c]/80 border border-slate-200 dark:border-white/5 rounded-2xl p-6 sm:p-8 shadow-sm">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="p-2.5 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl">
+                  <Wallet className="w-6 h-6" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                  Revenue & Payouts
+                </h2>
+              </div>
+              <ul className="space-y-3">
+                {[
+                  { title: "Platform Fee", desc: "The platform charges a commission on each sale." },
+                  { title: "Payout Schedule", desc: "Earnings are transferred to your bank account as scheduled." },
+                  { title: "Minimum Payout", desc: "A minimum balance threshold may apply." },
+                  { title: "Tax Responsibility", desc: "Sellers are responsible for reporting and paying taxes." }
+                ].map((item, i) => (
+                  <li key={i} className="flex flex-col text-sm text-slate-600 dark:text-slate-400">
+                    <strong className="text-slate-900 dark:text-slate-200">{item.title}</strong>
+                    <span>{item.desc}</span>
+                  </li>
+                ))}
               </ul>
-            </div>
-          </section>
+            </section>
 
-          {/* Data & Privacy */}
-          <section>
-            <h2 className="text-2xl font-bold text-cyan-400 mb-4 flex items-center gap-2">
-              🛡️ Data & Privacy
-            </h2>
-            <div className="space-y-3 text-slate-300 leading-relaxed">
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>
-                  <strong>File Storage:</strong> All files are stored securely on Cloudinary's 
-                  infrastructure with enterprise-grade encryption.
-                </li>
-                <li>
-                  <strong>Buyer Information:</strong> You will NOT receive buyers' personal information 
-                  (emails, addresses) to protect their privacy.
-                </li>
-                <li>
-                  <strong>Analytics:</strong> You can view sales statistics, revenue, and product 
-                  performance metrics in your dashboard.
-                </li>
-                <li>
-                  <strong>Data Deletion:</strong> If you delete your account, your content will be 
-                  removed from the platform (existing purchases remain accessible to buyers).
-                </li>
+            {/* Data & Privacy */}
+            <section className="bg-white dark:bg-[#12141c]/80 border border-slate-200 dark:border-white/5 rounded-2xl p-6 sm:p-8 shadow-sm">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="p-2.5 bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-xl">
+                  <Lock className="w-6 h-6" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                  Data & Privacy
+                </h2>
+              </div>
+              <ul className="space-y-3">
+                {[
+                  { title: "File Storage", desc: "Files are stored with enterprise-grade encryption." },
+                  { title: "Buyer Privacy", desc: "You will NOT receive buyers' personal information." },
+                  { title: "Analytics", desc: "View sales and metrics in your dashboard." },
+                  { title: "Data Deletion", desc: "If you delete your account, content is removed." }
+                ].map((item, i) => (
+                  <li key={i} className="flex flex-col text-sm text-slate-600 dark:text-slate-400">
+                    <strong className="text-slate-900 dark:text-slate-200">{item.title}</strong>
+                    <span>{item.desc}</span>
+                  </li>
+                ))}
               </ul>
-            </div>
-          </section>
-
-          {/* Support & Disputes */}
-          <section>
-            <h2 className="text-2xl font-bold text-cyan-400 mb-4 flex items-center gap-2">
-              🤝 Support & Disputes
-            </h2>
-            <div className="space-y-3 text-slate-300 leading-relaxed">
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>
-                  <strong>Buyer Disputes:</strong> If a buyer reports an issue with your product, 
-                  you may be required to provide support or issue a refund.
-                </li>
-                <li>
-                  <strong>Product Updates:</strong> You can update product descriptions and pricing, 
-                  but file changes require re-approval.
-                </li>
-                <li>
-                  <strong>Platform Support:</strong> Contact our support team for technical issues 
-                  or policy questions.
-                </li>
-                <li>
-                  <strong>Refund Policy:</strong> The platform's refund policy applies to all sales. 
-                  Refunds may impact your seller rating.
-                </li>
-              </ul>
-            </div>
-          </section>
-
-          {/* Acceptance */}
-          <section className="border-t border-slate-700 pt-6 mt-8">
-            <h2 className="text-2xl font-bold text-white mb-4">
-              ✍️ Agreement
-            </h2>
-            <div className="space-y-3 text-slate-300 leading-relaxed">
-              <p>
-                By checking the "I agree" box on the upload page, you acknowledge that you have 
-                <strong> read, understood, and agreed</strong> to these Seller Terms & Conditions.
-              </p>
-              <p className="text-sm text-slate-400">
-                These terms are subject to change. Continued use of the platform after changes 
-                constitutes acceptance of updated terms.
-              </p>
-            </div>
-          </section>
+            </section>
+          </div>
 
           {/* Contact */}
-          <section className="bg-cyan-500/10 border border-cyan-500/30 rounded-xl p-6">
-            <h3 className="text-lg font-bold text-white mb-2">
+          <section className="bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-indigo-500/10 dark:to-cyan-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-2xl p-6 sm:p-8 text-center mt-8">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-white dark:bg-[#12141c] text-indigo-600 dark:text-indigo-400 rounded-full mb-4 shadow-sm">
+              <HelpCircle className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
               Questions or Concerns?
             </h3>
-            <p className="text-slate-300 text-sm">
-              If you have questions about these terms or need clarification, please contact our 
-              support team at{" "}
-              <a href="mailto:support@contentsellify.com" className="text-cyan-400 underline">
-                support@contentsellify.com
+            <p className="text-slate-600 dark:text-slate-400 text-sm max-w-md mx-auto">
+              If you have questions about these terms or need clarification, please contact our support team at{" "}
+              <a href="mailto:support@Bitforge.com" className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">
+                support@Bitforge.com
               </a>
             </p>
           </section>
 
         </div>
-
-        {/* Back Button */}
-        <div className="mt-8 text-center">
-          <button
-            onClick={() => window.close()}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-slate-700/50 hover:bg-slate-700 
-                     border border-slate-600 rounded-xl text-white font-medium transition"
-          >
-            ← Close Window
-          </button>
-        </div>
-
-      </div>
+      </main>
     </div>
   );
 }

@@ -31,9 +31,9 @@ export interface UseAuthReturn {
   /** Close the auth modal */
   closeAuthModal: () => void;
   /** Navigate to login */
-  goToLogin: (returnUrl?: string) => void;
+  goToLogin: (returnUrl?: string | any) => void;
   /** Navigate to register */
-  goToRegister: (returnUrl?: string) => void;
+  goToRegister: (returnUrl?: string | any) => void;
 }
 
 /**
@@ -95,20 +95,20 @@ export function useAuth(): UseAuthReturn {
   }, []);
 
   const goToLogin = useCallback(
-    (returnUrl?: string) => {
+    (returnUrl?: string | any) => {
       closeAuthModal();
       const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
-      const next = returnUrl || currentPath;
+      const next = typeof returnUrl === "string" ? returnUrl : currentPath;
       router.push(`/login?next=${encodeURIComponent(next)}`);
     },
     [router, closeAuthModal]
   );
 
   const goToRegister = useCallback(
-    (returnUrl?: string) => {
+    (returnUrl?: string | any) => {
       closeAuthModal();
       const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
-      const next = returnUrl || currentPath;
+      const next = typeof returnUrl === "string" ? returnUrl : currentPath;
       router.push(`/register?next=${encodeURIComponent(next)}`);
     },
     [router, closeAuthModal]

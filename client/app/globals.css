@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Default: Hide scrollbar for most pages */
 ::-webkit-scrollbar {
   width: 0px;
@@ -42,6 +44,7 @@ html {
 html, body {
   overflow-x: hidden;
   overflow-y: auto;
+  @apply bg-[#f8f9fa] dark:bg-[#05050a] text-slate-900 dark:text-white;
 }
 
 /* Performance-optimized animations */
@@ -176,5 +179,14 @@ html, body {
   .will-change-transform {
     will-change: auto;
   }
+}
+
+/* Remove outline from Recharts */
+.recharts-wrapper,
+.recharts-surface,
+.recharts-wrapper *,
+.recharts-surface * { 
+  outline: none !important; 
+  -webkit-tap-highlight-color: transparent !important;
 }
 

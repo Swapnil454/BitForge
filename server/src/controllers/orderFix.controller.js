@@ -30,7 +30,7 @@ export const manuallyMarkOrderPaid = async (req, res) => {
     order.status = "paid";
     await order.save();
 
-    console.log("==> ✅ Order manually marked as paid:", order._id);
+    console.log("==>  Order manually marked as paid:", order._id);
 
     // Check if invoice already exists
     const existingInvoice = await Invoice.findOne({ orderId: order._id });
@@ -49,7 +49,7 @@ export const manuallyMarkOrderPaid = async (req, res) => {
         totalPlatformAmount: order.platformFee + gstAmount,
       });
 
-      console.log("==> ✅ Invoice created:", invoice.invoiceNumber);
+      console.log("==>  Invoice created:", invoice.invoiceNumber);
     }
 
     // Send notifications
@@ -78,7 +78,7 @@ export const manuallyMarkOrderPaid = async (req, res) => {
         );
       }
     } catch (notifyErr) {
-      console.error("==> ⚠️ Notification error:", notifyErr.message);
+      console.error("==>  Notification error:", notifyErr.message);
     }
 
     res.json({
@@ -92,7 +92,7 @@ export const manuallyMarkOrderPaid = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("==> ❌ Error manually marking order paid:", error);
+    console.error("==>  Error manually marking order paid:", error);
     res.status(500).json({ message: "Failed to mark order as paid", error: error.message });
   }
 };
@@ -127,7 +127,7 @@ export const getStuckOrders = async (req, res) => {
       }))
     });
   } catch (error) {
-    console.error("==> ❌ Error fetching stuck orders:", error);
+    console.error("==>  Error fetching stuck orders:", error);
     res.status(500).json({ message: "Failed to fetch stuck orders" });
   }
 };

@@ -9,6 +9,9 @@ import {
   resetPassword,
   requestAccountDeletion,
   confirmAccountDeletion,
+  requestReactivationOtp,
+  reactivateAccount,
+  updatePreferences,
 } from "../controllers/user.controller.js";
 
 const router = express.Router();
@@ -16,6 +19,7 @@ const router = express.Router();
 // Protected routes
 router.get("/profile", authMiddleware, getCurrentUser);
 router.patch("/profile", authMiddleware, upload.single("profilePicture"), updateProfile);
+router.patch("/preferences", authMiddleware, updatePreferences);
 router.post("/change-password", authMiddleware, changePassword);
 
 // Public routes (for password reset)
@@ -25,5 +29,9 @@ router.post("/reset-password", resetPassword);
 // Account deletion routes
 router.post("/request-account-deletion", authMiddleware, requestAccountDeletion);
 router.post("/confirm-account-deletion", authMiddleware, confirmAccountDeletion);
+
+// Account reactivation routes (public)
+router.post("/request-reactivation-otp", requestReactivationOtp);
+router.post("/reactivate-account", reactivateAccount);
 
 export default router;

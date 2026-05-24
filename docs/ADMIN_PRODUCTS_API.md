@@ -115,11 +115,11 @@ All endpoints require:
 **Request Body Details:**
 | Field | Type | Required | Min/Max | Description |
 |-------|------|----------|---------|-------------|
-| title | string | ❌ | 3-500 | New product title |
-| description | string | ❌ | 3-5000 | New product description |
-| price | number | ❌ | >0 | Price in Rupees |
-| discount | number | ❌ | 0-100 | Discount percentage |
-| editReason | string | ✅ | 3-1000 | Reason for edit (shown to seller) |
+| title | string |  | 3-500 | New product title |
+| description | string |  | 3-5000 | New product description |
+| price | number |  | >0 | Price in Rupees |
+| discount | number |  | 0-100 | Discount percentage |
+| editReason | string |  | 3-1000 | Reason for edit (shown to seller) |
 
 **Response:**
 ```json
@@ -180,7 +180,7 @@ All endpoints require:
 **Request Body Details:**
 | Field | Type | Required | Min/Max | Description |
 |-------|------|----------|---------|-------------|
-| deleteReason | string | ✅ | 5-1000 | Reason for deletion (shown to seller) |
+| deleteReason | string |  | 5-1000 | Reason for deletion (shown to seller) |
 
 **Response:**
 ```json

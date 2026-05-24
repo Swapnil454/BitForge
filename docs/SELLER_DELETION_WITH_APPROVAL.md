@@ -100,8 +100,8 @@ Admin → Notifications → Review Requests → Seller Deletions Page
 
 Run to create test users:
 ```powershell
-cd "c:\mini Desktop\Fullstack\contentSellify\server"
-$env:MONGO_URI="mongodb://127.0.0.1:27017/contentsellify"
+cd "c:\mini Desktop\Fullstack\Bitforge\server"
+$env:MONGO_URI="mongodb://127.0.0.1:27017/Bitforge"
 node scripts/createTestUsers.js
 ```
 
@@ -179,10 +179,10 @@ deletionRejectionReason: String
 
 | Feature | Buyer | Seller |
 |---------|-------|--------|
-| Admin approval required | ❌ No | ✅ Yes |
+| Admin approval required |  No |  Yes |
 | Deletion timing | Immediate | After admin approval |
 | Admin notification | After deletion | Before deletion (pending) |
-| Can be rejected | ❌ No | ✅ Yes (with reason) |
+| Can be rejected |  No |  Yes (with reason) |
 | Redirect after request | To register page | Stays logged in (pending) |
 
 ## Success Messages

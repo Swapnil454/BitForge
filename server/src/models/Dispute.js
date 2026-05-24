@@ -1,23 +1,43 @@
-
-
 import mongoose from "mongoose";
 
-const disputeSchema = new mongoose.Schema({
-  orderId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Order",
+const disputeSchema = new mongoose.Schema(
+  {
+    orderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
+    },
+    buyerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    category: {
+      type: String,
+      enum: [
+        "item_not_delivered",
+        "wrong_item",
+        "quality_issue",
+        "not_as_described",
+        "payment_issue",
+        "other",
+      ],
+      required: true,
+    },
+    reason: { type: String, required: true },
+    proofFiles: [
+      {
+        url: String,
+        filename: String,
+        mimetype: String,
+      },
+    ],
+    status: {
+      type: String,
+      enum: ["open", "under_review", "resolved", "rejected"],
+      default: "open",
+    },
+    adminNote: String,
   },
-  buyerId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
-  reason: String,
-  status: {
-    type: String,
-    enum: ["open", "approved", "rejected"],
-    default: "open",
-  },
-  adminNote: String,
-}, { timestamps: true });
+  { timestamps: true }
+);
 
 export default mongoose.model("Dispute", disputeSchema);

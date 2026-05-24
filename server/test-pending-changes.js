@@ -27,15 +27,15 @@ const Product = mongoose.model('Product', new mongoose.Schema({
 async function testPendingChanges() {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    console.log('✅ Connected to MongoDB');
+    console.log(' Connected to MongoDB');
 
     // Find all products with pending changes
     const products = await Product.find({
       changeRequest: { $in: ["pending_update", "pending_deletion"] }
     });
 
-    console.log(`\n📋 Products with pending changes: ${products.length}`);
-    
+    console.log(`\n Products with pending changes: ${products.length}`);
+
     if (products.length > 0) {
       products.forEach((p, i) => {
         console.log(`\n${i + 1}. ${p.title}`);
@@ -47,7 +47,7 @@ async function testPendingChanges() {
 
     // Also check all products to see their changeRequest status
     const allProducts = await Product.find({});
-    console.log(`\n📊 All products in database: ${allProducts.length}`);
+    console.log(`\n All products in database: ${allProducts.length}`);
     console.log('\nChange Request Status Distribution:');
     const statusCounts = {
       none: 0,
@@ -55,18 +55,18 @@ async function testPendingChanges() {
       pending_deletion: 0,
       undefined: 0
     };
-    
+
     allProducts.forEach(p => {
       const cr = p.changeRequest || 'undefined';
       statusCounts[cr] = (statusCounts[cr] || 0) + 1;
     });
-    
+
     console.log(statusCounts);
 
     await mongoose.disconnect();
-    console.log('\n✅ Disconnected from MongoDB');
+    console.log('\n Disconnected from MongoDB');
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error(' Error:', error);
     process.exit(1);
   }
 }

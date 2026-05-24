@@ -1,6 +1,8 @@
 import ChatMessage from "../models/ChatMessage.js";
 import User from "../models/User.js";
 import { getIO } from "../lib/socket.js";
+import cloudinary from "../config/cloudinary.js";
+import { createNotification } from "./notification.controller.js";
 
 // Fetch support thread for current buyer/seller with any admin
 export const getSupportThread = async (req, res) => {
@@ -15,12 +17,14 @@ export const getSupportThread = async (req, res) => {
       return res.status(403).json({ message: "Unsupported role" });
     }
 
-    const messages = await ChatMessage.find({
-      $or: [
-        { from: user._id, toRole: "admin" },
-        { to: user._id, fromRole: "admin" },
-      ],
-    })
+      const messages = await ChatMessage.find({
+        $or: [
+          { from: user._id, toRole: "admin" },
+          { to: user._id, fromRole: "admin" },
+        ],
+        deletedFor: { $ne: user._id },
+        status: { $ne: "placeholderDeleted" },
+      })
       .sort("createdAt")
       .populate("from", "name role")
       .populate("to", "name role");
@@ -36,14 +40,14 @@ export const getSupportThread = async (req, res) => {
 export const sendSupportMessage = async (req, res) => {
   try {
     const user = req.user;
-    const { message } = req.body;
+    const { message, attachments } = req.body;
 
     if (!user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    if (!message || typeof message !== "string" || !message.trim()) {
-      return res.status(400).json({ message: "Message is required" });
+    if ((!message || typeof message !== "string" || !message.trim()) && (!attachments || attachments.length === 0)) {
+      return res.status(400).json({ message: "Message or attachment is required" });
     }
 
     // Find any admin to route the conversation through
@@ -62,7 +66,8 @@ export const sendSupportMessage = async (req, res) => {
       to: toUser._id,
       fromRole: user.role,
       toRole: toUser.role,
-      message: message.trim(),
+      message: message?.trim() || "",
+      attachments: attachments || [],
       readBy: [user._id],
     });
 
@@ -79,6 +84,25 @@ export const sendSupportMessage = async (req, res) => {
     } catch (err) {
       // Socket layer not critical for HTTP success; fail silently
       console.error("sendSupportMessage socket emit error", err.message || err);
+    }
+
+    if (!isAdminSender) {
+      await createNotification(
+        toUser._id,
+        "chat_message",
+        `New support message from ${user.name}`,
+        message?.trim() || "A new attachment was shared in support chat.",
+        chat._id,
+        "ChatMessage",
+        {
+          audienceRole: "admin",
+          category: "chat",
+          metadata: {
+            senderId: String(user._id),
+            senderRole: user.role,
+          },
+        }
+      );
     }
 
     return res.status(201).json({ message: "Sent", chat: populated });
@@ -134,6 +158,41 @@ export const adminListConversations = async (req, res) => {
           unreadCount: { $sum: { $cond: ["$isUnreadByAdmin", 1, 0] } },
         },
       },
+      {
+        $lookup: {
+          from: "chatmessages",
+          let: { conversationUserId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$from", "$$conversationUserId"] },
+                    { $eq: ["$toRole", "admin"] },
+                  ],
+                },
+              },
+            },
+            { $sort: { createdAt: -1 } },
+            { $limit: 1 },
+            {
+              $project: {
+                message: 1,
+                attachments: 1,
+                createdAt: 1,
+                status: 1,
+                isDeleted: 1,
+              },
+            },
+          ],
+          as: "latestIncoming",
+        },
+      },
+      {
+        $addFields: {
+          latestIncoming: { $arrayElemAt: ["$latestIncoming", 0] },
+        },
+      },
       { $sort: { lastMessageAt: -1 } },
     ];
 
@@ -153,6 +212,13 @@ export const adminListConversations = async (req, res) => {
         email: user?.email || "",
         lastMessageAt: r.lastMessageAt,
         unreadCount: r.unreadCount || 0,
+        lastIncomingMessage: r.latestIncoming?.message || "",
+        lastIncomingAttachments: r.latestIncoming?.attachments || [],
+        lastIncomingAt: r.latestIncoming?.createdAt || null,
+        lastIncomingStatus:
+          r.latestIncoming?.status ||
+          (r.latestIncoming?.isDeleted ? "deleted" : "active"),
+        lastIncomingIsDeleted: Boolean(r.latestIncoming?.isDeleted),
       };
     });
 
@@ -173,12 +239,14 @@ export const adminGetThread = async (req, res) => {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    const messages = await ChatMessage.find({
-      $or: [
-        { from: userId, toRole: "admin" },
-        { to: userId, fromRole: "admin" },
-      ],
-    })
+      const messages = await ChatMessage.find({
+        $or: [
+          { from: userId, toRole: "admin" },
+          { to: userId, fromRole: "admin" },
+        ],
+        deletedFor: { $ne: admin._id },
+        status: { $ne: "placeholderDeleted" },
+      })
       .sort("createdAt")
       .populate("from", "name role")
       .populate("to", "name role");
@@ -232,6 +300,23 @@ export const adminSendMessage = async (req, res) => {
     } catch (err) {
       console.error("adminSendMessage socket emit error", err.message || err);
     }
+
+    await createNotification(
+      user._id,
+      "chat_message",
+      "New admin message",
+      message.trim(),
+      chat._id,
+      "ChatMessage",
+      {
+        audienceRole: user.role,
+        category: "chat",
+        metadata: {
+          senderId: String(admin._id),
+          senderRole: "admin",
+        },
+      }
+    );
 
     return res.status(201).json({ message: "Sent", chat: populated });
   } catch (err) {
@@ -324,11 +409,81 @@ export const adminDeleteMessages = async (req, res) => {
       return res.status(400).json({ message: "messageIds array is required" });
     }
 
-    await ChatMessage.deleteMany({
+    const messages = await ChatMessage.find({
       _id: { $in: messageIds },
-    });
+    }).select("_id from to status isDeleted");
 
-    return res.json({ message: "Messages deleted" });
+    const getCurrentStatus = (message) => {
+      if (message.status) return message.status;
+      return message.isDeleted ? "deleted" : "active";
+    };
+
+    const deletedIds = messages
+      .filter((message) => getCurrentStatus(message) === "active")
+      .map((message) => String(message._id));
+    const placeholderDeletedIds = messages
+      .filter((message) => getCurrentStatus(message) === "deleted")
+      .map((message) => String(message._id));
+
+    if (deletedIds.length > 0) {
+      await ChatMessage.updateMany(
+        { _id: { $in: deletedIds } },
+        {
+          $set: {
+            status: "deleted",
+            isDeleted: true,
+          },
+        }
+      );
+    }
+
+    if (placeholderDeletedIds.length > 0) {
+      await ChatMessage.updateMany(
+        { _id: { $in: placeholderDeletedIds } },
+        {
+          $set: {
+            status: "placeholderDeleted",
+            isDeleted: true,
+          },
+        }
+      );
+    }
+
+    try {
+      const io = getIO();
+      if (messages.length > 0) {
+        const participantIds = new Set();
+        messages.forEach((message) => {
+          participantIds.add(String(message.from));
+          participantIds.add(String(message.to));
+        });
+
+        let room = io;
+        participantIds.forEach((participantId) => {
+          room = room.to(participantId);
+        });
+        room.emit("chat:messages-status-updated", [
+          ...deletedIds.map((_id) => ({ _id, status: "deleted" })),
+          ...placeholderDeletedIds.map((_id) => ({
+            _id,
+            status: "placeholderDeleted",
+          })),
+        ]);
+      }
+    } catch (err) {
+      console.error("adminDeleteMessages socket emit error", err);
+    }
+
+    return res.json({
+      message: "Messages deleted",
+      updates: [
+        ...deletedIds.map((_id) => ({ _id, status: "deleted" })),
+        ...placeholderDeletedIds.map((_id) => ({
+          _id,
+          status: "placeholderDeleted",
+        })),
+      ],
+    });
   } catch (err) {
     console.error("adminDeleteMessages error", err);
     return res.status(500).json({ message: "Failed to delete messages" });
@@ -370,5 +525,134 @@ export const adminClearAllChats = async (_req, res) => {
   } catch (err) {
     console.error("adminClearAllChats error", err);
     return res.status(500).json({ message: "Failed to clear all chats" });
+  }
+};
+
+export const uploadAttachment = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file provided" });
+    }
+
+    const file = req.file;
+    const resource_type = file.mimetype.startsWith("image/") ? "image" : "raw";
+
+    const uploadResult = await new Promise((resolve, reject) => {
+      const result = cloudinary.uploader.upload_stream(
+        {
+          resource_type,
+          folder: "sellify/chat_attachments",
+        },
+        (error, uploadResult) => {
+          if (error) reject(error);
+          else resolve(uploadResult);
+        }
+      );
+      result.end(file.buffer);
+    });
+
+    return res.status(200).json({
+      url: uploadResult.secure_url,
+      type: file.mimetype,
+      name: file.originalname,
+    });
+  } catch (err) {
+    console.error("uploadAttachment error", err);
+    return res.status(500).json({ message: "Failed to upload attachment" });
+  }
+};
+
+// Soft delete messages
+export const deleteMessages = async (req, res) => {
+  try {
+    const user = req.user;
+    const { messageIds } = req.body;
+
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+    if (!Array.isArray(messageIds) || messageIds.length === 0) {
+      return res.status(400).json({ message: "messageIds array is required" });
+    }
+
+    const messages = await ChatMessage.find({
+      _id: { $in: messageIds },
+    }).select("_id from to status isDeleted");
+
+    const getCurrentStatus = (message) => {
+      if (message.status) return message.status;
+      return message.isDeleted ? "deleted" : "active";
+    };
+
+    const deletedIds = messages
+      .filter((message) => getCurrentStatus(message) === "active")
+      .map((message) => String(message._id));
+    const placeholderDeletedIds = messages
+      .filter((message) => getCurrentStatus(message) === "deleted")
+      .map((message) => String(message._id));
+
+    if (deletedIds.length > 0) {
+      await ChatMessage.updateMany(
+        { _id: { $in: deletedIds } },
+        {
+          $set: {
+            status: "deleted",
+            isDeleted: true,
+          },
+        }
+      );
+    }
+
+    if (placeholderDeletedIds.length > 0) {
+      await ChatMessage.updateMany(
+        { _id: { $in: placeholderDeletedIds } },
+        {
+          $set: {
+            status: "placeholderDeleted",
+            isDeleted: true,
+          },
+        }
+      );
+    }
+
+    try {
+      const io = getIO();
+      if (messages.length > 0) {
+        const participantIds = new Set();
+        messages.forEach((message) => {
+          participantIds.add(String(message.from));
+          participantIds.add(String(message.to));
+        });
+
+        let room = io;
+        participantIds.forEach((participantId) => {
+          room = room.to(participantId);
+        });
+        room.emit("chat:messages-status-updated", [
+          ...deletedIds.map((_id) => ({ _id, status: "deleted" })),
+          ...placeholderDeletedIds.map((_id) => ({
+            _id,
+            status: "placeholderDeleted",
+          })),
+        ]);
+      }
+    } catch (err) {
+      console.error("deleteMessages socket emit error", err);
+    }
+
+    return res.json({
+      message: "Messages deleted",
+      updates: [
+        ...deletedIds.map((_id) => ({ _id, status: "deleted" })),
+        ...placeholderDeletedIds.map((_id) => ({
+          _id,
+          status: "placeholderDeleted",
+        })),
+      ],
+    });
+  } catch (err) {
+    console.error("deleteMessages error", err);
+    return res.status(500).json({ message: "Failed to delete messages" });
   }
 };

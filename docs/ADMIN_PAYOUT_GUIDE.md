@@ -1,4 +1,4 @@
-# 📋 Admin Manual Payout Processing Guide
+#  Admin Manual Payout Processing Guide
 
 ## Quick Start
 
@@ -6,7 +6,7 @@ This is a step-by-step guide for admins to process seller payouts manually.
 
 ---
 
-## 🔍 Step 1: View Pending Payouts
+##  Step 1: View Pending Payouts
 
 ### API Call
 ```bash
@@ -40,7 +40,7 @@ Authorization: Bearer <your_admin_token>
 
 ---
 
-## 💸 Step 2: Make Bank Transfer
+##  Step 2: Make Bank Transfer
 
 ### Important: Transfer the **Net Payable Amount**, NOT the requested amount!
 
@@ -67,7 +67,7 @@ Authorization: Bearer <your_admin_token>
 
 ---
 
-## ✅ Step 3: Mark Payout as Paid
+##  Step 3: Mark Payout as Paid
 
 ### API Call
 ```bash
@@ -95,7 +95,7 @@ Content-Type: application/json
 
 ---
 
-## 📊 Step 4: View Financial Summary
+##  Step 4: View Financial Summary
 
 ### Check Total Commission Earned
 
@@ -153,7 +153,7 @@ The seller will receive this rejection reason.
 │ Platform Fee (10%):    - ₹1,000     │
 │ GST on Fee (18%):      - ₹180       │
 ├─────────────────────────────────────┤
-│ YOU PAY TO SELLER:     ₹8,820 ✅    │
+│ YOU PAY TO SELLER:     ₹8,820     │
 ├─────────────────────────────────────┤
 │ YOU KEEP:              ₹1,180 💰    │
 └─────────────────────────────────────┘
@@ -168,7 +168,7 @@ You keep 11.8% of every withdrawal request
 
 ---
 
-## 📋 Daily Payout Processing Checklist
+##  Daily Payout Processing Checklist
 
 - [ ] Check pending payouts
 - [ ] Verify seller bank account details
@@ -180,7 +180,7 @@ You keep 11.8% of every withdrawal request
 
 ---
 
-## 🔍 View All Payouts
+##  View All Payouts
 
 ### With Filters
 ```bash
@@ -202,20 +202,20 @@ GET /api/admin/payouts/all?status=rejected
 
 ---
 
-## 🔐 Security Best Practices
+## Security Best Practices
 
 ### Always:
-✅ Verify seller identity before large payouts
-✅ Check bank account matches seller's name
-✅ Save UTR/transaction reference
-✅ Process payouts during business hours
-✅ Double-check the amount (use netPayableAmount)
+ Verify seller identity before large payouts
+ Check bank account matches seller's name
+ Save UTR/transaction reference
+ Process payouts during business hours
+ Double-check the amount (use netPayableAmount)
 
 ### Never:
-❌ Pay to a different bank account
-❌ Skip saving the UTR number
-❌ Process suspicious requests immediately
-❌ Share your admin credentials
+ Pay to a different bank account
+ Skip saving the UTR number
+ Process suspicious requests immediately
+ Share your admin credentials
 
 ---
 
@@ -260,7 +260,7 @@ curl -X POST "https://yourapi.com/api/admin/payouts/PAYOUT_ID/approve" \
 
 ---
 
-## 📊 Example: Processing First Payout
+##  Example: Processing First Payout
 
 ### Scenario
 Seller "Jane Smith" requests ₹50,000 withdrawal
@@ -289,7 +289,7 @@ Seller "Jane Smith" requests ₹50,000 withdrawal
 }
 ```
 
-4️⃣ **Done!** ✅
+4️⃣ **Done!** 
 - Jane receives ₹44,100
 - You keep ₹5,900 (commission + GST)
 

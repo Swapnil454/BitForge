@@ -131,6 +131,19 @@ export const changePassword = async (req, res) => {
     user.password = hashedPassword;
     await user.save();
 
+    await createNotification(
+      user._id,
+      "password_changed",
+      "Password changed",
+      "Your BitForge password was changed successfully. If this was not you, contact support immediately.",
+      user._id,
+      "User",
+      {
+        audienceRole: user.role,
+        pushWhenInactiveOnly: false,
+      }
+    );
+
     res.json({ message: "Password changed successfully" });
   } catch (error) {
     console.error("Error changing password:", error);
@@ -226,6 +239,19 @@ export const resetPassword = async (req, res) => {
     user.resetPasswordExpire = undefined;
     await user.save();
 
+    await createNotification(
+      user._id,
+      "password_reset",
+      "Password reset completed",
+      "Your BitForge password was reset successfully. If this was not you, secure your account right away.",
+      user._id,
+      "User",
+      {
+        audienceRole: user.role,
+        pushWhenInactiveOnly: false,
+      }
+    );
+
     res.json({ message: "Password reset successfully" });
   } catch (error) {
     console.error("Error resetting password:", error);
@@ -299,7 +325,7 @@ export const confirmAccountDeletion = async (req, res) => {
     user.deletionOTP = undefined;
     user.deletionOTPExpire = undefined;
 
-    // BUYER: Delete immediately and notify admins
+    // BUYER: Soft-delete (mark as deleted, preserve data)
     if (user.role === 'buyer') {
       try {
         const admins = await User.find({ role: 'admin' }).select('_id');
@@ -307,8 +333,8 @@ export const confirmAccountDeletion = async (req, res) => {
           await createNotification(
             admin._id,
             'user_deleted',
-            'Buyer Account Deleted',
-            `${user.name} (${user.email}) deleted their account. Reason: ${String(reason).trim()}`,
+            'Buyer Account Deactivated',
+            `${user.name} (${user.email}) deactivated their account. Reason: ${String(reason).trim()}`,
             user._id,
             'User'
           );
@@ -317,10 +343,13 @@ export const confirmAccountDeletion = async (req, res) => {
         console.error("Error creating admin notifications for buyer deletion:", notifyErr);
       }
 
+      // Soft-delete: change status, do NOT remove the document
+      user.accountStatus = 'deleted';
+      user.accountStatusUpdatedAt = new Date();
+      user.deletedAt = new Date();
       await user.save();
-      await User.findByIdAndDelete(userId);
 
-      return res.json({ message: "Account deleted successfully" });
+      return res.json({ message: "Account deactivated successfully" });
     }
 
     // SELLER: Request admin approval
@@ -361,3 +390,146 @@ export const confirmAccountDeletion = async (req, res) => {
 };
 
 // Request account deletion (send OTP)
+
+/**
+ * REQUEST REACTIVATION OTP
+ * Public endpoint — sends OTP to the email of a deleted account.
+ */
+export const requestReactivationOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      return res.status(404).json({ message: "No account found with this email" });
+    }
+
+    if (user.accountStatus !== 'deleted') {
+      return res.status(400).json({ message: "This account is not eligible for reactivation" });
+    }
+
+    const otp = generateOTP();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    user.deletionOTP = otp;
+    user.deletionOTPExpire = otpExpiry;
+    await user.save();
+
+    try {
+      await sendOtpEmail(user.email, otp, 'Account Reactivation');
+      return res.json({ message: "Reactivation code sent to your email" });
+    } catch (emailError) {
+      console.error("Error sending reactivation OTP:", emailError);
+      return res.status(500).json({ message: "Failed to send reactivation email" });
+    }
+  } catch (error) {
+    console.error("Error requesting reactivation OTP:", error);
+    res.status(500).json({ message: "Failed to request reactivation" });
+  }
+};
+
+/**
+ * REACTIVATE ACCOUNT
+ * Public endpoint — verifies OTP and restores accountStatus to 'active'.
+ */
+export const reactivateAccount = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      return res.status(404).json({ message: "No account found with this email" });
+    }
+
+    if (user.accountStatus !== 'deleted') {
+      return res.status(400).json({ message: "This account is not eligible for reactivation" });
+    }
+
+    if (!user.deletionOTP || !user.deletionOTPExpire) {
+      return res.status(400).json({ message: "No reactivation request found. Please request a new code" });
+    }
+
+    if (new Date() > user.deletionOTPExpire) {
+      user.deletionOTP = undefined;
+      user.deletionOTPExpire = undefined;
+      await user.save();
+      return res.status(400).json({ message: "Reactivation code has expired. Please request a new one" });
+    }
+
+    if (user.deletionOTP !== otp) {
+      return res.status(401).json({ message: "Invalid reactivation code" });
+    }
+
+    // Restore account
+    user.accountStatus = 'active';
+    user.accountStatusUpdatedAt = new Date();
+    user.deletedAt = undefined;
+    user.deletionOTP = undefined;
+    user.deletionOTPExpire = undefined;
+    await user.save();
+
+    // Generate token for immediate login
+    const { generateToken } = await import('../utils/token.js');
+    const token = generateToken(user);
+
+    res.json({
+      message: "Account reactivated successfully. Welcome back!",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isVerified: user.isVerified,
+        accountStatus: user.accountStatus,
+      },
+    });
+  } catch (error) {
+    console.error("Error reactivating account:", error);
+    res.status(500).json({ message: "Failed to reactivate account" });
+  }
+};
+
+/**
+ * UPDATE PREFERENCES
+ * Protected endpoint — updates user preferences like theme.
+ */
+export const updatePreferences = async (req, res) => {
+  try {
+    const { theme } = req.body;
+    const userId = req.user.id;
+
+    if (!["light", "dark", "system"].includes(theme)) {
+      return res.status(400).json({ message: "Invalid theme" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { "preferences.theme": theme },
+      { new: true }
+    ).select("-password -resetPasswordOTP -resetPasswordExpire");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      success: true,
+      preferences: user.preferences,
+    });
+  } catch (error) {
+    console.error("Error updating preferences:", error);
+    res.status(500).json({ message: "Failed to update preferences" });
+  }
+};
+

@@ -1,7 +1,7 @@
 # Bank Account & Payment Flow Implementation Guide
 
 ## Overview
-This document explains the bank account management system and payment flow implementation for the ContentSellify platform.
+This document explains the bank account management system and payment flow implementation for the Bitforge platform.
 
 ## Money Flow
 
@@ -105,7 +105,7 @@ RAZORPAYX_KEY_SECRET=xxxxxxxxxxxxx
 RAZORPAYX_ACCOUNT_NUMBER=xxxxxxxxxxxxx
 
 # Database
-MONGODB_URI=mongodb://localhost:27017/contentSellify
+MONGODB_URI=mongodb://localhost:27017/Bitforge
 
 # JWT
 JWT_SECRET=your_jwt_secret_here
@@ -180,7 +180,7 @@ Account Type: Savings
    ```bash
    POST /api/bank/add
    {
-     "accountHolderName": "ContentSellify Platform",
+     "accountHolderName": "Bitforge Platform",
      "accountNumber": "9876543210",
      "ifscCode": "HDFC0001234",
      "bankName": "HDFC Bank",

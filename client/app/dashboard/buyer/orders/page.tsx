@@ -1,332 +1,377 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { buyerAPI } from '@/lib/api';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { CalendarDays, Check, Copy, MoreVertical, Loader2 } from "lucide-react";
+import { buyerAPI } from "@/lib/api";
+import { copyText } from "@/lib/clipboard";
+import toast from "react-hot-toast";
+
+import PageHeader from "../transactions/components/PageHeader";
+import InlineSearchFilters, { FilterOption, SortOption } from "../transactions/components/InlineSearchFilters";
+import MobileBottomNav from "@/app/components/buyer/layout/MobileBottomNav";
 
 interface Order {
   _id: string;
-  id: string;
-  product: string;
+  orderId: string;
+  productName: string;
+  productId: string;
+  sellerName: string;
+  sellerEmail: string;
   amount: number;
-  createdAt: string;
-  status?: string;
-  sellerName?: string;
-  productId?: string;
+  status: "paid" | "created" | "failed";
+  date: string;
 }
 
-type SortOption = 'newest' | 'oldest' | 'highest' | 'lowest';
+const PAGE_SIZE = 10;
 
 export default function AllOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [sortBy, setSortBy] = useState<SortOption>('newest');
-  const router = useRouter();
+  const [sortBy, setSortBy] = useState<SortOption>("newest");
+  const [filterBy, setFilterBy] = useState<FilterOption>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
 
+  const router = useRouter();
+  const headerMenuRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const isFetchingRef = useRef(false);
+
+  // Search debounce
   useEffect(() => {
-    fetchAllOrders();
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery.trim());
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Handle filter/search changes (reset to page 1)
+  useEffect(() => {
+    void fetchPage(1, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortBy, filterBy, debouncedSearch]);
+
+  // Click outside for header menu
+  useEffect(() => {
+    const handleOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (headerMenuRef.current && !headerMenuRef.current.contains(target)) {
+        setHeaderMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
   }, []);
 
-  const fetchAllOrders = async () => {
+  const fetchPage = async (targetPage: number, isInitial = false) => {
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
+
+    if (isInitial) setLoading(true);
+    else setLoadingMore(true);
+
     try {
-      setLoading(true);
-      setError('');
-      const data = await buyerAPI.getAllTransactions();
-      const ordersList = Array.isArray(data) ? data : (data?.transactions || []);
-      setOrders(ordersList.map((order: any) => ({
-        _id: order._id || order.id,
-        id: order._id || order.id,
-        product: order.productName || order.product,
-        amount: order.amount,
-        createdAt: order.date || order.createdAt,
-        status: order.status,
-        sellerName: order.sellerName,
-        productId: order.productId
-      })));
-    } catch (err) {
-      console.error('Error fetching orders:', err);
-      setError('Failed to load orders');
-      setOrders([]);
+      const data = await buyerAPI.getAllTransactions({
+        page: targetPage,
+        limit: PAGE_SIZE,
+        status: filterBy,
+        sortBy,
+        search: debouncedSearch,
+      });
+
+      const incoming: Order[] = data.transactions || [];
+      const pag = data.pagination;
+
+      setOrders((prev) => (isInitial ? incoming : [...prev, ...incoming]));
+      setHasNextPage(pag?.hasNextPage ?? false);
+      setPage(targetPage);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to load orders");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+      isFetchingRef.current = false;
     }
   };
 
-  const sortedOrders = [...orders].sort((a, b) => {
-    switch (sortBy) {
-      case 'newest':
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      case 'oldest':
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      case 'highest':
-        return b.amount - a.amount;
-      case 'lowest':
-        return a.amount - b.amount;
-      default:
-        return 0;
-    }
-  });
+  // IntersectionObserver for infinite scroll
+  useEffect(() => {
+    if (!sentinelRef.current) return;
 
-  const getStatusConfig = (status?: string) => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !loadingMore && !loading) {
+          void fetchPage(page + 1, false);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, loadingMore, loading, page, sortBy, filterBy, debouncedSearch]);
+
+  const handleCopyOrderId = async (e: React.MouseEvent, orderId: string) => {
+    e.stopPropagation();
+    if (!orderId) return;
+    try {
+      const copied = await copyText(orderId);
+      if (!copied) {
+        toast.error("Failed to copy");
+        return;
+      }
+      setCopiedId(orderId);
+      toast.success("Order ID copied");
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      toast.error("Failed to copy");
+    }
+  };
+
+  const getStatusConfig = (status: string) => {
     switch (status) {
-      case 'paid':
+      case "paid":
         return {
-          label: 'Completed',
-          bgColor: 'bg-emerald-500/20',
-          textColor: 'text-emerald-400',
-          borderColor: 'border-emerald-500/30',
-          dotColor: 'bg-emerald-400',
+          label: "Success",
+          badgeClass: "bg-emerald-500/15 text-emerald-300 border-emerald-500/35",
+          dotColor: "bg-emerald-400",
         };
-      case 'failed':
+      case "failed":
         return {
-          label: 'Failed',
-          bgColor: 'bg-red-500/20',
-          textColor: 'text-red-400',
-          borderColor: 'border-red-500/30',
-          dotColor: 'bg-red-400',
+          label: "Failed",
+          badgeClass: "bg-red-500/15 text-red-300 border-red-500/35",
+          dotColor: "bg-red-400",
         };
-      case 'created':
+      case "created":
         return {
-          label: 'Pending',
-          bgColor: 'bg-amber-500/20',
-          textColor: 'text-amber-400',
-          borderColor: 'border-amber-500/30',
-          dotColor: 'bg-amber-400',
+          label: "Pending",
+          badgeClass: "bg-amber-500/15 text-amber-300 border-amber-500/35",
+          dotColor: "bg-amber-400",
         };
       default:
         return {
-          label: 'Completed',
-          bgColor: 'bg-emerald-500/20',
-          textColor: 'text-emerald-400',
-          borderColor: 'border-emerald-500/30',
-          dotColor: 'bg-emerald-400',
+          label: "Unknown",
+          badgeClass: "bg-gray-500/15 text-gray-300 border-gray-500/35",
+          dotColor: "bg-gray-400",
         };
     }
   };
 
-  const totalSpent = sortedOrders.reduce((sum, order) => sum + order.amount, 0);
-  const avgOrder = sortedOrders.length > 0
-    ? Math.round(totalSpent / sortedOrders.length)
-    : 0;
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setPage(1);
+  };
+
+  const handleFilterChange = (value: FilterOption) => {
+    setFilterBy(value);
+    setPage(1);
+  };
+
+  const handleSortChange = (value: SortOption) => {
+    setSortBy(value);
+    setPage(1);
+  };
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-black via-slate-900 to-black backdrop-blur-xl border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.push("/dashboard/buyer")}
-                className="flex items-center gap-2 text-white/70 hover:text-white transition-colors group"
-              >
-                <span className="text-xl group-hover:-translate-x-1 transition-transform">←</span>
-                <span className="hidden sm:inline text-sm font-medium">Dashboard</span>
-              </button>
-              <div className="h-6 w-px bg-white/20 hidden sm:block" />
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">
-                  All Orders
-                </h1>
-                <p className="text-white/50 text-xs sm:text-sm mt-0.5">
-                  View and manage all your purchases
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white scroll-smooth">
+      <PageHeader
+        backHref="/dashboard/buyer"
+        backLabel="Dashboard"
+        title="All Orders"
+        subtitle="View and manage all your purchases"
+        rightSlot={
+          <div className="relative shrink-0" ref={headerMenuRef}>
+            <button
+              onClick={() => setHeaderMenuOpen((prev) => !prev)}
+              className="h-10 w-10 rounded-xl border border-white/15 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 hover:border-white/30 inline-flex items-center justify-center transition"
+              aria-label="Open actions"
+            >
+              <MoreVertical className="h-5 w-5 text-slate-700 dark:text-white/80" />
+            </button>
 
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* Stats Cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-3 gap-3 sm:gap-4"
-        >
-          <div className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 border border-purple-500/30 rounded-2xl p-4 sm:p-5">
-            <p className="text-white/60 text-xs sm:text-sm font-medium">Total Orders</p>
-            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-400 mt-1">
-              {sortedOrders.length}
-            </p>
-          </div>
-          <div className="bg-gradient-to-br from-emerald-500/10 to-green-500/10 border border-emerald-500/30 rounded-2xl p-4 sm:p-5">
-            <p className="text-white/60 text-xs sm:text-sm font-medium">Total Spent</p>
-            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-emerald-400 mt-1">
-              ₹{totalSpent.toLocaleString()}
-            </p>
-          </div>
-          <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-2xl p-4 sm:p-5">
-            <p className="text-white/60 text-xs sm:text-sm font-medium">Avg Order</p>
-            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-400 mt-1">
-              ₹{avgOrder.toLocaleString()}
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Sort Controls */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-gradient-to-br from-slate-900/80 to-slate-800/50 border border-white/10 rounded-2xl p-4"
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <span className="text-white/60 text-sm font-medium">Sort by:</span>
-            <div className="flex flex-wrap gap-2">
-              {(['newest', 'oldest', 'highest', 'lowest'] as const).map((option) => (
-                <button
-                  key={option}
-                  onClick={() => setSortBy(option)}
-                  className={`px-3 sm:px-4 py-2 rounded-xl font-medium text-sm transition-all ${
-                    sortBy === option
-                      ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/25'
-                      : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
-                  }`}
+            <AnimatePresence>
+              {headerMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                  className="absolute right-0 top-11 w-44 rounded-xl border border-slate-200 dark:border-white/15 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl p-1.5 shadow-xl shadow-slate-200 dark:shadow-black/40 z-50"
                 >
-                  {option === 'newest'
-                    ? 'Newest'
-                    : option === 'oldest'
-                    ? 'Oldest'
-                    : option === 'highest'
-                    ? 'Highest ₹'
-                    : 'Lowest ₹'}
-                </button>
-              ))}
-            </div>
+                  <button
+                    onClick={() => {
+                      setHeaderMenuOpen(false);
+                      router.push("/dashboard/buyer/orders/analytics");
+                    }}
+                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-white/85 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition"
+                  >
+                    Analytics
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </motion.div>
+        }
+      />
 
-        {/* Orders List */}
+      <main className="max-w-7xl mx-auto px-4 pt-3 pb-28 md:pb-6 space-y-4">
+        <InlineSearchFilters
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
+          filterBy={filterBy}
+          onFilterChange={handleFilterChange}
+          sortBy={sortBy}
+          onSortChange={handleSortChange}
+        />
+
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.08 }}
           className="space-y-3"
         >
           {loading ? (
             <div className="space-y-3">
-              {[1, 2, 3, 4, 5].map((i) => (
+              {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className="bg-gradient-to-br from-slate-900/80 to-slate-800/50 border border-white/10 rounded-2xl p-5 animate-pulse"
+                  className="rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c] p-4 sm:p-5 shadow-sm dark:shadow-lg overflow-hidden animate-pulse"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 space-y-3">
-                      <div className="h-5 w-48 bg-white/10 rounded-lg" />
-                      <div className="h-4 w-32 bg-white/5 rounded-lg" />
+                      <div className="h-5 w-48 bg-slate-200 dark:bg-white/10 rounded-lg" />
+                      <div className="h-4 w-32 bg-slate-100 dark:bg-white/5 rounded-lg" />
+                      <div className="h-4 w-24 bg-slate-100 dark:bg-white/5 rounded-lg" />
                     </div>
-                    <div className="h-7 w-20 bg-white/10 rounded-lg" />
+                    <div className="text-right space-y-2">
+                      <div className="h-7 w-20 bg-slate-200 dark:bg-white/10 rounded-lg ml-auto" />
+                      <div className="h-6 w-16 bg-slate-100 dark:bg-white/5 rounded-full ml-auto" />
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
-          ) : error ? (
+          ) : orders.length === 0 ? (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-red-500/10 border border-red-500/30 rounded-2xl p-8 text-center"
+              className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/[0.03] p-10 text-center shadow-lg"
             >
-              <div className="text-5xl mb-4">⚠️</div>
-              <p className="text-red-400 text-lg font-semibold mb-2">{error}</p>
-              <button
-                onClick={fetchAllOrders}
-                className="mt-4 px-6 py-3 bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white rounded-xl font-semibold transition-all hover:scale-105"
-              >
-                Try Again
-              </button>
-            </motion.div>
-          ) : sortedOrders.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-gradient-to-br from-slate-900/80 to-slate-800/50 border border-white/10 rounded-2xl p-12 text-center"
-            >
-              <div className="text-6xl mb-4">📦</div>
-              <h3 className="text-xl font-bold text-white mb-2">No Orders Yet</h3>
-              <p className="text-white/60 mb-6 max-w-md mx-auto">
-                Start shopping to see your orders here. Browse our marketplace for amazing digital products!
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-2">No Orders Found</h3>
+              <p className="text-slate-500 dark:text-white/60 mb-5 text-sm sm:text-base">
+                {searchQuery || filterBy !== "all"
+                  ? "No orders match your filters. Try a different status or sort."
+                  : "You have no orders yet. Explore marketplace to get started."}
               </p>
-              <button
-                onClick={() => router.push("/marketplace")}
-                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-semibold rounded-xl transition-all hover:scale-105 shadow-lg shadow-purple-500/25"
-              >
-                Browse Marketplace
-              </button>
+              {!searchQuery && filterBy === "all" && (
+                <button
+                  onClick={() => router.push("/marketplace")}
+                  className="px-5 py-2.5 rounded-xl bg-linear-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-slate-900 dark:text-white font-semibold transition"
+                >
+                  Browse Marketplace
+                </button>
+              )}
             </motion.div>
           ) : (
             <AnimatePresence mode="popLayout">
-              {sortedOrders.map((order, index) => {
+              {orders.map((order, index) => {
                 const statusConfig = getStatusConfig(order.status);
+
                 return (
-                  <motion.button
-                    key={order._id || order.id}
-                    initial={{ opacity: 0, y: 20 }}
+                  <motion.article
+                    key={order._id}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ delay: index * 0.05 }}
-                    onClick={() => router.push(`/dashboard/buyer/transactions/${order._id || order.id}`)}
-                    className="w-full bg-gradient-to-br from-slate-900/80 to-slate-800/50 border border-white/10 hover:border-purple-500/40 rounded-2xl p-4 sm:p-5 text-left transition-all hover:shadow-lg hover:shadow-purple-500/10 group"
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ delay: index * 0.02 }}
+                    onClick={() => router.push(`/dashboard/buyer/transactions/${order._id}`)}
+                    className="relative overflow-hidden cursor-pointer rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c] p-4 sm:p-5 text-left transition-all duration-300 hover:bg-slate-50 dark:hover:bg-[#181a25] hover:border-slate-300 dark:hover:border-white/10 hover:shadow-lg dark:hover:shadow-xl dark:hover:shadow-black/50 group"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex-1 min-w-0">
-                        {/* Product & Status */}
-                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
-                          <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-purple-300 transition-colors truncate max-w-[200px] sm:max-w-none">
-                            {order.product}
-                          </h3>
-                          <span className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${statusConfig.bgColor} ${statusConfig.textColor} border ${statusConfig.borderColor}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dotColor}`} />
-                            {statusConfig.label}
-                          </span>
-                        </div>
-
-                        {/* Seller */}
-                        <p className="text-white/50 text-sm mb-1">
-                          Sold by <span className="text-white/80 font-medium">{order.sellerName || 'Unknown'}</span>
+                        <h3 className="text-xl leading-tight font-semibold text-slate-900 dark:text-white group-hover:text-violet-700 dark:group-hover:text-violet-200 transition-colors truncate">
+                          {order.productName || "Product"}
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-white/65 mt-1.5">
+                          Sold by <span className="text-slate-800 dark:text-white/90 font-semibold">{order.sellerName || "Unknown"}</span>
                         </p>
 
-                        {/* Date */}
-                        <div className="flex items-center gap-3 text-xs text-white/40">
-                          <span className="flex items-center gap-1">
-                            <span>📅</span>
-                            {new Date(order.createdAt).toLocaleDateString('en-IN', {
-                              day: 'numeric',
-                              month: 'short',
-                              year: 'numeric'
+                        <div className="mt-3 flex flex-wrap items-center gap-2.5 text-xs text-slate-500 dark:text-white/50">
+                          <span className="inline-flex items-center gap-1.5">
+                            <CalendarDays className="h-3.5 w-3.5" />
+                            {new Date(order.date || Date.now()).toLocaleDateString("en-IN", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
                             })}
                           </span>
                           <span className="hidden sm:inline">•</span>
-                          <span className="hidden sm:inline font-mono">ID: {(order._id || order.id).slice(-8)}</span>
+                          <span className="inline-flex items-center gap-1.5 font-mono">
+                            ID: {order.orderId ? order.orderId.slice(-8) : order._id?.slice(-8)}
+                            <button
+                              type="button"
+                              onClick={(e) => handleCopyOrderId(e, order.orderId || order._id)}
+                              className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10 transition"
+                              title="Copy Order ID"
+                            >
+                              {copiedId === (order.orderId || order._id) ? (
+                                <Check className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5 text-slate-400 dark:text-white/65" />
+                              )}
+                            </button>
+                          </span>
                         </div>
                       </div>
 
-                      {/* Amount & Arrow */}
-                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2">
-                        <p className="text-xl sm:text-2xl font-bold text-emerald-400">
-                          ₹{order.amount.toLocaleString()}
-                        </p>
-                        <span className="text-purple-400 group-hover:translate-x-1 transition-transform text-sm">
-                          View Details →
+                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2.5">
+                        <p className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">₹{(order.amount || 0).toLocaleString()}</p>
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${statusConfig.badgeClass}`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dotColor}`} />
+                          {statusConfig.label}
                         </span>
                       </div>
                     </div>
-                  </motion.button>
+
+                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
+                      <span className="text-violet-600 dark:text-violet-300 text-sm font-medium group-hover:text-violet-700 dark:group-hover:text-violet-200 transition-colors">
+                        View Details
+                      </span>
+                      <span className="text-xs text-slate-400 dark:text-white/35">#{order._id?.slice(-6)}</span>
+                    </div>
+                  </motion.article>
                 );
               })}
             </AnimatePresence>
           )}
         </motion.div>
 
-        {/* Results Count */}
-        {!loading && sortedOrders.length > 0 && (
-          <p className="text-center text-white/40 text-sm">
-            Showing {sortedOrders.length} order{sortedOrders.length !== 1 ? 's' : ''}
+        <div ref={sentinelRef} className="h-4" />
+
+        {loadingMore && (
+          <div className="flex justify-center py-6">
+            <div className="flex items-center gap-2 text-slate-500 dark:text-white/40 text-sm">
+              <Loader2 className="w-5 h-5 animate-spin text-cyan-500" />
+              <span>Loading more orders...</span>
+            </div>
+          </div>
+        )}
+
+        {!hasNextPage && !loadingMore && orders.length > 0 && (
+          <p className="text-center text-xs text-slate-400 dark:text-white/25 py-4 tracking-wide">
+            — You've reached the end —
           </p>
         )}
       </main>
+      <MobileBottomNav />
     </div>
   );
 }

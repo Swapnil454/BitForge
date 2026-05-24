@@ -1,11 +1,11 @@
-# 🚨 IMMEDIATE FIX: Payment Working But No Downloads
+#  IMMEDIATE FIX: Payment Working But No Downloads
 
-## 📋 Quick Diagnosis
+##  Quick Diagnosis
 
 **Your Situation:**
-- ✅ Payment successful (money in Razorpay)
-- ❌ Buyer can't see downloads
-- ❌ Admin dashboard shows ₹0 revenue
+-  Payment successful (money in Razorpay)
+-  Buyer can't see downloads
+-  Admin dashboard shows ₹0 revenue
 
 **Root Cause:** Razorpay webhook not calling your server after payment
 
@@ -18,13 +18,13 @@
 Go to: **`https://bittforge.in/dashboard/buyer/debug`**
 
 This page will show you:
-- ✅ How many orders are "paid" vs "created"
-- ⚠️ If webhook is failing
-- 📊 All order statuses
+-  How many orders are "paid" vs "created"
+-  If webhook is failing
+-  All order statuses
 
 **What You'll See:**
-- If orders are stuck in "created" status → Webhook is failing ❌
-- If orders show "paid" status → Something else is wrong ✅
+- If orders are stuck in "created" status → Webhook is failing 
+- If orders show "paid" status → Something else is wrong 
 
 ---
 
@@ -51,10 +51,10 @@ This page will show you:
    ```
 
 This will:
-- ✅ Mark order as "paid"
-- ✅ Create invoice
-- ✅ Send notifications
-- ✅ Enable downloads for buyer
+-  Mark order as "paid"
+-  Create invoice
+-  Send notifications
+-  Enable downloads for buyer
 
 ---
 
@@ -67,7 +67,7 @@ This will:
 3. Check if webhook exists:
    - **URL:** `https://api.bittforge.in/api/webhooks/razorpay`
    - **Events:** `payment.captured` must be checked
-   - **Status:** Active ✅
+   - **Status:** Active 
 
 ### Step 2: Verify Webhook Secret Matches
 
@@ -95,14 +95,14 @@ After fixing the secret:
    ```
    ==> ///////////////////////////////////////////////////////////
    ==> Webhook received: payment.captured
-   ==> ✅ Webhook signature verified
-   ==> ✅ Order updated to PAID
-   ==> ✅ Invoice created
+   ==>  Webhook signature verified
+   ==>  Order updated to PAID
+   ==>  Invoice created
    ```
 
 ---
 
-## 📊 How to Use the Debug Page
+##  How to Use the Debug Page
 
 ### Access the Page
 **URL:** `https://bittforge.in/dashboard/buyer/debug`
@@ -115,8 +115,8 @@ After fixing the secret:
    - 🔴 Failed - Payment failed
 
 2. **Webhook Issue Alert:**
-   - ⚠️ Shows if you have stuck orders
-   - 📝 Provides fix instructions
+   -  Shows if you have stuck orders
+   -  Provides fix instructions
 
 3. **All Orders Table:**
    - Shows every order with status
@@ -151,9 +151,9 @@ async function fixStuckOrders() {
       await axios.post(`${API_URL}/mark-paid/${order._id}`, {}, {
         headers: { Authorization: `Bearer ${ADMIN_TOKEN}` }
       });
-      console.log(`✅ Fixed order ${order._id} - ${order.productName}`);
+      console.log(` Fixed order ${order._id} - ${order.productName}`);
     } catch (error) {
-      console.error(`❌ Failed to fix order ${order._id}:`, error.message);
+      console.error(` Failed to fix order ${order._id}:`, error.message);
     }
   }
 }
@@ -163,7 +163,7 @@ fixStuckOrders();
 
 ---
 
-## 🔍 Troubleshooting Checklist
+##  Troubleshooting Checklist
 
 ### If Buyer Still Can't See Downloads:
 
@@ -197,16 +197,16 @@ fixStuckOrders();
 
 ---
 
-## 📦 Files Changed
+##  Files Changed
 
 **Server:**
-- ✅ `controllers/payment.controller.js` - Added debug endpoint
-- ✅ `controllers/orderFix.controller.js` - Manual fix tools
-- ✅ `routes/orderFix.routes.js` - Fix order routes
-- ✅ `controllers/webhook.controller.js` - Enhanced logging
+-  `controllers/payment.controller.js` - Added debug endpoint
+-  `controllers/orderFix.controller.js` - Manual fix tools
+-  `routes/orderFix.routes.js` - Fix order routes
+-  `controllers/webhook.controller.js` - Enhanced logging
 
 **Client:**
-- ✅ `app/dashboard/buyer/debug/page.tsx` - Debug page
+-  `app/dashboard/buyer/debug/page.tsx` - Debug page
 
 ---
 
@@ -239,7 +239,7 @@ fixStuckOrders();
 1. **Webhook Secret:**
    ```bash
    # In Render logs, look for:
-   ==> ❌ Invalid webhook signature
+   ==>  Invalid webhook signature
    # This means secret is wrong
    ```
 
@@ -257,16 +257,16 @@ fixStuckOrders();
 
 ---
 
-## ✅ Success Indicators
+##  Success Indicators
 
 You'll know everything works when:
-1. ✅ Make purchase
-2. ✅ Render logs show webhook processed
-3. ✅ Order status changes to "paid" immediately
-4. ✅ Buyer sees product in dashboard
-5. ✅ Buyer can click download
-6. ✅ Admin sees revenue increase
-7. ✅ Invoice is generated
+1.  Make purchase
+2.  Render logs show webhook processed
+3.  Order status changes to "paid" immediately
+4.  Buyer sees product in dashboard
+5.  Buyer can click download
+6.  Admin sees revenue increase
+7.  Invoice is generated
 
 ---
 

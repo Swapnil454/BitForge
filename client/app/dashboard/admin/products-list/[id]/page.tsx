@@ -101,13 +101,12 @@ export default function ProductDetailsPage() {
               />
               <div className="absolute top-4 right-4">
                 <span
-                  className={`inline-block px-4 py-2 text-sm font-bold rounded-full ${
-                    product.status === "approved"
+                  className={`inline-block px-4 py-2 text-sm font-bold rounded-full ${product.status === "approved"
                       ? "bg-green-100 text-green-800"
                       : product.status === "pending"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
                 >
                   {product.status.toUpperCase()}
                 </span>
@@ -162,7 +161,7 @@ export default function ProductDetailsPage() {
             {product.sellerId ? (
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
                 <h3 className="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">
-                  <span>👤</span> Seller Information
+                  <span></span> Seller Information
                 </h3>
                 <div className="space-y-3">
                   <div>
@@ -184,7 +183,7 @@ export default function ProductDetailsPage() {
             ) : (
               <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
                 <p className="text-gray-600 flex items-center gap-2">
-                  <span>⚠️</span>
+                  <span></span>
                   Seller information not available (seller may have been deleted)
                 </p>
               </div>
@@ -194,7 +193,7 @@ export default function ProductDetailsPage() {
             {product.status === "rejected" && product.rejectionReason && (
               <div className="bg-red-50 p-6 rounded-lg border border-red-200">
                 <h3 className="text-lg font-bold text-red-900 mb-2 flex items-center gap-2">
-                  <span>❌</span> Rejection Reason
+                  <span></span> Rejection Reason
                 </h3>
                 <p className="text-red-700">{product.rejectionReason}</p>
               </div>
@@ -218,7 +217,7 @@ export default function ProductDetailsPage() {
                     link.click();
                     document.body.removeChild(link);
                   }}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium cursor-pointer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-slate-900 dark:text-white rounded-lg hover:bg-purple-700 font-medium cursor-pointer"
                 >
                   <span>⬇️</span> View/Download File
                 </button>

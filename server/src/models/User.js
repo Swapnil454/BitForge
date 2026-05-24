@@ -64,6 +64,21 @@ const userSchema = new mongoose.Schema(
       type: String,
     },
 
+    // Moderation Stats for Sellers
+    sellerStats: {
+      totalProducts:    { type: Number, default: 0 },
+      approvedProducts: { type: Number, default: 0 },
+      rejectedProducts: { type: Number, default: 0 },
+      changesRequested: { type: Number, default: 0 },
+      disputes:         { type: Number, default: 0 }
+    },
+
+    // User Product Limits
+    productLimit: {
+      type: Number,
+      default: 10,
+    },
+
     emailOtp: String,
     emailOtpExpires: Date,
     
@@ -72,6 +87,16 @@ const userSchema = new mongoose.Schema(
     resetPasswordOtpExpires: Date,
     resetPasswordOTP: String,
     resetPasswordExpire: Date,
+
+    // Account Status (soft-delete / ban system)
+    accountStatus: {
+      type: String,
+      enum: ['active', 'deleted', 'banned'],
+      default: 'active'
+    },
+    accountStatusUpdatedAt: Date,
+    bannedReason: String,
+    deletedAt: Date,
 
     // Account Deletion Verification
     deletionOTP: String,
@@ -156,6 +181,79 @@ const userSchema = new mongoose.Schema(
         default: Date.now
       }
     }],
+
+    lastActiveAt: {
+      type: Date,
+      default: Date.now,
+    },
+
+    pushSubscriptions: [
+      {
+        token: {
+          type: String,
+          required: true,
+        },
+        deviceId: String,
+        platform: String,
+        userAgent: String,
+        browserName: String,
+        isActive: {
+          type: Boolean,
+          default: true,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+        updatedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+
+    notificationSettings: {
+      browserPushEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      marketingEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      securityEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      transactionEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      chatEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      moderationEnabled: {
+        type: Boolean,
+        default: true,
+      },
+    },
+
+    preferences: {
+      theme: {
+        type: String,
+        enum: ["light", "dark", "system"],
+        default: "system",
+      },
+    },
+
+    // ── Search History ───────────────────────────────────────────────────────
+    searchHistory: [
+      {
+        query: { type: String, required: true },
+        searchedAt: { type: Date, default: Date.now },
+      },
+    ],
 
   },
   { timestamps: true }

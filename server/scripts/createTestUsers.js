@@ -2,12 +2,12 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import User from '../src/models/User.js';
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/contentsellify';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/contentSellify';
 
 async function run() {
   try {
     await mongoose.connect(MONGO_URI);
-    console.log('✅ Connected to Mongo');
+    console.log(' Connected to Mongo');
 
     const buyerEmail = 'buyer.delete@test.local';
     const sellerEmail = 'seller.delete@test.local';
@@ -56,11 +56,11 @@ async function run() {
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
-    console.log('👤 Admin:', admin.email, admin._id.toString());
+    console.log(' Admin:', admin.email, admin._id.toString());
     console.log('🛒 Buyer:', buyer.email, buyer._id.toString());
     console.log('💼 Seller:', seller.email, seller._id.toString());
   } catch (err) {
-    console.error('❌ Error:', err);
+    console.error(' Error:', err);
   } finally {
     await mongoose.disconnect();
     console.log('🔌 Disconnected');

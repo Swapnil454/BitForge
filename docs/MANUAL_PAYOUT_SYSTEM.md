@@ -265,11 +265,11 @@ When ready to enable automated payouts:
 
 ## Benefits of Manual Payout System
 
-✅ **Full Control**: Admin reviews every payout before processing
-✅ **Transparency**: Sellers see commission breakdown when requesting
-✅ **Flexibility**: Can use any payment method (NEFT, RTGS, UPI, etc.)
-✅ **Cost Savings**: No RazorpayX transaction fees during early stage
-✅ **Easy Migration**: Can switch to automated payouts anytime
+ **Full Control**: Admin reviews every payout before processing
+ **Transparency**: Sellers see commission breakdown when requesting
+ **Flexibility**: Can use any payment method (NEFT, RTGS, UPI, etc.)
+ **Cost Savings**: No RazorpayX transaction fees during early stage
+ **Easy Migration**: Can switch to automated payouts anytime
 
 ## Support & Troubleshooting
 

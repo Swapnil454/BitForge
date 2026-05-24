@@ -15,7 +15,7 @@
 ╚══════════════════════════════════════════════════════════════════╝
 
 ╔══════════════════════════════════════════════════════════════════╗
-║                      📝 Reviews & Ratings                        ║
+║                       Reviews & Ratings                        ║
 ╠══════════════════════════════════════════════════════════════════╣
 ║                                                                   ║
 ║  No reviews yet. Be the first to review!                        ║
@@ -27,15 +27,15 @@
 
 ---
 
-## ✅ After Purchase - Review Form Appears
+##  After Purchase - Review Form Appears
 
 ```
 ╔══════════════════════════════════════════════════════════════════╗
-║                      📝 Reviews & Ratings                        ║
+║                       Reviews & Ratings                        ║
 ╠══════════════════════════════════════════════════════════════════╣
 ║                                                                   ║
 ║  ⭐ Average Rating: Not yet rated                               ║
-║  📊 0 reviews                                                    ║
+║   0 reviews                                                    ║
 ║                                                                   ║
 ║  ┌────────────────────────────────────────────────────────────┐ ║
 ║  │ ✍️ Write Your Review                                       │ ║
@@ -128,22 +128,22 @@
 ║  │ Excellent React guide! The content is clear...             │ ║
 ║  └────────────────────────────────────────────────────────────┘ ║
 ║                                                                   ║
-║                  [⏳ Submitting Review...]                       ║
+║                  [ Submitting Review...]                       ║
 ║                                                                   ║
 ╚══════════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-## ✅ Step 4: Success - Review Displayed
+##  Step 4: Success - Review Displayed
 
 ```
 ╔══════════════════════════════════════════════════════════════════╗
-║                      📝 Reviews & Ratings                        ║
+║                       Reviews & Ratings                        ║
 ╠══════════════════════════════════════════════════════════════════╣
 ║                                                                   ║
 ║  ⭐ Average Rating: 5.0                                          ║
-║  📊 1 review                                                     ║
+║   1 review                                                     ║
 ║                                                                   ║
 ║  ┌─ Rating Distribution ──────────────────────────────────────┐ ║
 ║  │  5 ⭐ ████████████████████████ 100% (1)                    │ ║
@@ -155,7 +155,7 @@
 ║                                                                   ║
 ║  ┌─ Your Review ──────────────────────────────────────────────┐ ║
 ║  │                                                              │ ║
-║  │  👤 Sarah Johnson (You)                    ⭐⭐⭐⭐⭐     │ ║
+║  │   Sarah Johnson (You)                    ⭐⭐⭐⭐⭐     │ ║
 ║  │  📅 Just now                                                │ ║
 ║  │                                                              │ ║
 ║  │  Excellent React guide! The content is clear and            │ ║
@@ -172,7 +172,7 @@
 ╚══════════════════════════════════════════════════════════════════╝
 
 ┌────────────────────────────────────────────────────────────────┐
-│  ✅ Success! Your review has been submitted                    │
+│   Success! Your review has been submitted                    │
 └────────────────────────────────────────────────────────────────┘
 ```
 
@@ -184,7 +184,7 @@
 ╔══════════════════════════════════════════════════════════════════╗
 ║  ┌─ Your Review ──────────────────────────────────────────────┐ ║
 ║  │                                                              │ ║
-║  │  👤 Sarah Johnson (You)                    ⭐⭐⭐⭐⭐     │ ║
+║  │   Sarah Johnson (You)                    ⭐⭐⭐⭐⭐     │ ║
 ║  │  📅 2 hours ago                                             │ ║
 ║  │                                                              │ ║
 ║  │  Excellent React guide! The content is clear and            │ ║
@@ -197,7 +197,7 @@
 ║  │  │  👔 John Doe (Seller)                                  │ │ ║
 ║  │  │  📅 1 hour ago                                         │ │ ║
 ║  │  │                                                         │ │ ║
-║  │  │  Thank you so much Sarah! 🎉 I'm thrilled to hear      │ │ ║
+║  │  │  Thank you so much Sarah! I'm thrilled to hear      │ │ ║
 ║  │  │  that the guide helped you master React concepts.      │ │ ║
 ║  │  │  If you have any questions while building projects,    │ │ ║
 ║  │  │  feel free to reach out. Happy coding! 🚀             │ │ ║
@@ -216,15 +216,15 @@
 
 ---
 
-## 📊 Multiple Reviews View
+##  Multiple Reviews View
 
 ```
 ╔══════════════════════════════════════════════════════════════════╗
-║                      📝 Reviews & Ratings                        ║
+║                       Reviews & Ratings                        ║
 ╠══════════════════════════════════════════════════════════════════╣
 ║                                                                   ║
 ║  ⭐ Average Rating: 4.7 out of 5                                ║
-║  📊 12 reviews                                                   ║
+║   12 reviews                                                   ║
 ║                                                                   ║
 ║  ┌─ Rating Distribution ──────────────────────────────────────┐ ║
 ║  │  5 ⭐ ████████████████████     75% (9)                     │ ║
@@ -235,21 +235,21 @@
 ║  └────────────────────────────────────────────────────────────┘ ║
 ║                                                                   ║
 ║  ┌─ Review 1 ─────────────────────────────────────────────────┐ ║
-║  │  👤 Michael Chen                       ⭐⭐⭐⭐⭐         │ ║
+║  │   Michael Chen                       ⭐⭐⭐⭐⭐         │ ║
 ║  │  📅 3 days ago                                              │ ║
 ║  │  Best React resource I've found! Clear examples.           │ ║
 ║  │  👍 8 people found this helpful                            │ ║
 ║  └────────────────────────────────────────────────────────────┘ ║
 ║                                                                   ║
 ║  ┌─ Review 2 ─────────────────────────────────────────────────┐ ║
-║  │  👤 Emma Wilson                        ⭐⭐⭐⭐⭐         │ ║
+║  │   Emma Wilson                        ⭐⭐⭐⭐⭐         │ ║
 ║  │  📅 5 days ago                                              │ ║
 ║  │  Great for beginners. Covers all the fundamentals well.    │ ║
 ║  │  👍 5 people found this helpful                            │ ║
 ║  └────────────────────────────────────────────────────────────┘ ║
 ║                                                                   ║
 ║  ┌─ Review 3 ─────────────────────────────────────────────────┐ ║
-║  │  👤 David Lee                          ⭐⭐⭐⭐           │ ║
+║  │   David Lee                          ⭐⭐⭐⭐           │ ║
 ║  │  📅 1 week ago                                              │ ║
 ║  │  Good content but could use more advanced topics.          │ ║
 ║  │  👍 2 people found this helpful                            │ ║
@@ -268,12 +268,12 @@
 
 ```
 ╔══════════════════════════════════════════════════════════════════╗
-║                      📝 Reviews & Ratings                        ║
+║                       Reviews & Ratings                        ║
 ╠══════════════════════════════════════════════════════════════════╣
 ║                                                                   ║
 ║  ⭐ Average Rating: 4.8 out of 5                                ║
 ║                                                                   ║
-║  ⚠️  Please login to write a review                             ║
+║    Please login to write a review                             ║
 ║                                                                   ║
 ║  [Login] [Sign Up]                                              ║
 ║                                                                   ║
@@ -284,7 +284,7 @@
 
 ```
 ╔══════════════════════════════════════════════════════════════════╗
-║                      📝 Reviews & Ratings                        ║
+║                       Reviews & Ratings                        ║
 ╠══════════════════════════════════════════════════════════════════╣
 ║                                                                   ║
 ║  ⭐ Average Rating: 4.8 out of 5                                ║
@@ -300,13 +300,13 @@
 
 ```
 ╔══════════════════════════════════════════════════════════════════╗
-║                      📝 Reviews & Ratings                        ║
+║                       Reviews & Ratings                        ║
 ╠══════════════════════════════════════════════════════════════════╣
 ║                                                                   ║
-║  ✅ You've already reviewed this product                        ║
+║   You've already reviewed this product                        ║
 ║                                                                   ║
 ║  ┌─ Your Review ──────────────────────────────────────────────┐ ║
-║  │  👤 You                                ⭐⭐⭐⭐⭐         │ ║
+║  │   You                                ⭐⭐⭐⭐⭐         │ ║
 ║  │  Your review text here...                                   │ ║
 ║  │  [Edit Review] [Delete Review]                              │ ║
 ║  └────────────────────────────────────────────────────────────┘ ║
@@ -404,7 +404,7 @@
 
 ```
 ┌───────────────────────────┐
-│  📝 Reviews & Ratings     │
+│   Reviews & Ratings     │
 ├───────────────────────────┤
 │                           │
 │  ⭐ 4.8 (12 reviews)      │
@@ -420,7 +420,7 @@
 │  └─────────────────────┘│
 │                           │
 │  ┌─ Review ─────────────┐│
-│  │ 👤 John               ││
+│  │  John               ││
 │  │ ⭐⭐⭐⭐⭐          ││
 │  │ Great product!        ││
 │  │ 👍 8                  ││
@@ -433,37 +433,37 @@
 
 ---
 
-## ✅ Complete Feature Checklist
+##  Complete Feature Checklist
 
 ### Buyer Can:
-- ✅ View all product reviews
-- ✅ See rating distribution
-- ✅ Write review after purchase
-- ✅ Edit their review
-- ✅ Delete their review
-- ✅ Mark reviews as helpful
-- ✅ See seller responses
+-  View all product reviews
+-  See rating distribution
+-  Write review after purchase
+-  Edit their review
+-  Delete their review
+-  Mark reviews as helpful
+-  See seller responses
 
 ### Seller Can:
-- ✅ View all reviews on their products
-- ✅ Respond to buyer reviews
-- ✅ See review statistics
-- ✅ Get notified of new reviews
+-  View all reviews on their products
+-  Respond to buyer reviews
+-  See review statistics
+-  Get notified of new reviews
 
 ### Admin Can:
-- ✅ View all reviews
-- ✅ Hide inappropriate reviews
-- ✅ Delete spam reviews
-- ✅ Monitor review quality
+-  View all reviews
+-  Hide inappropriate reviews
+-  Delete spam reviews
+-  Monitor review quality
 
 ### System Does:
-- ✅ Verify purchase before allowing review
-- ✅ Prevent duplicate reviews
-- ✅ Calculate average ratings
-- ✅ Generate rating distributions
-- ✅ Send notifications
-- ✅ Update seller credibility
-- ✅ Sort by helpful votes
+-  Verify purchase before allowing review
+-  Prevent duplicate reviews
+-  Calculate average ratings
+-  Generate rating distributions
+-  Send notifications
+-  Update seller credibility
+-  Sort by helpful votes
 
 ---
 

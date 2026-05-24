@@ -110,15 +110,11 @@ export const getWishlistCount = async (req, res) => {
 export const getAllBuyerTransactions = async (req, res) => {
   try {
     const buyerId = req.user.id;
+    const hasQueryControls = ["page", "limit", "status", "sortBy", "search"].some(
+      (key) => req.query[key] !== undefined
+    );
 
-    // Fetch all orders for this buyer (paid, failed, created)
-    const orders = await Order.find({ buyerId })
-      .populate("productId", "title")
-      .populate("sellerId", "name email")
-      .sort({ createdAt: -1 });
-
-    // Format transactions
-    const transactions = orders.map(order => ({
+    const formatTransaction = (order) => ({
       _id: order._id,
       orderId: order.razorpayOrderId || order._id.toString(),
       productName: order.productName || order.productId?.title || "Unknown Product",
@@ -126,14 +122,125 @@ export const getAllBuyerTransactions = async (req, res) => {
       sellerName: order.sellerId?.name || "Unknown Seller",
       sellerEmail: order.sellerId?.email || "Unknown Email",
       amount: order.amount || 0,
-      status: order.status, // paid, failed, created
+      status: order.status,
       date: order.createdAt,
       razorpayPaymentId: order.razorpayPaymentId || null,
       razorpayOrderId: order.razorpayOrderId || null,
-    }));
+    });
+
+    if (!hasQueryControls) {
+      const allOrders = await Order.find({ buyerId })
+        .populate("productId", "title")
+        .populate("sellerId", "name email")
+        .sort({ createdAt: -1 });
+
+      const summary = allOrders.reduce(
+        (acc, order) => {
+          acc.total += 1;
+          if (order.status === "paid") {
+            acc.successful += 1;
+            acc.totalSpent += order.amount || 0;
+          } else if (order.status === "created") {
+            acc.pending += 1;
+          } else if (order.status === "failed") {
+            acc.failed += 1;
+          }
+          return acc;
+        },
+        {
+          total: 0,
+          successful: 0,
+          pending: 0,
+          failed: 0,
+          totalSpent: 0,
+        }
+      );
+
+      return res.json({
+        transactions: allOrders.map(formatTransaction),
+        summary,
+        pagination: {
+          page: 1,
+          limit: allOrders.length || 1,
+          totalRecords: allOrders.length,
+          totalPages: 1,
+          hasPrevPage: false,
+          hasNextPage: false,
+        },
+      });
+    }
+
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
+    const status = req.query.status || "all";
+    const sortBy = req.query.sortBy;
+    let sortQuery = { createdAt: -1 };
+    if (sortBy === "oldest") sortQuery = { createdAt: 1 };
+    else if (sortBy === "highest") sortQuery = { amount: -1 };
+    else if (sortBy === "lowest") sortQuery = { amount: 1 };
+    const search = (req.query.search || "").trim();
+    const skip = (page - 1) * limit;
+
+    const query = { buyerId };
+
+    if (status !== "all" && ["paid", "created", "failed"].includes(status)) {
+      query.status = status;
+    }
+
+    if (search) {
+      const searchRegex = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      query.$or = [{ productName: searchRegex }, { razorpayOrderId: searchRegex }];
+    }
+
+    const totalRecords = await Order.countDocuments(query);
+    const totalPages = Math.max(Math.ceil(totalRecords / limit), 1);
+
+    // Fetch paginated orders for this buyer
+    const orders = await Order.find(query)
+      .populate("productId", "title")
+      .populate("sellerId", "name email")
+      .sort(sortQuery)
+      .skip(skip)
+      .limit(limit);
+
+    // Summary across all buyer orders (independent of filters)
+    const buyerOrdersForSummary = await Order.find({ buyerId }).select("status amount");
+    const summary = buyerOrdersForSummary.reduce(
+      (acc, order) => {
+        acc.total += 1;
+        if (order.status === "paid") {
+          acc.successful += 1;
+          acc.totalSpent += order.amount || 0;
+        } else if (order.status === "created") {
+          acc.pending += 1;
+        } else if (order.status === "failed") {
+          acc.failed += 1;
+        }
+        return acc;
+      },
+      {
+        total: 0,
+        successful: 0,
+        pending: 0,
+        failed: 0,
+        totalSpent: 0,
+      }
+    );
+
+    // Format transactions
+    const transactions = orders.map(formatTransaction);
 
     res.json({
-      transactions
+      transactions,
+      pagination: {
+        page,
+        limit,
+        totalRecords,
+        totalPages,
+        hasPrevPage: page > 1,
+        hasNextPage: page < totalPages,
+      },
+      summary,
     });
   } catch (error) {
     console.error("Error fetching buyer transactions:", error);
@@ -174,7 +281,7 @@ export const getBuyerTransactionDetails = async (req, res) => {
       date: order.createdAt,
       razorpayPaymentId: order.razorpayPaymentId || null,
       razorpayOrderId: order.razorpayOrderId || null,
-      // 🔐 Don't expose direct URL - use /api/download/:orderId endpoint for signed URL
+      // Don't expose direct URL - use /api/download/:orderId endpoint for signed URL
       downloadAvailable: order.status === "paid" && !!order.productId?.fileKey,
     });
   } catch (error) {
@@ -187,15 +294,7 @@ export const getBuyerTransactionDetails = async (req, res) => {
 export const getAllBuyerPurchases = async (req, res) => {
   try {
     const buyerId = req.user.id;
-
-    // Fetch all paid orders for this buyer
-    const orders = await Order.find({ buyerId, status: "paid" })
-      .populate("productId", "title description thumbnailUrl fileUrl fileKey category")
-      .populate("sellerId", "name email")
-      .sort({ createdAt: -1 });
-
-    // Format purchases
-    const purchases = orders.map(order => ({
+    const mapPurchase = (order) => ({
       _id: order._id,
       orderId: order.razorpayOrderId || order._id.toString(),
       productName: order.productName || order.productId?.title || "Unknown Product",
@@ -203,13 +302,46 @@ export const getAllBuyerPurchases = async (req, res) => {
       thumbnailUrl: order.productId?.thumbnailUrl || null,
       sellerName: order.sellerId?.name || "Unknown Seller",
       amount: order.amount || 0,
+      status: order.status || "paid",
       purchaseDate: order.createdAt,
       downloadCount: order.downloadCount || 0,
       downloadLimit: order.downloadLimit || 5,
-    }));
+    });
+
+    // Default to page 1, limit 7 if no pagination params are provided
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 7, 1), 50);
+    const sortBy = req.query.sortBy === "oldest" ? "oldest" : "newest";
+    const search = (req.query.search || "").trim();
+    const skip = (page - 1) * limit;
+
+    const query = { buyerId, status: "paid" };
+
+    if (search) {
+      const searchRegex = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      query.$or = [{ productName: searchRegex }, { razorpayOrderId: searchRegex }];
+    }
+
+    const totalRecords = await Order.countDocuments(query);
+    const totalPages = Math.max(Math.ceil(totalRecords / limit), 1);
+
+    const orders = await Order.find(query)
+      .populate("productId", "title description thumbnailUrl fileUrl fileKey category")
+      .populate("sellerId", "name email")
+      .sort({ createdAt: sortBy === "newest" ? -1 : 1 })
+      .skip(skip)
+      .limit(limit);
 
     res.json({
-      purchases
+      purchases: orders.map(mapPurchase),
+      pagination: {
+        page,
+        limit,
+        totalRecords,
+        totalPages,
+        hasPrevPage: page > 1,
+        hasNextPage: page < totalPages,
+      },
     });
   } catch (error) {
     console.error("Error fetching buyer purchases:", error);
@@ -246,7 +378,7 @@ export const getBuyerPurchaseDetails = async (req, res) => {
       ? `${order.productId.title.replace(/[^a-z0-9]/gi, "_")}.pdf`
       : "download.pdf";
 
-    // 🔐 Don't expose direct URL - client should use /api/download/:orderId for signed URL
+    // Don't expose direct URL - client should use /api/download/:orderId for signed URL
     const downloadAvailable = !!order.productId?.fileKey;
 
     // Check if product is soft-deleted (archived)
@@ -342,8 +474,8 @@ export const getPurchasedProductDetails = async (req, res) => {
         razorpayOrderId: order.razorpayOrderId,
         amount: order.amount,
         purchaseDate: order.createdAt,
-      downloadCount: order.downloadCount || 0,
-      downloadLimit: order.downloadLimit || 5,
+        downloadCount: order.downloadCount || 0,
+        downloadLimit: order.downloadLimit || 5,
         downloadAvailable: !!product.fileKey
       }
     });

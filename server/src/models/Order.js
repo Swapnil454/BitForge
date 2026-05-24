@@ -43,6 +43,13 @@ const orderSchema = new mongoose.Schema({
   },
   refundId: String,
 
+  // Admin review flag
+  reviewedByAdmin: {
+    type: Boolean,
+    default: false,
+  },
+  reviewedAt: Date,
+
   // Download tracking
   downloadCount: {
     type: Number,
@@ -50,7 +57,7 @@ const orderSchema = new mongoose.Schema({
   },
   downloadLimit: {
     type: Number,
-    default: 5, // Max downloads allowed
+    default: 5,
   },
   lastDownloadAt: Date,
   downloadHistory: [{
