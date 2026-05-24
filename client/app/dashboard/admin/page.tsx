@@ -544,7 +544,7 @@ export default function AdminDashboard() {
                 <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Revenue</span>
               </motion.button>
 
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/admin/users")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/admin/users/buyers")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
                 <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden">
                   <span className="anim-wrapper anim-float delay-5 inline-flex relative z-10"><Users className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                 </div>

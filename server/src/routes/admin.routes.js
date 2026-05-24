@@ -7,11 +7,13 @@ import {
   rejectSeller,
   approveProduct,
   getPendingProducts,
+  getProductStats,
   getAllProducts,
   getProductDetails,
   editProductByAdmin,
   deleteProductByAdmin,
   rejectProduct,
+  requestProductChanges,
   getPendingProductChanges,
   approveProductChange,
   rejectProductChange,
@@ -46,7 +48,8 @@ import {
   verifySellerIdentity,
   getPendingIdentityVerifications,
   getProductAnalytics,
-  getProductReport
+  getProductReport,
+  getModerationLogs
 } from "../controllers/admin.controller.js";
 
 import {
@@ -89,6 +92,7 @@ router.post("/sellers/:id/reject", rejectSeller);
 
 // Products
 router.get("/products/pending", getPendingProducts);
+router.get("/products/stats", getProductStats);
 router.get("/products/all", getAllProducts);
 router.get("/products/:id/details", getProductDetails);
 router.get("/products/analytics", getProductAnalytics);
@@ -97,6 +101,10 @@ router.put("/products/:id/edit", editProductByAdmin);
 router.delete("/products/:id/delete", deleteProductByAdmin);
 router.post("/products/:id/approve", approveProduct);
 router.post("/products/:id/reject", rejectProduct);
+router.post("/products/:id/request-changes", requestProductChanges);
+
+// Moderation Logs
+router.get("/moderation/logs", getModerationLogs);
 
 router.get("/products/changes/pending", getPendingProductChanges);
 router.post("/products/:id/changes/approve", approveProductChange);

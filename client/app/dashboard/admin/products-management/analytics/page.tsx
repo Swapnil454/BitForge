@@ -1,27 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { adminAPI } from "@/lib/api";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
-  CheckCircle2,
-  Clock,
-  XCircle,
-  Package,
-  TrendingUp,
   Download,
   Loader2,
-  Crown,
-  Zap,
-  ChevronUp,
-  BarChart2,
-  ChevronRight,
-  Activity
+  ArrowUpRight,
+  AlertTriangle,
+  TrendingUp,
+  ChevronLeft,
+  MoreVertical,
 } from "lucide-react";
-import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
+import { Doughnut, Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Filler,
+} from "chart.js";
+import { adminAPI } from "@/lib/api";
 
-// --- Types ---
+ChartJS.register(ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler);
+
 interface AnalyticsData {
   stats: {
     total: number;
@@ -29,49 +34,55 @@ interface AnalyticsData {
     pending: number;
     rejected: number;
     recentSubmissions: number;
+    totalRevenue: number;
+    revenueOrders: number;
   };
   categories: { _id: string; count: number }[];
-  topSellers: { name: string; email: string; count: number }[];
+  topSellers: { id: string; name: string; email: string; productCount: number; revenue: number }[];
+  recentSubmissions: {
+    _id: string;
+    title: string;
+    sellerName: string;
+    category: string;
+    status: string;
+    createdAt: string;
+  }[];
+  needsAttention: { _id: string; title: string; status: string; createdAt: string; reason: string }[];
+  timeline: { labels: string[]; counts: number[] };
+  health: { approvalRate: number; avgApprovalDays: number; activeSellers: number };
 }
 
-// --- Animated Count Component ---
-function AnimatedNumber({ value }: { value: number }) {
-  const [displayValue, setDisplayValue] = useState(0);
+const categoryColors: Record<string, string> = {
+  Template: "#378ADD",
+  Software: "#1D9E75",
+  Course: "#7F77DD",
+  Ebook: "#EF9F27",
+  eBook: "#EF9F27",
+};
 
-  useEffect(() => {
-    let start = 0;
-    const end = value;
-    const duration = 1000;
-    if (end === 0) return setDisplayValue(0);
-    const increment = end / (duration / 16);
-
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= end) {
-        setDisplayValue(end);
-        clearInterval(timer);
-      } else {
-        setDisplayValue(Math.floor(start));
-      }
-    }, 16);
-
-    return () => clearInterval(timer);
-  }, [value]);
-
-  return <>{displayValue}</>;
-}
+const rangeOptions = [
+  { label: "Last 7 days", value: "7" },
+  { label: "Last 30 days", value: "30" },
+  { label: "Last 90 days", value: "90" },
+  { label: "All time", value: "all" },
+];
 
 export default function ProductAnalyticsPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
+  const [range, setRange] = useState("30");
   const [data, setData] = useState<AnalyticsData | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const fetchAnalytics = async () => {
+    setLoading(true);
     try {
-      const res = await adminAPI.getProductAnalytics();
+      const res = await adminAPI.getProductAnalytics({ range });
       setData(res);
     } catch (error) {
-      toast.error("Intelligence sync failed");
+      toast.error("Failed to load analytics");
     } finally {
       setLoading(false);
     }
@@ -79,6 +90,17 @@ export default function ProductAnalyticsPage() {
 
   useEffect(() => {
     fetchAnalytics();
+  }, [range]);
+
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (menuRef.current && !menuRef.current.contains(target)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
   const handleDownloadReport = async () => {
@@ -86,13 +108,16 @@ export default function ProductAnalyticsPage() {
     try {
       const blob = await adminAPI.getProductReport();
       const url = window.URL.createObjectURL(new Blob([blob]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', `BitForge_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+      link.setAttribute(
+        "download",
+        `product-analytics-${range === "all" ? "all" : `${range}d`}-${new Date().toISOString().split("T")[0]}.pdf`
+      );
       document.body.appendChild(link);
       link.click();
       link.parentNode?.removeChild(link);
-      toast.success("Ready");
+      toast.success("Report ready");
     } catch (error) {
       toast.error("Export failed");
     } finally {
@@ -100,252 +125,425 @@ export default function ProductAnalyticsPage() {
     }
   };
 
-  if (loading && !data) return <AnalyticsSkeleton />;
+  const formatCurrency = (value: number) =>
+    `₹${value.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  const stats = data!.stats;
+  const getInitials = (name: string) => {
+    const parts = name.trim().split(" ");
+    return parts.slice(0, 2).map((part) => part[0]?.toUpperCase() || "").join("") || "S";
+  };
+
+  const formatTimeAgo = (value: string) => {
+    const diffMs = Date.now() - new Date(value).getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays <= 0) return "Today";
+    if (diffDays === 1) return "1 day ago";
+    return `${diffDays} days ago`;
+  };
+
+  const lineData = useMemo(() => {
+    const labels = data?.timeline.labels || [];
+    const counts = data?.timeline.counts || [];
+    return {
+      labels,
+      datasets: [
+        {
+          label: "Submissions",
+          data: counts,
+          borderColor: "#1D9E75",
+          backgroundColor: "rgba(29, 158, 117, 0.18)",
+          pointRadius: 3,
+          tension: 0.35,
+          fill: true,
+        },
+      ],
+    };
+  }, [data]);
+
+  const showLegend = lineData.datasets.length > 1;
+
+  const lineOptions = useMemo(
+    () => ({
+      responsive: true,
+      plugins: { legend: { display: showLegend }, tooltip: { enabled: true } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: "#94A3B8" } },
+        y: {
+          grid: { color: "rgba(148,163,184,0.2)" },
+          ticks: { color: "#94A3B8", precision: 0 },
+          title: { display: true, text: "Submissions", color: "#94A3B8", font: { size: 11, weight: 600 as const } },
+        },
+      },
+    }),
+    [showLegend]
+  );
+
+  const donutData = useMemo(() => {
+    const labels = data?.categories.map((category) => category._id || "Uncategorized") || [];
+    const counts = data?.categories.map((category) => category.count) || [];
+    const colors = labels.map((label) => categoryColors[label] || "#94A3B8");
+    return {
+      labels,
+      datasets: [
+        {
+          data: counts,
+          backgroundColor: colors,
+          borderWidth: 0,
+          hoverOffset: 4,
+        },
+      ],
+    };
+  }, [data]);
+
+  const donutOptions = useMemo(
+    () => ({
+      cutout: "70%",
+      plugins: { legend: { display: false }, tooltip: { enabled: true } },
+    }),
+    []
+  );
+
+  if (loading && !data) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] flex items-center justify-center">
+        <div className="text-slate-500 dark:text-white/60 text-sm">Loading analytics...</div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  const { stats } = data;
+  const totalRevenueAvailable = stats.revenueOrders > 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white selection:bg-blue-500/30 pb-20">
-      <PageHeader
-        backHref="/dashboard/admin/products-management"
-        backLabel="Back"
-        title="Intelligence"
-        subtitle="Catalog Performance"
-        rightSlot={
-          <div className="pr-1">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-20">
+      <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-white/10 bg-white/90 dark:bg-[#0b0b12]/95 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="h-14 flex items-center justify-between gap-4">
+            {/* Left – back button */}
             <button
-              onClick={handleDownloadReport}
-              disabled={downloading}
-              className="h-9 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-[9px] text-white font-black uppercase tracking-widest transition-all flex items-center gap-1.5 shadow-lg shadow-blue-600/30"
+              onClick={() => router.back()}
+              className="flex items-center gap-1.5 text-sm font-semibold text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white transition-colors shrink-0"
             >
-              {downloading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
-              <span className="hidden sm:inline">Export</span>
+              <ChevronLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Back</span>
             </button>
+
+            {/* Center – title */}
+            <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white absolute left-1/2 -translate-x-1/2">
+              Product Analytics
+            </h1>
+
+            {/* Right – 3-dot action menu */}
+            <div className="relative shrink-0" ref={menuRef}>
+              <button
+                id="analytics-menu-btn"
+                onClick={() => setMenuOpen((o) => !o)}
+                className="h-9 w-9 rounded-xl border border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/60 hover:border-slate-300 dark:hover:border-white/20 hover:text-slate-900 dark:hover:text-white transition inline-flex items-center justify-center"
+                aria-label="Options"
+              >
+                <MoreVertical className="w-4 h-4" />
+              </button>
+
+              {menuOpen && (
+                <div className="absolute right-0 top-11 w-64 bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl z-50 overflow-hidden">
+                  {/* Date range section */}
+                  <div className="px-4 pt-3 pb-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-white/30 mb-2">
+                      Date Range
+                    </p>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {rangeOptions.map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => { setRange(option.value); setMenuOpen(false); }}
+                          className={`px-3 py-2 rounded-xl text-xs font-semibold transition text-center ${
+                            range === option.value
+                              ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+                              : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-white/70 hover:bg-slate-200 dark:hover:bg-white/10"
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-slate-100 dark:bg-white/5 mx-4" />
+
+                  {/* Download section */}
+                  <div className="p-2">
+                    <button
+                      onClick={() => { handleDownloadReport(); setMenuOpen(false); }}
+                      disabled={downloading}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 dark:text-white/80 hover:bg-slate-100 dark:hover:bg-white/5 transition disabled:opacity-50"
+                    >
+                      {downloading ? (
+                        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                      ) : (
+                        <Download className="w-4 h-4 shrink-0" />
+                      )}
+                      {downloading ? "Generating report…" : "Download Report"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        }
-      />
+        </div>
+      </header>
+
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-        {/* 👋 GREETING */}
-        <div className="space-y-1">
-          <h2 className="text-xl font-bold tracking-tight text-slate-800 dark:text-white/90">Good Evening, <span className="text-blue-500">Virat</span></h2>
-          <p className="text-[10px] uppercase font-black tracking-widest text-slate-500 dark:text-white/20">Catalog Intelligence & Report</p>
-        </div>
-
-        {/* 🔥 HERO CARD */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          whileHover={{ scale: 1.01, boxShadow: "0 0 30px rgba(59,130,246,0.15)", borderColor: "rgba(59,130,246,0.3)" }}
-          className="relative h-[160px] rounded-[28px] p-8 overflow-hidden bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.05] group transition-all duration-500"
-        >
-          <div className="absolute -right-20 -top-20 w-80 h-80 bg-blue-600/5 rounded-full blur-[100px] group-hover:bg-blue-600/10 transition-all" />
-
-          <div className="relative z-10 flex flex-col justify-between h-full">
-            <div className="space-y-1">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 dark:text-white/20">Total Catalog Units</p>
-              <h2 className="text-6xl font-black tracking-tighter">
-                <AnimatedNumber value={stats.total} />
-              </h2>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-blue-400 text-[10px] font-black uppercase tracking-widest">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-                Global Intelligence Sync
-              </div>
-              <div className="text-blue-500/40">
-                <Activity className="w-8 h-8" />
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/*  METRICS GRID */}
-        <div className="grid grid-cols-2 gap-4">
+        <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
-            { label: "Approved", value: stats.approved, icon: CheckCircle2, color: "text-emerald-400" },
-            { label: "Pending", value: stats.pending, icon: Clock, color: "text-amber-400" },
-            { label: "Rejected", value: stats.rejected, icon: XCircle, color: "text-rose-400" },
-            { label: "New Unit", value: stats.recentSubmissions, icon: TrendingUp, color: "text-blue-400" },
-          ].map((m, i) => (
-            <motion.div
-              key={m.label}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              whileHover={{ y: -4, borderColor: "rgba(255,255,255,0.1)", backgroundColor: "#1c1c24" }}
-              className="h-[120px] rounded-[28px] p-6 bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.05] flex flex-col justify-between group transition-all duration-300"
+            { label: "Total", value: stats.total, accent: "border-t-2 border-t-slate-300 dark:border-t-white/20" },
+            { label: "Approved", value: stats.approved, accent: "border-t-2 border-t-emerald-400" },
+            { label: "Pending", value: stats.pending, accent: "border-t-2 border-t-amber-400" },
+            { label: "Rejected", value: stats.rejected, accent: "border-t-2 border-t-rose-400" },
+            { label: "Revenue", value: formatCurrency(stats.totalRevenue || 0), accent: "border-t-2 border-t-violet-400" },
+            { label: "Submissions", value: stats.recentSubmissions || 0, accent: "border-t-2 border-t-blue-400" },
+          ].map((item) => (
+            <div
+              key={item.label}
+              className={`rounded-xl bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/10 shadow-sm px-3 py-3 ${item.accent}`}
             >
-              <div className="flex items-center justify-between">
-                <div className={`p-2 rounded-xl bg-slate-100 dark:bg-white/[0.03] ${m.color} group-hover:bg-white/[0.08] transition-all`}>
-                  <m.icon className="w-4 h-4" />
-                </div>
-                <div className={`w-1.5 h-1.5 rounded-full ${m.color.replace('text-', 'bg-')} opacity-20 group-hover:opacity-100 transition-all`} />
-              </div>
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/20 mb-1">{m.label}</p>
-                <h4 className="text-2xl font-black tracking-tight">{m.value}</h4>
-              </div>
-            </motion.div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-white/40 truncate">
+                {item.label}
+              </p>
+              <p className="mt-1.5 text-xl font-bold text-slate-900 dark:text-white leading-none">{item.value}</p>
+            </div>
           ))}
-        </div>
+        </section>
 
-        {/*  CATEGORY TRENDS */}
-        <motion.div
-          className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.05] rounded-[32px] p-8 space-y-8"
-        >
-          <div className="flex items-center justify-between">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 dark:text-white/20">Market Intelligence</h3>
-            <BarChart2 className="w-5 h-5 text-slate-300 dark:text-white/10" />
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6">
+          <div className="space-y-6">
+            <section className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/10 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-600 dark:text-white/70">
+                Category distribution
+              </h3>
+              <div className="mt-5 grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 items-center">
+                <div className="space-y-4">
+                  {data.categories.length === 0 && (
+                    <p className="text-sm text-slate-500 dark:text-white/60">No category data available.</p>
+                  )}
+                  {data.categories.map((category) => {
+                    const count = category.count;
+                    const percentage = stats.total ? Math.round((count / stats.total) * 100) : 0;
+                    const label = category._id || "Uncategorized";
+                    const color = categoryColors[label] || "#94A3B8";
+                    return (
+                      <div key={label} className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="font-medium text-slate-700 dark:text-white/80">
+                            {label} <span className="text-xs text-slate-400">({count})</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="relative flex-1 h-2 rounded-full bg-slate-100 dark:bg-white/5 overflow-hidden">
+                            <div
+                              className="h-full rounded-full"
+                              style={{ width: `${percentage}%`, backgroundColor: color }}
+                            />
+                            <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/90 dark:bg-[#0b0b12] text-slate-600 dark:text-white/70 shadow-sm">
+                              {percentage}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center justify-center">
+                  {data.categories.length === 0 ? (
+                    <div className="h-28 w-28 rounded-full border border-dashed border-slate-200 dark:border-white/10" />
+                  ) : (
+                    <div className="h-36 w-36">
+                      <Doughnut data={donutData} options={donutOptions} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            <section className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/10 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-600 dark:text-white/70">
+                Submission timeline
+              </h3>
+              <div className="mt-4">
+                {data.timeline.labels.length === 0 ? (
+                  <p className="text-sm text-slate-500 dark:text-white/60">
+                    Not enough data for this period. Try a wider date range.
+                  </p>
+                ) : (
+                  <Line data={lineData} options={lineOptions} height={120} />
+                )}
+              </div>
+            </section>
+
+            <section className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/10 rounded-2xl p-6 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-600 dark:text-white/70">
+                  Recent submissions
+                </h3>
+                <button
+                  onClick={() => router.push("/dashboard/admin/products-management")}
+                  className="text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  View all
+                </button>
+              </div>
+              {data.recentSubmissions.length === 0 ? (
+                <p className="mt-3 text-sm text-slate-500 dark:text-white/60">
+                  No products submitted in this period.
+                </p>
+              ) : (
+                <div className="mt-4 overflow-x-auto">
+                  <div className="min-w-[560px] divide-y divide-slate-100 dark:divide-white/5">
+                    <div className="grid grid-cols-[2fr_2fr_1fr_1fr_1fr] text-xs uppercase tracking-wide text-slate-400 pb-2">
+                      <span>Product</span>
+                      <span>Seller</span>
+                      <span>Category</span>
+                      <span>Status</span>
+                      <span>Submitted</span>
+                    </div>
+                    {data.recentSubmissions.map((item) => (
+                      <button
+                        key={item._id}
+                        onClick={() => router.push(`/dashboard/admin/products-management/${item._id}`)}
+                        className="grid grid-cols-[2fr_2fr_1fr_1fr_1fr] text-left text-sm py-3 text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white"
+                      >
+                        <span className="font-semibold">{item.title}</span>
+                        <span className="text-slate-500 dark:text-white/60">{item.sellerName}</span>
+                        <span>{item.category}</span>
+                        <span className="capitalize">{item.status}</span>
+                        <span className="text-slate-500 dark:text-white/60">{formatTimeAgo(item.createdAt)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
           </div>
 
-          <div className="space-y-6">
-            {data?.categories.slice(0, 4).map((cat, i) => {
-              const percentage = (cat.count / (stats.total || 1)) * 100;
-              return (
-                <div key={cat._id} className="space-y-2.5">
-                  <div className="flex justify-between items-center px-1">
-                    <span className="text-[10px] font-black text-slate-400 dark:text-white/40 uppercase tracking-widest">{cat._id || "Unclassified"}</span>
-                    <span className="text-[10px] font-black text-blue-500">{Math.round(percentage)}%</span>
+          <div className="space-y-6 lg:border-l lg:border-slate-200/70 dark:lg:border-white/10 lg:pl-6">
+            <section className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200/70 dark:border-amber-500/30 rounded-2xl p-6 shadow-sm">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-500" />
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                  Needs attention
+                </h3>
+              </div>
+              {data.needsAttention.length === 0 ? (
+                <p className="mt-3 text-sm text-emerald-600 dark:text-emerald-400">
+                  No products need attention. All submissions are reviewed.
+                </p>
+              ) : (
+                <div className="mt-4 space-y-4">
+                  {data.needsAttention.map((item) => (
+                    <div key={item._id} className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold">{item.title}</p>
+                        <p className="text-xs text-slate-500 dark:text-white/60">
+                          {item.reason} · Submitted {formatTimeAgo(item.createdAt)}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => router.push(`/dashboard/admin/products-management/${item._id}`)}
+                        className="h-8 px-3 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-400 transition inline-flex items-center gap-1"
+                      >
+                        Review
+                        <ArrowUpRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/10 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-600 dark:text-white/70">
+                Top sellers by revenue
+              </h3>
+              {data.topSellers.length === 0 ? (
+                <p className="mt-3 text-sm text-slate-500 dark:text-white/60">
+                  No seller data available yet.
+                </p>
+              ) : (
+                <div className="mt-4 space-y-4">
+                  {data.topSellers.map((seller, index) => (
+                    <div key={seller.email} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="text-xs font-semibold text-slate-500 dark:text-white/60">#{index + 1}</div>
+                        <div className="h-10 w-10 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-xs font-semibold">
+                          {getInitials(seller.name)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold">{seller.name}</p>
+                          <p className="text-xs text-slate-500 dark:text-white/60">
+                            {seller.productCount} products · {seller.email}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold">{formatCurrency(seller.revenue)}</p>
+                        <button
+                          onClick={() => router.push(`/dashboard/admin/users/${seller.id}`)}
+                          className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 inline-flex items-center gap-1"
+                        >
+                          View
+                          <ArrowUpRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/10 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-600 dark:text-white/70">
+                Catalog health
+              </h3>
+              <div className="mt-4 space-y-4 text-sm">
+                <div>
+                  <div className="flex items-center justify-between text-xs text-slate-500 dark:text-white/60">
+                    <span>Approval rate</span>
+                    <span>{data.health.approvalRate}%</span>
                   </div>
-                  <div className="h-1.5 w-full bg-slate-50 dark:bg-white/[0.02] rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${percentage}%` }}
-                      transition={{ duration: 1.5, ease: "circOut", delay: i * 0.1 }}
-                      className="h-full bg-blue-600 rounded-full shadow-[0_0_15px_rgba(37,99,235,0.3)]"
+                  <div className="mt-2 h-3 rounded-full bg-slate-100 dark:bg-white/5 overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-emerald-500"
+                      style={{ width: `${data.health.approvalRate}%` }}
                     />
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </motion.div>
-
-        {/* 🏆 MARKET LEADERS */}
-        <motion.div
-          className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.05] rounded-[32px] p-8"
-        >
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 dark:text-white/20">Market Leaders</h3>
-            <Crown className="w-5 h-5 text-slate-300 dark:text-white/10" />
-          </div>
-
-          <div className="space-y-3">
-            {data?.topSellers.map((seller, i) => (
-              <div key={seller.email} className="group p-4 rounded-2xl bg-white/[0.01] border border-white/[0.03] hover:bg-slate-100 dark:hover:bg-[#1c1c24] hover:border-slate-200 dark:hover:border-white/10 transition-all flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-[#1c1c24] flex items-center justify-center text-xs font-black border border-slate-200 dark:border-white/5 relative">
-                    {seller.name.substring(0, 2).toUpperCase()}
-                    <div className={`absolute -right-1 -top-1 w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-black border-2 border-[#16161e] ${i === 0 ? "bg-amber-400 text-black shadow-lg shadow-amber-400/20" : i === 1 ? "bg-slate-300 text-black" : "bg-orange-500 text-slate-900 dark:text-white"
-                      }`}>
-                      {i + 1}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-400 transition-colors">{seller.name}</p>
-                    <p className="text-[9px] text-slate-500 dark:text-white/20 font-medium tracking-tight truncate max-w-[150px]">{seller.email}</p>
-                  </div>
+                <div className="flex items-center justify-between text-xs text-slate-500 dark:text-white/60">
+                  <span>Avg time to approval</span>
+                  <span className="text-slate-900 dark:text-white inline-flex items-center gap-1">
+                    {data.health.avgApprovalDays} days
+                    {data.health.avgApprovalDays >= 30 && (
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                    )}
+                  </span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-slate-300 dark:text-white/10 group-hover:text-slate-900 dark:group-hover:text-white transition-all" />
+                <div className="flex items-center justify-between text-xs text-slate-500 dark:text-white/60">
+                  <span>Active sellers</span>
+                  <span className="text-slate-900 dark:text-white inline-flex items-center gap-1">
+                    {data.health.activeSellers}
+                    <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+                  </span>
+                </div>
               </div>
-            ))}
+            </section>
           </div>
-        </motion.div>
+        </div>
+
+        <p className="text-xs text-slate-400 dark:text-white/40">Data updates every 15 minutes.</p>
       </main>
-      <style jsx global>{`
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-        .skeleton-shimmer {
-          background: linear-gradient(90deg, #16161e 25%, #1c1c24 50%, #16161e 75%);
-          background-size: 200% 100%;
-          animation: shimmer 1.5s infinite;
-        }
-      `}</style>
     </div>
   );
 }
-
-// --- PROPER SKELETON COMPONENTS ---
-function SkeletonBox({ className }: { className?: string }) {
-  return <div className={`skeleton-shimmer ${className}`} />;
-}
-
-function AnalyticsSkeleton() {
-  return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a]">
-      <div className="h-16 w-full border-b border-slate-200 dark:border-white/[0.05] bg-slate-50 dark:bg-[#0a0a0f]" />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-        {/* Greeting Skeleton */}
-        <div className="space-y-3">
-          <SkeletonBox className="h-8 w-48 rounded-xl" />
-          <SkeletonBox className="h-3 w-64 rounded-lg" />
-        </div>
-
-        {/* Hero Card Skeleton */}
-        <div className="h-[160px] w-full bg-white dark:bg-[#16161e] rounded-[28px] border border-slate-200 dark:border-white/[0.05] p-8 flex flex-col justify-between">
-          <div className="space-y-3">
-            <SkeletonBox className="h-3 w-32 rounded-full opacity-50" />
-            <SkeletonBox className="h-12 w-24 rounded-2xl" />
-          </div>
-          <div className="flex justify-between items-end">
-            <SkeletonBox className="h-3 w-40 rounded-full opacity-30" />
-            <SkeletonBox className="h-8 w-32 rounded-xl opacity-20" />
-          </div>
-        </div>
-
-        {/* Grid Skeleton */}
-        <div className="grid grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-[120px] bg-white dark:bg-[#16161e] rounded-[28px] border border-slate-200 dark:border-white/[0.05] p-6 flex flex-col justify-between">
-              <div className="flex justify-between">
-                <SkeletonBox className="h-8 w-8 rounded-xl opacity-50" />
-                <SkeletonBox className="h-2 w-12 rounded-full opacity-20" />
-              </div>
-              <div className="space-y-2">
-                <SkeletonBox className="h-2 w-16 rounded-full opacity-30" />
-                <SkeletonBox className="h-6 w-10 rounded-lg" />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Lists Skeleton */}
-        <div className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.05] rounded-[32px] p-8 space-y-10">
-          <div className="flex justify-between">
-            <SkeletonBox className="h-3 w-40 rounded-full opacity-50" />
-            <SkeletonBox className="h-5 w-5 rounded-lg opacity-20" />
-          </div>
-          <div className="space-y-6">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="space-y-3">
-                <div className="flex justify-between">
-                  <SkeletonBox className="h-2 w-24 rounded-full opacity-40" />
-                  <SkeletonBox className="h-2 w-8 rounded-full opacity-20" />
-                </div>
-                <SkeletonBox className="h-1.5 w-full rounded-full opacity-10" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </main>
-
-      <style jsx global>{`
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-        .skeleton-shimmer {
-          background: linear-gradient(90deg, #16161e 25%, #23232d 50%, #16161e 75%);
-          background-size: 200% 100%;
-          animation: shimmer 2s infinite linear;
-        }
-      `}</style>
-    </div>
-  );
-}
-

@@ -158,18 +158,28 @@ export const adminAPI = {
         return response.data;
     },
     
-    getPendingProducts: async () => {
-        const response = await api.get('/admin/products/pending');
+    getPendingProducts: async (params?: { page?: number; limit?: number; search?: string; category?: string; sort?: string; status?: string }) => {
+        const response = await api.get('/admin/products/pending', { params });
+        return response.data;
+    },
+
+    getProductStats: async () => {
+        const response = await api.get('/admin/products/stats');
         return response.data;
     },
     
-    approveProduct: async (id: string) => {
-        const response = await api.post(`/admin/products/${id}/approve`);
+    approveProduct: async (id: string, adminNote?: string) => {
+        const response = await api.post(`/admin/products/${id}/approve`, { adminNote });
         return response.data;
     },
     
-    rejectProduct: async (id: string, reason: string) => {
-        const response = await api.post(`/admin/products/${id}/reject`, { reason });
+    rejectProduct: async (id: string, reasons: string[], adminNote?: string) => {
+        const response = await api.post(`/admin/products/${id}/reject`, { reasons, adminNote });
+        return response.data;
+    },
+
+    requestProductChanges: async (id: string, reasons: string[], adminNote?: string) => {
+        const response = await api.post(`/admin/products/${id}/request-changes`, { reasons, adminNote });
         return response.data;
     },
 
@@ -302,8 +312,8 @@ export const adminAPI = {
         return response.data;
     },
 
-    getProductAnalytics: async () => {
-        const response = await api.get("/admin/products/analytics");
+    getProductAnalytics: async (params?: { range?: string }) => {
+        const response = await api.get("/admin/products/analytics", { params });
         return response.data;
     },
 

@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 import PageHeader from "../../buyer/transactions/components/PageHeader";
-import { MoreVertical, Calendar, Package, Plus, Pencil, Trash2, X, Megaphone, Star, Eye } from "lucide-react";
+import { MoreVertical, Calendar, Package, Plus, Pencil, Trash2, X, Megaphone, Star, Eye, Search, SlidersHorizontal } from "lucide-react";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
@@ -38,16 +38,30 @@ const categoryColors: Record<string, { pill: string; glow: string }> = {
   "Design Asset":{ pill: "bg-pink-50 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400",    glow: "group-hover:shadow-pink-100 dark:group-hover:shadow-pink-900/30" },
 };
 const defaultCat = { pill: "bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-400", glow: "group-hover:shadow-cyan-100 dark:group-hover:shadow-cyan-900/20" };
+const categoryOptions = ["all", ...Object.keys(categoryColors)];
+const priceRangeOptions = [
+  { value: "all", label: "All Prices" },
+  { value: "0-99", label: "Under Rs. 100", min: 0, max: 99 },
+  { value: "100-499", label: "Rs. 100 - 499", min: 100, max: 499 },
+  { value: "500-999", label: "Rs. 500 - 999", min: 500, max: 999 },
+  { value: "1000-plus", label: "Rs. 1000+", min: 1000, max: null },
+];
 
 export default function MyProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshingFilters, setIsRefreshingFilters] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedPriceRange, setSelectedPriceRange] = useState("all");
   const router = useRouter();
   
   const observerTarget = useRef<HTMLDivElement>(null);
+  const hasLoadedOnceRef = useRef(false);
 
 
 
@@ -58,12 +72,34 @@ export default function MyProductsPage() {
   /* ================= MENU STATE ================= */
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm.trim());
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   const fetchProducts = useCallback(async (pageToFetch: number) => {
     try {
-      if (pageToFetch === 1) setLoading(true);
-      else setLoadingMore(true);
+      if (pageToFetch === 1) {
+        if (!hasLoadedOnceRef.current) setLoading(true);
+        else setIsRefreshingFilters(true);
+      } else {
+        setLoadingMore(true);
+      }
 
-      const res = await api.get(`/products/mine?page=${pageToFetch}&limit=8`);
+      const activePriceRange = priceRangeOptions.find((option) => option.value === selectedPriceRange);
+      const res = await api.get("/products/mine", {
+        params: {
+          page: pageToFetch,
+          limit: 8,
+          search: debouncedSearch || undefined,
+          category: selectedCategory !== "all" ? selectedCategory : undefined,
+          minPrice: activePriceRange && activePriceRange.value !== "all" ? activePriceRange.min : undefined,
+          maxPrice: activePriceRange && activePriceRange.value !== "all" ? activePriceRange.max : undefined,
+        },
+      });
       
       const newProducts = res.data.products || res.data || [];
       const totalPages = res.data.totalPages || 1;
@@ -83,10 +119,12 @@ export default function MyProductsPage() {
     } catch {
       showError("Failed to load products");
     } finally {
+      hasLoadedOnceRef.current = true;
       setLoading(false);
+      setIsRefreshingFilters(false);
       setLoadingMore(false);
     }
-  }, []);
+  }, [debouncedSearch, selectedCategory, selectedPriceRange]);
 
   useEffect(() => {
     fetchProducts(1);
@@ -114,6 +152,15 @@ export default function MyProductsPage() {
 
     return () => observer.disconnect();
   }, [hasMore, loading, loadingMore, page, fetchProducts]);
+
+  const hasActiveFilters = debouncedSearch.length > 0 || selectedCategory !== "all" || selectedPriceRange !== "all";
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setDebouncedSearch("");
+    setSelectedCategory("all");
+    setSelectedPriceRange("all");
+  };
 
   /* ================= HANDLERS ================= */
   const handleDeleteClick = (id: string) => {
@@ -194,6 +241,89 @@ export default function MyProductsPage() {
         }
       />
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by title or description..."
+                className="w-full h-11 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#111826] pl-10 pr-4 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400"
+              />
+              {isRefreshingFilters && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-cyan-500/25 border-t-cyan-500 rounded-full animate-spin" />
+              )}
+            </div>
+
+            <div className="hidden sm:flex items-center gap-3">
+              <div className="relative min-w-[210px]">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full h-11 appearance-none rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#111826] px-4 pr-10 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400"
+                >
+                  {categoryOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option === "all" ? "All Categories" : option}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
+                  <SlidersHorizontal className="w-4 h-4" />
+                </div>
+              </div>
+
+              <div className="relative min-w-[210px]">
+                <select
+                  value={selectedPriceRange}
+                  onChange={(e) => setSelectedPriceRange(e.target.value)}
+                  className="w-full h-11 appearance-none rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#111826] px-4 pr-10 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-400"
+                >
+                  {priceRangeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-400">
+                  <SlidersHorizontal className="w-4 h-4" />
+                </div>
+              </div>
+
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="h-11 px-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="flex sm:hidden overflow-x-auto gap-2 pb-1 scrollbar-hide snap-x items-center">
+            {categoryOptions.map((option) => {
+              const isActive = selectedCategory === option;
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setSelectedCategory(option)}
+                  className={`flex-shrink-0 px-3.5 py-1.5 text-xs font-medium rounded-full transition-colors snap-start border ${
+                    isActive
+                      ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent"
+                      : "bg-white dark:bg-[#0a0a14] border-slate-200 dark:border-white/10 text-slate-700 dark:text-white/80 hover:bg-slate-50 dark:hover:bg-white/5"
+                  }`}
+                >
+                  {option === "all" ? "All Categories" : option}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
@@ -414,14 +544,28 @@ export default function MyProductsPage() {
           <div className="text-center py-20 bg-white dark:bg-[#0b0b14] rounded-2xl border border-slate-200 dark:border-white/5">
             <Package className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">No products found</h3>
-            <p className="text-slate-500 dark:text-slate-400 mt-1 mb-4">You haven't uploaded any products yet.</p>
-            <button
-              onClick={() => router.push("/dashboard/seller/upload")}
-              className="inline-flex items-center gap-2 rounded-xl bg-cyan-500 text-[#05050a] px-5 py-2 text-sm font-bold transition-all hover:bg-cyan-400"
-            >
-              <Plus className="w-4 h-4" strokeWidth={3} />
-              Upload Product
-            </button>
+            <p className="text-slate-500 dark:text-slate-400 mt-1 mb-4">
+              {hasActiveFilters
+                ? "Try a different search, category, or price range."
+                : "You haven't uploaded any products yet."}
+            </p>
+            {hasActiveFilters ? (
+              <button
+                onClick={clearFilters}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 px-5 py-2 text-sm font-bold text-slate-700 dark:text-white transition-all hover:bg-slate-50 dark:hover:bg-white/10"
+              >
+                <X className="w-4 h-4" strokeWidth={3} />
+                Clear Filters
+              </button>
+            ) : (
+              <button
+                onClick={() => router.push("/dashboard/seller/upload")}
+                className="inline-flex items-center gap-2 rounded-xl bg-cyan-500 text-[#05050a] px-5 py-2 text-sm font-bold transition-all hover:bg-cyan-400"
+              >
+                <Plus className="w-4 h-4" strokeWidth={3} />
+                Upload Product
+              </button>
+            )}
           </div>
         )}
 

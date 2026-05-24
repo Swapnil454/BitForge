@@ -64,6 +64,15 @@ const userSchema = new mongoose.Schema(
       type: String,
     },
 
+    // Moderation Stats for Sellers
+    sellerStats: {
+      totalProducts:    { type: Number, default: 0 },
+      approvedProducts: { type: Number, default: 0 },
+      rejectedProducts: { type: Number, default: 0 },
+      changesRequested: { type: Number, default: 0 },
+      disputes:         { type: Number, default: 0 }
+    },
+
     // User Product Limits
     productLimit: {
       type: Number,

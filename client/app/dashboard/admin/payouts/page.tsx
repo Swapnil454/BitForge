@@ -191,18 +191,9 @@ export default function AdminPayoutsPage() {
       {/* ── Header ── */}
       <PageHeader
         title="Payouts"
-        subtitle="Review and manage seller payout requests"
+        subtitle="Manage seller payout requests"
         backHref="/dashboard/admin"
         backLabel="Back"
-        rightSlot={
-          <button
-            onClick={() => fetchData(true)}
-            disabled={refreshing}
-            className="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-200/50 dark:bg-white/[0.04] hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.06] transition-all"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-          </button>
-        }
       />
 
       <section className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 space-y-5">

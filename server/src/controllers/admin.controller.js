@@ -10,6 +10,16 @@ import Invoice from "../models/Invoice.js";
 import Order from "../models/Order.js";
 import Notification from "../models/Notification.js";
 import PDFDocument from 'pdfkit';
+import Review from "../models/Review.js";
+import ModerationLog from "../models/ModerationLog.js";
+import { sendApprovalEmail, sendRejectionEmail, sendChangesRequestedEmail } from "../utils/moderationEmails.js";
+
+// Utility to write moderation log non-blocking
+function writeModerationLog(data) {
+  ModerationLog.create(data).catch(err => {
+    console.error('[ModerationLog] Failed to write log:', err.message, data);
+  });
+}
 
 export const getPendingSellers = async (req, res) => {
   const sellers = await User.find({
@@ -70,9 +80,146 @@ export const rejectSeller = async (req, res) => {
 
 // Get all pending products
 export const getPendingProducts = async (req, res) => {
-  const products = await Product.find({ status: "pending" })
-    .populate("sellerId", "name email");
-  res.json(products);
+  try {
+    const {
+      page = 1,
+      limit = 20,
+      search = '',
+      category = '',
+      status = 'pending',
+      sort = 'newest'
+    } = req.query;
+
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 20;
+    const skip = (pageNum - 1) * limitNum;
+
+    const matchStage = { status };
+    if (category && category !== 'all') {
+      matchStage.category = category;
+    }
+
+    const sortStage = {
+      newest:     { createdAt: -1 },
+      oldest:     { createdAt:  1 },
+      price_high: { price: -1 },
+      price_low:  { price:  1 },
+    }[sort] ?? { createdAt: -1 };
+
+    const searchStage = {};
+    if (search) {
+      searchStage.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { 'seller.email': { $regex: search, $options: 'i' } },
+        { category: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const result = await Product.aggregate([
+      { $match: matchStage },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'sellerId',
+          foreignField: '_id',
+          as: 'seller'
+        }
+      },
+      { $unwind: '$seller' },
+      { $match: searchStage },
+      { $sort: sortStage },
+      {
+        $facet: {
+          metadata: [{ $count: "total" }],
+          data: [
+            { $skip: skip },
+            { $limit: limitNum },
+            {
+              $project: {
+                title: 1, description: 1, price: 1,
+                discount: 1, category: 1,
+                thumbnailUrl: 1, fileCount: 1, fileType: '$format',
+                finalPrice: 1,
+                uploadedAt: '$createdAt',
+                createdAt: 1,
+                status: 1,
+                'seller.name': 1,
+                'seller.email': 1,
+                'seller.emailVerified': '$seller.isVerified',
+                'seller.status': '$seller.accountStatus',
+                'seller.sellerStats': 1
+              }
+            }
+          ]
+        }
+      }
+    ]);
+
+    const total = result[0].metadata[0]?.total || 0;
+    const products = result[0].data;
+
+    res.json({
+      products,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit)
+    });
+  } catch (error) {
+    console.error("Error fetching pending products:", error);
+    res.status(500).json({ message: "Failed to fetch pending products" });
+  }
+};
+
+// Get product moderation stats
+export const getProductStats = async (req, res) => {
+  try {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const statsResult = await Product.aggregate([
+      {
+        $facet: {
+          pending: [
+            { $match: { status: 'pending' } },
+            { $count: 'count' }
+          ],
+          pendingChanges: [
+            { $match: { status: 'changes_requested' } },
+            { $count: 'count' }
+          ],
+          approvedToday: [
+            { $match: {
+              status: 'approved',
+              updatedAt: { $gte: startOfDay, $lte: endOfDay }
+            }},
+            { $count: 'count' }
+          ],
+          rejectedToday: [
+            { $match: {
+              status: 'rejected',
+              updatedAt: { $gte: startOfDay, $lte: endOfDay }
+            }},
+            { $count: 'count' }
+          ]
+        }
+      }
+    ]);
+
+    const stats = statsResult[0];
+
+    res.json({
+      pending: stats.pending[0]?.count || 0,
+      pendingChanges: stats.pendingChanges[0]?.count || 0,
+      approvedToday: stats.approvedToday[0]?.count || 0,
+      rejectedToday: stats.rejectedToday[0]?.count || 0,
+    });
+  } catch (error) {
+    console.error("Error fetching product stats:", error);
+    res.status(500).json({ message: "Failed to fetch product stats" });
+  }
 };
 
 // Get all products with pagination and filtering
@@ -141,8 +288,52 @@ export const getProductDetails = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
-    
-    res.json(product);
+
+    const [orderStats, recentOrders, ratingStats] = await Promise.all([
+      Order.aggregate([
+        { $match: { productId: product._id, status: "paid" } },
+        {
+          $group: {
+            _id: null,
+            totalSales: { $sum: 1 },
+            totalRevenue: { $sum: "$amount" },
+          },
+        },
+      ]),
+      Order.find({ productId: product._id, status: "paid" })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate("buyerId", "name email")
+        .select("buyerId amount status createdAt")
+        .lean(),
+      Review.aggregate([
+        { $match: { productId: product._id, isHidden: { $ne: true } } },
+        { $group: { _id: null, avgRating: { $avg: "$rating" } } },
+      ]),
+    ]);
+
+    const totalSales = orderStats[0]?.totalSales || 0;
+    const totalRevenue = Number((orderStats[0]?.totalRevenue || 0).toFixed(2));
+    const avgRating = ratingStats[0]?.avgRating ? Number(ratingStats[0].avgRating.toFixed(1)) : 0;
+
+    const recentPurchases = recentOrders.map((order) => ({
+      _id: order._id,
+      buyerName: order.buyerId?.name || "Unknown Buyer",
+      amount: order.amount || 0,
+      status: order.status,
+      createdAt: order.createdAt,
+    }));
+
+    const productData = product.toObject();
+
+    res.json({
+      ...productData,
+      totalSales,
+      totalRevenue,
+      avgRating,
+      totalViews: productData.totalViews ?? 0,
+      recentPurchases,
+    });
   } catch (error) {
     console.error("Error fetching product details:", error);
     res.status(500).json({ message: "Failed to fetch product details" });
@@ -152,10 +343,17 @@ export const getProductDetails = async (req, res) => {
 // Get advanced product analytics
 export const getProductAnalytics = async (req, res) => {
   try {
-    const totalProducts = await Product.countDocuments();
-    const approved = await Product.countDocuments({ status: "approved" });
-    const pending = await Product.countDocuments({ status: "pending" });
-    const rejected = await Product.countDocuments({ status: "rejected" });
+    const { range } = req.query;
+    const days = range && range !== "all" ? Number(range) : null;
+    const now = new Date();
+    const startDate = days ? new Date(now.getTime() - days * 24 * 60 * 60 * 1000) : null;
+
+    const [totalProducts, approved, pending, rejected] = await Promise.all([
+      Product.countDocuments(),
+      Product.countDocuments({ status: "approved" }),
+      Product.countDocuments({ status: "pending" }),
+      Product.countDocuments({ status: "rejected" }),
+    ]);
 
     // Category breakdown
     const categories = await Product.aggregate([
@@ -164,27 +362,135 @@ export const getProductAnalytics = async (req, res) => {
       { $limit: 10 }
     ]);
 
-    // Top sellers by product count
-    const topSellers = await Product.aggregate([
-      { $group: { _id: "$sellerId", count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
+    const submissionsQuery = startDate ? { createdAt: { $gte: startDate } } : {};
+    const revenueMatch = { status: "paid" };
+    if (startDate) {
+      revenueMatch.createdAt = { $gte: startDate };
+    }
+
+    const [orderStats] = await Order.aggregate([
+      { $match: revenueMatch },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: "$amount" },
+          revenueOrders: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const totalRevenue = Number((orderStats?.totalRevenue || 0).toFixed(2));
+    const revenueOrders = orderStats?.revenueOrders || 0;
+
+    const [recentSubmissions, recentSubmissionsCount] = await Promise.all([
+      Product.find(submissionsQuery)
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate("sellerId", "name email")
+        .select("title sellerId category status createdAt")
+        .lean(),
+      Product.countDocuments(submissionsQuery),
+    ]);
+
+    const needsAttention = await Product.find({ status: "pending" })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select("title status createdAt contentReviewed malwareScanDetails")
+      .lean();
+
+    const topSellerRevenue = await Order.aggregate([
+      { $match: revenueMatch },
+      {
+        $group: {
+          _id: "$sellerId",
+          totalRevenue: { $sum: "$amount" },
+          totalOrders: { $sum: 1 },
+        },
+      },
+      { $sort: { totalRevenue: -1 } },
       { $limit: 5 },
       {
         $lookup: {
           from: "users",
           localField: "_id",
           foreignField: "_id",
-          as: "seller"
-        }
+          as: "seller",
+        },
       },
       { $unwind: "$seller" },
-      { $project: { name: "$seller.name", email: "$seller.email", count: 1 } }
+      {
+        $project: {
+          _id: 1,
+          name: "$seller.name",
+          email: "$seller.email",
+          totalRevenue: 1,
+        },
+      },
     ]);
 
-    // Recent submissions (last 7 days)
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const recentSubmissions = await Product.countDocuments({ createdAt: { $gte: sevenDaysAgo } });
+    const productCounts = await Product.aggregate([
+      { $group: { _id: "$sellerId", count: { $sum: 1 } } },
+    ]);
+
+    const productCountMap = productCounts.reduce((acc, item) => {
+      acc[item._id?.toString()] = item.count;
+      return acc;
+    }, {});
+
+    const topSellers = topSellerRevenue.map((seller) => ({
+      id: seller._id,
+      name: seller.name,
+      email: seller.email,
+      productCount: productCountMap[seller._id?.toString()] || 0,
+      revenue: Number((seller.totalRevenue || 0).toFixed(2)),
+    }));
+
+    let timelineLabels = [];
+    let timelineCounts = [];
+
+    if (days) {
+      const submissions = await Product.find(submissionsQuery).select("createdAt").lean();
+      const bucketCount = Math.max(1, Math.ceil(days / 7));
+      const counts = Array(bucketCount).fill(0);
+
+      submissions.forEach((submission) => {
+        const diff = submission.createdAt - startDate;
+        const bucketIndex = Math.min(
+          bucketCount - 1,
+          Math.max(0, Math.floor(diff / (7 * 24 * 60 * 60 * 1000)))
+        );
+        counts[bucketIndex] += 1;
+      });
+
+      timelineLabels = counts.map((_, index) => `Week ${index + 1}`);
+      timelineCounts = counts;
+    } else {
+      const monthly = await Product.aggregate([
+        {
+          $group: {
+            _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { "_id.year": 1, "_id.month": 1 } },
+      ]);
+
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      timelineLabels = monthly.map((item) => `${monthNames[item._id.month - 1]} ${item._id.year}`);
+      timelineCounts = monthly.map((item) => item.count);
+    }
+
+    const [approvalDuration] = await Product.aggregate([
+      { $match: { status: "approved" } },
+      { $project: { duration: { $subtract: ["$updatedAt", "$createdAt"] } } },
+      { $group: { _id: null, avgDuration: { $avg: "$duration" } } },
+    ]);
+
+    const approvalRate = totalProducts ? (approved / totalProducts) * 100 : 0;
+    const avgApprovalDays = approvalDuration?.avgDuration
+      ? Number((approvalDuration.avgDuration / (1000 * 60 * 60 * 24)).toFixed(1))
+      : 0;
+    const activeSellers = (await Product.distinct("sellerId", { status: "approved" })).length;
 
     res.json({
       stats: { 
@@ -192,10 +498,33 @@ export const getProductAnalytics = async (req, res) => {
         approved, 
         pending, 
         rejected,
-        recentSubmissions
+        recentSubmissions: recentSubmissionsCount,
+        totalRevenue,
+        revenueOrders,
       },
       categories,
-      topSellers
+      topSellers,
+      recentSubmissions: recentSubmissions.map((product) => ({
+        _id: product._id,
+        title: product.title,
+        sellerName: product.sellerId?.name || "Unknown Seller",
+        category: product.category || "Uncategorized",
+        status: product.status,
+        createdAt: product.createdAt,
+      })),
+      needsAttention: needsAttention.map((product) => ({
+        _id: product._id,
+        title: product.title,
+        status: product.status,
+        createdAt: product.createdAt,
+        reason: "Pending review",
+      })),
+      timeline: { labels: timelineLabels, counts: timelineCounts },
+      health: {
+        approvalRate: Number(approvalRate.toFixed(1)),
+        avgApprovalDays,
+        activeSellers,
+      },
     });
   } catch (error) {
     console.error("Error in getProductAnalytics:", error);
@@ -435,14 +764,48 @@ export const deleteProductByAdmin = async (req, res) => {
 // Approve product
 export const approveProduct = async (req, res) => {
   const { id } = req.params;
+  const { adminNote } = req.body;
 
   const product = await Product.findByIdAndUpdate(id, {
     status: "approved",
     rejectionReason: null,
   }, { new: true });
 
-  // Notify seller about product approval
   if (product && product.sellerId) {
+    const seller = await User.findByIdAndUpdate(product.sellerId, {
+      $inc: {
+        'sellerStats.totalProducts': 1,
+        'sellerStats.approvedProducts': 1
+      }
+    });
+
+    // Write audit log
+    const logData = {
+      productId: product._id,
+      productTitle: product.title,
+      adminId: req.user._id,
+      adminEmail: req.user.email,
+      action: 'approved',
+      adminNote,
+      sellerId: product.sellerId,
+      sellerEmail: seller?.email,
+      timestamp: new Date()
+    };
+    writeModerationLog(logData);
+
+    // Send email
+    if (seller) {
+      try {
+        await sendApprovalEmail(seller, product);
+        ModerationLog.findOneAndUpdate(
+          { productId: product._id, action: 'approved', timestamp: { $gte: new Date(Date.now() - 5000) } },
+          { $set: { emailSent: true, emailSentAt: new Date() } }
+        ).catch(e => console.error('Failed to update log with emailSent:', e.message));
+      } catch (emailErr) {
+        console.error('Email send failed:', emailErr.message);
+      }
+    }
+
     await createNotification(
       product.sellerId,
       "product_approved",
@@ -476,30 +839,125 @@ export const approveProduct = async (req, res) => {
 // Reject product
 export const rejectProduct = async (req, res) => {
   const { id } = req.params;
-  const { reason } = req.body;
+  const { reasons, adminNote } = req.body;
 
-  if (!reason) {
-    return res.status(400).json({ message: "Rejection reason required" });
+  if (!reasons || reasons.length === 0) {
+    return res.status(400).json({ message: "Rejection reasons required" });
   }
 
   const product = await Product.findByIdAndUpdate(id, {
     status: "rejected",
-    rejectionReason: reason,
+    rejectionReason: reasons.join(', '),
   }, { new: true });
 
-  // Notify seller about product rejection
   if (product && product.sellerId) {
+    const seller = await User.findByIdAndUpdate(product.sellerId, {
+      $inc: {
+        'sellerStats.rejectedProducts': 1
+      }
+    });
+
+    // Write audit log
+    const logData = {
+      productId: product._id,
+      productTitle: product.title,
+      adminId: req.user._id,
+      adminEmail: req.user.email,
+      action: 'rejected',
+      reasons,
+      adminNote,
+      sellerId: product.sellerId,
+      sellerEmail: seller?.email,
+      timestamp: new Date()
+    };
+    writeModerationLog(logData);
+
+    // Send email
+    if (seller) {
+      try {
+        await sendRejectionEmail(seller, product, reasons, adminNote);
+        ModerationLog.findOneAndUpdate(
+          { productId: product._id, action: 'rejected', timestamp: { $gte: new Date(Date.now() - 5000) } },
+          { $set: { emailSent: true, emailSentAt: new Date() } }
+        ).catch(e => console.error('Failed to update log with emailSent:', e.message));
+      } catch (emailErr) {
+        console.error('Email send failed:', emailErr.message);
+      }
+    }
+
     await createNotification(
       product.sellerId,
       "product_rejected",
       "Product Rejected",
-      `Your product "${product.title}" was rejected. Reason: ${reason}`,
+      `Your product "${product.title}" was rejected. Reasons: ${reasons.join(', ')}`,
       product._id,
       "Product"
     );
   }
 
   res.json({ message: "Product rejected" });
+};
+
+// Request changes for product
+export const requestProductChanges = async (req, res) => {
+  const { id } = req.params;
+  const { reasons, adminNote } = req.body;
+
+  if (!reasons || reasons.length === 0) {
+    return res.status(400).json({ message: "Change request reasons required" });
+  }
+
+  const product = await Product.findByIdAndUpdate(id, {
+    status: "changes_requested",
+    rejectionReason: reasons.join(', '), // Reusing field
+  }, { new: true });
+
+  if (product && product.sellerId) {
+    const seller = await User.findByIdAndUpdate(product.sellerId, {
+      $inc: {
+        'sellerStats.changesRequested': 1
+      }
+    });
+
+    // Write audit log
+    const logData = {
+      productId: product._id,
+      productTitle: product.title,
+      adminId: req.user._id,
+      adminEmail: req.user.email,
+      action: 'changes_requested',
+      reasons,
+      adminNote,
+      sellerId: product.sellerId,
+      sellerEmail: seller?.email,
+      timestamp: new Date()
+    };
+    writeModerationLog(logData);
+
+    // Send email
+    if (seller) {
+      try {
+        await sendChangesRequestedEmail(seller, product, reasons, adminNote);
+        ModerationLog.findOneAndUpdate(
+          { productId: product._id, action: 'changes_requested', timestamp: { $gte: new Date(Date.now() - 5000) } },
+          { $set: { emailSent: true, emailSentAt: new Date() } }
+        ).catch(e => console.error('Failed to update log with emailSent:', e.message));
+      } catch (emailErr) {
+        console.error('Email send failed:', emailErr.message);
+      }
+    }
+
+    await createNotification(
+      product.sellerId,
+      "product_changes_requested",
+      "Action Required: Changes Requested",
+      `We need you to make some updates to "${product.title}" before it can be approved. Reasons: ${reasons.join(', ')}`,
+      product._id,
+      "Product"
+    );
+  }
+
+  res.json({ message: "Changes requested" });
 };
 
 // Get pending product changes (updates/deletions)
@@ -2384,6 +2842,55 @@ export const resolveContentReview = async (req, res) => {
   } catch (error) {
     console.error("Error resolving content review:", error);
     res.status(500).json({ message: "Failed to resolve content review" });
+  }
+};
+
+// Get moderation logs
+export const getModerationLogs = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 50,
+      productId,
+      adminId,
+      action,
+      from,
+      to,
+    } = req.query;
+
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 50;
+    const skip = (pageNum - 1) * limitNum;
+
+    const query = {};
+
+    if (productId) query.productId = productId;
+    if (adminId) query.adminId = adminId;
+    if (action) query.action = action;
+
+    if (from || to) {
+      query.timestamp = {};
+      if (from) query.timestamp.$gte = new Date(from);
+      if (to) query.timestamp.$lte = new Date(to);
+    }
+
+    const logs = await ModerationLog.find(query)
+      .sort({ timestamp: -1 })
+      .skip(skip)
+      .limit(limitNum)
+      .lean();
+
+    const total = await ModerationLog.countDocuments(query);
+
+    res.json({
+      logs,
+      total,
+      page: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+    });
+  } catch (error) {
+    console.error("Error fetching moderation logs:", error);
+    res.status(500).json({ message: "Failed to fetch moderation logs" });
   }
 };
 

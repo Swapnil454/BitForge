@@ -48,7 +48,7 @@ interface User {
 }
 
 export interface UserDirectoryConfig {
-  role: "buyer" | "seller";
+  role: "all" | "buyer" | "seller";
   title: string;
   subtitle: string;
   rolePlural: string;
@@ -63,6 +63,23 @@ export interface UserDirectoryConfig {
   sortCountLabel: string;
   filterAllLabel: string;
 }
+
+export const allDirectoryConfig: UserDirectoryConfig = {
+  role: "all",
+  title: "All Users",
+  subtitle: "Manage buyers and sellers from one shared directory",
+  rolePlural: "users",
+  roleSingular: "user",
+  exportSheetName: "All Users",
+  exportFilePrefix: "all-users",
+  countColumnLabel: "Activity",
+  countExportLabel: "Activity Count",
+  moneyColumnLabel: "Value",
+  moneyExportLabel: "Value (INR)",
+  sortMoneyLabel: "Highest value",
+  sortCountLabel: "Most activity",
+  filterAllLabel: "All Accounts",
+};
 
 export const buyerDirectoryConfig: UserDirectoryConfig = {
   role: "buyer",
@@ -132,6 +149,7 @@ function timeSince(dateString: string) {
 
 export function UserDirectoryPage({ config }: { config: UserDirectoryConfig }) {
   const router = useRouter();
+  const showRoleColumn = config.role === "all";
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -165,8 +183,10 @@ export function UserDirectoryPage({ config }: { config: UserDirectoryConfig }) {
 
   const PAGE_SIZE = 15;
   const totalUsersForCurrentRole =
-    stats.totalUsersForRole ||
-    (config.role === "seller" ? stats.totalSellers : stats.totalBuyers);
+    config.role === "all"
+      ? (stats.totalBuyers || 0) + (stats.totalSellers || 0)
+      : stats.totalUsersForRole ||
+        (config.role === "seller" ? stats.totalSellers : stats.totalBuyers);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -295,6 +315,7 @@ export function UserDirectoryPage({ config }: { config: UserDirectoryConfig }) {
       "User ID": u._id,
       Name: u.name,
       Email: u.email,
+      ...(config.role === "all" ? { Role: u.role } : {}),
       Status: u.accountStatus === "banned" ? "Suspended" : u.isVerified ? "Verified" : "Unverified",
       "Joined Date": new Date(u.createdAt).toLocaleDateString(),
       [config.countExportLabel]: u.purchases || 0,
@@ -550,13 +571,17 @@ export function UserDirectoryPage({ config }: { config: UserDirectoryConfig }) {
                       : opt.value === "spend"
                         ? config.role === "seller"
                           ? "Earning"
+                          : config.role === "all"
+                            ? "Value"
                           : "Spend"
                         : opt.value === "purchases"
                           ? config.role === "seller"
                             ? "Sales"
+                            : config.role === "all"
+                              ? "Activity"
                             : "Purchases"
                           : "A-Z",
-              })),
+                })),
             ].map((opt, i) => {
               if ((opt as { separator?: boolean }).separator) {
                 return <div key={`sep-${i}`} className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1 shrink-0" />;
@@ -625,6 +650,9 @@ export function UserDirectoryPage({ config }: { config: UserDirectoryConfig }) {
                     />
                   </th>
                   <th className="w-[152px] min-w-[152px] sm:w-[30%] px-2 sm:px-4 py-2 sm:py-3 text-[9px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-white/50 sticky left-0 sm:static z-20 bg-slate-50 dark:bg-[#0a0a0f] shadow-[2px_0_5px_rgba(0,0,0,0.05)] dark:shadow-[2px_0_5px_rgba(0,0,0,0.5)] sm:shadow-none sm:bg-transparent">User</th>
+                  {showRoleColumn && (
+                    <th className="w-[88px] min-w-[88px] sm:w-[10%] px-1.5 sm:px-4 py-2 sm:py-3 text-[9px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-white/50">Role</th>
+                  )}
                   <th className="w-[85px] min-w-[85px] sm:w-[12%] px-1.5 sm:px-4 py-2 sm:py-3 text-[9px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-white/50">Status</th>
                   <th className="w-[92px] min-w-[92px] sm:w-[12%] px-1.5 sm:px-4 py-2 sm:py-3 text-[9px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-white/50">Joined</th>
                   <th className="w-[74px] min-w-[74px] sm:w-[12%] px-1.5 sm:px-4 py-2 sm:py-3 text-[9px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-white/50">{config.countColumnLabel}</th>
@@ -636,13 +664,13 @@ export function UserDirectoryPage({ config }: { config: UserDirectoryConfig }) {
               <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                 {loading ? (
                   <tr>
-                    <td colSpan={8} className="py-20 text-center">
+                    <td colSpan={showRoleColumn ? 9 : 8} className="py-20 text-center">
                       <div className="inline-block w-8 h-8 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
                     </td>
                   </tr>
                 ) : users.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-24 text-center">
+                    <td colSpan={showRoleColumn ? 9 : 8} className="py-24 text-center">
                       <div className="w-16 h-16 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Search className="w-6 h-6 text-slate-400 dark:text-white/20" />
                       </div>
@@ -654,7 +682,7 @@ export function UserDirectoryPage({ config }: { config: UserDirectoryConfig }) {
                     const isSuspended = u.accountStatus === "banned";
                     const avatarStyle = getAvatarColor(u.name);
                     const lastActiveLabel = u.lastPurchaseAt
-                      ? config.role === "seller"
+                      ? (config.role === "seller" || (config.role === "all" && u.role === "seller"))
                         ? "Last sale"
                         : "Last purchase"
                       : "Last seen";
@@ -691,9 +719,29 @@ export function UserDirectoryPage({ config }: { config: UserDirectoryConfig }) {
                             <div className="min-w-0">
                               <p className="text-[10px] sm:text-sm font-bold text-slate-900 dark:text-white truncate leading-tight">{u.name}</p>
                               <p className="text-[8px] sm:text-xs text-slate-500 dark:text-white/40 truncate leading-tight">{u.email}</p>
+                              {showRoleColumn && (
+                                <span className={`mt-1 inline-flex sm:hidden items-center rounded-full px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider ${
+                                  u.role === "seller"
+                                    ? "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
+                                    : "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-300"
+                                }`}>
+                                  {u.role}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </td>
+                        {showRoleColumn && (
+                          <td className="w-[88px] min-w-[88px] sm:w-[10%] px-1.5 sm:px-4 py-2 sm:py-3">
+                            <span className={`hidden sm:inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                              u.role === "seller"
+                                ? "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
+                                : "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-300"
+                            }`}>
+                              {u.role}
+                            </span>
+                          </td>
+                        )}
                         <td className="w-[85px] min-w-[85px] sm:w-[12%] px-1.5 sm:px-4 py-2 sm:py-3">
                           {isSuspended ? (
                             <span className="inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400">
@@ -813,7 +861,7 @@ export function UserDirectoryPage({ config }: { config: UserDirectoryConfig }) {
           {!loading && totalPages > 0 && !isMobileViewport && (
             <div className="px-3 sm:px-4 py-3 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#0a0a0f] flex items-center justify-between">
               <span className="hidden sm:inline text-xs font-medium text-slate-500 dark:text-white/40">
-                Showing {((page - 1) * PAGE_SIZE) + 1} to {Math.min(page * PAGE_SIZE, totalUsersForCurrentRole)} of {totalUsersForCurrentRole} {config.rolePlural}
+                Showing {((page - 1) * PAGE_SIZE) + 1} to {Math.min(page * PAGE_SIZE, totalUsersForCurrentRole)} of {totalUsersForCurrentRole} {config.role === "all" ? "users" : config.rolePlural}
               </span>
               <div className="flex gap-2">
                 <button

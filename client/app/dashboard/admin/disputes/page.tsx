@@ -118,17 +118,7 @@ export default function DisputesPage() {
         backHref="/dashboard/admin"
         backLabel="Back"
         title="Open Disputes"
-        subtitle="Review and resolve customer disputes"
-        rightSlot={
-          <button
-            onClick={() => fetchDisputes(true)}
-            disabled={refreshing}
-            className="h-9 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 disabled:opacity-50"
-          >
-            <RefreshCw className={`w-3 h-3 ${refreshing ? "animate-spin" : ""}`} />
-            <span className="hidden sm:inline">Refresh</span>
-          </button>
-        }
+        subtitle="Resolve customer disputes"
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 

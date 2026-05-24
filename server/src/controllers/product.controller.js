@@ -196,16 +196,48 @@ export const createProduct = async (req, res) => {
 
 export const getSellerProducts = async (req, res) => {
   try {
+    const search = String(req.query.search || "").trim().toLowerCase();
+    const category = String(req.query.category || "all").trim();
+    const minPrice = Number(req.query.minPrice || 0);
+    const maxPrice =
+      req.query.maxPrice !== undefined && req.query.maxPrice !== ""
+        ? Number(req.query.maxPrice)
+        : null;
+
+    const matchesFilters = (product) => {
+      const title = String(product.title || "").toLowerCase();
+      const description = String(product.description || "").toLowerCase();
+      const finalPrice =
+        product.discount > 0
+          ? Math.max(product.price - (product.price * product.discount) / 100, 0)
+          : product.price;
+
+      if (search && !title.includes(search) && !description.includes(search)) {
+        return false;
+      }
+
+      if (category !== "all" && String(product.category || "") !== category) {
+        return false;
+      }
+
+      if (!Number.isNaN(minPrice) && finalPrice < minPrice) {
+        return false;
+      }
+
+      if (maxPrice !== null && !Number.isNaN(maxPrice) && finalPrice > maxPrice) {
+        return false;
+      }
+
+      return true;
+    };
+
     if (req.query.page) {
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 8;
       const skip = (page - 1) * limit;
 
-      const total = await Product.countDocuments({ sellerId: req.user.id });
       const products = await Product.find({ sellerId: req.user.id })
         .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
         .lean();
 
       const productsWithStats = await Promise.all(products.map(async (p) => {
@@ -217,17 +249,22 @@ export const getSellerProducts = async (req, res) => {
            ...p,
            rating: parseFloat(avgRating.toFixed(1)),
            buyers: buyers
-         };
+          };
       }));
+      const filteredProducts = productsWithStats.filter(matchesFilters);
+      const total = filteredProducts.length;
+      const paginatedProducts = filteredProducts.slice(skip, skip + limit);
 
       return res.json({
-        products: productsWithStats,
+        products: paginatedProducts,
         totalPages: Math.ceil(total / limit),
         currentPage: page,
         totalProducts: total
       });
     } else {
-      const products = await Product.find({ sellerId: req.user.id }).lean();
+      const products = await Product.find({ sellerId: req.user.id })
+        .sort({ createdAt: -1 })
+        .lean();
       
       const productsWithStats = await Promise.all(products.map(async (p) => {
          const reviews = await Review.find({ productId: p._id }, 'rating').lean();
@@ -238,10 +275,10 @@ export const getSellerProducts = async (req, res) => {
            ...p,
            rating: parseFloat(avgRating.toFixed(1)),
            buyers: buyers
-         };
+          };
       }));
 
-      res.json(productsWithStats);
+      res.json(productsWithStats.filter(matchesFilters));
     }
   } catch (error) {
     console.error("Get seller products error:", error);
@@ -652,7 +689,6 @@ export const updateProduct = async (req, res) => {
       // Manual preview upload is deprecated but still supported for legacy
     }
 
-    // Update product - explicitly handle null values for thumbnail
     const updateData = {
       title: title?.trim(),
       description: description?.trim(),
@@ -672,13 +708,17 @@ export const updateProduct = async (req, res) => {
       previewPages: previewPages,
     };
 
-    // Handle thumbnail - explicitly allow null
     if (deleteThumbnail === "true") {
       updateData.thumbnailKey = null;
       updateData.thumbnailUrl = null;
     } else {
       updateData.thumbnailKey = thumbnailKey;
       updateData.thumbnailUrl = thumbnailUrl;
+    }
+
+    if (product.status === "rejected" || product.status === "changes_requested") {
+      updateData.status = "pending";
+      updateData.rejectionReason = null;
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(

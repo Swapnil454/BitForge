@@ -16,14 +16,14 @@ import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
-router.use(auth, requireRole(["seller"]));
+router.use(auth);
 
-router.post("/", createProduct);
-router.get("/mine", getSellerProducts);
-router.get("/:productId", getProductById);
+router.post("/", requireRole(["seller"]), createProduct);
+router.get("/mine", requireRole(["seller"]), getSellerProducts);
+router.get("/:productId", requireRole(["seller", "admin"]), getProductById);
 
-router.post("/upload", upload.fields([{ name: "file", maxCount: 1 }, { name: "thumbnail", maxCount: 1 }]), uploadProduct);
-router.patch("/:productId", upload.fields([{ name: "file", maxCount: 1 }, { name: "thumbnail", maxCount: 1 }]), updateProduct);
-router.delete("/:productId", deleteProduct);
+router.post("/upload", requireRole(["seller"]), upload.fields([{ name: "file", maxCount: 1 }, { name: "thumbnail", maxCount: 1 }]), uploadProduct);
+router.patch("/:productId", requireRole(["seller"]), upload.fields([{ name: "file", maxCount: 1 }, { name: "thumbnail", maxCount: 1 }]), updateProduct);
+router.delete("/:productId", requireRole(["seller"]), deleteProduct);
 
 export default router;

@@ -8,8 +8,8 @@ import toast from "react-hot-toast";
 import {
   ArrowLeft, Shield, ShieldBan, Trash2, Mail, Calendar,
   ShoppingBag, DollarSign, Package, AlertTriangle, Check,
-  ChevronLeft, ChevronRight, Edit2, Save, X, RefreshCw,
-  TrendingUp, Clock, User, BadgeCheck, Activity,
+  ChevronLeft, ChevronRight, X, RefreshCw,
+  Clock, User, BadgeCheck, Activity,
 } from "lucide-react";
 
 /* ─── Types ───────────────────────────────────────────────────── */
@@ -82,6 +82,18 @@ export default function AdminUserProfilePage() {
   const searchParams = useSearchParams();
   const userId = params?.id as string;
   const requestedRole = searchParams.get("role");
+  const requestedListRoute =
+    requestedRole === "seller"
+      ? "/dashboard/admin/users/sellers"
+      : requestedRole === "buyer"
+        ? "/dashboard/admin/users/buyers"
+        : "/dashboard/admin/users";
+  const requestedListLabel =
+    requestedRole === "seller"
+      ? "Back to Sellers"
+      : requestedRole === "buyer"
+        ? "Back to Buyers"
+        : "Back to All Users";
 
   /* --- State --- */
   const [user, setUser] = useState<UserData | null>(null);
@@ -98,11 +110,6 @@ export default function AdminUserProfilePage() {
   const [confirmReason, setConfirmReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
-  /* --- Limit editing --- */
-  const [editingLimit, setEditingLimit] = useState(false);
-  const [limitValue, setLimitValue] = useState<number>(10);
-  const [limitLoading, setLimitLoading] = useState(false);
-
   /* ─── Fetch user ── */
   const fetchUser = useCallback(async () => {
     if (!userId) return;
@@ -111,14 +118,13 @@ export default function AdminUserProfilePage() {
       const data = await adminAPI.getUserById(userId);
       setUser(data.user);
       setStats(data.stats || {});
-      setLimitValue(data.user.productLimit ?? 10);
     } catch {
       toast.error("Failed to load user");
-      router.push(requestedRole === "seller" ? "/dashboard/admin/users/sellers" : "/dashboard/admin/users");
+      router.push(requestedListRoute);
     } finally {
       setLoading(false);
     }
-  }, [requestedRole, router, userId]);
+  }, [requestedListRoute, router, userId]);
 
   /* ─── Fetch transactions ── */
   const fetchTransactions = useCallback(async () => {
@@ -194,21 +200,6 @@ export default function AdminUserProfilePage() {
     }
   };
 
-  const handleSaveLimit = async () => {
-    if (!user) return;
-    setLimitLoading(true);
-    try {
-      await adminAPI.updateUserLimit(user._id, limitValue);
-      toast.success("Product limit updated");
-      setEditingLimit(false);
-      await fetchUser();
-    } catch {
-      toast.error("Failed to update limit");
-    } finally {
-      setLimitLoading(false);
-    }
-  };
-
   /* ─── Loading skeleton ── */
   if (loading) {
     return (
@@ -225,23 +216,41 @@ export default function AdminUserProfilePage() {
   const avatarStyle = getAvatarStyle(user.name);
   const totalPages = Math.ceil(txTotal / TX_LIMIT);
   const listRoute =
-    user.role === "seller" || requestedRole === "seller"
+    requestedRole === "all"
+      ? "/dashboard/admin/users"
+      : requestedRole === "buyer"
+        ? "/dashboard/admin/users/buyers"
+        : user.role === "seller" || requestedRole === "seller"
       ? "/dashboard/admin/users/sellers"
       : "/dashboard/admin/users";
-  const listLabel = listRoute.endsWith("/sellers") ? "Back to Sellers" : "Back to Buyers";
+  const listLabel =
+    requestedRole === "all"
+      ? "Back to All Users"
+      : requestedRole === "buyer"
+        ? "Back to Buyers"
+        : listRoute.endsWith("/sellers")
+          ? "Back to Sellers"
+          : requestedListLabel;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f]">
       {/* ── Header ── */}
-      <div className="sticky top-0 z-40 bg-white dark:bg-[#0d0d14] border-b border-slate-200 dark:border-white/10 shadow-sm">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+      <div className="sticky top-0 z-40 bg-white/90 dark:bg-[#0d0d14]/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           <button
-            onClick={() => router.push(listRoute)}
-            className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-white/50 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors"
+            onClick={() => router.back()}
+            className="flex items-center gap-1.5 text-sm font-semibold text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white transition-colors shrink-0"
           >
-            <ArrowLeft className="w-4 h-4" />
-            {listLabel}
+            <ChevronLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">{listLabel}</span>
           </button>
+          
+          <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white absolute left-1/2 -translate-x-1/2">
+            User Profile
+          </h1>
+          
+          {/* Spacer for flex balance */}
+          <div className="w-[60px]" />
         </div>
       </div>
 
@@ -256,10 +265,10 @@ export default function AdminUserProfilePage() {
           {/* Top accent bar */}
           <div className={`h-1.5 w-full ${isSuspended ? "bg-amber-500" : isDeleted ? "bg-rose-500" : "bg-gradient-to-r from-indigo-500 to-violet-500"}`} />
           
-          <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-6">
+          <div className="p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
             {/* Avatar */}
             <div
-              className="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-black shrink-0 shadow-lg"
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl font-black shrink-0 shadow-lg"
               style={{ backgroundColor: avatarStyle.bg, color: avatarStyle.text }}
             >
               {user.name[0]?.toUpperCase()}
@@ -268,7 +277,7 @@ export default function AdminUserProfilePage() {
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-1">
-                <h1 className="text-2xl font-black text-slate-900 dark:text-white">{user.name}</h1>
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white truncate">{user.name}</h1>
                 {user.isVerified && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">
                     <BadgeCheck className="w-3 h-3" /> Verified
@@ -314,103 +323,38 @@ export default function AdminUserProfilePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="grid grid-cols-2 sm:grid-cols-4 gap-4"
+          className={`grid grid-cols-2 ${user.role === "seller" ? "sm:grid-cols-3" : "sm:grid-cols-4"} gap-4`}
         >
           {[
             { icon: ShoppingBag, label: "Total Orders", value: stats.totalOrders ?? 0, color: "from-indigo-500/20 to-violet-500/20", iconColor: "text-indigo-500" },
             { icon: DollarSign, label: "Total Spent", value: `₹${(stats.totalSpent ?? 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`, color: "from-emerald-500/20 to-teal-500/20", iconColor: "text-emerald-500" },
             { icon: Package, label: user.role === "seller" ? "Products Listed" : "Purchases", value: stats.totalProducts ?? (stats.totalOrders ?? "—"), color: "from-amber-500/20 to-orange-500/20", iconColor: "text-amber-500" },
-            { icon: TrendingUp, label: user.role === "seller" ? "Upload Limit" : "Last Active", value: user.role === "seller" ? (user.productLimit ?? 10) : timeSince(user.lastActiveAt || user.updatedAt), color: "from-rose-500/20 to-pink-500/20", iconColor: "text-rose-500" },
+            ...(user.role === "seller"
+              ? []
+              : [{
+                  icon: Activity,
+                  label: "Last Active",
+                  value: timeSince(user.lastActiveAt || user.updatedAt),
+                  color: "from-rose-500/20 to-pink-500/20",
+                  iconColor: "text-rose-500",
+                }]),
           ].map((s) => (
-            <div key={s.label} className={`bg-gradient-to-br ${s.color} rounded-2xl border border-white/50 dark:border-white/10 p-5 flex items-center gap-4`}>
-              <div className={`w-10 h-10 rounded-xl bg-white dark:bg-white/10 flex items-center justify-center shrink-0 shadow-sm`}>
-                <s.icon className={`w-5 h-5 ${s.iconColor}`} />
+            <div key={s.label} className={`bg-gradient-to-br ${s.color} rounded-2xl border border-white/50 dark:border-white/10 p-4 sm:p-5 flex items-center gap-3 sm:gap-4`}>
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white dark:bg-white/10 flex items-center justify-center shrink-0 shadow-sm`}>
+                <s.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${s.iconColor}`} />
               </div>
-              <div>
-                <p className="text-xs text-slate-500 dark:text-white/50 font-medium mb-0.5">{s.label}</p>
-                <p className="text-xl font-black text-slate-900 dark:text-white">{s.value}</p>
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-xs text-slate-500 dark:text-white/50 font-medium mb-0.5 truncate">{s.label}</p>
+                <p className="text-lg sm:text-xl font-black text-slate-900 dark:text-white truncate">{s.value}</p>
               </div>
             </div>
           ))}
         </motion.div>
 
         {/* ── Management Controls Row ── */}
-        <div className={`grid grid-cols-1 ${user.role === "seller" ? "md:grid-cols-2" : ""} gap-4`}>
+        <div className="grid grid-cols-1 gap-4">
 
           {/* Product Limit Card */}
-          {user.role === "seller" && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white dark:bg-[#12121a] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm p-6"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-500/20 rounded-xl flex items-center justify-center">
-                  <Package className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-sm">
-                    Product Upload Limit
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-white/40">
-                    Max products this user can list
-                  </p>
-                </div>
-              </div>
-              {!editingLimit ? (
-                <button
-                  onClick={() => { setEditingLimit(true); setLimitValue(user.productLimit ?? 10); }}
-                  className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg text-slate-400 hover:text-indigo-500 transition-colors"
-                >
-                  <Edit2 className="w-4 h-4" />
-                </button>
-              ) : (
-                <button
-                  onClick={() => setEditingLimit(false)}
-                  className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg text-slate-400 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-
-            {editingLimit ? (
-              <div className="flex items-center gap-3">
-                <div className="flex-1 flex items-center gap-2 bg-slate-100 dark:bg-white/5 rounded-xl px-4 py-3">
-                  <input
-                    type="number"
-                    min={0}
-                    max={9999}
-                    value={limitValue}
-                    onChange={(e) => setLimitValue(Number(e.target.value))}
-                    className="w-full bg-transparent text-slate-900 dark:text-white font-bold text-lg focus:outline-none"
-                    autoFocus
-                  />
-                  <span className="text-xs text-slate-400 dark:text-white/30 shrink-0">
-                    products
-                  </span>
-                </div>
-                <button
-                  onClick={handleSaveLimit}
-                  disabled={limitLoading}
-                  className="flex items-center gap-2 px-4 py-3 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white rounded-xl text-sm font-semibold transition-colors"
-                >
-                  {limitLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  Save
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-4xl font-black text-slate-900 dark:text-white">{user.productLimit ?? 10}</span>
-                <span className="text-sm text-slate-400 dark:text-white/30">
-                  products
-                </span>
-              </div>
-            )}
-          </motion.div>
-          )}
 
           {/* Account Status Card */}
           <motion.div

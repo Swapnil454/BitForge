@@ -5,68 +5,75 @@ import { useRouter } from "next/navigation";
 import { adminAPI } from "@/lib/api";
 import toast from "react-hot-toast";
 import { getStoredUser } from "@/lib/cookies";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Package, Clock, CheckCircle2, AlertTriangle } from "lucide-react";
 import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
 
-/* ================= TYPES ================= */
+import ToolbarRow from "./components/ToolbarRow";
+import ProductModerationCard from "./components/ProductModerationCard";
+import ProductModerationModal from "./components/ProductModerationModal";
+import RejectReasonModal from "./components/RejectReasonModal";
+import RequestChangesModal from "./components/RequestChangesModal";
+import { ModerationProduct } from "@/types/moderation";
 
-interface Product {
-  _id: string;
-  title: string;
-  description: string;
-  price: number;
-  discount?: number;
-  changeRequest?: "pending_update" | "pending_deletion";
-  pendingChanges?: Partial<Product>;
-  sellerId: {
-    email: string;
-  };
-}
-
-type TabType = "new" | "changes";
-
-/* ================= DIFF ROW ================= */
-
-function DiffRow({
-  label,
-  oldValue,
-  newValue,
-}: {
-  label: string;
-  oldValue: any;
-  newValue: any;
-}) {
-  if (oldValue === newValue) return null;
-
-  return (
-    <div className="grid grid-cols-2 gap-3 text-sm">
-      <div className="bg-red-500/10 border border-red-400/20 rounded-lg p-3">
-        <div className="text-xs text-red-300 mb-1">Old {label}</div>
-        <div>{oldValue ?? "-"}</div>
-      </div>
-      <div className="bg-green-500/10 border border-green-400/20 rounded-lg p-3">
-        <div className="text-xs text-green-300 mb-1">New {label}</div>
-        <div>{newValue ?? "-"}</div>
-      </div>
-    </div>
-  );
-}
-
-/* ================= PAGE ================= */
+// Helper mapper until backend sends exact structure
+const mapToModerationProduct = (p: any): ModerationProduct => ({
+  id: p._id,
+  title: p.title || 'Untitled Product',
+  description: p.description || '',
+  category: p.category || 'other',
+  fileType: p.fileType || 'zip',
+  fileCount: p.files?.length || 1,
+  thumbnail: p.thumbnailUrl || p.images?.[0] || undefined,
+  price: p.price || 0,
+  discountPercent: p.discount || 0,
+  finalPrice: p.discount ? Number((p.price - (p.price * (p.discount / 100))).toFixed(2)) : (p.price || 0),
+  status: p.status || 'pending',
+  uploadedAt: p.createdAt || new Date().toISOString(),
+  seller: {
+    id: p.sellerId?._id || p.seller?._id || 'unknown',
+    name: p.sellerId?.name || p.seller?.name || 'Unknown Seller',
+    email: p.sellerId?.email || p.seller?.email || 'unknown@example.com',
+    emailVerified: p.sellerId?.isVerified ?? p.seller?.emailVerified ?? true,
+    totalProducts: p.sellerId?.totalProducts ?? p.seller?.sellerStats?.totalProducts ?? 0,
+    approvedProducts: p.sellerId?.approvedProducts ?? p.seller?.sellerStats?.approvedProducts ?? 0,
+    rejectedProducts: p.sellerId?.rejectedProducts ?? p.seller?.sellerStats?.rejectedProducts ?? 0,
+    disputes: p.sellerId?.disputes ?? p.seller?.sellerStats?.disputes ?? 0,
+    status: p.sellerId?.status || p.seller?.status || 'active',
+    joinedAt: p.sellerId?.createdAt || p.seller?.joinedAt || new Date().toISOString(),
+  },
+  history: p.moderationHistory || [
+    { action: 'Submitted by seller', timestamp: p.createdAt || new Date().toISOString() }
+  ]
+});
 
 export default function AdminProductsPage() {
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState<TabType>("new");
-  const [products, setProducts] = useState<Product[]>([]);
-  const [changes, setChanges] = useState<Product[]>([]);
+  // Core data state
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [pending, setPending] = useState<ModerationProduct[]>([]);
+  const [changes, setChanges] = useState<ModerationProduct[]>([]);
+  const [approvedTodayCount, setApprovedTodayCount] = useState(0);
+  const [rejectedTodayCount, setRejectedTodayCount] = useState(0);
+  const [approvedList, setApprovedList] = useState<ModerationProduct[]>([]);
+  const [rejectedList, setRejectedList] = useState<ModerationProduct[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  const [selected, setSelected] = useState<string[]>([]);
-  const [processingId, setProcessingId] = useState<string | null>(null);
+  // UI state
+  const [activeTab, setActiveTab] = useState<'new' | 'changes' | 'approved' | 'rejected'>('new');
+  const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'price_high' | 'price_low'>('newest');
 
-  /* ================= AUTH ================= */
+  // Modals state
+  const [selectedProduct, setSelectedProduct] = useState<ModerationProduct | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<ModerationProduct | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [requestChangesModalOpen, setRequestChangesModalOpen] = useState(false);
 
   useEffect(() => {
     const user = getStoredUser<{ role?: string }>();
@@ -74,172 +81,142 @@ export default function AdminProductsPage() {
       router.push("/dashboard");
       return;
     }
-    loadAll();
-  }, []);
+    loadAll(false, 1);
+  }, [search, categoryFilter, sortOrder]);
 
-  /* ================= FETCH ================= */
+  const loadAll = async (isRefresh = false, pageNum = 1) => {
+    if (pageNum > 1) {
+      setLoadingMore(true);
+    } else if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
 
-  const loadAll = async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    else setLoading(true);
-    await Promise.all([fetchNew(), fetchChanges()]);
-    setLoading(false);
-    setRefreshing(false);
-  };
-
-  const fetchNew = async () => {
-    const res = await adminAPI.getPendingProducts();
-    setProducts(Array.isArray(res) ? res : res.products || []);
-  };
-
-  const fetchChanges = async () => {
-    const res = await adminAPI.getPendingProductChanges();
-    setChanges(Array.isArray(res) ? res : res.products || []);
-  };
-
-  /* ================= SELECT ================= */
-
-  const toggleSelect = (id: string) => {
-    setSelected(s =>
-      s.includes(id) ? s.filter(x => x !== id) : [...s, id]
-    );
-  };
-
-  const clearSelection = () => setSelected([]);
-
-  /* ================= ACTIONS ================= */
-
-  // Actions for brand new pending products
-  const approvePendingProduct = async (id: string) => {
-    setProcessingId(id);
     try {
-      await adminAPI.approveProduct(id);
-      toast.success("Product approved");
-      await fetchNew();
-    } catch {
+      // API calls
+      const pendingRes = await adminAPI.getPendingProducts({ 
+        page: pageNum, 
+        limit: 20, 
+        search, 
+        category: categoryFilter, 
+        sort: sortOrder 
+      });
+      const changesRes = await adminAPI.getPendingProductChanges();
+      
+      const statsRes = await adminAPI.getProductStats();
+
+      const pendingMapped = (Array.isArray(pendingRes) ? pendingRes : pendingRes.products || []).map(mapToModerationProduct);
+      const changesMapped = (Array.isArray(changesRes) ? changesRes : changesRes.products || []).map(mapToModerationProduct);
+
+      if (pageNum > 1) {
+        setPending(prev => [...prev, ...pendingMapped]);
+      } else {
+        setPending(pendingMapped);
+      }
+      
+      setHasMore(pendingMapped.length === 20 && pageNum < (pendingRes.totalPages || Infinity));
+      setPage(pageNum);
+
+      setChanges(changesMapped);
+      
+      // Real counts from backend stats API
+      setApprovedTodayCount(statsRes.approvedToday || 0);
+      setRejectedTodayCount(statsRes.rejectedToday || 0);
+
+      // Note: approvedList and rejectedList are cleared out here since pagination wasn't built yet,
+      // and we just wanted counts for the stats. We leave them empty to focus the UI on moderation tabs.
+      setApprovedList([]);
+      setRejectedList([]);
+
+    } catch (error) {
+      toast.error("Failed to fetch product data");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const handleApprove = async (product: ModerationProduct, note: string) => {
+    try {
+      await adminAPI.approveProduct(product.id, note);
+      toast.success("Product approved successfully!");
+      setModalOpen(false);
+      loadAll(true);
+    } catch (error) {
       toast.error("Failed to approve product");
-    } finally {
-      setProcessingId(null);
     }
   };
 
-  const rejectPendingProduct = async (id: string) => {
-    const reason = prompt("Rejection reason:");
-    if (!reason) return;
-
-    setProcessingId(id);
+  const handleRejectSubmit = async (reasons: string[], note: string) => {
+    if (!rejectTarget) return;
     try {
-      await adminAPI.rejectProduct(id, reason);
+      await adminAPI.rejectProduct(rejectTarget.id, reasons, note);
       toast.success("Product rejected");
-      await fetchNew();
-    } catch {
+      setRejectModalOpen(false);
+      setModalOpen(false);
+      loadAll(true);
+    } catch (error) {
       toast.error("Failed to reject product");
-    } finally {
-      setProcessingId(null);
     }
   };
 
-  const approveOne = async (id: string) => {
-    setProcessingId(id);
+  const openReject = (product: ModerationProduct) => {
+    setRejectTarget(product);
+    setRejectModalOpen(true);
+  };
+
+  const openRequestChanges = (product: ModerationProduct) => {
+    setRejectTarget(product); // Reusing rejectTarget to pass into the modal
+    setRequestChangesModalOpen(true);
+  };
+
+  const handleRequestChangesSubmit = async (reasons: string[], note: string) => {
+    if (!rejectTarget) return;
     try {
-      await adminAPI.approveProductChange(id);
-      toast.success("Change approved");
-      fetchChanges();
-    } catch {
-      toast.error("Failed to approve");
-    } finally {
-      setProcessingId(null);
+      await adminAPI.requestProductChanges(rejectTarget.id, reasons, note);
+      toast.success("Changes requested successfully");
+      setRequestChangesModalOpen(false);
+      setModalOpen(false);
+      loadAll(true);
+    } catch (error) {
+      toast.error("Failed to request changes");
     }
   };
 
-  const rejectOne = async (id: string) => {
-    const reason = prompt("Rejection reason:");
-    if (!reason) return;
-
-    setProcessingId(id);
-    try {
-      await adminAPI.rejectProductChange(id, reason);
-      toast.success("Change rejected");
-      fetchChanges();
-    } catch {
-      toast.error("Failed to reject");
-    } finally {
-      setProcessingId(null);
-    }
+  const openReviewDetails = (product: ModerationProduct) => {
+    setSelectedProduct(product);
+    setModalOpen(true);
   };
 
-  const bulkApprove = async () => {
-    if (selected.length === 0) return;
-    for (const id of selected) {
-      await adminAPI.approveProductChange(id);
+  // Determine current list to render
+  const getCurrentList = () => {
+    let list = pending;
+    if (activeTab === 'changes') list = changes;
+    if (activeTab === 'approved') list = approvedList;
+    if (activeTab === 'rejected') list = rejectedList;
+
+    // Filter
+    if (categoryFilter !== 'all') {
+      list = list.filter(p => p.category.toLowerCase() === categoryFilter.toLowerCase());
     }
-    toast.success("Bulk approve done");
-    clearSelection();
-    fetchChanges();
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(p => p.title.toLowerCase().includes(q) || p.seller.email.toLowerCase().includes(q));
+    }
+
+    // Sort
+    return [...list].sort((a, b) => {
+      if (sortOrder === 'newest') return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime();
+      if (sortOrder === 'oldest') return new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime();
+      if (sortOrder === 'price_high') return b.finalPrice - a.finalPrice;
+      if (sortOrder === 'price_low') return a.finalPrice - b.finalPrice;
+      return 0;
+    });
   };
 
-  const bulkReject = async () => {
-    if (selected.length === 0) return;
-    const reason = prompt("Rejection reason for all:");
-    if (!reason) return;
-
-    for (const id of selected) {
-      await adminAPI.rejectProductChange(id, reason);
-    }
-    toast.success("Bulk reject done");
-    clearSelection();
-    fetchChanges();
-  };
-
-  /* ================= KEYBOARD ================= */
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (activeTab !== "changes") return;
-      if ((e.target as HTMLElement).tagName === "INPUT") return;
-
-      if (e.key.toLowerCase() === "a") {
-        bulkApprove();
-      }
-      if (e.key.toLowerCase() === "r") {
-        bulkReject();
-      }
-    };
-
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [selected, activeTab]);
-
-  /* ================= UI ================= */
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a]">
-        <div className="h-16 w-full border-b border-slate-200 dark:border-white/[0.05] bg-slate-50 dark:bg-[#0a0a0f]" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6 animate-pulse">
-          <div className="flex gap-3">
-            <div className="h-10 w-36 bg-white dark:bg-[#16161e] rounded-xl" />
-            <div className="h-10 w-40 bg-white dark:bg-[#16161e] rounded-xl" />
-          </div>
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.05] rounded-2xl p-6 space-y-4">
-              <div className="flex justify-between">
-                <div className="space-y-2">
-                  <div className="h-5 w-48 bg-white/[0.04] rounded-lg" />
-                  <div className="h-3 w-64 bg-slate-100 dark:bg-white/[0.03] rounded-md" />
-                  <div className="h-3 w-40 bg-slate-100 dark:bg-white/[0.03] rounded-md" />
-                </div>
-                <div className="flex gap-2">
-                  <div className="h-9 w-20 bg-white/[0.04] rounded-lg" />
-                  <div className="h-9 w-20 bg-white/[0.04] rounded-lg" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const displayList = getCurrentList();
 
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-24">
@@ -247,225 +224,120 @@ export default function AdminProductsPage() {
         backHref="/dashboard/admin"
         backLabel="Back"
         title="Product Moderation"
-        subtitle="Approve products & review changes"
-        rightSlot={
-          <button
-            onClick={() => loadAll(true)}
-            disabled={refreshing}
-            className="h-9 w-9 flex items-center justify-center rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] transition-all disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-          </button>
-        }
+        subtitle="Review uploads, pricing, compliance"
+        // rightSlot={
+        //   <button
+        //     onClick={() => loadAll(true)}
+        //     disabled={refreshing}
+        //     className="h-9 px-4 flex items-center justify-center gap-2 rounded-xl bg-white dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.06] transition-all disabled:opacity-50 text-sm font-semibold text-slate-700 dark:text-white/80"
+        //   >
+        //     <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+        //     Refresh
+        //   </button>
+        // }
       />
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 space-y-5">
 
-        {/* Tabs */}
-        <div className="flex bg-white dark:bg-[#16161e] rounded-2xl p-1 gap-1 border border-slate-200 dark:border-white/[0.05]">
-          <button
-            onClick={() => {
-              setActiveTab("new");
-              clearSelection();
-            }}
-            className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-              activeTab === "new"
-                ? "bg-gradient-to-r from-cyan-500 to-indigo-500 text-slate-900 dark:text-white shadow-lg"
-                : "text-slate-300 dark:text-white/30 hover:text-slate-500 dark:hover:text-white/60"
-            }`}
-          >
-            <span className="inline-flex items-center gap-2">
-              <span>New Products</span>
-              <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
-                  activeTab === "new" ? "bg-white/20 text-slate-900 dark:text-white" : "bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-white/70"
-                }`}
-              >
-                {products.length}
-              </span>
-            </span>
-          </button>
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
+        
 
-          <button
-            onClick={() => {
-              setActiveTab("changes");
-              clearSelection();
-            }}
-            className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-              activeTab === "changes"
-                ? "bg-gradient-to-r from-cyan-500 to-indigo-500 text-slate-900 dark:text-white shadow-lg"
-                : "text-slate-300 dark:text-white/30 hover:text-slate-500 dark:hover:text-white/60"
-            }`}
-          >
-            <span className="inline-flex items-center gap-2">
-              <span>Pending Changes</span>
-              <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
-                  activeTab === "changes" ? "bg-white/20 text-slate-900 dark:text-white" : "bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-white/70"
-                }`}
-              >
-                {changes.length}
-              </span>
-            </span>
-          </button>
+
+        {/* TOOLBAR ROW */}
+        <ToolbarRow 
+          search={search} setSearch={setSearch}
+          categoryFilter={categoryFilter} setCategoryFilter={setCategoryFilter}
+          sortOrder={sortOrder} setSortOrder={setSortOrder}
+        />
+
+        {/* TABS */}
+        <div className="flex overflow-x-auto hide-scrollbar gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+          {(['new', 'changes', 'approved', 'rejected'] as const).map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-5 py-2.5 text-xs sm:text-sm font-bold uppercase tracking-wider whitespace-nowrap rounded-xl transition-all shadow-sm ${
+                activeTab === tab
+                  ? "bg-slate-200 text-slate-800 border border-slate-300 shadow-sm hover:bg-blue-100 hover:text-blue-800 hover:border-blue-300 dark:bg-slate-700/90 dark:text-slate-100 dark:border-slate-600 dark:hover:bg-blue-900/50 dark:hover:text-blue-200 dark:hover:border-blue-700"
+                  : "bg-white dark:bg-[#16161e] text-slate-600 dark:text-white/60 hover:bg-slate-50 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10"
+              }`}
+            >
+              {tab === 'new' && `New Products (${pending.length})`}
+              {tab === 'changes' && `Pending Changes (${changes.length})`}
+              {tab === 'approved' && `Approved (${approvedList.length})`}
+              {tab === 'rejected' && `Rejected (${rejectedList.length})`}
+            </button>
+          ))}
         </div>
 
-        {/* Bulk bar */}
-        {activeTab === "changes" && selected.length > 0 && (
-          <div className="flex items-center justify-between gap-3 bg-white dark:bg-[#16161e] border border-white/[0.06] rounded-xl p-3">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-white/50">
-              {selected.length} selected
-            </span>
-            <div className="flex gap-2">
-              <button
-                onClick={bulkApprove}
-                className="px-3 py-1.5 rounded-lg bg-emerald-600/90 hover:bg-emerald-500 text-xs font-black uppercase tracking-widest transition-all"
-              >
-                Approve (A)
-              </button>
-              <button
-                onClick={bulkReject}
-                className="px-3 py-1.5 rounded-lg bg-red-600/80 hover:bg-red-500 text-xs font-black uppercase tracking-widest transition-all"
-              >
-                Reject (R)
-              </button>
+        {/* LIST */}
+        <div className="space-y-4">
+          {loading ? (
+            <div className="flex justify-center p-12">
+              <RefreshCw className="w-8 h-8 text-indigo-500 animate-spin" />
             </div>
-          </div>
-        )}
-
-        {/* Content - New products */}
-        {!loading && activeTab === "new" && (
-          <div className="space-y-4">
-            {products.length === 0 ? (
-              <div className="min-h-[52vh] flex items-center justify-center">
-                <p className="text-lg font-semibold tracking-wide text-slate-600 dark:text-white/70 md:text-xl">
-                  No new products awaiting approval.
-                </p>
+          ) : displayList.length === 0 ? (
+            <div className="bg-white dark:bg-[#1a1a24] border border-slate-200 dark:border-white/10 rounded-3xl p-16 flex flex-col items-center justify-center text-center shadow-sm">
+              <div className="w-20 h-20 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center mb-6">
+                <CheckCircle2 className="w-10 h-10 text-emerald-500/50" />
               </div>
-            ) : (
-              products.map(p => (
-                <div
-                  key={p._id}
-                  className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6"
-                >
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="space-y-2">
-                      <h3 className="font-semibold text-lg">{p.title}</h3>
-                      <p className="text-sm text-slate-500 dark:text-white/60 line-clamp-3">{p.description}</p>
-                      <p className="text-sm text-slate-500 dark:text-white/60">
-                        Seller: <span className="font-medium">{p.sellerId?.email}</span>
-                      </p>
-                      <div className="flex gap-3 text-sm text-slate-700 dark:text-white/80">
-                        <span>Price: ₹{p.price}</span>
-                        {typeof p.discount === "number" && p.discount > 0 && (
-                          <span>Discount: {p.discount}%</span>
-                        )}
-                      </div>
-                    </div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No products pending review</h3>
+              <p className="text-slate-500 dark:text-white/60">All submitted products have been reviewed. New seller uploads will appear here.</p>
+            </div>
+          ) : (
+            <>
+              {displayList.map(product => (
+                <ProductModerationCard
+                  key={product.id}
+                  product={product}
+                  onPreview={() => window.open(`/dashboard/seller/products/${product.id}`, '_blank')}
+                  onReviewDetails={() => openReviewDetails(product)}
+                  onRejectClick={() => openReject(product)}
+                />
+              ))}
 
-                    <div className="flex gap-2 sm:flex-col sm:items-end">
-                      <button
-                        onClick={() => approvePendingProduct(p._id)}
-                        disabled={processingId === p._id}
-                        className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-black uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => rejectPendingProduct(p._id)}
-                        disabled={processingId === p._id}
-                        className="px-4 py-2.5 rounded-xl bg-red-600/80 hover:bg-red-500 text-xs font-black uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  </div>
+              {activeTab === 'new' && hasMore && (
+                <div className="pt-4 pb-8 flex justify-center">
+                  <button
+                    onClick={() => loadAll(false, page + 1)}
+                    disabled={loadingMore}
+                    className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 transition-colors flex items-center gap-2"
+                  >
+                    {loadingMore && <RefreshCw className="w-4 h-4 animate-spin" />}
+                    {loadingMore ? 'Loading...' : 'Load More'}
+                  </button>
                 </div>
-              ))
-            )}
-          </div>
-        )}
-
-        {/* Content - Pending change requests */}
-        {!loading && activeTab === "changes" && (
-          <div className="space-y-4">
-            {changes.map(p => (
-              <div
-                key={p._id}
-                className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-6"
-              >
-                <div className="flex gap-4">
-                  <input
-                    type="checkbox"
-                    checked={selected.includes(p._id)}
-                    onChange={() => toggleSelect(p._id)}
-                  />
-
-                  <div className="flex-1 space-y-4">
-                    <div>
-                      <h3 className="font-semibold">{p.title}</h3>
-                      <p className="text-sm text-slate-500 dark:text-white/60">
-                        Seller: {p.sellerId.email}
-                      </p>
-                      {p.changeRequest && (
-                        <div className="mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs
-                          border-white/15 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white/80">
-                          <span className="h-2 w-2 rounded-full bg-purple-400" />
-                          <span>
-                            {p.changeRequest === "pending_update"
-                              ? "Update request"
-                              : p.changeRequest === "pending_deletion"
-                              ? "Deletion request"
-                              : "Change request"}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {p.changeRequest === "pending_update" && p.pendingChanges && (
-                      <div className="space-y-2">
-                        <p className="text-xs text-slate-400 dark:text-white/50 uppercase tracking-wide">
-                          Requested field changes
-                        </p>
-                        <DiffRow label="Title" oldValue={p.title} newValue={p.pendingChanges.title} />
-                        <DiffRow label="Description" oldValue={p.description} newValue={p.pendingChanges.description} />
-                        <DiffRow label="Price" oldValue={p.price} newValue={p.pendingChanges.price} />
-                        <DiffRow label="Discount" oldValue={p.discount} newValue={p.pendingChanges.discount} />
-                      </div>
-                    )}
-
-                    {p.changeRequest === "pending_deletion" && (
-                      <div className="rounded-lg border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-200">
-                        The seller has requested this product to be permanently
-                        deleted from the marketplace.
-                      </div>
-                    )}
-
-                    {/* INLINE ACTIONS */}
-                    <div className="flex gap-2 pt-2">
-                      <button
-                        onClick={() => approveOne(p._id)}
-                        disabled={processingId === p._id}
-                        className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-black uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => rejectOne(p._id)}
-                        disabled={processingId === p._id}
-                        className="px-4 py-2.5 rounded-xl bg-red-600/80 hover:bg-red-500 text-xs font-black uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        Reject
-                      </button>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
+              )}
+            </>
+          )}
+        </div>
       </section>
+
+      {/* MODALS */}
+      <ProductModerationModal
+        isOpen={modalOpen}
+        product={selectedProduct}
+        onClose={() => setModalOpen(false)}
+        onApprove={handleApprove}
+        onRejectClick={() => {
+          openReject(selectedProduct!);
+        }}
+        onRequestChangesClick={() => {
+          openRequestChanges(selectedProduct!);
+        }}
+      />
+
+      <RejectReasonModal
+        isOpen={rejectModalOpen}
+        productName={rejectTarget?.title || ""}
+        onClose={() => setRejectModalOpen(false)}
+        onReject={handleRejectSubmit}
+      />
+
+      <RequestChangesModal
+        isOpen={requestChangesModalOpen}
+        product={rejectTarget}
+        onClose={() => setRequestChangesModalOpen(false)}
+        onSubmit={handleRequestChangesSubmit}
+      />
     </main>
   );
 }
