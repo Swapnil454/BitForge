@@ -10,6 +10,17 @@ const disputeSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    sellerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+    },
+    amount: {
+      type: Number,
+    },
     category: {
       type: String,
       enum: [
@@ -32,7 +43,7 @@ const disputeSchema = new mongoose.Schema(
     ],
     status: {
       type: String,
-      enum: ["open", "under_review", "resolved", "rejected"],
+      enum: ["open", "under_review", "resolved", "rejected", "reopened"],
       default: "open",
     },
     adminNote: String,

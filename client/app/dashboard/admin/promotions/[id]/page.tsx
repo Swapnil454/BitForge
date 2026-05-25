@@ -2,8 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { CheckCircle2, Clock3, PauseCircle, PlayCircle, Settings2, XCircle } from "lucide-react";
-import PageHeader from "../../../buyer/transactions/components/PageHeader";
+import { 
+  CheckCircle2, Clock3, PauseCircle, PlayCircle, Settings2, XCircle, 
+  ChevronLeft, ArrowRight, ShieldAlert, Check, AlertTriangle, 
+  MessageSquare, ChevronDown, ChevronUp, Clock, CalendarDays, ExternalLink
+} from "lucide-react";
 import { promotionAPI } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 import {
@@ -21,7 +24,7 @@ import {
 import { getAutoTextColor, isValidHexColor } from "@/lib/colorUtils";
 
 const inputClass =
-  "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/35";
+  "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/35 shadow-sm";
 
 export default function AdminPromotionDetailPage() {
   const params = useParams<{ id: string }>();
@@ -48,6 +51,10 @@ export default function AdminPromotionDetailPage() {
   const [heroFontFamily, setHeroFontFamily] = useState("inherit");
   const [heroLayout, setHeroLayout] = useState<"floating" | "single" | "minimal">("floating");
 
+  // UI State
+  const [modalState, setModalState] = useState<"approve" | "reject" | "pause" | "resume" | "verify" | null>(null);
+  const [styleExpanded, setStyleExpanded] = useState(false);
+
   const loadPage = useCallback(async () => {
     try {
       setLoading(true);
@@ -73,6 +80,7 @@ export default function AdminPromotionDetailPage() {
       setAdminNote(nextPromotion?.adminNote || "");
       setRejectReason(nextPromotion?.rejectedReason || "");
       setVerifyTransactionId(nextPromotion?.transactionId || "");
+      
       setHeroBgColor(nextPromotion?.heroBgColor || "#2563EB");
       setHeroTextColor(nextPromotion?.heroTextColor || "auto");
       setHeroTitleColor(nextPromotion?.heroTitleColor || "");
@@ -109,6 +117,7 @@ export default function AdminPromotionDetailPage() {
       setProcessing(true);
       await action();
       showSuccess(message);
+      setModalState(null);
       await loadPage();
     } catch (error) {
       showError(getPromotionErrorMessage(error, "Action failed"));
@@ -119,583 +128,349 @@ export default function AdminPromotionDetailPage() {
 
   if (loading || !promotion) {
     return (
-      <main className="min-h-screen bg-slate-50 dark:bg-[#05050a]">
-        <PageHeader
-          backHref="/dashboard/admin/promotions"
-          backLabel="Promotions"
-          title="Promotion Review"
-        />
-        <section className="mx-auto max-w-7xl px-4 py-8">
-          <div className="h-[34rem] animate-pulse rounded-[2rem] border border-slate-200 bg-white dark:border-white/10 dark:bg-white/5" />
-        </section>
+      <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] flex items-center justify-center">
+        <div className="animate-pulse rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent animate-spin" />
       </main>
     );
   }
 
-  const showApprovalForm = ["PENDING_REVIEW", "REJECTED"].includes(promotion.status);
-  const showPaymentVerification =
-    promotion.paymentMethod === "MANUAL" &&
-    ["APPROVED_WAITING_PAYMENT", "PAYMENT_PENDING"].includes(promotion.status);
-  const showRazorpayWaitingState =
-    promotion.paymentMethod === "RAZORPAY" &&
-    promotion.status === "APPROVED_WAITING_PAYMENT" &&
-    promotion.paymentStatus !== "PAID";
-  const showPriorityEditor = ["ACTIVE", "PAUSED", "APPROVED_WAITING_PAYMENT", "PAYMENT_PENDING"].includes(
-    promotion.status
-  );
+  const isPending = promotion.status === "PENDING_REVIEW";
+  const isActive = promotion.status === "ACTIVE";
+  const isPaused = promotion.status === "PAUSED";
+  const isRejected = promotion.status === "REJECTED";
+  const showPaymentVerification = promotion.paymentMethod === "MANUAL" && ["APPROVED_WAITING_PAYMENT", "PAYMENT_PENDING"].includes(promotion.status);
+  
+  // Payment Verification Banner State
+  const paymentVerified = promotion.paymentStatus === "PAID";
+  const paymentMismatch = promotion.paymentMethod === "MANUAL" && promotion.paymentStatus === "PENDING" && promotion.transactionId;
+
+  // Build Audit Trail Steps
+  type AuditStep = {
+    label: string;
+    date: string | null;
+    completed: boolean;
+    isReject: boolean;
+    description?: string;
+  };
+
+  const auditSteps: AuditStep[] = [
+    {
+      label: "Submitted",
+      date: formatPromotionDate(promotion.createdAt),
+      completed: true,
+      isReject: false
+    }
+  ];
+
+  if (promotion.paymentMethod || promotion.paymentSubmittedAt || promotion.paymentStatus === "PAID") {
+    auditSteps.push({
+      label: promotion.paymentStatus === "PAID" ? "Payment Verified" : (promotion.paymentSubmittedAt ? "Payment Submitted" : "Pending Payment"),
+      date: promotion.paymentSubmittedAt ? formatPromotionDate(promotion.paymentSubmittedAt) : null,
+      completed: !!promotion.paymentSubmittedAt || promotion.paymentStatus === "PAID",
+      isReject: false
+    });
+  }
+
+  if (isRejected) {
+    auditSteps.push({
+      label: "Rejected",
+      date: formatPromotionDate(promotion.updatedAt),
+      completed: true,
+      isReject: true,
+      description: promotion.rejectedReason
+    });
+  } else {
+    const hasBeenActivated = ["ACTIVE", "PAUSED", "COMPLETED", "EXPIRED"].includes(promotion.status);
+    auditSteps.push({
+      label: "Activated",
+      date: hasBeenActivated ? formatPromotionDate(promotion.updatedAt) : null,
+      completed: hasBeenActivated,
+      isReject: false
+    });
+
+    const isExpired = ["COMPLETED", "EXPIRED"].includes(promotion.status);
+    auditSteps.push({
+      label: "Expired",
+      date: promotion.endDate ? formatPromotionDate(promotion.endDate) : null,
+      completed: isExpired,
+      isReject: false
+    });
+  }
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
-      <PageHeader
-        backHref="/dashboard/admin/promotions"
-        backLabel="Promotions"
-        title="Promotion Review"
-        subtitle={promotion.productTitle}
-        rightSlot={
-          <button
-            onClick={() => router.push("/dashboard/admin/ad-settings")}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:border-white/20 dark:hover:bg-white/10"
-          >
-            <Settings2 className="h-4 w-4" />
-            <span className="hidden sm:inline">Settings</span>
-          </button>
-        }
-      />
+    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-24">
+      
+      {/* Sticky Header */}
+      <header className={`sticky top-0 z-40 bg-white/80 dark:bg-[#05050a]/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10 px-4 py-3 sm:py-4 transition-colors ${isActive ? 'border-l-4 border-l-emerald-500' : ''}`}>
+        <div className="max-w-7xl mx-auto flex items-center justify-between relative h-12">
+          
+          <div className="z-10 flex items-center gap-2">
+            <button 
+              onClick={() => router.back()}
+              className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-white/5 dark:hover:bg-white/10 dark:text-white/70 transition shrink-0"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <div className="hidden lg:block text-xs font-bold uppercase tracking-widest text-slate-400">Promotions</div>
+          </div>
 
-      <section className="mx-auto grid max-w-7xl gap-6 px-4 py-8 lg:grid-cols-[1.15fr_0.85fr]">
-        <div className="space-y-6">
-          <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/5">
-            {promotion.bannerImage && !promotion.adImages?.length ? (
-              <img src={promotion.bannerImage} alt={promotion.title} className="h-72 w-full object-cover" />
-            ) : promotion.adImages?.length ? (
-              <div className="flex h-72 w-full gap-2 p-4 bg-slate-100 dark:bg-slate-900 overflow-x-auto items-center justify-center">
-                {promotion.adImages.sort((a, b) => a.position - b.position).map((img) => (
-                  <img key={img.key} src={img.url} alt="Ad content" className="h-full w-auto max-w-[30%] object-contain rounded-xl shadow-md bg-white/5" />
-                ))}
-              </div>
-            ) : null}
-            <div className="space-y-5 p-6">
-              <div className="flex flex-wrap items-center gap-3">
-                <span
-                  className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getPromotionStatusClasses(
-                    promotion.status
-                  )}`}
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+            <h1 className="text-base sm:text-lg font-black leading-tight pointer-events-auto max-w-[200px] sm:max-w-md truncate">{promotion.title}</h1>
+            <p className="text-[10px] sm:text-xs font-medium text-slate-500 dark:text-white/60 pointer-events-auto mt-0.5 flex items-center gap-1.5">
+              <span className={`rounded-full ${isPending ? 'bg-amber-400 w-1.5 h-1.5' : isActive ? 'bg-emerald-500 w-2 h-2 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : isRejected ? 'bg-red-400 w-1.5 h-1.5' : 'bg-slate-400 w-1.5 h-1.5'}`}></span>
+              <span className={isActive ? 'font-bold text-slate-800 dark:text-white/90' : ''}>{PROMOTION_STATUS_LABELS[promotion.status]}</span> <span className="hidden sm:inline">&middot; {PLACEMENT_LABELS[promotion.placement]}</span> &middot; <span className="hidden sm:inline">Submitted </span>{formatPromotionDate(promotion.createdAt)}
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-2 z-10">
+            {isActive && (
+              <>
+                <button
+                  onClick={() => setModalState("reject")}
+                  className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700 transition hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400"
                 >
-                  {PROMOTION_STATUS_LABELS[promotion.status]}
-                </span>
-                <span className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-500 dark:border-white/10 dark:text-white/55">
-                  {PLACEMENT_LABELS[promotion.placement]}
-                </span>
-              </div>
-
-              <div>
-                <h1 className="text-3xl font-black">{promotion.title}</h1>
-                <p className="mt-2 text-sm text-slate-500 dark:text-white/65">{promotion.subtitle}</p>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-3">
-                <MetricCard label="Requested" value={`${promotion.requestedDurationDays} days`} />
-                <MetricCard label="Price" value={formatPromotionCurrency(promotion.amount, promotion.currency)} />
-                <MetricCard label="Payment" value={PAYMENT_STATUS_LABELS[promotion.paymentStatus]} />
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <InfoRow label="Seller" value={seller?.name || promotion.sellerName} />
-                <InfoRow label="Seller Email" value={seller?.email || "N/A"} />
-                <InfoRow label="Product" value={product?.title || promotion.productTitle} />
-                <InfoRow label="Placement" value={PLACEMENT_LABELS[promotion.placement]} />
-                <InfoRow label="Priority" value={promotion.priority ? `#${promotion.priority}` : "Pending"} />
-                <InfoRow label="Submitted" value={formatPromotionDate(promotion.createdAt)} />
-                <InfoRow label="Start Date" value={formatPromotionDate(promotion.startDate)} />
-                <InfoRow label="End Date" value={formatPromotionDate(promotion.endDate)} />
-                <InfoRow label="Target Link" value={promotion.targetLink || "Automatic product link"} />
-                <InfoRow label="Transaction ID" value={promotion.transactionId || "Not provided"} />
-                <InfoRow
-                  label="Payment Method"
-                  value={promotion.paymentMethod ? PAYMENT_METHOD_LABELS[promotion.paymentMethod] : "Pending"}
-                />
-                <InfoRow label="Razorpay Order" value={promotion.razorpayOrderId || "Not created"} />
-                <InfoRow label="Razorpay Payment" value={promotion.razorpayPaymentId || "Not paid"} />
-              </div>
-
-              {promotion.sellerNote ? (
-                <MessageCard label="Seller Note" tone="cyan" value={promotion.sellerNote} />
-              ) : null}
-              {promotion.adminNote ? <MessageCard label="Admin Note" tone="slate" value={promotion.adminNote} /> : null}
-              {promotion.rejectedReason ? (
-                <MessageCard label="Rejected Reason" tone="red" value={promotion.rejectedReason} />
-              ) : null}
-            </div>
-          </section>
-
-          {showApprovalForm ? (
-            <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
-              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-cyan-500">Review Decision</p>
-              <div className="mt-5 grid gap-5 xl:grid-cols-2">
-                <div className="space-y-4 rounded-3xl border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-white/5">
-                  <h2 className="text-xl font-black">Approve Request</h2>
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Amount</span>
-                    <input
-                      type="number"
-                      min={settings?.minimumPrice || 0}
-                      value={amount}
-                      onChange={(e) => setAmount(Number(e.target.value) || 0)}
-                      className={inputClass}
-                    />
-                    <p className="mt-2 text-xs text-slate-400 dark:text-white/40">
-                      Minimum configured price: {formatPromotionCurrency(settings?.minimumPrice || 0)}
-                    </p>
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Duration (days)</span>
-                    <input
-                      type="number"
-                      min={1}
-                      value={approvedDurationDays}
-                      onChange={(e) => setApprovedDurationDays(Number(e.target.value) || 1)}
-                      className={inputClass}
-                    />
-                  </label>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Priority</span>
-                      <input
-                        type="number"
-                        min={1}
-                        value={priority}
-                        onChange={(e) => setPriority(Number(e.target.value) || 1)}
-                        className={inputClass}
-                      />
-                    </label>
-                    <label className="block">
-                      <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Max Impressions</span>
-                      <input
-                        type="number"
-                        min={1}
-                        value={maxImpressions}
-                        onChange={(e) => setMaxImpressions(e.target.value)}
-                        placeholder="Optional"
-                        className={inputClass}
-                      />
-                    </label>
-                  </div>
-
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Admin Note</span>
-                    <textarea
-                      rows={4}
-                      value={adminNote}
-                      onChange={(e) => setAdminNote(e.target.value)}
-                      className={`${inputClass} resize-none`}
-                    />
-                  </label>
-
-                  <button
-                    onClick={() =>
-                      void runAction(
-                        () =>
-                          promotionAPI.approvePromotion(promotion._id, {
-                            amount,
-                            approvedDurationDays,
-                            priority,
-                            maxImpressions: maxImpressions ? Number(maxImpressions) : undefined,
-                            adminNote,
-                            heroBgColor,
-                            heroTextColor,
-                            heroTitleColor,
-                            heroSubtitleColor,
-                            heroButtonBgColor,
-                            heroButtonTextColor,
-                            heroFontFamily,
-                            heroLayout,
-                          }),
-                        "Promotion approved"
-                      )
-                    }
-                    disabled={processing}
-                    className="inline-flex items-center gap-2 rounded-2xl bg-emerald-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <CheckCircle2 className="h-4 w-4" />
-                    Approve & Request Payment
-                  </button>
-                </div>
-
-                <div className="space-y-4 rounded-3xl border border-red-400/20 bg-red-500/5 p-5">
-                  <h2 className="text-xl font-black text-red-300">Reject Request</h2>
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-red-200/90">Reason</span>
-                    <textarea
-                      rows={6}
-                      value={rejectReason}
-                      onChange={(e) => setRejectReason(e.target.value)}
-                      className={`${inputClass} resize-none border-red-400/20 bg-white/80 dark:bg-slate-950/40`}
-                    />
-                  </label>
-
-                  <button
-                    onClick={() =>
-                      void runAction(
-                        () =>
-                          promotionAPI.rejectPromotion(promotion._id, {
-                            rejectedReason: rejectReason,
-                            adminNote,
-                          }),
-                        "Promotion rejected"
-                      )
-                    }
-                    disabled={processing}
-                    className="inline-flex items-center gap-2 rounded-2xl bg-red-500 px-5 py-3 font-semibold text-white transition hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <XCircle className="h-4 w-4" />
-                    Reject Request
-                  </button>
-                </div>
-              </div>
-            </section>
-          ) : null}
-
-          {showRazorpayWaitingState ? (
-            <section className="rounded-[2rem] border border-emerald-400/20 bg-emerald-500/5 p-6 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-400">Automatic Razorpay Flow</p>
-              <h2 className="mt-2 text-2xl font-black">Waiting for Seller Payment</h2>
-              <p className="mt-2 text-sm text-slate-500 dark:text-white/60">
-                This promotion is approved for automatic Razorpay checkout. No manual admin verification is needed once the payment is captured and verified.
-              </p>
-
-              <div className="mt-5 grid gap-4 md:grid-cols-2">
-                <MetricCard label="Approved Amount" value={formatPromotionCurrency(promotion.amount, promotion.currency)} />
-                <MetricCard label="Razorpay Order" value={promotion.razorpayOrderId || "Will be created when seller clicks Pay Now"} />
-              </div>
-            </section>
-          ) : null}
-
-          {showPaymentVerification ? (
-            <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
-              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-cyan-500">Payment Verification</p>
-              <div className="mt-5 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-                <div>
-                  {promotion.paymentProofImage ? (
-                    <img
-                      src={promotion.paymentProofImage}
-                      alt="Payment proof"
-                      className="h-72 w-full rounded-3xl object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-72 items-center justify-center rounded-3xl bg-slate-100 text-slate-400 dark:bg-white/5">
-                      <Clock3 className="h-10 w-10" />
-                    </div>
-                  )}
-                </div>
-                <div className="space-y-4">
-                  <MetricCard label="Approved Amount" value={formatPromotionCurrency(promotion.amount, promotion.currency)} />
-                  <MetricCard label="Submitted At" value={formatPromotionDate(promotion.paymentSubmittedAt || promotion.updatedAt)} />
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Transaction ID</span>
-                    <input
-                      value={verifyTransactionId}
-                      onChange={(e) => setVerifyTransactionId(e.target.value)}
-                      className={inputClass}
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Admin Note</span>
-                    <textarea
-                      rows={4}
-                      value={adminNote}
-                      onChange={(e) => setAdminNote(e.target.value)}
-                      className={`${inputClass} resize-none`}
-                    />
-                  </label>
-                  <button
-                    onClick={() =>
-                      void runAction(
-                        () =>
-                          promotionAPI.verifyPromotionPayment(promotion._id, {
-                            transactionId: verifyTransactionId,
-                            paymentMethod: "MANUAL",
-                            adminNote,
-                          }),
-                        "Payment verified and promotion activated"
-                      )
-                    }
-                    disabled={processing}
-                    className="inline-flex items-center gap-2 rounded-2xl bg-cyan-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <CheckCircle2 className="h-4 w-4" />
-                    Verify Payment
-                  </button>
-                </div>
-              </div>
-            </section>
-          ) : null}
-        </div>
-
-        <div className="space-y-6">
-          <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-cyan-500">Seller & Product</p>
-            <div className="mt-5 space-y-5">
-              {product?.thumbnailUrl ? (
-                <img src={product.thumbnailUrl} alt={promotion.productTitle} className="h-56 w-full rounded-3xl object-cover" />
-              ) : (
-                <div className="h-56 rounded-3xl bg-slate-100 dark:bg-white/5" />
-              )}
-              <InfoRow label="Seller Name" value={seller?.name || promotion.sellerName} />
-              <InfoRow label="Seller Email" value={seller?.email || "N/A"} />
-              <InfoRow label="Product" value={product?.title || promotion.productTitle} />
+                  <XCircle className="w-4 h-4" /> Revoke
+                </button>
+                <button
+                  onClick={() => setModalState("pause")}
+                  className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700 transition hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400"
+                >
+                  <PauseCircle className="w-4 h-4" /> Pause
+                </button>
+              </>
+            )}
+            {isPaused && (
               <button
-                onClick={() => router.push(`/marketplace/${product?._id || promotion.productId}`)}
-                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 dark:border-white/10 dark:text-white/75 dark:hover:border-white/20 dark:hover:bg-white/10"
+                onClick={() => setModalState("resume")}
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400"
               >
-                Open Product Page
+                <PlayCircle className="w-4 h-4" /> Resume
               </button>
-            </div>
-          </section>
-
-          <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-cyan-500">Performance</p>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <MetricCard label="Impressions" value={promotion.metrics.impressions.toLocaleString("en-IN")} />
-              <MetricCard label="Clicks" value={promotion.metrics.clicks.toLocaleString("en-IN")} />
-              <MetricCard label="CTR" value={`${promotion.metrics.ctr}%`} />
-              <MetricCard label="Revenue" value={formatPromotionCurrency(promotion.metrics.revenueGenerated)} />
-            </div>
-          </section>
-
-          <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-cyan-500">Style Configuration</p>
-            <div className="mt-5 space-y-4">
-              <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Background Color (Hex)</span>
-                <input
-                  type="text"
-                  value={heroBgColor}
-                  onChange={(e) => setHeroBgColor(e.target.value)}
-                  className={inputClass}
-                />
-                {!isValidHexColor(heroBgColor) && (
-                  <p className="mt-1 text-xs text-red-500">Invalid hex color format.</p>
-                )}
-              </label>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Text Color</span>
-                  <select
-                    value={heroTextColor}
-                    onChange={(e) => setHeroTextColor(e.target.value as "light" | "dark" | "auto")}
-                    className={inputClass}
-                  >
-                    <option value="auto">Auto (Luminance Based)</option>
-                    <option value="light">Always Light</option>
-                    <option value="dark">Always Dark</option>
-                  </select>
-                  {heroTextColor !== "auto" && isValidHexColor(heroBgColor) && heroTextColor !== getAutoTextColor(heroBgColor) && (
-                    <p className="mt-1 text-xs text-amber-500">Warning: Text may be hard to read on this background.</p>
-                  )}
-                </label>
-                
-                <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Layout Structure</span>
-                  <select
-                    value={heroLayout}
-                    onChange={(e) => setHeroLayout(e.target.value as "floating" | "single" | "minimal")}
-                    className={inputClass}
-                  >
-                    <option value="floating">Floating (1-3 Images)</option>
-                    <option value="single">Single Featured Image</option>
-                    <option value="minimal">Minimal (Text Focus)</option>
-                  </select>
-                </label>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Title Color (Optional Hex)</span>
-                  <input
-                    type="text"
-                    value={heroTitleColor}
-                    onChange={(e) => setHeroTitleColor(e.target.value)}
-                    placeholder="e.g. #FFFFFF"
-                    className={inputClass}
-                  />
-                </label>
-                <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Subtitle Color (Optional Hex)</span>
-                  <input
-                    type="text"
-                    value={heroSubtitleColor}
-                    onChange={(e) => setHeroSubtitleColor(e.target.value)}
-                    placeholder="e.g. #E2E8F0"
-                    className={inputClass}
-                  />
-                </label>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Button BG Color (Optional Hex)</span>
-                  <input
-                    type="text"
-                    value={heroButtonBgColor}
-                    onChange={(e) => setHeroButtonBgColor(e.target.value)}
-                    placeholder="e.g. #10B981"
-                    className={inputClass}
-                  />
-                </label>
-                <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Button Text Color (Optional Hex)</span>
-                  <input
-                    type="text"
-                    value={heroButtonTextColor}
-                    onChange={(e) => setHeroButtonTextColor(e.target.value)}
-                    placeholder="e.g. #000000"
-                    className={inputClass}
-                  />
-                </label>
-              </div>
-
-              <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Custom Font Family</span>
-                <select
-                  value={heroFontFamily}
-                  onChange={(e) => setHeroFontFamily(e.target.value)}
-                  className={inputClass}
-                >
-                  <option value="inherit">Default UI Font</option>
-                  <option value="'Inter', sans-serif">Inter</option>
-                  <option value="'Roboto', sans-serif">Roboto</option>
-                  <option value="'Montserrat', sans-serif">Montserrat</option>
-                  <option value="'Playfair Display', serif">Playfair Display</option>
-                  <option value="'Outfit', sans-serif">Outfit</option>
-                  <option value="'Oswald', sans-serif">Oswald</option>
-                </select>
-              </label>
-
-              <div className="flex gap-3">
+            )}
+            {isPending && (
+              <>
                 <button
-                  onClick={() => {
-                    setHeroBgColor("#2563EB");
-                    setHeroTextColor("auto");
-                    setHeroTitleColor("");
-                    setHeroSubtitleColor("");
-                    setHeroButtonBgColor("");
-                    setHeroButtonTextColor("");
-                    setHeroFontFamily("inherit");
-                    setHeroLayout("floating");
-                  }}
-                  disabled={processing}
-                  className="flex-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/10"
+                  onClick={() => setModalState("reject")}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold text-red-600 transition hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400"
                 >
-                  Reset Defaults
+                  Reject
                 </button>
                 <button
-                  onClick={() =>
-                    void runAction(
-                      () => promotionAPI.updatePromotionStyle(promotion._id, {
-                        heroBgColor,
-                        heroTextColor,
-                        heroTitleColor,
-                        heroSubtitleColor,
-                        heroButtonBgColor,
-                        heroButtonTextColor,
-                        heroFontFamily,
-                        heroLayout
-                      }),
-                      "Style updated successfully"
-                    )
-                  }
-                  disabled={processing || !isValidHexColor(heroBgColor)}
-                  className="flex-1 rounded-2xl bg-cyan-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:opacity-50"
+                  onClick={() => setModalState("approve")}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold text-white shadow-sm transition hover:bg-emerald-600"
                 >
-                  Save Style
+                  Approve <ArrowRight className="w-4 h-4 hidden sm:block" />
                 </button>
-              </div>
-            </div>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content Layout */}
+      <section className="mx-auto max-w-7xl px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-6">
+          
+          {/* LEFT COLUMN (Details) */}
+          <div className="flex-1 space-y-6 order-2 lg:order-1">
             
-            <div className="mt-6 border-t border-slate-200 pt-6 dark:border-white/10">
-              <p className="mb-4 text-sm font-semibold text-slate-600 dark:text-white/75">Live Preview</p>
-              <div 
-                className="relative overflow-hidden rounded-3xl" 
-                style={{ backgroundColor: isValidHexColor(heroBgColor) ? heroBgColor : "#2563EB" }}
-              >
-                <div className="absolute -left-1/4 -top-1/4 h-1/2 w-1/2 rounded-full bg-white/20 blur-3xl mix-blend-overlay"></div>
-                <div className="absolute -bottom-1/4 -right-1/4 h-1/2 w-1/2 rounded-full bg-black/20 blur-3xl mix-blend-overlay"></div>
-                
-                <div 
-                  className={`relative flex min-h-[300px] flex-col p-6 md:flex-row ${heroLayout === "minimal" ? "items-center justify-center text-center" : "items-center"}`}
-                  style={{ fontFamily: heroFontFamily }}
-                >
-                  
-                  {/* Left Images Area */}
-                  {heroLayout !== "minimal" && promotion.adImages && promotion.adImages.length > 1 && (
-                    <div className="hidden md:flex relative z-10 w-1/4 h-full items-end justify-start gap-2">
-                      {promotion.adImages.sort((a, b) => a.position - b.position).slice(1, 3).map((img, i) => (
-                        <div
-                          key={img.key}
-                          className="relative transition-all duration-500 ease-out flex-shrink-0 origin-bottom"
-                          style={{ height: i === 0 ? "85%" : "70%", zIndex: 9 - i, marginLeft: i > 0 ? "-2rem" : "0" }}
-                        >
-                          <img src={img.url} alt="" className="h-full w-auto object-contain drop-shadow-2xl" />
-                        </div>
-                      ))}
-                    </div>
-                  )}
+            {/* Card 1: Creative Identity */}
+            <div className="rounded-[2rem] border border-slate-200 bg-white overflow-hidden shadow-sm dark:border-white/10 dark:bg-[#13131a]">
+              {promotion.bannerImage && !promotion.adImages?.length ? (
+                <div className="bg-slate-100 dark:bg-black/20 p-4 border-b border-slate-100 dark:border-white/5">
+                  <img src={promotion.bannerImage} alt={promotion.title} className="h-64 w-full object-contain drop-shadow-md" />
+                </div>
+              ) : promotion.adImages?.length ? (
+                <div className="flex h-64 w-full gap-4 p-6 bg-slate-100 dark:bg-black/20 border-b border-slate-100 dark:border-white/5 overflow-x-auto items-center justify-center">
+                  {promotion.adImages.sort((a, b) => a.position - b.position).map((img) => (
+                    <img key={img.key} src={img.url} alt="Ad content" className="h-full w-auto max-w-[30%] object-contain drop-shadow-md rounded-xl" />
+                  ))}
+                </div>
+              ) : null}
+              
+              <div className="p-6">
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${getPromotionStatusClasses(promotion.status)}`}>
+                    {PROMOTION_STATUS_LABELS[promotion.status]}
+                  </span>
+                  <span className="rounded-full bg-slate-100 dark:bg-white/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-white/60">
+                    {PLACEMENT_LABELS[promotion.placement]}
+                  </span>
+                </div>
+                <h2 className="text-2xl font-black">{promotion.title}</h2>
+                <p className="mt-2 text-sm text-slate-500 dark:text-white/60">{promotion.subtitle}</p>
+              </div>
+            </div>
 
-                  <div className={`relative z-10 w-full flex flex-col ${heroLayout === "minimal" ? "max-w-2xl items-center" : "md:flex-1 items-center px-4"}`}>
-                    <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-white">
-                      Sponsored
-                    </span>
-                    <h3 
-                      className={`mt-3 text-2xl font-black leading-tight drop-shadow-md ${heroLayout !== "minimal" ? "text-center" : ""}`}
-                      style={{ color: isValidHexColor(heroTitleColor) ? heroTitleColor : (heroTextColor === "auto" ? (getAutoTextColor(heroBgColor) === "dark" ? "#000" : "#fff") : (heroTextColor === "dark" ? "#000" : "#fff")) }}
-                    >
-                      {promotion.title}
-                    </h3>
-                    <p 
-                      className={`mt-2 text-sm drop-shadow-md ${heroLayout !== "minimal" ? "text-center" : ""}`}
-                      style={{ color: isValidHexColor(heroSubtitleColor) ? heroSubtitleColor : (heroTextColor === "auto" ? (getAutoTextColor(heroBgColor) === "dark" ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.8)") : (heroTextColor === "dark" ? "rgba(0,0,0,0.8)" : "rgba(255,255,255,0.8)")) }}
-                    >
-                      {promotion.subtitle}
-                    </p>
-                    <button 
-                      className="mt-6 rounded-full px-6 py-2.5 text-xs font-bold transition hover:scale-105 shadow-xl"
-                      style={{ 
-                        backgroundColor: isValidHexColor(heroButtonBgColor) ? heroButtonBgColor : "#ffffff", 
-                        color: isValidHexColor(heroButtonTextColor) ? heroButtonTextColor : "#000000" 
-                      }}
-                    >
-                      {promotion.buttonText || "View Product"}
-                    </button>
+            {/* Card 2: Payment Verification */}
+            <div className="rounded-[2rem] border border-slate-200 bg-white overflow-hidden shadow-sm dark:border-white/10 dark:bg-[#13131a]">
+              {/* Dynamic Banner */}
+              {paymentVerified ? (
+                <div className="bg-emerald-50 dark:bg-emerald-500/10 border-b border-emerald-100 dark:border-emerald-500/20 px-6 py-3 flex items-center gap-2 text-sm font-bold text-emerald-700 dark:text-emerald-400">
+                  <CheckCircle2 className="w-5 h-5" /> Payment Verified
+                </div>
+              ) : paymentMismatch ? (
+                <div className="bg-red-50 dark:bg-red-500/10 border-b border-red-100 dark:border-red-500/20 px-6 py-3 flex items-center gap-2 text-sm font-bold text-red-700 dark:text-red-400">
+                  <ShieldAlert className="w-5 h-5" /> Payment Mismatch - Action Required
+                </div>
+              ) : showPaymentVerification ? (
+                <div className="bg-amber-50 dark:bg-amber-500/10 border-b border-amber-100 dark:border-amber-500/20 px-6 py-3 flex items-center justify-between text-sm font-bold text-amber-700 dark:text-amber-400">
+                  <div className="flex items-center gap-2">
+                    <Clock3 className="w-5 h-5" /> Manual Payment Pending
                   </div>
-                  
-                  {/* Right Image Area */}
-                  {heroLayout !== "minimal" && (
-                    <div className="relative mt-6 h-40 w-full md:mt-0 md:w-1/4 md:flex items-end justify-end">
-                      {promotion.adImages?.length ? (
-                        <div className="relative h-full w-full flex justify-end" style={{ zIndex: 10 }}>
-                          <img src={promotion.adImages.sort((a, b) => a.position - b.position)[0].url} alt="" className="h-full w-auto object-contain drop-shadow-2xl" />
-                        </div>
-                      ) : promotion.bannerImage ? (
-                        <div className="absolute inset-0 flex items-center justify-end pointer-events-none">
-                          <img src={promotion.bannerImage} className="max-h-[90%] w-auto object-contain drop-shadow-2xl rounded-2xl" alt="" />
-                        </div>
-                      ) : null}
+                  <button onClick={() => setModalState("verify")} className="px-3 py-1 bg-amber-200 dark:bg-amber-500/20 rounded-full text-xs hover:bg-amber-300 transition">Verify Now</button>
+                </div>
+              ) : (
+                <div className="bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5 px-6 py-3 flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-white/60">
+                  Financial Details
+                </div>
+              )}
+              
+              <div className="p-6">
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3">
+                  <div>
+                    <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Price</dt>
+                    <dd className="mt-1 text-base font-black">{formatPromotionCurrency(promotion.amount, promotion.currency)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Payment Method</dt>
+                    <dd className="mt-1 text-sm font-semibold">{promotion.paymentMethod ? PAYMENT_METHOD_LABELS[promotion.paymentMethod] : "Pending"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Transaction ID</dt>
+                    <dd className="mt-1 text-sm font-medium text-slate-600 dark:text-white/70 truncate" title={promotion.transactionId || "Not provided"}>
+                      {promotion.transactionId || "—"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Razorpay Order</dt>
+                    <dd className="mt-1 text-sm font-medium text-slate-600 dark:text-white/70 truncate" title={promotion.razorpayOrderId || "Not created"}>
+                      {promotion.razorpayOrderId || "—"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Razorpay Payment</dt>
+                    <dd className="mt-1 text-sm font-medium text-slate-600 dark:text-white/70 truncate" title={promotion.razorpayPaymentId || "Not paid"}>
+                      {promotion.razorpayPaymentId || "—"}
+                    </dd>
+                  </div>
+                  {promotion.paymentProofImage && (
+                    <div className="col-span-2 sm:col-span-3 mt-2">
+                      <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Attached Proof</dt>
+                      <dd>
+                        <a href={promotion.paymentProofImage} target="_blank" rel="noreferrer" className="inline-block relative group">
+                          <img src={promotion.paymentProofImage} alt="Payment Proof" className="h-32 w-auto max-w-full rounded-lg border border-slate-200 dark:border-white/10 object-cover group-hover:opacity-80 transition shadow-sm" />
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                            <span className="bg-slate-900/70 text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm flex items-center gap-1"><ExternalLink className="w-3 h-3"/> View Full Size</span>
+                          </div>
+                        </a>
+                      </dd>
                     </div>
                   )}
+                </dl>
+              </div>
+            </div>
+
+            {/* Card 3: Promotion Schedule & Routing */}
+            <div className="rounded-[2rem] border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#13131a] p-6">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-5">Schedule & Routing</h3>
+              
+              <div className="flex items-center gap-4 mb-6 p-4 bg-slate-50 dark:bg-white/5 rounded-2xl">
+                <div className="flex-1">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Start Date</div>
+                  <div className="font-semibold text-sm flex items-center gap-2"><CalendarDays className="w-4 h-4 text-slate-400" /> {formatPromotionDate(promotion.startDate)}</div>
+                </div>
+                <div className="flex flex-col items-center justify-center px-2">
+                  <ArrowRight className="w-4 h-4 text-slate-300" />
+                  <span className="text-[10px] font-bold text-slate-400 mt-1">{promotion.approvedDurationDays || promotion.requestedDurationDays} days</span>
+                </div>
+                <div className="flex-1 text-right">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">End Date</div>
+                  <div className="font-semibold text-sm flex items-center justify-end gap-2">{formatPromotionDate(promotion.endDate)} <CalendarDays className="w-4 h-4 text-slate-400" /></div>
                 </div>
               </div>
-            </div>
-          </section>
 
-          {showPriorityEditor ? (
-            <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
-              <p className="text-xs font-semibold uppercase tracking-[0.35em] text-cyan-500">Live Controls</p>
-              <div className="mt-5 space-y-4">
-                <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-slate-600 dark:text-white/75">Priority</span>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-y-4">
+                <div>
+                  <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Target Link</dt>
+                  <dd className="mt-1 text-sm font-medium text-blue-600 dark:text-blue-400 truncate pr-4">
+                    <a href={promotion.targetLink || `/marketplace/${promotion.productId}`} target="_blank" rel="noreferrer" className="hover:underline flex items-center gap-1.5">
+                      {promotion.targetLink || "Automatic Product Link"} <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Placement</dt>
+                  <dd className="mt-1 text-sm font-medium text-slate-700 dark:text-white/80">{PLACEMENT_LABELS[promotion.placement]}</dd>
+                </div>
+              </dl>
+            </div>
+
+            {/* Card 4: Seller Note */}
+            {promotion.sellerNote && (
+              <div className="rounded-[2rem] border border-amber-200 bg-amber-50 shadow-sm dark:border-amber-500/20 dark:bg-amber-500/5 p-6 relative">
+                <MessageSquare className="absolute top-6 right-6 w-5 h-5 text-amber-300 dark:text-amber-500/40" />
+                <h3 className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-500 mb-2">Message from Seller</h3>
+                <p className="text-sm text-amber-900 dark:text-amber-200/90 whitespace-pre-wrap">{promotion.sellerNote}</p>
+              </div>
+            )}
+
+            {/* Card 5: Audit Timeline */}
+            <div className="pt-4 pl-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">Audit Trail</h3>
+              <div className="ml-2 mt-2 space-y-0 pb-4">
+                {auditSteps.map((step, index) => {
+                  const isLast = index === auditSteps.length - 1;
+                  const isLineGreen = step.completed && auditSteps[index + 1]?.completed;
+                  
+                  const dotColor = step.isReject 
+                    ? "bg-red-500 ring-[4px] ring-slate-50 dark:ring-[#05050a]" 
+                    : step.completed 
+                      ? "bg-emerald-500 ring-[4px] ring-slate-50 dark:ring-[#05050a]" 
+                      : "bg-slate-300 dark:bg-slate-600 ring-[4px] ring-slate-50 dark:ring-[#05050a]";
+                  
+                  const textColor = step.isReject
+                    ? "text-red-600 dark:text-red-400"
+                    : step.completed
+                      ? "text-emerald-700 dark:text-emerald-400"
+                      : "text-slate-400 dark:text-slate-500";
+
+                  const lineColor = isLineGreen ? "bg-emerald-400" : "bg-slate-200 dark:bg-white/10";
+
+                  return (
+                    <div key={index} className="relative pl-6 pb-6">
+                      {!isLast && (
+                        <div className={`absolute left-[5px] top-4 bottom-[-6px] w-[2px] ${lineColor}`}></div>
+                      )}
+                      
+                      <div className={`absolute left-[1px] top-1.5 w-2.5 h-2.5 rounded-full z-10 shadow-sm ${dotColor}`}></div>
+                      
+                      <p className={`text-sm font-bold ${textColor}`}>{step.label}</p>
+                      {step.date && <p className="text-xs text-slate-500">{step.date}</p>}
+                      {step.description && <p className="text-xs text-red-500 mt-1">{step.description}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
+
+          {/* RIGHT COLUMN (Controls & Performance) */}
+          <div className="w-full lg:w-[400px] flex-shrink-0 space-y-6 order-1 lg:order-2">
+            
+            {/* Panel 1: Admin Controls (Sticky top on desktop) */}
+            <div className="sticky top-24 space-y-6">
+              
+              {/* Priority Control */}
+              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-md dark:border-white/10 dark:bg-[#13131a]">
+                <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2"><Settings2 className="w-3.5 h-3.5" /> Admin Controls</h3>
+                
+                <label className="block mb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-slate-700 dark:text-white/80">Priority Weight</span>
+                    {priority === 999 && <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Default (Lowest)</span>}
+                  </div>
                   <input
                     type="number"
                     min={1}
@@ -712,87 +487,319 @@ export default function AdminPromotionDetailPage() {
                     )
                   }
                   disabled={processing}
-                  className="w-full rounded-2xl border border-cyan-400/30 bg-cyan-500/10 px-5 py-3 font-semibold text-cyan-300 transition hover:bg-cyan-500/15 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 dark:bg-white/5 dark:border-white/10 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-white/80 transition hover:bg-slate-100 dark:hover:bg-white/10 disabled:opacity-50"
                 >
                   Save Priority
                 </button>
-                {promotion.status === "ACTIVE" ? (
-                  <button
-                    onClick={() =>
-                      void runAction(
-                        () => promotionAPI.pausePromotion(promotion._id, { adminNote }),
-                        "Promotion paused"
-                      )
-                    }
-                    disabled={processing}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-400/25 bg-amber-500/10 px-5 py-3 font-semibold text-amber-300 transition hover:bg-amber-500/15 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <PauseCircle className="h-4 w-4" />
-                    Pause Promotion
-                  </button>
-                ) : null}
-                {promotion.status === "PAUSED" ? (
-                  <button
-                    onClick={() =>
-                      void runAction(
-                        () => promotionAPI.resumePromotion(promotion._id, { adminNote }),
-                        "Promotion resumed"
-                      )
-                    }
-                    disabled={processing}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-emerald-400/25 bg-emerald-500/10 px-5 py-3 font-semibold text-emerald-300 transition hover:bg-emerald-500/15 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <PlayCircle className="h-4 w-4" />
-                    Resume Promotion
-                  </button>
-                ) : null}
               </div>
-            </section>
-          ) : null}
+
+              {/* Panel 2: Seller & Product */}
+              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-md dark:border-white/10 dark:bg-[#13131a]">
+                <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-4">Entity Details</h3>
+                
+                <div className="flex items-center gap-3 mb-4 p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
+                  <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold">
+                    {(seller?.name || promotion.sellerName || "S")[0].toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{seller?.name || promotion.sellerName}</p>
+                    <p className="text-xs text-slate-500 truncate">{seller?.email || "No email"}</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 items-center mt-2">
+                  {product?.thumbnailUrl && (
+                    <img src={product.thumbnailUrl} alt={promotion.productTitle} className="h-20 w-20 rounded-2xl object-cover border border-slate-100 dark:border-white/5 flex-shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Target Product</p>
+                    <p className="text-sm font-semibold text-slate-800 dark:text-white/90 line-clamp-2 leading-tight mt-0.5">{product?.title || promotion.productTitle}</p>
+                    <button
+                      onClick={() => router.push(`/marketplace/${product?._id || promotion.productId}`)}
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:text-white/75 dark:hover:bg-white/5"
+                    >
+                      Open Product <ExternalLink className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Panel 3: Performance */}
+              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-md dark:border-white/10 dark:bg-[#13131a]">
+                <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-4">Performance</h3>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Impressions</p>
+                    <p className="mt-1 text-lg font-black">{promotion.metrics.impressions.toLocaleString()}</p>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Clicks</p>
+                    <p className="mt-1 text-lg font-black">{promotion.metrics.clicks.toLocaleString()}</p>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">CTR</p>
+                    <p className={`mt-1 text-lg font-black ${promotion.metrics.ctr > 0 ? 'text-emerald-600 dark:text-emerald-400' : ''}`}>{promotion.metrics.ctr}%</p>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Revenue</p>
+                    <p className="mt-1 text-lg font-black">{formatPromotionCurrency(promotion.metrics.revenueGenerated)}</p>
+                  </div>
+                </div>
+
+                {promotion.metrics.revenueGenerated === 0 && promotion.paymentMethod === "MANUAL" && promotion.status === "ACTIVE" && (
+                  <div className="mt-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 text-xs text-amber-800 dark:text-amber-300">
+                    <strong>Manual payment</strong> — revenue not tracked via Razorpay. Verify Transaction ID.
+                  </div>
+                )}
+              </div>
+
+              {/* Panel 4: Style Configuration (Collapsible) */}
+              <div className="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-md dark:border-white/10 dark:bg-[#13131a]">
+                <button 
+                  onClick={() => setStyleExpanded(!styleExpanded)}
+                  className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 dark:hover:bg-white/5 transition"
+                >
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Style Configuration</span>
+                  {styleExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                </button>
+                
+                {styleExpanded && (
+                  <div className="p-5 pt-0 border-t border-slate-100 dark:border-white/5 mt-2 space-y-4">
+                    {/* Live Preview Miniature */}
+                    <div 
+                      className="relative overflow-hidden rounded-xl h-24 mb-4 border border-slate-200 dark:border-white/10" 
+                      style={{ backgroundColor: isValidHexColor(heroBgColor) ? heroBgColor : "#2563EB" }}
+                    >
+                       <div className="absolute inset-0 flex items-center justify-center p-4 text-center">
+                          <h4 style={{ color: isValidHexColor(heroTitleColor) ? heroTitleColor : (heroTextColor === "auto" ? (getAutoTextColor(heroBgColor) === "dark" ? "#000" : "#fff") : (heroTextColor === "dark" ? "#000" : "#fff")) }} className="text-sm font-black truncate w-full">{promotion.title}</h4>
+                       </div>
+                    </div>
+
+                    <label className="block">
+                      <span className="mb-1.5 block text-xs font-bold text-slate-600 dark:text-white/75">Background Color (Hex)</span>
+                      <input type="text" value={heroBgColor} onChange={(e) => setHeroBgColor(e.target.value)} className={`${inputClass} py-2`} />
+                    </label>
+                    <label className="block">
+                      <span className="mb-1.5 block text-xs font-bold text-slate-600 dark:text-white/75">Text Color</span>
+                      <select value={heroTextColor} onChange={(e) => setHeroTextColor(e.target.value as "light" | "dark" | "auto")} className={`${inputClass} py-2`}>
+                        <option value="auto">Auto</option><option value="light">Light</option><option value="dark">Dark</option>
+                      </select>
+                    </label>
+                    <label className="block">
+                      <span className="mb-1.5 block text-xs font-bold text-slate-600 dark:text-white/75">Layout Structure</span>
+                      <select value={heroLayout} onChange={(e) => setHeroLayout(e.target.value as "floating" | "single" | "minimal")} className={`${inputClass} py-2`}>
+                        <option value="floating">Floating</option><option value="single">Single</option><option value="minimal">Minimal</option>
+                      </select>
+                    </label>
+                    
+                    <button
+                      onClick={() =>
+                        void runAction(
+                          () => promotionAPI.updatePromotionStyle(promotion._id, { heroBgColor, heroTextColor, heroTitleColor, heroSubtitleColor, heroButtonBgColor, heroButtonTextColor, heroFontFamily, heroLayout }),
+                          "Style updated successfully"
+                        )
+                      }
+                      disabled={processing || !isValidHexColor(heroBgColor)}
+                      className="w-full rounded-xl bg-cyan-500 px-4 py-2 text-xs font-bold text-slate-950 transition hover:bg-cyan-400 disabled:opacity-50"
+                    >
+                      Save Style
+                    </button>
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </div>
         </div>
       </section>
+
+      {/* Mobile Sticky Actions (Active/Paused) */}
+      {(isActive || isPaused) && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-[#05050a]/90 backdrop-blur-md border-t border-slate-200 dark:border-white/10 p-4 sm:hidden pb-safe">
+          {isActive && (
+            <div className="flex gap-3">
+              <button
+                onClick={() => setModalState("reject")}
+                className="flex-1 inline-flex justify-center items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-3 text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400"
+              >
+                <XCircle className="w-5 h-5" /> Revoke
+              </button>
+              <button
+                onClick={() => setModalState("pause")}
+                className="flex-1 inline-flex justify-center items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm font-bold text-amber-700 transition hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400"
+              >
+                <PauseCircle className="w-5 h-5" /> Pause
+              </button>
+            </div>
+          )}
+          {isPaused && (
+            <button
+              onClick={() => setModalState("resume")}
+              className="w-full inline-flex justify-center items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400"
+            >
+              <PlayCircle className="w-5 h-5" /> Resume
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* MODALS */}
+      {modalState === "approve" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-[2rem] bg-white p-6 shadow-2xl dark:bg-[#13131a] border border-slate-200 dark:border-white/10 animate-in fade-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white mb-1">Approve Request</h2>
+            <p className="text-sm text-slate-500 dark:text-white/60 mb-6">Review the final terms before activating this promotion.</p>
+            
+            <div className="space-y-4">
+              <label className="block">
+                <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Amount (₹)</span>
+                <input type="number" min={settings?.minimumPrice || 0} value={amount} onChange={(e) => setAmount(Number(e.target.value) || 0)} className={inputClass} />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Duration (days)</span>
+                <input type="number" min={1} value={approvedDurationDays} onChange={(e) => setApprovedDurationDays(Number(e.target.value) || 1)} className={inputClass} />
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <label className="block">
+                  <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Priority</span>
+                  <input type="number" min={1} value={priority} onChange={(e) => setPriority(Number(e.target.value) || 1)} className={inputClass} />
+                </label>
+                <label className="block">
+                  <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Max Impressions</span>
+                  <input type="number" min={1} value={maxImpressions} onChange={(e) => setMaxImpressions(e.target.value)} placeholder="Optional" className={inputClass} />
+                </label>
+              </div>
+              <label className="block">
+                <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Admin Note (Optional)</span>
+                <textarea rows={2} value={adminNote} onChange={(e) => setAdminNote(e.target.value)} className={`${inputClass} resize-none`} placeholder="Internal note..." />
+              </label>
+            </div>
+
+            <div className="mt-8 flex gap-3">
+              <button onClick={() => setModalState(null)} disabled={processing} className="flex-1 rounded-xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10 transition">Cancel</button>
+              <button
+                onClick={() => void runAction(() => promotionAPI.approvePromotion(promotion._id, { amount, approvedDurationDays, priority, maxImpressions: maxImpressions ? Number(maxImpressions) : undefined, adminNote, heroBgColor, heroTextColor, heroTitleColor, heroSubtitleColor, heroButtonBgColor, heroButtonTextColor, heroFontFamily, heroLayout }), "Promotion approved")}
+                disabled={processing}
+                className="flex-[2] rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-600 transition shadow-sm flex items-center justify-center gap-2"
+              >
+                {processing ? <Clock className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Approve & Activate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalState === "reject" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-[2rem] bg-white p-6 shadow-2xl dark:bg-[#13131a] border border-slate-200 dark:border-white/10 animate-in fade-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-black text-red-600 dark:text-red-400 mb-1 flex items-center gap-2"><AlertTriangle className="w-5 h-5" /> Reject Request</h2>
+            <p className="text-sm text-slate-500 dark:text-white/60 mb-6">This action will reject the promotion request. A reason is required.</p>
+            
+            <div className="space-y-4">
+              <label className="block">
+                <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Rejection Reason (Required)</span>
+                <textarea rows={3} value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} className={`${inputClass} resize-none`} placeholder="Explain why this is being rejected..." />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Admin Note (Optional)</span>
+                <textarea rows={2} value={adminNote} onChange={(e) => setAdminNote(e.target.value)} className={`${inputClass} resize-none`} placeholder="Internal note..." />
+              </label>
+            </div>
+
+            <div className="mt-8 flex gap-3">
+              <button onClick={() => setModalState(null)} disabled={processing} className="flex-1 rounded-xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10 transition">Cancel</button>
+              <button
+                onClick={() => void runAction(() => promotionAPI.rejectPromotion(promotion._id, { rejectedReason: rejectReason, adminNote }), "Promotion rejected")}
+                disabled={processing || rejectReason.trim().length === 0}
+                className="flex-[2] rounded-xl bg-red-500 px-4 py-3 text-sm font-bold text-white hover:bg-red-600 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Reject Promotion
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalState === "pause" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-[2rem] bg-white p-6 shadow-2xl dark:bg-[#13131a] border border-slate-200 dark:border-white/10 animate-in fade-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-black text-amber-600 dark:text-amber-400 mb-1">Pause Promotion</h2>
+            <p className="text-sm text-slate-500 dark:text-white/60 mb-6">This will immediately pull the ad from the marketplace. It can be resumed later.</p>
+            
+            <label className="block mb-6">
+              <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Admin Note (Optional)</span>
+              <textarea rows={2} value={adminNote} onChange={(e) => setAdminNote(e.target.value)} className={`${inputClass} resize-none`} placeholder="Reason for pausing..." />
+            </label>
+
+            <div className="flex gap-3">
+              <button onClick={() => setModalState(null)} disabled={processing} className="flex-1 rounded-xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10 transition">Cancel</button>
+              <button
+                onClick={() => void runAction(() => promotionAPI.pausePromotion(promotion._id, { adminNote }), "Promotion paused")}
+                disabled={processing}
+                className="flex-[1.5] rounded-xl bg-amber-500 px-4 py-3 text-sm font-bold text-amber-950 hover:bg-amber-400 transition shadow-sm"
+              >
+                Confirm Pause
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalState === "resume" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-[2rem] bg-white p-6 shadow-2xl dark:bg-[#13131a] border border-slate-200 dark:border-white/10 animate-in fade-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-black text-emerald-600 dark:text-emerald-400 mb-1">Resume Promotion</h2>
+            <p className="text-sm text-slate-500 dark:text-white/60 mb-6">This will reactivate the ad in the marketplace.</p>
+            
+            <label className="block mb-6">
+              <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Admin Note (Optional)</span>
+              <textarea rows={2} value={adminNote} onChange={(e) => setAdminNote(e.target.value)} className={`${inputClass} resize-none`} placeholder="Internal note..." />
+            </label>
+
+            <div className="flex gap-3">
+              <button onClick={() => setModalState(null)} disabled={processing} className="flex-1 rounded-xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10 transition">Cancel</button>
+              <button
+                onClick={() => void runAction(() => promotionAPI.resumePromotion(promotion._id, { adminNote }), "Promotion resumed")}
+                disabled={processing}
+                className="flex-[1.5] rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-600 transition shadow-sm"
+              >
+                Confirm Resume
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalState === "verify" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-[2rem] bg-white p-6 shadow-2xl dark:bg-[#13131a] border border-slate-200 dark:border-white/10 animate-in fade-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-black text-cyan-600 dark:text-cyan-400 mb-1">Verify Payment</h2>
+            <p className="text-sm text-slate-500 dark:text-white/60 mb-6">Manually verify the transaction ID to activate this promotion.</p>
+            
+            <label className="block mb-4">
+              <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Transaction ID</span>
+              <input type="text" value={verifyTransactionId} onChange={(e) => setVerifyTransactionId(e.target.value)} className={inputClass} placeholder="e.g. UTR number" />
+            </label>
+            <label className="block mb-6">
+              <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Admin Note (Optional)</span>
+              <textarea rows={2} value={adminNote} onChange={(e) => setAdminNote(e.target.value)} className={`${inputClass} resize-none`} placeholder="Internal note..." />
+            </label>
+
+            <div className="flex gap-3">
+              <button onClick={() => setModalState(null)} disabled={processing} className="flex-1 rounded-xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10 transition">Cancel</button>
+              <button
+                onClick={() => void runAction(() => promotionAPI.verifyPromotionPayment(promotion._id, { transactionId: verifyTransactionId, paymentMethod: "MANUAL", adminNote }), "Payment verified")}
+                disabled={processing || !verifyTransactionId}
+                className="flex-[1.5] rounded-xl bg-cyan-500 px-4 py-3 text-sm font-bold text-cyan-950 hover:bg-cyan-400 transition shadow-sm disabled:opacity-50"
+              >
+                Verify & Activate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </main>
-  );
-}
-
-function MetricCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
-      <p className="text-xs uppercase tracking-[0.25em] text-slate-400 dark:text-white/35">{label}</p>
-      <p className="mt-3 text-xl font-black">{value}</p>
-    </div>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
-      <p className="text-xs uppercase tracking-[0.25em] text-slate-400 dark:text-white/35">{label}</p>
-      <p className="mt-2 text-sm font-medium text-slate-700 dark:text-white/75">{value}</p>
-    </div>
-  );
-}
-
-function MessageCard({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone: "cyan" | "slate" | "red";
-}) {
-  const toneClasses =
-    tone === "red"
-      ? "border-red-400/20 bg-red-500/5 text-red-300"
-      : tone === "cyan"
-      ? "border-cyan-400/20 bg-cyan-500/5 text-cyan-400"
-      : "border-slate-200 bg-slate-50 text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-white/55";
-
-  return (
-    <div className={`rounded-3xl border p-4 ${toneClasses}`}>
-      <p className="text-xs font-semibold uppercase tracking-[0.25em]">{label}</p>
-      <p className="mt-2 text-sm text-slate-700 dark:text-white/75">{value}</p>
-    </div>
   );
 }

@@ -124,6 +124,16 @@ export default function AllOpeningsPage() {
 
   const formatSalary = (career: Career) => {
     if (!career.salary?.min || !career.salary?.max) return null;
+    
+    if (career.salary.currency === "INR") {
+      const isLpaDirect = career.salary.max < 1000;
+      const minLpa = isLpaDirect ? career.salary.min : career.salary.min / 100000;
+      const maxLpa = isLpaDirect ? career.salary.max : career.salary.max / 100000;
+      const fmt = (v: number) =>
+        v % 1 === 0 ? v.toFixed(0) : v.toFixed(2).replace(/\.?0+$/, "");
+      return `₹${fmt(minLpa)}–₹${fmt(maxLpa)} LPA`;
+    }
+
     return `${career.salary.currency} ${career.salary.min.toLocaleString()} - ${career.salary.max.toLocaleString()} per year`;
   };
 

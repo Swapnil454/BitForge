@@ -492,6 +492,8 @@ export const reactivateAccount = async (req, res) => {
         role: user.role,
         isVerified: user.isVerified,
         accountStatus: user.accountStatus,
+        approvalStatus: user.approvalStatus,
+        isApproved: user.isApproved,
       },
     });
   } catch (error) {
@@ -530,6 +532,124 @@ export const updatePreferences = async (req, res) => {
   } catch (error) {
     console.error("Error updating preferences:", error);
     res.status(500).json({ message: "Failed to update preferences" });
+  }
+};
+
+/**
+ * Upload identity documents
+ * Expects multipart/form-data with 'documents' and 'documentTypes' (as a stringified array or multiple values)
+ */
+export const uploadIdentityDocuments = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user || user.role !== 'seller') {
+      return res.status(403).json({ message: "Only sellers can upload identity documents." });
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No documents provided." });
+    }
+
+    // Parse document types from the request body
+    let documentTypes = [];
+    if (req.body.documentTypes) {
+      if (Array.isArray(req.body.documentTypes)) {
+        documentTypes = req.body.documentTypes;
+      } else {
+        try {
+          documentTypes = JSON.parse(req.body.documentTypes);
+        } catch (e) {
+          documentTypes = [req.body.documentTypes];
+        }
+      }
+    }
+
+    // Determine current submission round
+    let currentRound = 1;
+    if (user.identityDocuments && user.identityDocuments.length > 0) {
+      const highestRound = Math.max(...user.identityDocuments.map(d => d.submissionRound || 1));
+      if (user.identityVerificationStatus === 'rejected') {
+        currentRound = highestRound + 1;
+      } else {
+        currentRound = highestRound;
+      }
+    }
+
+    const uploadedDocs = [];
+    
+    // Process each file
+    for (let i = 0; i < req.files.length; i++) {
+      const file = req.files[i];
+      const docType = documentTypes[i] || 'government_id'; // fallback
+      
+      const b64 = Buffer.from(file.buffer).toString("base64");
+      const dataURI = "data:" + file.mimetype + ";base64," + b64;
+      
+      const uploadResult = await cloudinary.uploader.upload(dataURI, {
+        folder: "identity_documents",
+        type: "authenticated",
+        access_mode: "authenticated",
+        resource_type: "auto"
+      });
+
+      uploadedDocs.push({
+        url: uploadResult.secure_url,
+        public_id: uploadResult.public_id,
+        documentType: docType,
+        uploadedAt: new Date(),
+        submissionRound: currentRound,
+        status: 'pending'
+      });
+    }
+
+    // Ensure at least one government_id is uploaded in this round
+    const hasGovId = uploadedDocs.some(d => d.documentType === 'government_id');
+    if (!hasGovId) {
+      // Cleanup uploaded files on cloudinary if validation fails post-upload
+      for (const doc of uploadedDocs) {
+        await cloudinary.uploader.destroy(doc.public_id, { type: 'authenticated' });
+      }
+      return res.status(400).json({ message: "At least one Government ID is required." });
+    }
+
+    // Append to existing documents
+    if (!user.identityDocuments) user.identityDocuments = [];
+    user.identityDocuments.push(...uploadedDocs);
+    
+    // Change status
+    user.identityVerificationStatus = 'pending';
+    await user.save();
+
+    res.json({ 
+      success: true, 
+      message: "Documents uploaded successfully. Awaiting admin review.",
+      status: user.identityVerificationStatus 
+    });
+  } catch (error) {
+    console.error("Error uploading identity documents:", error);
+    res.status(500).json({ message: "Failed to upload identity documents" });
+  }
+};
+
+/**
+ * Get the current identity verification status
+ */
+export const getIdentityStatus = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('identityVerificationStatus latestRejectionReason isApproved approvalStatus');
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      status: user.identityVerificationStatus,
+      rejectionReason: user.latestRejectionReason || null,
+      isApproved: user.isApproved,
+      approvalStatus: user.approvalStatus
+    });
+  } catch (error) {
+    console.error("Error fetching identity status:", error);
+    res.status(500).json({ message: "Failed to fetch identity status" });
   }
 };
 

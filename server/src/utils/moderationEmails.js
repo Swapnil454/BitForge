@@ -150,3 +150,48 @@ export async function sendChangesRequestedEmail(seller, product, reasons = [], a
     html,
   });
 }
+
+/**
+ * Sends an email to the seller when their product is flagged for security threats.
+ */
+export async function sendThreatNotificationEmail(seller, product, adminMessage = '') {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('[Email] Skipping sendThreatNotificationEmail: RESEND_API_KEY is not set.');
+    return;
+  }
+
+  const subject = `URGENT: Security threat detected in your product '${product.title}'`;
+  const sellerDashboardUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/seller/products`;
+
+  let noteHtml = '';
+  if (adminMessage) {
+    noteHtml = `
+      <h3>Moderator Note:</h3>
+      <blockquote style="border-left: 4px solid #ef4444; padding-left: 16px; color: #4b5563;">
+        ${adminMessage}
+      </blockquote>
+    `;
+  }
+
+  const html = `
+    <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto;">
+      <h2 style="color: #ef4444;">Urgent Security Notice</h2>
+      <p>Hi ${seller.name},</p>
+      <p>Our security scanners have detected potential threats in the files you uploaded for <strong>${product.title}</strong>.</p>
+      
+      ${noteHtml}
+      
+      <p>Please review your files immediately, ensure they are free of any malicious software, and re-upload safe versions.</p>
+      
+      <a href="${sellerDashboardUrl}" style="display: inline-block; padding: 10px 20px; background-color: #ef4444; color: white; text-decoration: none; border-radius: 5px;">Go to Seller Dashboard</a>
+    </div>
+  `;
+
+  return await resend.emails.send({
+    from: getFromAddress(),
+    to: seller.email,
+    replyTo: 'support@bitforge.com',
+    subject,
+    html,
+  });
+}

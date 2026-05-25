@@ -64,6 +64,7 @@ interface User {
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
+  const [profileChecked, setProfileChecked] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
@@ -131,14 +132,6 @@ export default function Dashboard() {
       return;
     }
 
-    if (stored.role === "seller") {
-      const isApproved = stored.approvalStatus === "approved" || stored.isApproved;
-      if (!isApproved) {
-        router.push("/pending-approval");
-        return;
-      }
-    }
-
     setUser(stored);
 
     const syncProfile = async () => {
@@ -155,6 +148,7 @@ export default function Dashboard() {
         if (fresh.role === "seller") {
           const isApproved = fresh.approvalStatus === "approved" || fresh.isApproved;
           if (!isApproved) {
+            setProfileChecked(true);
             router.push("/pending-approval");
             return;
           }
@@ -165,13 +159,16 @@ export default function Dashboard() {
         if (typeof localStorage !== "undefined") {
           localStorage.setItem("user", JSON.stringify(fresh));
         }
+        setProfileChecked(true);
       } catch (err) {
         console.error("Failed to sync user profile", err);
         if (err instanceof Error && err.message.includes("401")) {
           clearAuthStorage();
           toast.error("Your account has been deleted");
           router.push("/register");
+          return;
         }
+        setProfileChecked(true);
       }
     };
 
@@ -301,7 +298,7 @@ export default function Dashboard() {
 
   if (!user) return null;
 
-  if (isInitialLoading) {
+  if (!profileChecked || isInitialLoading) {
     return <SellerDashboardSkeleton />;
   }
 

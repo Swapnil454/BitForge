@@ -14,6 +14,7 @@ const orderSchema = new mongoose.Schema({
   productId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Product",
+    index: true,
   },
   productName: String, // Denormalized for display when product is deleted
   

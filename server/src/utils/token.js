@@ -9,7 +9,10 @@ export const generateToken = (user) => {
     email: user.email,
     phone: user.phone,
     role: user.role || 'buyer',
-    isVerified: user.isVerified
+    isVerified: user.isVerified,
+    accountStatus: user.accountStatus,
+    approvalStatus: user.approvalStatus,
+    isApproved: user.isApproved,
   };
   
   return jwt.sign(payload, process.env.JWT_SECRET, {

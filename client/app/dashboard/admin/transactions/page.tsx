@@ -70,6 +70,11 @@ function TransactionsPageContent() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [density, setDensity] = useState<"compact" | "default" | "comfortable">("default");
 
+  // Export State
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportStartDate, setExportStartDate] = useState("");
+  const [exportEndDate, setExportEndDate] = useState("");
+
   // Dropdown states
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
@@ -168,7 +173,8 @@ function TransactionsPageContent() {
   };
 
   /* ================= EXPORT ================= */
-  const exportCSV = async () => {
+  const confirmExportCSV = async () => {
+    setExportModalOpen(false);
     const toastId = toast.loading("Preparing export...");
     try {
       const data = await adminAPI.getAllTransactions({
@@ -176,7 +182,9 @@ function TransactionsPageContent() {
         search: searchTerm,
         type: typeFilter,
         status: statusFilter,
-        dateRange: dateRange,
+        dateRange: exportStartDate || exportEndDate ? undefined : dateRange,
+        startDate: exportStartDate || undefined,
+        endDate: exportEndDate || undefined,
       });
 
       if (!data.transactions?.length) {
@@ -184,16 +192,21 @@ function TransactionsPageContent() {
         return;
       }
 
-      const rows = data.transactions.map((t: Transaction) => ({
-        "Transaction ID": t.orderId,
-        "Date": new Date(t.date).toISOString(),
-        "Type": t.type === "buyer_to_admin" ? "Buyer Payment" : "Seller Payout",
-        "Parties": `${t.buyerName} -> ${t.sellerName}`,
+      const rows = data.transactions.map((t: Transaction) => {
+        const fromName = t.type === "admin_to_seller" ? "BitForge Settlement Account" : (t.buyerName || "Unknown Buyer");
+        const toName = t.type === "buyer_to_admin" ? "BitForge Settlement Account" : (t.sellerName || "Unknown Seller");
+        
+        return {
+          "Transaction ID": t.orderId,
+          "Date": new Date(t.date).toISOString(),
+          "Type": t.type === "buyer_to_admin" ? "Buyer Payment" : "Seller Payout",
+          "Parties": `${fromName} -> ${toName}`,
         "Product": t.productName,
         "Amount": t.amount,
         "Status": t.status,
-        "Gateway ID": t.razorpayPaymentId || "",
-      }));
+          "Gateway ID": t.razorpayPaymentId || "",
+        };
+      });
 
       const worksheet = XLSX.utils.json_to_sheet(rows);
       const workbook = XLSX.utils.book_new();
@@ -276,7 +289,7 @@ function TransactionsPageContent() {
             {/* Desktop Actions */}
             <div className="hidden sm:flex items-center gap-3 relative z-50">
               <button
-                onClick={exportCSV}
+                onClick={() => setExportModalOpen(true)}
                 className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-white/80 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/10 transition flex items-center gap-2"
               >
                 Export CSV
@@ -354,7 +367,7 @@ function TransactionsPageContent() {
                   Analytics
                 </button>
                 <button
-                  onClick={() => { setMobileMenuOpen(false); exportCSV(); }}
+                  onClick={() => { setMobileMenuOpen(false); setExportModalOpen(true); }}
                   className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg"
                 >
                   Export CSV
@@ -423,7 +436,7 @@ function TransactionsPageContent() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input
-                type="text"
+                type="search"
                 placeholder="Search by order ID, product name, email, or gateway ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -442,7 +455,7 @@ function TransactionsPageContent() {
                   <ChevronDown className="h-4 w-4 shrink-0" />
                 </button>
                 {typeDropdownOpen && (
-                  <div className="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl z-20 py-1">
+                  <div className="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl z-50 py-1">
                     {[
                       { val: "all", label: "All Types" },
                       { val: "buyer_to_admin", label: "Buyer Payments" },
@@ -471,7 +484,7 @@ function TransactionsPageContent() {
                   <ChevronDown className="h-4 w-4 shrink-0" />
                 </button>
                 {statusDropdownOpen && (
-                  <div className="absolute top-full right-0 mt-1 w-40 bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl z-20 py-1">
+                  <div className="absolute top-full right-0 mt-1 w-40 bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl z-50 py-1">
                     {["all", "success", "pending", "failed"].map(opt => (
                       <button
                         key={opt}
@@ -622,10 +635,10 @@ function TransactionsPageContent() {
                       <td className={`px-1.5 sm:px-4 ${rowHeightClass}`}>
                         <div className="flex flex-col">
                           <span className="text-[10px] sm:text-sm font-medium text-slate-900 dark:text-white/90 truncate max-w-[110px] sm:max-w-[200px]">
-                            {t.buyerName}
+                            {t.type === "admin_to_seller" ? "BitForge Settlement Account" : (t.buyerName || "Unknown Buyer")}
                           </span>
                           <span className="text-[8px] sm:text-xs text-slate-400 dark:text-white/40">
-                            → {t.sellerName}
+                            → {t.type === "buyer_to_admin" ? "BitForge Settlement Account" : (t.sellerName || "Unknown Seller")}
                           </span>
                         </div>
                       </td>
@@ -749,6 +762,54 @@ function TransactionsPageContent() {
         transaction={selectedTx} 
         onClose={() => setSelectedTx(null)} 
       />
+
+      {/* Export Modal */}
+      {exportModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-[2rem] bg-white p-6 shadow-2xl dark:bg-[#13131a] border border-slate-200 dark:border-white/10 animate-in fade-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Export Transactions</h3>
+            <p className="text-sm text-slate-500 mb-6">
+              Choose a date range for your export. Current filters (Status: <span className="capitalize">{statusFilter}</span>, Type: <span className="capitalize">{typeFilter.replace("_", " ")}</span>) will be applied.
+            </p>
+            
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Start Date (Optional)</label>
+                <input 
+                  type="date"
+                  value={exportStartDate}
+                  onChange={(e) => setExportStartDate(e.target.value)}
+                  className="w-full h-11 px-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">End Date (Optional)</label>
+                <input 
+                  type="date"
+                  value={exportEndDate}
+                  onChange={(e) => setExportEndDate(e.target.value)}
+                  className="w-full h-11 px-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                />
+              </div>
+            </div>
+            
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setExportModalOpen(false)}
+                className="flex-1 py-3 text-sm font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmExportCSV}
+                className="flex-1 py-3 text-sm font-bold text-white bg-cyan-600 rounded-xl hover:bg-cyan-700 transition"
+              >
+                Download CSV
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

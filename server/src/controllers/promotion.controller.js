@@ -741,12 +741,34 @@ export const getAllPromotionsAdmin = async (req, res) => {
       filter.placement = req.query.placement;
     }
 
-    const promotions = await applyPromotionPopulate(
-      PromotionRequest.find(filter).sort({ createdAt: -1 })
-    );
+    const [promotions, activeNow, needsReview, expiringSoon, revenueResult] = await Promise.all([
+      applyPromotionPopulate(PromotionRequest.find(filter).sort({ createdAt: -1 })),
+      PromotionRequest.countDocuments({ status: "ACTIVE" }),
+      PromotionRequest.countDocuments({ status: { $in: ["PENDING_REVIEW", "APPROVED_WAITING_PAYMENT", "PAYMENT_PENDING"] } }),
+      PromotionRequest.countDocuments({
+        status: "ACTIVE",
+        endDate: { 
+          $lte: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+          $gte: new Date()
+        }
+      }),
+      PromotionRequest.aggregate([
+        { $match: { paymentStatus: "PAID", status: { $ne: "REJECTED" } } },
+        { $group: { _id: null, total: { $sum: "$amount" } } }
+      ])
+    ]);
+
+    const revenuePipeline = revenueResult.length > 0 ? revenueResult[0].total : 0;
 
     return res.json({
       promotions: promotions.map((promotion) => mapPromotionMetrics(promotion.toObject())),
+      stats: {
+        total: promotions.length,
+        activeNow,
+        needsReview,
+        expiringSoon,
+        revenuePipeline
+      }
     });
   } catch (error) {
     console.error("Get all promotions admin error:", error);

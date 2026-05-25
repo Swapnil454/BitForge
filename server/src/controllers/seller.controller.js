@@ -105,12 +105,18 @@ export const getSellerEarnings = async (req, res) => {
   const pendingPayouts = await Payout.find({
     sellerId,
     status: "pending",
-  });
+  }).sort({ createdAt: -1 });
 
   const pendingAmount = pendingPayouts.reduce(
     (sum, p) => sum + p.amount,
     0
   );
+
+  // Get payout history
+  const payoutHistory = await Payout.find({
+    sellerId,
+    status: { $in: ["paid", "rejected"] }
+  }).sort({ createdAt: -1 });
 
   const user = await User.findById(sellerId).select('bankAccounts');
   const primaryAccount = user?.bankAccounts?.find(acc => acc.isPrimary) || user?.bankAccounts?.[0] || null;
@@ -125,6 +131,18 @@ export const getSellerEarnings = async (req, res) => {
       amount: p.amount,
       requestedAt: p.createdAt,
       status: p.status
+    })),
+    payoutHistory: payoutHistory.map(p => ({
+      _id: p._id,
+      amount: p.amount,
+      requestedAt: p.createdAt,
+      status: p.status,
+      utrNumber: p.utrNumber,
+      paymentDate: p.paymentDate,
+      paymentMode: p.paymentMethod,
+      proofImageUrl: p.proofImageUrl,
+      rejectionReasons: p.rejectionReasons,
+      rejectionMessage: p.rejectionMessage
     })),
     bankAccount: primaryAccount ? {
       bankName: primaryAccount.bankName,

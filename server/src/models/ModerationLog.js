@@ -19,7 +19,10 @@ const ModerationLogSchema = new mongoose.Schema({
   },
   action: {
     type: String,
-    enum: ['approved', 'rejected', 'changes_requested'],
+    enum: [
+      'approved', 'rejected', 'changes_requested',
+      'scan_product_removed', 'scan_seller_notified', 'scan_whitelisted', 'scan_rescan_triggered'
+    ],
     required: true,
   },
   reasons: [{

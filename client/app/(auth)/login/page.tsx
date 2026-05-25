@@ -61,17 +61,28 @@ function LoginPageContent() {
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const getDefaultRouteForUser = (user: any) => {
+    const role = user?.role || "buyer";
+    const isSellerApproved =
+      user?.approvalStatus === "approved" || user?.isApproved === true;
+
+    if (role === "buyer") return "/marketplace";
+    if (role === "seller" && !isSellerApproved) return "/pending-approval";
+    return `/dashboard/${role}`;
+  };
+
   /* ================= AUTH CHECK ================= */
   useEffect(() => {
     const token = getCookie('token');
     const user = getStoredUser();
     if (token) {
       const role = user?.role || 'buyer';
-      if (role === 'buyer') {
-        router.replace(nextPath || '/marketplace');
-      } else {
-        router.replace(nextPath || `/dashboard/${role}`);
+      if (role === 'buyer' && nextPath) {
+        router.replace(nextPath);
+        return;
       }
+
+      router.replace(getDefaultRouteForUser(user));
     }
   }, [router, nextPath]);
 
@@ -137,11 +148,7 @@ function LoginPageContent() {
           toast.error("Please log in as a buyer to purchase. Redirecting to your dashboard.");
         }
 
-        if (role === "buyer") {
-          router.push("/marketplace");
-        } else {
-          router.push(`/dashboard/${role}`);
-        }
+        router.push(getDefaultRouteForUser(response.user));
       }, 1400);
     } catch (err: any) {
       const errResponse = err.response?.data;
@@ -185,11 +192,7 @@ function LoginPageContent() {
     }, 800);
 
     setTimeout(() => {
-      if (role === "buyer") {
-        router.push("/marketplace");
-      } else {
-        router.push(`/dashboard/${role}`);
-      }
+      router.push(getDefaultRouteForUser(user));
     }, 1400);
   };
 

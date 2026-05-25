@@ -132,6 +132,8 @@ export const adminAPI = {
         status?: string;
         sortBy?: string;
         dateRange?: string;
+        startDate?: string;
+        endDate?: string;
         userId?: string;
     }) => {
         const response = await api.get('/admin/transactions', { params });
@@ -203,23 +205,42 @@ export const adminAPI = {
         return response.data;
     },
 
-    getAllPayouts: async (params?: { status?: string; page?: number; limit?: number }) => {
+    getAllPayouts: async (params?: { status?: string; page?: number; limit?: number; search?: string; sort?: "newest" | "oldest" }) => {
         const response = await api.get('/admin/payouts/all', { params });
         return response.data;
     },
+
+    getPayoutAnalytics: async (params?: { range?: string }) => {
+        const response = await api.get('/admin/payouts/analytics', { params });
+        return response.data;
+    },
     
-    approvePayout: async (id: string, paymentData: { paymentReference: string; paymentNotes: string; paymentMethod?: string }) => {
+    approvePayout: async (id: string, paymentData: { utrNumber: string; paymentDate: string; paymentMode: string; proofImageUrl?: string; adminNote?: string }) => {
         const response = await api.post(`/admin/payouts/${id}/approve`, paymentData);
         return response.data;
     },
     
-    rejectPayout: async (id: string, reason: string) => {
-        const response = await api.post(`/admin/payouts/${id}/reject`, { reason });
+    rejectPayout: async (id: string, reasons: string[], message: string) => {
+        const response = await api.post(`/admin/payouts/${id}/reject`, { reasons, message });
+        return response.data;
+    },
+
+    uploadPayoutProof: async (id: string, file: File) => {
+        const formData = new FormData();
+        formData.append('proof', file);
+        const response = await api.post(`/admin/payouts/${id}/proof`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
         return response.data;
     },
     
-    getOpenDisputes: async () => {
-        const response = await api.get('/admin/disputes/open');
+    getAllDisputes: async (params?: { page?: number; limit?: number; search?: string; status?: string; sort?: string }) => {
+        const response = await api.get('/admin/disputes', { params });
+        return response.data;
+    },
+
+    getDisputeAnalytics: async (params?: { range?: string }) => {
+        const response = await api.get('/admin/disputes/analytics', { params });
         return response.data;
     },
     
@@ -340,14 +361,44 @@ export const adminAPI = {
         return response.data;
     },
 
-    getMalwareDashboardStats: async () => {
+    getMalwareStats: async () => {
         const response = await api.get('/admin/security/malware/stats');
         return response.data;
     },
 
-    getContentReviewQueue: async (severity?: 'all' | 'high' | 'medium' | 'low') => {
+    getMalwareScans: async (params?: { cursor?: string; limit?: number }) => {
+        const response = await api.get('/admin/security/malware/scans', { params });
+        return response.data;
+    },
+
+    getMalwareScanDetails: async (scanId: string) => {
+        const response = await api.get(`/admin/security/malware/scans/${scanId}`);
+        return response.data;
+    },
+
+    whitelistMalwareScan: async (scanId: string) => {
+        const response = await api.post(`/admin/security/malware/scans/${scanId}/whitelist`);
+        return response.data;
+    },
+
+    notifySellerThreat: async (scanId: string) => {
+        const response = await api.post(`/admin/security/malware/scans/${scanId}/notify`);
+        return response.data;
+    },
+
+    takedownMaliciousProduct: async (scanId: string) => {
+        const response = await api.post(`/admin/security/malware/scans/${scanId}/remove`);
+        return response.data;
+    },
+
+    rescanMalware: async (scanId: string) => {
+        const response = await api.post(`/admin/security/malware/scans/${scanId}/rescan`);
+        return response.data;
+    },
+
+    getContentReviewQueue: async (severity?: 'all' | 'high' | 'medium' | 'low', cursor?: string, limit?: number) => {
         const response = await api.get('/admin/security/content-review/queue', {
-            params: { severity }
+            params: { severity, cursor, limit }
         });
         return response.data;
     },
@@ -360,8 +411,10 @@ export const adminAPI = {
         return response.data;
     },
 
-    getPendingIdentityVerifications: async () => {
-        const response = await api.get('/admin/security/identity/pending');
+    getPendingIdentityVerifications: async (cursor?: string, limit?: number) => {
+        const response = await api.get('/admin/security/identity/pending', {
+            params: { cursor, limit }
+        });
         return response.data;
     },
 
@@ -371,7 +424,15 @@ export const adminAPI = {
             notes
         });
         return response.data;
-    }
+    },
+
+    viewIdentityDocument: async (publicId: string) => {
+        const response = await api.get('/admin/security/identity/document/view', { 
+            params: { publicId },
+            responseType: 'blob' 
+        });
+        return response.data;
+    },
 };
 
 // Seller API functions
@@ -936,6 +997,20 @@ export const userAPI = {
             newPassword,
             confirmPassword,
         });
+        return response.data;
+    },
+
+    uploadIdentityDocuments: async (formData: FormData) => {
+        const response = await api.post('/users/identity/upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+        return response.data;
+    },
+
+    getIdentityStatus: async () => {
+        const response = await api.get('/users/identity/status');
         return response.data;
     },
 

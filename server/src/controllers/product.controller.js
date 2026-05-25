@@ -472,6 +472,10 @@ export const uploadProduct = async (req, res) => {
       },
       contentReviewed: reviewResult.status,
       contentReviewDate: reviewResult.status === "auto-reviewed" ? new Date() : null,
+      requiresManualReview: reviewResult.requiresManualReview ?? false,
+      reviewSeverity: reviewResult.severity ?? null,
+      reviewFlags: reviewResult.flags ?? [],
+      reviewScore: reviewResult.score ?? null,
       refundEligible: true,
 
       status: "pending",
@@ -689,6 +693,15 @@ export const updateProduct = async (req, res) => {
       // Manual preview upload is deprecated but still supported for legacy
     }
 
+    // Auto-review content based on heuristics for updates
+    const reviewResult = autoReviewContent({
+      title: title?.trim() || product.title,
+      pageCount: pageCount ? Number(pageCount) : actualPageCount,
+      fileSizeBytes: fileSizeBytes,
+      price: price ? Number(price) : product.price,
+      description: description?.trim() || product.description
+    });
+
     const updateData = {
       title: title?.trim(),
       description: description?.trim(),
@@ -706,6 +719,12 @@ export const updateProduct = async (req, res) => {
       previewPdfKey: previewPdfKey,
       previewPdfUrl: previewPdfUrl,
       previewPages: previewPages,
+      contentReviewed: reviewResult.status,
+      contentReviewDate: reviewResult.status === "auto-reviewed" ? new Date() : null,
+      requiresManualReview: reviewResult.requiresManualReview ?? false,
+      reviewSeverity: reviewResult.severity ?? null,
+      reviewFlags: reviewResult.flags ?? [],
+      reviewScore: reviewResult.score ?? null,
     };
 
     if (deleteThumbnail === "true") {

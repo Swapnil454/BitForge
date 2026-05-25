@@ -57,6 +57,8 @@ export interface CareerFormData {
 interface CareerFormProps {
   initialData?: Career;
   isEditing?: boolean;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
 const DEPARTMENTS = ["Engineering", "Product", "Design", "Operations", "Marketing", "Sales", "Support", "Other"];
@@ -68,7 +70,7 @@ const CURRENCIES = [
   { value: "EUR", label: "EUR (€)" },
 ];
 
-export default function CareerForm({ initialData, isEditing = false }: CareerFormProps) {
+export default function CareerForm({ initialData, isEditing = false, onSuccess, onCancel }: CareerFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<CareerFormData>({
@@ -109,8 +111,12 @@ export default function CareerForm({ initialData, isEditing = false }: CareerFor
         await api.post("/careers/admin/create", formData);
         showSuccess("Career created successfully");
       }
-      router.push("/dashboard/admin/careers");
-      router.refresh();
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.push("/dashboard/admin/careers");
+        router.refresh();
+      }
     } catch (error: any) {
       console.error("Error saving career:", error);
       showError(error.response?.data?.message || "Failed to save career");
@@ -381,7 +387,7 @@ export default function CareerForm({ initialData, isEditing = false }: CareerFor
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end sm:gap-4">
           <button
             type="button"
-            onClick={() => router.back()}
+            onClick={() => onCancel ? onCancel() : router.back()}
             className="w-full rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 px-6 py-3 sm:px-8 sm:py-4 text-sm font-bold text-slate-900 dark:text-white transition-all hover:bg-slate-200 dark:hover:bg-white/10 sm:w-auto"
           >
             Cancel

@@ -10,6 +10,16 @@ function AuthSuccessPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const getDefaultRouteForUser = (user: any) => {
+    const role = user?.role || "buyer";
+    const isSellerApproved =
+      user?.approvalStatus === "approved" || user?.isApproved === true;
+
+    if (role === "buyer") return "/marketplace";
+    if (role === "seller" && !isSellerApproved) return "/pending-approval";
+    return `/dashboard/${role}`;
+  };
+
   useEffect(() => {
     const token = searchParams.get("token");
     const error = searchParams.get("error");
@@ -40,7 +50,9 @@ function AuthSuccessPageContent() {
           email: tokenData.email,
           phone: tokenData.phone,
           role: tokenData.role || 'buyer',
-          isVerified: tokenData.isVerified
+          isVerified: tokenData.isVerified,
+          approvalStatus: tokenData.approvalStatus,
+          isApproved: tokenData.isApproved,
         };
         
         // Store token and user data
@@ -48,7 +60,7 @@ function AuthSuccessPageContent() {
         setCookie("user", JSON.stringify(user), 7);
         
         toast.success("Successfully logged in!");
-        router.push(`/dashboard/${user.role}`);
+        router.push(getDefaultRouteForUser(user));
       } catch (error) {
         console.error(' Error decoding token:', error);
         toast.error("Authentication failed. Invalid token.");

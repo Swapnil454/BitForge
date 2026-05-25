@@ -114,9 +114,9 @@ export default function TransactionSidebar({ transaction, onClose }: Transaction
                     <div className="w-12 text-xs font-medium text-slate-500 dark:text-white/50">From</div>
                     <div>
                       <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                        {transaction.buyerName || "Unknown"}
+                        {transaction.type === "admin_to_seller" ? "BitForge Settlement Account" : (transaction.buyerName || "Unknown Buyer")}
                       </p>
-                      {transaction.buyerEmail && (
+                      {transaction.type !== "admin_to_seller" && transaction.buyerEmail && (
                         <p className="text-xs text-slate-500 dark:text-white/60">{transaction.buyerEmail}</p>
                       )}
                     </div>
@@ -125,9 +125,9 @@ export default function TransactionSidebar({ transaction, onClose }: Transaction
                     <div className="w-12 text-xs font-medium text-slate-500 dark:text-white/50">To</div>
                     <div>
                       <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                        {transaction.sellerName || "Unknown"}
+                        {transaction.type === "buyer_to_admin" ? "BitForge Settlement Account" : (transaction.sellerName || "Unknown Seller")}
                       </p>
-                      {transaction.sellerEmail && (
+                      {transaction.type !== "buyer_to_admin" && transaction.sellerEmail && (
                         <p className="text-xs text-slate-500 dark:text-white/60">{transaction.sellerEmail}</p>
                       )}
                     </div>
