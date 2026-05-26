@@ -11,6 +11,16 @@ import { removeCookie, setCookie } from "@/lib/cookies";
 function VerifyOtpPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const getDefaultRouteForUser = (user: any) => {
+    const role = user?.role || "buyer";
+    const isSellerApproved =
+      user?.approvalStatus === "approved" || user?.isApproved === true;
+
+    if (role === "buyer") return "/marketplace";
+    if (role === "seller" && !isSellerApproved) return "/pending-approval";
+    return `/dashboard/${role}`;
+  };
   
   const [email, setEmail] = useState<string | null>(null);
   const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
@@ -98,12 +108,7 @@ function VerifyOtpPageContent() {
       setShowSuccess(true);
 
       setTimeout(() => {
-        const role = result.user?.role || "buyer";
-        if (role === "buyer") {
-          router.push("/marketplace");
-        } else {
-          router.push(`/dashboard/${role}`);
-        }
+        router.push(getDefaultRouteForUser(result.user));
       }, 900);
     } catch (err: any) {
       toast.dismiss(loadingToast);

@@ -97,6 +97,55 @@ export default function RootLayout({
           }}
         />
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+        {/* Global Autofill Override */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              function disableAutofill(el) {
+                if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) {
+                  if (el.type !== 'password' && el.type !== 'email') {
+                    if (el.getAttribute('autocomplete') !== 'nope') el.setAttribute('autocomplete', 'nope');
+                    if (el.getAttribute('autocorrect') !== 'off') el.setAttribute('autocorrect', 'off');
+                    if (el.getAttribute('spellcheck') !== 'false') el.setAttribute('spellcheck', 'false');
+                    if (el.getAttribute('data-lpignore') !== 'true') el.setAttribute('data-lpignore', 'true');
+                    if (el.getAttribute('data-form-type') !== 'other') el.setAttribute('data-form-type', 'other');
+                  }
+                }
+              }
+
+              // Process existing elements
+              document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('input, textarea').forEach(disableAutofill);
+              });
+
+              // Intercept all newly added elements from React instantly
+              const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                  mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === 1) { 
+                      if (node.tagName === 'INPUT' || node.tagName === 'TEXTAREA') {
+                        disableAutofill(node);
+                      }
+                      if (node.querySelectorAll) {
+                        node.querySelectorAll('input, textarea').forEach(disableAutofill);
+                      }
+                    }
+                  });
+                });
+              });
+
+              observer.observe(document.documentElement, {
+                childList: true,
+                subtree: true
+              });
+
+              // Redundant fallback
+              document.addEventListener('focusin', function(e) {
+                disableAutofill(e.target);
+              });
+            `
+          }}
+        />
       </body>
     </html>
   );

@@ -53,16 +53,27 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    identityVerified: {
-      type: Boolean,
-      default: false,
-    },
-    identityVerifiedAt: {
-      type: Date,
-    },
-    identityVerificationNotes: {
+    identityVerificationStatus: {
       type: String,
+      enum: ['unverified', 'pending', 'verified', 'rejected'],
+      default: 'unverified'
     },
+    latestRejectionReason: String,
+    latestRejectionAt: Date,
+    identityDocuments: [{
+      url: String,
+      public_id: String,
+      documentType: { 
+        type: String, 
+        enum: ['government_id', 'drivers_license', 'proof_of_address', 'business_registration'] 
+      },
+      uploadedAt: Date,
+      submissionRound: Number,
+      reviewedAt: Date,
+      reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+      rejectionReason: String
+    }],
 
     // Moderation Stats for Sellers
     sellerStats: {

@@ -1,5 +1,3 @@
-
-
 import express from "express";
 import {
   getPendingSellers,
@@ -22,8 +20,11 @@ import {
   rejectPayout,
   getPayoutDetails,
   getAllPayouts,
+  uploadPayoutProof,
+  getPayoutAnalytics,
   getCommissionSummary,
-  getOpenDisputes,
+  getAllDisputes,
+  getDisputeAnalytics,
   getMonthlyGSTReport,
   getAllSellersWithBankAccounts,
   getSellerBankAccount,
@@ -42,11 +43,18 @@ import {
   getAllTransactions,
   bulkMarkTransactionsReviewed,
   getMalwareFlaggedProducts,
-  getMalwareDashboardStats,
+  getMalwareStats,
+  getMalwareScans,
+  getMalwareScanDetails,
+  whitelistMalwareScan,
+  notifySellerThreat,
+  takedownMaliciousProduct,
+  rescanMalware,
   getContentReviewQueue,
   resolveContentReview,
   verifySellerIdentity,
   getPendingIdentityVerifications,
+  viewIdentityDocument,
   getProductAnalytics,
   getProductReport,
   getModerationLogs
@@ -73,6 +81,7 @@ import {
 
 import authMiddleware from "../middleware/auth.js";
 import requireRole from "../middleware/requireRole.js";
+import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
@@ -113,15 +122,18 @@ router.post("/products/:id/changes/reject", rejectProductChange);
 // Payouts
 router.get("/payouts/pending", getPendingPayouts);
 router.get("/payouts/all", getAllPayouts);
+router.get("/payouts/analytics", getPayoutAnalytics);
 router.get("/payouts/:id", getPayoutDetails);
 router.post("/payouts/:id/approve", approvePayout);
 router.post("/payouts/:id/reject", rejectPayout);
+router.post("/payouts/:id/proof", upload.single("proof"), uploadPayoutProof);
 
 // Commission and financial reports
 router.get("/commission-summary", getCommissionSummary);
 
 // Disputes
-router.get("/disputes/open", getOpenDisputes);
+router.get("/disputes/analytics", getDisputeAnalytics);
+router.get("/disputes", getAllDisputes);
 router.post("/disputes/:disputeId/refund", approveRefund);
 router.post("/disputes/:disputeId/reject", rejectDispute);
 
@@ -149,11 +161,18 @@ router.post("/users/:id/unban", unbanUser);
 
 // Trust & Security Features
 router.get("/security/malware/flagged", getMalwareFlaggedProducts);
-router.get("/security/malware/stats", getMalwareDashboardStats);
+router.get("/security/malware/stats", getMalwareStats);
+router.get("/security/malware/scans", getMalwareScans);
+router.get("/security/malware/scans/:scanId", getMalwareScanDetails);
+router.post("/security/malware/scans/:scanId/whitelist", whitelistMalwareScan);
+router.post("/security/malware/scans/:scanId/notify", notifySellerThreat);
+router.post("/security/malware/scans/:scanId/remove", takedownMaliciousProduct);
+router.post("/security/malware/scans/:scanId/rescan", rescanMalware);
 router.get("/security/content-review/queue", getContentReviewQueue);
 router.post("/security/content-review/:id/resolve", resolveContentReview);
 router.get("/security/identity/pending", getPendingIdentityVerifications);
 router.post("/security/identity/:sellerId/verify", verifySellerIdentity);
+router.get("/security/identity/document/view", viewIdentityDocument);
 
 // Promotions
 router.get("/promotions", getAllPromotionsAdmin);

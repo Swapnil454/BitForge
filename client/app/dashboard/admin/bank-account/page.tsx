@@ -54,28 +54,11 @@ export default function AdminBankAccountPage() {
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [stats, setStats] = useState<BankStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
-  const [ifscLoading, setIfscLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [showAccountTypeDropdown, setShowAccountTypeDropdown] = useState(false);
   const [visibleAccounts, setVisibleAccounts] = useState<Record<string, boolean>>({});
-  const [showAccountNumberInput, setShowAccountNumberInput] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-
-  const [formData, setFormData] = useState({
-    accountHolderName: "",
-    accountNumber: "",
-    ifscCode: "",
-    bankName: "",
-    branchName: "",
-    accountType: "current" as "savings" | "current",
-    isPrimary: false,
-  });
 
   useEffect(() => {
     fetchData();
@@ -83,9 +66,6 @@ export default function AdminBankAccountPage() {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowAccountTypeDropdown(false);
-      }
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setShowMenu(false);
       }
@@ -111,51 +91,6 @@ export default function AdminBankAccountPage() {
     }
   };
 
-  const fetchBankFromIFSC = async (ifsc: string) => {
-    if (ifsc.length !== 11) return;
-    setIfscLoading(true);
-    try {
-      const res = await fetch(`https://ifsc.razorpay.com/${ifsc}`);
-      if (!res.ok) throw new Error("Invalid IFSC");
-      const data = await res.json();
-      setFormData((prev) => ({ ...prev, bankName: data.BANK || prev.bankName, branchName: data.BRANCH || prev.branchName }));
-    } catch {
-      // manual override allowed
-    } finally {
-      setIfscLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      if (editingAccount) {
-        await api.put(`/bank/${editingAccount.id}`, formData);
-        showSuccess("Bank account updated");
-      } else {
-        await api.post("/bank/add", formData);
-        showSuccess("Bank account added");
-      }
-      resetForm();
-      fetchData();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Failed");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleSetPrimary = async (id: string) => {
-    try {
-      await api.patch(`/bank/${id}/set-primary`);
-      showSuccess("Primary account updated");
-      fetchData();
-    } catch {
-      showError("Failed to set primary");
-    }
-  };
-
   const handleDelete = async (acc: BankAccount) => {
     if (acc.isPrimary) return;
     if (!confirm("Delete this bank account?")) return;
@@ -168,40 +103,14 @@ export default function AdminBankAccountPage() {
     }
   };
 
-  const handleEdit = (acc: BankAccount) => {
-    setEditingAccount(acc);
-    setFormData({
-      accountHolderName: acc.accountHolderName,
-      accountNumber: "",
-      ifscCode: acc.ifscCode,
-      bankName: acc.bankName,
-      branchName: acc.branchName,
-      accountType: acc.accountType,
-      isPrimary: acc.isPrimary,
-    });
-    setShowAddForm(true);
-  };
-
-  const resetForm = () => {
-    setShowAddForm(false);
-    setEditingAccount(null);
-    setShowAccountNumberInput(false);
-    setShowAccountTypeDropdown(false);
-    setFormData({
-      accountHolderName: "",
-      accountNumber: "",
-      ifscCode: "",
-      bankName: "",
-      branchName: "",
-      accountType: "current",
-      isPrimary: false,
-    });
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    if (name === "ifscCode") fetchBankFromIFSC(value.toUpperCase());
+  const handleSetPrimary = async (id: string) => {
+    try {
+      await api.patch(`/bank/${id}/set-primary`);
+      showSuccess("Set as primary account");
+      fetchData();
+    } catch {
+      showError("Failed to set primary account");
+    }
   };
 
   const toggleAccountVisibility = (id: string) => {
@@ -211,8 +120,12 @@ export default function AdminBankAccountPage() {
   /* === SKELETON === */
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
-        <div className="h-16 w-full border-b border-slate-200 dark:border-white/[0.05] bg-slate-50 dark:bg-[#0a0a0f]" />
+      <main className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#f1f5f9_48%,#eef2f7_100%)] dark:bg-[linear-gradient(180deg,#05070c_0%,#0a1220_48%,#05070c_100%)] text-slate-900 dark:text-white">
+        <PageHeader
+          backHref="/dashboard/admin"
+          backLabel="Dashboard"
+          title="Bank Accounts"
+        />
         <section className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6 animate-pulse">
           <div className="flex justify-between items-center">
             <div className="h-6 w-36 bg-white dark:bg-[#16161e] rounded-lg" />
@@ -230,7 +143,7 @@ export default function AdminBankAccountPage() {
 
   /* === UI === */
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-20">
+    <main className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#f1f5f9_48%,#eef2f7_100%)] dark:bg-[linear-gradient(180deg,#05070c_0%,#0a1220_48%,#05070c_100%)] text-slate-900 dark:text-white pb-20">
       <PageHeader
         backHref="/dashboard/admin"
         backLabel="Back"
@@ -260,14 +173,6 @@ export default function AdminBankAccountPage() {
                     Analytics
                   </button>
                   <div className="h-px bg-slate-100 dark:bg-white/[0.04] mx-3" />
-                  <button
-                    onClick={() => { fetchData(true); setShowMenu(false); }}
-                    disabled={refreshing}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-xs font-black uppercase tracking-widest text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-all disabled:opacity-40"
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
-                    Refresh
-                  </button>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -280,15 +185,12 @@ export default function AdminBankAccountPage() {
 
         {/* Section heading */}
         <div className="flex justify-between items-center px-1">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/20 mb-0.5">Registered</p>
-            <h2 className="text-sm font-black text-slate-700 dark:text-white/70">Payout Accounts</h2>
-          </div>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white">Payout Accounts</h2>
           <button
-            onClick={() => setShowAddForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-[#05050a] text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+            onClick={() => router.push("/dashboard/admin/bank-account/add")}
+            className="flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-cyan-500 hover:bg-cyan-400 text-[#05050a] text-sm font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.2)] hover:shadow-[0_0_25px_rgba(6,182,212,0.4)]"
           >
-            <Plus className="w-3.5 h-3.5" strokeWidth={3} />
+            <Plus className="w-4 h-4" strokeWidth={3} />
             <span className="hidden sm:inline">Add Account</span>
             <span className="sm:hidden">Add</span>
           </button>
@@ -304,7 +206,7 @@ export default function AdminBankAccountPage() {
               <h3 className="text-sm font-black text-slate-500 dark:text-white/30 mb-1">No Accounts Added</h3>
               <p className="text-xs text-slate-400 dark:text-white/15 font-medium mb-6 text-center">Add a bank account to manage commission payouts.</p>
               <button
-                onClick={() => setShowAddForm(true)}
+                onClick={() => router.push("/dashboard/admin/bank-account/add")}
                 className="px-5 py-2.5 bg-cyan-500 text-[#05050a] text-xs font-black uppercase tracking-widest rounded-xl flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
@@ -316,277 +218,108 @@ export default function AdminBankAccountPage() {
               .sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary))
               .map((acc, index) => (
                 <motion.div
-                  key={acc.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={`relative group bg-white dark:bg-[#16161e] border rounded-2xl p-5 transition-all duration-300 ${
-                    acc.isPrimary
-                      ? "border-cyan-500/30 shadow-[0_0_25px_rgba(6,182,212,0.05)]"
-                      : "border-slate-200 dark:border-white/[0.05] hover:border-slate-200 dark:hover:border-white/10"
+                  transition={{ delay: index * 0.1 }}
+                  key={acc.id}
+                  className={`relative group border rounded-2xl p-5 sm:p-6 transition-all duration-300 shadow-lg ${
+                    acc.isPrimary 
+                      ? "bg-[linear-gradient(180deg,#ffffff_0%,#f0fdfa_100%)] dark:bg-[linear-gradient(180deg,#0a151c_0%,#050c12_100%)] border-cyan-400 dark:border-cyan-500/50 shadow-[0_12px_30px_rgba(6,182,212,0.15)]" 
+                      : "bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] dark:bg-[linear-gradient(180deg,#12141c_0%,#0b0b14_100%)] border-slate-200 dark:border-white/10 hover:border-cyan-300 dark:hover:border-cyan-500/30 hover:shadow-[0_12px_30px_rgba(6,182,212,0.08)]"
                   }`}
                 >
-                  {/* Primary badge */}
+                  {/* Primary Badge */}
                   {acc.isPrimary && (
-                    <div className="absolute -top-2.5 left-5 px-2.5 py-0.5 bg-cyan-500 text-[#05050a] text-[9px] font-black tracking-widest uppercase rounded-full">
-                      Primary
+                    <div className="absolute -top-3 left-6 px-3 py-1 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-black tracking-widest uppercase rounded-full shadow-[0_0_15px_rgba(6,182,212,0.4)]">
+                      Primary Account
                     </div>
                   )}
 
-                  {/* Header */}
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-sm font-black text-slate-800 dark:text-white/90">{acc.accountHolderName}</h3>
-                      <p className="text-xs text-cyan-600 dark:text-cyan-400/70 font-medium mt-0.5 flex items-center gap-1">
-                        <Landmark className="w-3 h-3" />
+                      <h3 className="text-lg font-black text-slate-900 dark:text-white">{acc.accountHolderName}</h3>
+                      <p className="text-sm font-medium text-cyan-400 mt-0.5 flex items-center gap-1.5">
+                        <Landmark className="w-3.5 h-3.5" />
                         {acc.bankName || "Unknown Bank"}
                       </p>
                     </div>
-                    <div className={`shrink-0 px-2 py-1 rounded-lg text-[10px] font-black border flex items-center gap-1 ${
-                      acc.isVerified
-                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                        : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                    
+                    {/* Status Badge */}
+                    <div className={`shrink-0 px-2.5 py-1 rounded-md text-xs font-bold border flex items-center gap-1.5 ${
+                      acc.isVerified 
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+                        : "bg-amber-500/10 text-amber-400 border-amber-500/20"
                     }`}>
-                      {acc.isVerified ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                      {acc.isVerified ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
                       <span className="hidden sm:inline">{acc.isVerified ? "Verified" : "Pending"}</span>
                     </div>
                   </div>
 
-                  {/* Account details */}
-                  <div className="bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.04] rounded-xl p-4 mb-4 space-y-2">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-500 dark:text-white/30 font-medium">Account No</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-slate-900 dark:text-white font-mono font-bold tracking-wider">
+                  <div className={`border rounded-xl p-4 mb-5 space-y-2 backdrop-blur-sm ${
+                    acc.isPrimary
+                      ? "bg-cyan-50/50 dark:bg-cyan-950/20 border-cyan-100 dark:border-cyan-900/30"
+                      : "bg-slate-50/80 dark:bg-[#151722]/60 border-slate-200/60 dark:border-white/5"
+                  }`}>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-slate-500 dark:text-zinc-500 font-medium shrink-0">Account No</span>
+                      <div className="flex items-center justify-end gap-2 overflow-hidden w-full ml-4">
+                        <span className={`text-slate-900 dark:text-white font-mono font-bold tracking-wider truncate text-right ${visibleAccounts[acc.id] ? "select-all" : ""}`}>
                           {visibleAccounts[acc.id] ? acc.accountNumber : maskAccountNumber(acc.accountNumber)}
                         </span>
-                        <button
-                          onClick={() => toggleAccountVisibility(acc.id)}
-                          className="text-slate-400 dark:text-white/20 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-white/5"
+                        <button 
+                          onClick={() => toggleAccountVisibility(acc.id)} 
+                          className="text-slate-500 dark:text-zinc-500 hover:text-cyan-400 transition-colors shrink-0 p-1.5 -mr-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-white/5"
                         >
-                          {visibleAccounts[acc.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          {visibleAccounts[acc.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                       </div>
                     </div>
-                    <div className="flex justify-between items-center text-xs pt-1 border-t border-slate-200 dark:border-white/[0.03]">
-                      <span className="text-slate-500 dark:text-white/30 font-medium">IFSC Code</span>
-                      <span className="text-slate-600 dark:text-white/70 font-mono tracking-wider">{acc.ifscCode}</span>
+                    <div className="flex justify-between items-center text-sm pt-1 border-t border-slate-200 dark:border-[#27272a]/50">
+                      <span className="text-slate-500 dark:text-zinc-500 font-medium">IFSC Code</span>
+                      <span className="text-slate-700 dark:text-zinc-300 font-mono tracking-wider text-right">
+                        {acc.ifscCode}
+                      </span>
                     </div>
                     {acc.branchName && (
-                      <div className="flex justify-between items-center text-xs pt-1 border-t border-slate-200 dark:border-white/[0.03]">
-                        <span className="text-slate-500 dark:text-white/30 font-medium">Branch</span>
-                        <span className="text-slate-600 dark:text-white/50 text-right line-clamp-1 max-w-[160px]">{acc.branchName}</span>
+                      <div className="flex justify-between items-center text-sm pt-3 mt-1 border-t border-slate-200 dark:border-[#27272a]/50">
+                        <span className="text-slate-500 dark:text-zinc-500 font-medium">Branch</span>
+                        <span className="text-slate-600 dark:text-zinc-400 text-right line-clamp-1 max-w-[180px]">
+                          {acc.branchName}
+                        </span>
                       </div>
                     )}
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-2 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                    {!acc.isPrimary && (
-                      <button
+                  {acc.isPrimary ? (
+                    <div className="text-center py-2">
+                      <p className="text-xs font-semibold text-slate-500 dark:text-zinc-500 flex items-center justify-center gap-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        You can't remove primary account
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex gap-3 sm:opacity-0 group-hover:opacity-100 transition-opacity mt-2 flex-wrap">
+                      <button 
                         onClick={() => handleSetPrimary(acc.id)}
-                        className="flex-1 py-2 bg-slate-50 dark:bg-[#1c1c24] hover:bg-slate-100 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.05] text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
+                        className="flex-1 bg-slate-100 dark:bg-[#18181b] hover:bg-slate-200 dark:hover:bg-[#27272a] border border-slate-200 dark:border-[#27272a] text-slate-900 dark:text-white py-2 rounded-xl text-sm font-semibold transition-colors"
                       >
                         Set Primary
                       </button>
-                    )}
-                    <button
-                      onClick={() => handleEdit(acc)}
-                      className="flex-1 py-2 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-1.5"
-                    >
-                      <PencilLine className="w-3.5 h-3.5" />
-                      Edit
-                    </button>
-                    <button
-                      disabled={acc.isPrimary}
-                      onClick={() => handleDelete(acc)}
-                      className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border flex items-center justify-center gap-1.5 transition-all ${
-                        acc.isPrimary
-                          ? "bg-red-500/5 text-red-500/40 dark:text-red-500/20 border-red-500/10 cursor-not-allowed"
-                          : "bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/20"
-                      }`}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      Delete
-                    </button>
-                  </div>
+                      <button 
+                        onClick={() => handleDelete(acc)}
+                        className="flex-1 flex justify-center items-center gap-1.5 py-2 rounded-xl text-sm font-semibold transition-colors bg-red-500/10 hover:bg-red-500/20 text-red-500 dark:text-red-400 border border-red-500/20"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Remove
+                      </button>
+                    </div>
+                  )}
                 </motion.div>
               ))
           )}
         </div>
       </section>
 
-      {/* ADD / EDIT MODAL */}
-      <AnimatePresence>
-        {showAddForm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/50 dark:bg-black/70 backdrop-blur-sm"
-            onClick={resetForm}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.08] rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden"
-            >
-              {/* Modal Header */}
-              <div className="px-6 py-5 border-b border-slate-200 dark:border-white/[0.05] flex items-center justify-between">
-                <h2 className="text-sm font-black flex items-center gap-2">
-                  <Landmark className="w-5 h-5 text-cyan-500" />
-                  {editingAccount ? "Edit Bank Account" : "Add Bank Account"}
-                </h2>
-                <button onClick={resetForm} className="p-2 text-slate-500 dark:text-white/30 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/[0.03] hover:bg-slate-200 dark:hover:bg-white/[0.08] rounded-xl transition-all">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Modal Body */}
-              <div className="p-6 max-h-[65vh] overflow-y-auto">
-                <form id="bank-form" onSubmit={handleSubmit} className="grid sm:grid-cols-2 gap-5">
-                  {/* Account Holder Name */}
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30">Account Holder Name</label>
-                    <div className="relative">
-                      <input
-                        name="accountHolderName"
-                        value={formData.accountHolderName}
-                        onChange={handleInputChange}
-                        placeholder="e.g. Company Pvt Ltd"
-                        required
-                        className="w-full bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.06] rounded-xl px-4 py-3 pl-11 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 focus:border-cyan-500/40 transition-all"
-                      />
-                      <ShieldCheck className="w-4 h-4 text-slate-400 dark:text-white/20 absolute left-3.5 top-3.5" />
-                    </div>
-                  </div>
-
-                  {/* Account Number */}
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30">Account Number</label>
-                    <div className="relative">
-                      <input
-                        name="accountNumber"
-                        value={formData.accountNumber}
-                        onChange={handleInputChange}
-                        placeholder="Enter account number"
-                        required
-                        type={showAccountNumberInput ? "text" : "password"}
-                        className="w-full bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.06] rounded-xl px-4 py-3 pl-11 pr-12 text-sm text-slate-900 dark:text-white font-mono tracking-widest placeholder:text-slate-400 dark:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 focus:border-cyan-500/40 transition-all"
-                      />
-                      <CreditCard className="w-4 h-4 text-slate-400 dark:text-white/20 absolute left-3.5 top-3.5" />
-                      <button
-                        type="button"
-                        onClick={() => setShowAccountNumberInput(!showAccountNumberInput)}
-                        className="absolute right-3 top-3 p-1 text-slate-400 dark:text-white/20 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors rounded-lg hover:bg-slate-200 dark:hover:bg-white/5"
-                      >
-                        {showAccountNumberInput ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* IFSC */}
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30">IFSC Code</label>
-                    <div className="relative">
-                      <input
-                        name="ifscCode"
-                        value={formData.ifscCode}
-                        onChange={handleInputChange}
-                        placeholder="e.g. SBIN0001234"
-                        required
-                        maxLength={11}
-                        className="w-full bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.06] rounded-xl px-4 py-3 pl-11 text-sm text-slate-900 dark:text-white uppercase placeholder:text-slate-400 dark:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 focus:border-cyan-500/40 transition-all"
-                      />
-                      <Building2 className="w-4 h-4 text-slate-400 dark:text-white/20 absolute left-3.5 top-3.5" />
-                      {ifscLoading && (
-                        <span className="absolute right-3.5 top-3.5 h-4 w-4 border-2 border-slate-200 dark:border-white/10 border-t-cyan-500 rounded-full animate-spin" />
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Account Type dropdown */}
-                  <div className="space-y-1.5 relative" ref={dropdownRef}>
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30">Account Type</label>
-                    <div
-                      onClick={() => setShowAccountTypeDropdown(!showAccountTypeDropdown)}
-                      className="w-full bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.06] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white flex justify-between items-center cursor-pointer hover:border-cyan-500/40 transition-all"
-                    >
-                      <span className="capitalize">{formData.accountType} Account</span>
-                      <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-white/30 transition-transform ${showAccountTypeDropdown ? "rotate-180" : ""}`} />
-                    </div>
-                    <AnimatePresence>
-                      {showAccountTypeDropdown && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -8 }}
-                          className="absolute z-50 top-[calc(100%+0.5rem)] left-0 w-full bg-white dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.08] rounded-xl shadow-xl overflow-hidden"
-                        >
-                          {["current", "savings"].map((type) => (
-                            <div
-                              key={type}
-                              onClick={() => { setFormData((p) => ({ ...p, accountType: type as any })); setShowAccountTypeDropdown(false); }}
-                              className={`px-4 py-3 text-sm cursor-pointer capitalize transition-colors ${formData.accountType === type ? "bg-cyan-50/50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400" : "text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/[0.04]"}`}
-                            >
-                              {type} Account
-                            </div>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  {/* Bank Name */}
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30">Bank Name</label>
-                    <input
-                      name="bankName"
-                      value={formData.bankName}
-                      onChange={handleInputChange}
-                      placeholder="Auto-filled via IFSC"
-                      className="w-full bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.06] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 transition-all"
-                    />
-                  </div>
-
-                  {/* Branch Name */}
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/30">Branch Name</label>
-                    <input
-                      name="branchName"
-                      value={formData.branchName}
-                      onChange={handleInputChange}
-                      placeholder="Auto-filled via IFSC"
-                      className="w-full bg-slate-50 dark:bg-[#1c1c24] border border-slate-200 dark:border-white/[0.06] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-500/40 transition-all"
-                    />
-                  </div>
-                </form>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="px-6 py-5 border-t border-slate-200 dark:border-white/[0.05] flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="w-full sm:w-auto px-6 py-3 text-xs font-black uppercase tracking-widest text-slate-500 dark:text-white/40 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/[0.03] hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.06] rounded-xl transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  form="bank-form"
-                  disabled={submitting}
-                  className="w-full sm:w-auto px-8 py-3 text-xs font-black uppercase tracking-widest bg-cyan-500 hover:bg-cyan-400 text-[#05050a] rounded-xl transition-all shadow-[0_0_15px_rgba(6,182,212,0.2)] disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {submitting && <span className="h-4 w-4 border-2 border-[#05050a]/30 border-t-[#05050a] rounded-full animate-spin" />}
-                  {editingAccount ? "Save Changes" : "Add Account"}
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </main>
   );
 }

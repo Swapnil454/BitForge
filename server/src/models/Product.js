@@ -67,6 +67,14 @@ const productSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  scanStatus: {
+    type: String,
+    enum: ["PENDING", "SCANNING", "CLEAN", "FLAGGED", "MALICIOUS", "SCAN_FAILED", "MANUALLY_REVIEWED"],
+    // nullable, no default initially for zero-downtime migration
+  },
+  scanLockedAt: {
+    type: Date,
+  },
   malwareScanDate: {
     type: Date,
   },
@@ -92,6 +100,34 @@ const productSchema = new mongoose.Schema({
   },
   contentReviewDate: {
     type: Date,
+  },
+  requiresManualReview: { 
+    type: Boolean, 
+    default: false,
+    index: true
+  },
+  reviewSeverity: { 
+    type: String, 
+    enum: ['high', 'medium', 'low', null], 
+    default: null 
+  },
+  reviewFlags: [{ 
+    type: String 
+  }],
+  reviewScore: {
+    type: Number,
+    default: null,
+    min: 0,
+    max: 100
+  },
+  reviewedAt: {
+    type: Date,
+    default: null
+  },
+  reviewedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
   },
   refundEligible: {
     type: Boolean,

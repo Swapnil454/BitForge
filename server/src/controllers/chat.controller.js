@@ -61,11 +61,27 @@ export const sendSupportMessage = async (req, res) => {
     const isAdminSender = user.role === "admin";
     const toUser = isAdminSender ? admin : admin; // for non-admins, to admin; for admin, still to admin for now
 
+    // Get or generate supportTicketId
+    let ticketId = null;
+    const prevMessage = await ChatMessage.findOne({
+      $or: [
+        { from: user._id, toRole: "admin" },
+        { to: user._id, fromRole: "admin" },
+      ]
+    }).select("supportTicketId").lean();
+
+    if (prevMessage && prevMessage.supportTicketId) {
+      ticketId = prevMessage.supportTicketId;
+    } else {
+      ticketId = `TKT-${Date.now().toString(36).toUpperCase()}`;
+    }
+
     const chat = await ChatMessage.create({
       from: user._id,
       to: toUser._id,
       fromRole: user.role,
       toRole: toUser.role,
+      supportTicketId: ticketId,
       message: message?.trim() || "",
       attachments: attachments || [],
       readBy: [user._id],
@@ -123,104 +139,79 @@ export const adminListConversations = async (req, res) => {
       return res.status(403).json({ message: "Forbidden" });
     }
 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
     const pipeline = [
-      {
-        $match: {
-          $or: [
-            { fromRole: { $ne: "admin" }, toRole: "admin" },
-            { toRole: { $ne: "admin" }, fromRole: "admin" },
-          ],
-        },
-      },
-      {
-        $addFields: {
-          userId: {
-            $cond: [
-              { $ne: ["$fromRole", "admin"] },
-              "$from",
-              "$to",
-            ],
-          },
-          // Check if this message is unread by admin (sent by non-admin to admin)
-          isUnreadByAdmin: {
-            $and: [
-              { $ne: ["$fromRole", "admin"] },
-              { $eq: ["$toRole", "admin"] },
-              { $not: { $in: [admin._id, { $ifNull: ["$readBy", []] }] } },
-            ],
-          },
-        },
-      },
-      {
-        $group: {
-          _id: "$userId",
-          lastMessageAt: { $max: "$createdAt" },
-          unreadCount: { $sum: { $cond: ["$isUnreadByAdmin", 1, 0] } },
-        },
-      },
+      { $match: { role: { $ne: "admin" } } },
       {
         $lookup: {
           from: "chatmessages",
-          let: { conversationUserId: "$_id" },
+          let: { userId: "$_id" },
           pipeline: [
             {
               $match: {
                 $expr: {
-                  $and: [
-                    { $eq: ["$from", "$$conversationUserId"] },
-                    { $eq: ["$toRole", "admin"] },
-                  ],
+                  $or: [
+                    { $and: [{ $eq: ["$from", "$$userId"] }, { $eq: ["$toRole", "admin"] }] },
+                    { $and: [{ $eq: ["$to", "$$userId"] }, { $eq: ["$fromRole", "admin"] }] }
+                  ]
                 },
-              },
+                status: { $ne: "placeholderDeleted" }
+              }
             },
-            { $sort: { createdAt: -1 } },
-            { $limit: 1 },
-            {
-              $project: {
-                message: 1,
-                attachments: 1,
-                createdAt: 1,
-                status: 1,
-                isDeleted: 1,
-              },
-            },
+            { $sort: { createdAt: -1 } }
           ],
-          as: "latestIncoming",
-        },
+          as: "chats"
+        }
       },
       {
-        $addFields: {
-          latestIncoming: { $arrayElemAt: ["$latestIncoming", 0] },
-        },
+        $project: {
+          userId: "$_id",
+          name: 1,
+          role: 1,
+          email: 1,
+          createdAt: 1,
+          lastMessage: { $arrayElemAt: ["$chats", 0] },
+          unreadCount: {
+            $size: {
+              $filter: {
+                input: "$chats",
+                as: "chat",
+                cond: {
+                  $and: [
+                    { $eq: ["$$chat.toRole", "admin"] },
+                    { $not: { $in: [admin._id, { $ifNull: ["$$chat.readBy", []] }] } }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: 1,
+          name: 1,
+          role: 1,
+          email: 1,
+          lastMessageAt: { $ifNull: ["$lastMessage.createdAt", "$createdAt"] },
+          lastIncomingMessage: { $ifNull: ["$lastMessage.message", "No messages yet"] },
+          lastIncomingAttachments: { $ifNull: ["$lastMessage.attachments", []] },
+          lastIncomingAt: { $ifNull: ["$lastMessage.createdAt", "$createdAt"] },
+          lastIncomingStatus: { $ifNull: ["$lastMessage.status", "active"] },
+          lastIncomingIsDeleted: { $ifNull: ["$lastMessage.isDeleted", false] },
+          unreadCount: 1
+        }
       },
       { $sort: { lastMessageAt: -1 } },
+      { $skip: skip },
+      { $limit: limit }
     ];
 
-    const results = await ChatMessage.aggregate(pipeline);
-
-    const userIds = results.map((r) => r._id);
-    const users = await User.find({ _id: { $in: userIds } }).select(
-      "name role email"
-    );
-
-    const conversations = results.map((r) => {
-      const user = users.find((u) => u._id.equals(r._id));
-      return {
-        userId: r._id,
-        name: user?.name || "Unknown",
-        role: user?.role || "buyer",
-        email: user?.email || "",
-        lastMessageAt: r.lastMessageAt,
-        unreadCount: r.unreadCount || 0,
-        lastIncomingMessage: r.latestIncoming?.message || "",
-        lastIncomingAttachments: r.latestIncoming?.attachments || [],
-        lastIncomingAt: r.latestIncoming?.createdAt || null,
-        lastIncomingStatus:
-          r.latestIncoming?.status ||
-          (r.latestIncoming?.isDeleted ? "deleted" : "active"),
-        lastIncomingIsDeleted: Boolean(r.latestIncoming?.isDeleted),
-      };
-    });
+    const conversations = await User.aggregate(pipeline);
 
     return res.json({ conversations });
   } catch (err) {
@@ -239,19 +230,54 @@ export const adminGetThread = async (req, res) => {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-      const messages = await ChatMessage.find({
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 7;
+    const skip = (page - 1) * limit;
+
+    const messagesDesc = await ChatMessage.find({
+      $or: [
+        { from: userId, toRole: "admin" },
+        { to: userId, fromRole: "admin" },
+      ],
+      deletedFor: { $ne: admin._id },
+      status: { $ne: "placeholderDeleted" },
+    })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .populate("from", "name role")
+    .populate("to", "name role");
+
+    const messages = messagesDesc.reverse();
+
+    let avgResponseTime = null;
+    let ticketId = null;
+
+    if (page === 1) {
+      const allMessages = await ChatMessage.find({
         $or: [
           { from: userId, toRole: "admin" },
           { to: userId, fromRole: "admin" },
         ],
         deletedFor: { $ne: admin._id },
         status: { $ne: "placeholderDeleted" },
-      })
-      .sort("createdAt")
-      .populate("from", "name role")
-      .populate("to", "name role");
+      }).sort("createdAt");
 
-    return res.json({ messages });
+      const pairs = [];
+      for (let i = 0; i < allMessages.length - 1; i++) {
+        if (allMessages[i].fromRole !== 'admin' && allMessages[i + 1].fromRole === 'admin') {
+          pairs.push(allMessages[i + 1].createdAt - allMessages[i].createdAt);
+        }
+      }
+      if (pairs.length > 0) {
+        const avgMs = pairs.reduce((a, b) => a + b, 0) / pairs.length;
+        avgResponseTime = Math.round(avgMs / 60000); // returns minutes
+      }
+
+      ticketId = allMessages.length > 0 ? (allMessages[0].supportTicketId || null) : null;
+    }
+
+    return res.json({ messages, avgResponseTime, ticketId });
   } catch (err) {
     console.error("adminGetThread error", err);
     return res.status(500).json({ message: "Failed to load thread" });
@@ -263,14 +289,14 @@ export const adminSendMessage = async (req, res) => {
   try {
     const admin = req.user;
     const { userId } = req.params;
-    const { message } = req.body;
+    const { message, attachments } = req.body;
 
     if (!admin || admin.role !== "admin") {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    if (!message || typeof message !== "string" || !message.trim()) {
-      return res.status(400).json({ message: "Message is required" });
+    if ((!message || typeof message !== "string" || !message.trim()) && (!attachments || attachments.length === 0)) {
+      return res.status(400).json({ message: "Message or attachment is required" });
     }
 
     const user = await User.findById(userId);
@@ -279,12 +305,29 @@ export const adminSendMessage = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Get or generate supportTicketId
+    let ticketId = null;
+    const prevMessage = await ChatMessage.findOne({
+      $or: [
+        { from: user._id, toRole: "admin" },
+        { to: user._id, fromRole: "admin" },
+      ]
+    }).select("supportTicketId").lean();
+
+    if (prevMessage && prevMessage.supportTicketId) {
+      ticketId = prevMessage.supportTicketId;
+    } else {
+      ticketId = `TKT-${Date.now().toString(36).toUpperCase()}`;
+    }
+
     const chat = await ChatMessage.create({
       from: admin._id,
       to: user._id,
       fromRole: "admin",
       toRole: user.role,
-      message: message.trim(),
+      supportTicketId: ticketId,
+      message: message?.trim() || "",
+      attachments: attachments || [],
       readBy: [admin._id],
     });
 
@@ -361,6 +404,15 @@ export const markAllAsRead = async (req, res) => {
       { $addToSet: { readBy: user._id } }
     );
 
+    // Notify the senders that their messages were read
+    try {
+      const io = getIO();
+      // Emitting to everyone might be broad, but works to update admin dashboards
+      io.emit("chat:messages-read", { readerId: String(user._id) });
+    } catch (err) {
+      console.error("markAllAsRead socket emit error", err);
+    }
+
     return res.json({ message: "Marked as read" });
   } catch (err) {
     console.error("markAllAsRead error", err);
@@ -387,6 +439,13 @@ export const adminMarkThreadAsRead = async (req, res) => {
       },
       { $addToSet: { readBy: admin._id } }
     );
+
+    try {
+      const io = getIO();
+      io.to(String(userId)).emit("chat:messages-read", { readerId: String(admin._id) });
+    } catch (err) {
+      console.error("adminMarkThreadAsRead socket emit error", err);
+    }
 
     return res.json({ message: "Thread marked as read" });
   } catch (err) {

@@ -193,19 +193,19 @@ export const formatPromotionDate = (value?: string | null) => {
 export const getPromotionStatusClasses = (status: PromotionStatus) => {
   switch (status) {
     case "ACTIVE":
-      return "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
+      return "bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-500/30";
     case "APPROVED_WAITING_PAYMENT":
     case "PAYMENT_PENDING":
-      return "bg-amber-500/15 text-amber-300 border-amber-500/30";
+      return "bg-amber-50 text-amber-600 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/30";
     case "REJECTED":
     case "CANCELLED":
-      return "bg-red-500/15 text-red-300 border-red-500/30";
+      return "bg-red-50 text-red-600 border border-red-200 dark:bg-red-500/15 dark:text-red-400 dark:border-red-500/30";
     case "PAUSED":
-      return "bg-sky-500/15 text-sky-300 border-sky-500/30";
+      return "bg-sky-50 text-sky-600 border border-sky-200 dark:bg-sky-500/15 dark:text-sky-400 dark:border-sky-500/30";
     case "EXPIRED":
-      return "bg-slate-500/15 text-slate-300 border-slate-500/30";
+      return "bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-500/15 dark:text-slate-300 dark:border-slate-500/30";
     default:
-      return "bg-violet-500/15 text-violet-300 border-violet-500/30";
+      return "bg-violet-50 text-violet-600 border border-violet-200 dark:bg-violet-500/15 dark:text-violet-400 dark:border-violet-500/30";
   }
 };
 

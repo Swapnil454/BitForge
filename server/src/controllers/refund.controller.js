@@ -59,7 +59,7 @@ export const approveRefund = async (req, res) => {
       }
     );
 
-    res.json({ message: "Refund processed" });
+    res.json({ message: "Refund processed", dispute });
   } catch (error) {
     console.error("Error approving refund:", error);
     res.status(500).json({ message: "Failed to process refund" });
@@ -113,7 +113,7 @@ export const rejectDispute = async (req, res) => {
       }
     );
 
-    res.json({ message: "Dispute rejected" });
+    res.json({ message: "Dispute rejected", dispute });
   } catch (error) {
     console.error("Error rejecting dispute:", error);
     res.status(500).json({ message: "Failed to reject dispute" });

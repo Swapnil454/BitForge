@@ -34,6 +34,10 @@ const chatMessageSchema = new mongoose.Schema(
         name: { type: String, required: true },
       }
     ],
+    supportTicketId: {
+      type: String,
+      default: null,
+    },
     status: {
       type: String,
       enum: ["active", "deleted", "placeholderDeleted"],

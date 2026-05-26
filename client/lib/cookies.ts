@@ -13,7 +13,7 @@ function normalizeStoredUser(raw: unknown) {
     role: user.role ?? "buyer",
     isVerified: Boolean(user.isVerified),
     approvalStatus: user.approvalStatus,
-    isApproved: Boolean(user.isApproved),
+    isApproved: typeof user.isApproved === "boolean" ? user.isApproved : undefined,
     accountStatus: user.accountStatus ?? "active",
     bannedReason: user.bannedReason,
     profilePictureUrl: user.profilePictureUrl,

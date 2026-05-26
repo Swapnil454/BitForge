@@ -1,6 +1,3 @@
-
-
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,20 +6,29 @@ import { sellerAPI } from "@/lib/api";
 import toast from "react-hot-toast";
 import { getStoredUser } from "@/lib/cookies";
 import PageHeader from "../../buyer/transactions/components/PageHeader";
-import { Wallet, IndianRupee, ArrowUpRight, Clock, X, CheckCircle2, Landmark } from "lucide-react";
+import { Wallet, IndianRupee, ArrowUpRight, Clock, X, CheckCircle2, Landmark, Image as ImageIcon, Check } from "lucide-react";
 import { motion } from "framer-motion";
+
+interface PayoutRecord {
+  _id: string;
+  amount: number;
+  requestedAt: string;
+  status: string;
+  utrNumber?: string;
+  paymentDate?: string;
+  paymentMode?: string;
+  proofImageUrl?: string;
+  rejectionReasons?: string[];
+  rejectionMessage?: string;
+}
 
 interface EarningsData {
   totalEarnings: number;
   withdrawn: number;
   availableBalance: number;
   pendingWithdrawals: number;
-  pendingPayouts: Array<{
-    _id: string;
-    amount: number;
-    requestedAt: string;
-    status: string;
-  }>;
+  pendingPayouts: PayoutRecord[];
+  payoutHistory?: PayoutRecord[];
   bankAccount?: {
     bankName: string;
     accountNumber: string;
@@ -35,20 +41,16 @@ export default function SellerEarningsPage() {
   const [loading, setLoading] = useState(true);
   const [withdrawing, setWithdrawing] = useState(false);
   const [cancelling, setCancelling] = useState<string | null>(null);
+  
+  // Tab for requests box
+  const [tab, setTab] = useState<"pending" | "history">("pending");
+
   const router = useRouter();
 
   useEffect(() => {
     const parsed = getStoredUser<{ role?: string }>();
-    if (!parsed) {
-      router.push("/login");
-      return;
-    }
-
-    if (parsed.role !== "seller") {
-      router.push("/dashboard");
-      return;
-    }
-
+    if (!parsed) return router.push("/login");
+    if (parsed.role !== "seller") return router.push("/dashboard");
     fetchEarnings();
   }, [router]);
 
@@ -65,16 +67,8 @@ export default function SellerEarningsPage() {
 
   const handleWithdraw = async () => {
     const withdrawAmount = Number(amount);
-
-    if (!withdrawAmount || withdrawAmount <= 0) {
-      toast.error("Please enter a valid amount");
-      return;
-    }
-
-    if (withdrawAmount > (data?.availableBalance || 0)) {
-      toast.error("Insufficient balance");
-      return;
-    }
+    if (!withdrawAmount || withdrawAmount <= 0) return toast.error("Please enter a valid amount");
+    if (withdrawAmount > (data?.availableBalance || 0)) return toast.error("Insufficient balance");
 
     setWithdrawing(true);
     try {
@@ -82,6 +76,7 @@ export default function SellerEarningsPage() {
       toast.success("Withdrawal request submitted successfully");
       setAmount("");
       fetchEarnings();
+      setTab("pending");
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to request withdrawal");
     } finally {
@@ -90,10 +85,7 @@ export default function SellerEarningsPage() {
   };
 
   const handleCancelPayout = async (payoutId: string) => {
-    if (!confirm("Are you sure you want to cancel this withdrawal request?")) {
-      return;
-    }
-
+    if (!confirm("Are you sure you want to cancel this withdrawal request?")) return;
     setCancelling(payoutId);
     try {
       await sellerAPI.cancelPayoutRequest(payoutId);
@@ -109,20 +101,14 @@ export default function SellerEarningsPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
-        <PageHeader
-          backHref="/dashboard/seller"
-          backLabel="Dashboard"
-          title="Earnings & Withdrawals"
-        />
+        <PageHeader backHref="/dashboard/seller" backLabel="Dashboard" title="Earnings & Withdrawals" />
         <section className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-28 bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/5 rounded-2xl animate-pulse shadow-sm dark:shadow-none" />
-            ))}
+            {[1, 2, 3].map((i) => <div key={i} className="h-28 bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/5 rounded-2xl animate-pulse" />)}
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="h-72 bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/5 rounded-2xl animate-pulse shadow-sm dark:shadow-none" />
-            <div className="h-72 bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/5 rounded-2xl animate-pulse shadow-sm dark:shadow-none" />
+            <div className="h-72 bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/5 rounded-2xl animate-pulse" />
+            <div className="h-72 bg-white dark:bg-[#0b0b14] border border-slate-200 dark:border-white/5 rounded-2xl animate-pulse" />
           </div>
         </section>
       </main>
@@ -130,18 +116,18 @@ export default function SellerEarningsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
+    <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-24">
       <PageHeader
         backHref="/dashboard/seller"
         backLabel="Dashboard"
         title="Earnings & Withdrawals"
-        subtitle="your earnings and request payouts"
+        subtitle="Manage your earnings and payouts"
       />
 
       <section className="max-w-5xl mx-auto px-4 sm:px-6 py-4 space-y-5">
         {/* STATS GRID */}
         <div className="flex flex-col gap-4 lg:gap-5">
-          {/* Top Row: Available Balance */}
+          {/* Available Balance */}
           <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="bg-gradient-to-br from-cyan-500 to-blue-600 dark:from-cyan-600 dark:to-blue-800 rounded-[24px] p-5 lg:p-6 shadow-[0_8px_30px_rgba(6,182,212,0.2)] dark:shadow-[0_8px_30px_rgba(6,182,212,0.1)] relative overflow-hidden group text-white w-full">
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-500">
               <Wallet className="w-24 h-24" />
@@ -157,7 +143,7 @@ export default function SellerEarningsPage() {
             </div>
           </motion.div>
 
-          {/* Bottom Row: Total Earnings & Withdrawn */}
+          {/* Total Earnings & Withdrawn */}
           <div className="grid grid-cols-2 gap-4 lg:gap-5">
             <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-[20px] p-4 lg:p-5 shadow-[0_8px_30px_rgba(15,23,42,0.04)] dark:shadow-none relative overflow-hidden group flex flex-col justify-center">
               <div className="absolute top-0 right-0 p-3 opacity-[0.03] dark:opacity-5 group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-500 pointer-events-none">
@@ -191,9 +177,10 @@ export default function SellerEarningsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+          
           {/* REQUEST WITHDRAWAL */}
-          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-[24px] p-5 lg:p-6 flex flex-col shadow-[0_8px_30px_rgba(15,23,42,0.04)] dark:shadow-none">
+          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-[24px] p-5 lg:p-6 flex flex-col shadow-[0_8px_30px_rgba(15,23,42,0.04)] dark:shadow-none sticky top-24">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center border border-indigo-100 dark:border-indigo-500/20">
                  <IndianRupee className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
@@ -249,62 +236,128 @@ export default function SellerEarningsPage() {
             ) : null}
           </motion.div>
 
-          {/* PENDING PAYOUTS */}
-          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-[24px] p-5 lg:p-6 flex flex-col shadow-[0_8px_30px_rgba(15,23,42,0.04)] dark:shadow-none">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center border border-slate-200/50 dark:border-white/10">
-                 <Clock className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-              </div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Recent Requests</h2>
+          {/* REQUESTS LIST */}
+          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-[24px] p-5 lg:p-6 flex flex-col shadow-[0_8px_30px_rgba(15,23,42,0.04)] dark:shadow-none min-h-[400px]">
+            
+            {/* Tabs */}
+            <div className="flex bg-slate-100 dark:bg-black/40 p-1 rounded-xl mb-6">
+              <button onClick={() => setTab("pending")} className={`flex-1 py-2 text-xs font-black tracking-widest uppercase rounded-lg transition-all ${tab === 'pending' ? 'bg-white dark:bg-[#1c1c24] text-slate-900 dark:text-white shadow' : 'text-slate-500 hover:text-slate-700 dark:hover:text-white'}`}>
+                Pending ({data?.pendingPayouts?.length || 0})
+              </button>
+              <button onClick={() => setTab("history")} className={`flex-1 py-2 text-xs font-black tracking-widest uppercase rounded-lg transition-all ${tab === 'history' ? 'bg-white dark:bg-[#1c1c24] text-slate-900 dark:text-white shadow' : 'text-slate-500 hover:text-slate-700 dark:hover:text-white'}`}>
+                History
+              </button>
             </div>
 
-            {data?.pendingPayouts && data.pendingPayouts.length > 0 ? (
-              <div className="space-y-3 overflow-y-auto max-h-[400px] custom-scrollbar pr-2">
-                {data.pendingPayouts.map((payout) => (
-                  <div
-                    key={payout._id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-black/20 rounded-[16px] border border-slate-200/80 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-colors group shadow-sm dark:shadow-none"
-                  >
-                    <div>
-                      <p className="text-xl font-black text-slate-900 dark:text-white">
-                        ₹{payout.amount.toLocaleString()}
-                      </p>
-                      <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1 flex items-center flex-wrap gap-1.5 font-medium">
-                        <span className="flex items-center gap-1.5 whitespace-nowrap">
-                          <Clock className="w-3.5 h-3.5" />
-                          {new Date(payout.requestedAt).toLocaleDateString()}
-                        </span>
-                        {data?.bankAccount && (
-                          <span className="flex items-center gap-1.5 whitespace-nowrap text-slate-600 dark:text-slate-400 bg-slate-100/50 dark:bg-white/5 px-2 py-0.5 rounded-md border border-slate-200/50 dark:border-white/5 ml-1">
-                            <Landmark className="w-3 h-3 text-cyan-600 dark:text-cyan-500" />
-                            {data.bankAccount.bankName} (•••• {data.bankAccount.accountNumber.slice(-4)})
+            {/* Content */}
+            <div className="space-y-3 overflow-y-auto max-h-[600px] custom-scrollbar pr-2">
+              {tab === "pending" ? (
+                /* PENDING VIEW */
+                data?.pendingPayouts && data.pendingPayouts.length > 0 ? (
+                  data.pendingPayouts.map((payout) => (
+                    <div key={payout._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white dark:bg-black/20 rounded-[16px] border border-slate-200/80 dark:border-white/5 shadow-sm dark:shadow-none">
+                      <div>
+                        <p className="text-xl font-black text-slate-900 dark:text-white">
+                          ₹{payout.amount.toLocaleString()}
+                        </p>
+                        <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1 flex items-center flex-wrap gap-1.5 font-medium">
+                          <span className="flex items-center gap-1.5 whitespace-nowrap">
+                            <Clock className="w-3.5 h-3.5" />
+                            {new Date(payout.requestedAt).toLocaleDateString()}
                           </span>
-                        )}
-                      </p>
+                          {data?.bankAccount && (
+                            <span className="flex items-center gap-1.5 whitespace-nowrap text-slate-600 dark:text-slate-400 bg-slate-100/50 dark:bg-white/5 px-2 py-0.5 rounded-md border border-slate-200/50 dark:border-white/5 ml-1">
+                              <Landmark className="w-3 h-3 text-cyan-600 dark:text-cyan-500" />
+                              {data.bankAccount.bankName} (•••• {data.bankAccount.accountNumber.slice(-4)})
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleCancelPayout(payout._id)}
+                        disabled={cancelling === payout._id}
+                        className="shrink-0 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 rounded-[10px] text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <X className="w-3.5 h-3.5" strokeWidth={2.5} />
+                        {cancelling === payout._id ? "Cancelling..." : "Cancel"}
+                      </button>
                     </div>
-                    <button
-                      onClick={() => handleCancelPayout(payout._id)}
-                      disabled={cancelling === payout._id}
-                      className="shrink-0 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 rounded-[10px] text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <X className="w-3.5 h-3.5" strokeWidth={2.5} />
-                      {cancelling === payout._id ? "Cancelling..." : "Cancel"}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-[20px] bg-slate-50/50 dark:bg-white/[0.02]">
-                <div className="w-16 h-16 bg-white dark:bg-white/5 rounded-full flex items-center justify-center mb-4 shadow-sm dark:shadow-none">
-                  <CheckCircle2 className="w-8 h-8 text-slate-400 dark:text-slate-500" />
-                </div>
-                <p className="text-lg text-slate-700 dark:text-slate-300 font-bold">No active requests</p>
-                <p className="text-sm text-slate-500 dark:text-slate-500 mt-2 max-w-[250px]">When you request a payout, its status will appear here.</p>
-              </div>
-            )}
+                  ))
+                ) : (
+                  <EmptyState message="No pending payouts" subtitle="When you request a payout, its status will appear here." />
+                )
+              ) : (
+                /* HISTORY VIEW */
+                data?.payoutHistory && data.payoutHistory.length > 0 ? (
+                  data.payoutHistory.map((payout) => (
+                    <div key={payout._id} className="p-4 bg-white dark:bg-black/20 rounded-[16px] border border-slate-200/80 dark:border-white/5 shadow-sm dark:shadow-none space-y-3">
+                      
+                      {/* Top Row: Amount & Badge */}
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-xl font-black text-slate-900 dark:text-white">
+                            ₹{payout.amount.toLocaleString()}
+                          </p>
+                          <p className="text-[12px] text-slate-500 mt-1">
+                            Req: {new Date(payout.requestedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${
+                          payout.status === 'paid' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/10 text-red-600 dark:text-red-400'
+                        }`}>
+                          {payout.status}
+                        </span>
+                      </div>
+
+                      {/* Bottom Info Area */}
+                      {payout.status === 'paid' ? (
+                        <div className="bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-xl p-3 text-xs space-y-1.5">
+                          <div className="flex justify-between"><span className="text-slate-500">Mode</span><span className="font-semibold text-slate-700 dark:text-white/80">{payout.paymentMode || 'N/A'}</span></div>
+                          <div className="flex justify-between"><span className="text-slate-500">UTR / Ref Number</span><span className="font-mono text-slate-700 dark:text-white/80">{payout.utrNumber || 'N/A'}</span></div>
+                          <div className="flex justify-between"><span className="text-slate-500">Processed</span><span className="text-slate-700 dark:text-white/80">{payout.paymentDate ? new Date(payout.paymentDate).toLocaleDateString() : 'N/A'}</span></div>
+                          {payout.proofImageUrl && (
+                            <div className="pt-2 mt-2 border-t border-slate-200 dark:border-white/10">
+                              <a href={payout.proofImageUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-cyan-600 dark:text-cyan-400 hover:underline font-semibold">
+                                <ImageIcon className="w-3.5 h-3.5" /> View Payment Proof
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="bg-red-50 dark:bg-red-500/5 border border-red-200 dark:border-red-500/10 rounded-xl p-3 text-xs">
+                          <p className="font-bold text-red-600 dark:text-red-400 mb-1">Reason for Rejection</p>
+                          <p className="text-red-700/80 dark:text-red-400/80">{payout.rejectionReasons?.join(", ") || 'No specific reason provided'}</p>
+                          {payout.rejectionMessage && (
+                            <p className="mt-2 pt-2 border-t border-red-200/50 dark:border-red-500/20 text-red-700/90 dark:text-red-300">
+                              "{payout.rejectionMessage}"
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                    </div>
+                  ))
+                ) : (
+                  <EmptyState message="No payout history" subtitle="Your processed payouts will appear here." />
+                )
+              )}
+            </div>
+
           </motion.div>
         </div>
       </section>
     </main>
+  );
+}
+
+function EmptyState({ message, subtitle }: { message: string, subtitle: string }) {
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-[20px] bg-slate-50/50 dark:bg-white/[0.02]">
+      <div className="w-16 h-16 bg-white dark:bg-white/5 rounded-full flex items-center justify-center mb-4 shadow-sm dark:shadow-none">
+        <CheckCircle2 className="w-8 h-8 text-slate-400 dark:text-slate-500" />
+      </div>
+      <p className="text-lg text-slate-700 dark:text-slate-300 font-bold">{message}</p>
+      <p className="text-sm text-slate-500 dark:text-slate-500 mt-2 max-w-[250px]">{subtitle}</p>
+    </div>
   );
 }

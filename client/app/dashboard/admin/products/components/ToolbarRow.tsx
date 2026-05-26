@@ -45,9 +45,11 @@ export default function ToolbarRow({
 
   const categories = [
     { value: 'all', label: 'All' },
-    { value: 'design', label: 'Design Assets' },
-    { value: 'software', label: 'Software' },
-    { value: 'templates', label: 'Templates' },
+    { value: 'eBook', label: 'eBooks' },
+    { value: 'Course', label: 'Courses' },
+    { value: 'Template', label: 'Templates' },
+    { value: 'Software', label: 'Software' },
+    { value: 'Design Asset', label: 'Design Assets' },
   ];
 
   const sorts = [

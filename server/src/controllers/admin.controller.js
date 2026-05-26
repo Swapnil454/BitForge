@@ -1,4 +1,3 @@
-
 import User from "../models/User.js";
 import Product from "../models/Product.js";
 import Payout from "../models/Payout.js";
@@ -12,7 +11,9 @@ import Notification from "../models/Notification.js";
 import PDFDocument from 'pdfkit';
 import Review from "../models/Review.js";
 import ModerationLog from "../models/ModerationLog.js";
-import { sendApprovalEmail, sendRejectionEmail, sendChangesRequestedEmail } from "../utils/moderationEmails.js";
+import { sendApprovalEmail, sendRejectionEmail, sendChangesRequestedEmail, sendThreatNotificationEmail } from "../utils/moderationEmails.js";
+import { scanFileWithVirusTotal } from "../utils/virusTotalScanner.js";
+import mongoose from "mongoose";
 
 // Utility to write moderation log non-blocking
 function writeModerationLog(data) {
@@ -1191,9 +1192,30 @@ export const getPendingPayouts = async (req, res) => {
   }
 };
 
+export const uploadPayoutProof = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No image file provided" });
+    }
+
+    const b64 = Buffer.from(req.file.buffer).toString("base64");
+    const dataURI = `data:${req.file.mimetype};base64,${b64}`;
+
+    const result = await cloudinary.uploader.upload(dataURI, {
+      folder: "payout_proofs",
+      resource_type: "image",
+    });
+
+    res.json({ url: result.secure_url });
+  } catch (error) {
+    console.error("Error uploading payout proof:", error);
+    res.status(500).json({ message: "Failed to upload proof image" });
+  }
+};
+
 export const approvePayout = async (req, res) => {
   try {
-    const { paymentReference, paymentNotes, paymentMethod = "manual" } = req.body;
+    const { utrNumber, paymentMode, paymentDate, proofImageUrl, adminNote } = req.body;
     
     const payout = await Payout.findById(req.params.id).populate("sellerId", "name email bankAccounts");
     
@@ -1218,12 +1240,17 @@ export const approvePayout = async (req, res) => {
 
     // Manual payment - Admin confirms payment has been made
     payout.status = "paid";
-    payout.paidBy = req.user.id; // Admin who processed the payment
+    payout.paidBy = req.user.id;
+    payout.processedBy = req.user.id;
     payout.paidAt = new Date();
-    payout.paymentMethod = paymentMethod;
-      payout.paymentReference = paymentReference; // UTR or transaction reference
-      payout.paymentNotes = paymentNotes;
-      await payout.save();
+    payout.processedAt = new Date();
+    payout.paymentMethod = paymentMode;
+    payout.utrNumber = utrNumber;
+    payout.paymentDate = paymentDate ? new Date(paymentDate) : new Date();
+    payout.proofImageUrl = proofImageUrl;
+    payout.adminNote = adminNote;
+    payout.paymentReference = utrNumber;
+    await payout.save();
 
       await createNotification(
         seller._id,
@@ -1252,7 +1279,7 @@ export const approvePayout = async (req, res) => {
           bankName: primaryAccount.bankName,
         },
         amount: payout.netPayableAmount,
-        paymentReference,
+        utrNumber,
         paidAt: payout.paidAt,
       }
     });
@@ -1264,17 +1291,21 @@ export const approvePayout = async (req, res) => {
 
 export const rejectPayout = async (req, res) => {
   try {
-    const { reason } = req.body;
+    const { reasons, message } = req.body;
     
-    if (!reason) {
-      return res.status(400).json({ message: "Rejection reason is required" });
+    if (!reasons || reasons.length === 0) {
+      return res.status(400).json({ message: "At least one rejection reason is required" });
     }
     
       const payout = await Payout.findByIdAndUpdate(
         req.params.id,
         {
           status: "rejected",
-          rejectionReason: reason,
+          rejectionReasons: reasons,
+          rejectionMessage: message,
+          rejectionReason: reasons.join(", "),
+          processedAt: new Date(),
+          processedBy: req.user.id,
         },
         { new: true }
       ).populate("sellerId", "name");
@@ -1288,7 +1319,7 @@ export const rejectPayout = async (req, res) => {
           payout.sellerId._id,
           "payout_rejected",
           "Payout rejected",
-          `Your payout request was rejected. Reason: ${reason}`,
+          `Your payout request was rejected. Reasons: ${reasons.join(", ")}`,
           payout._id,
           "Payout",
           {
@@ -1358,65 +1389,160 @@ export const getPayoutDetails = async (req, res) => {
 // Get all payouts with filters (for admin dashboard) — returns rich format
 export const getAllPayouts = async (req, res) => {
   try {
-    const { status, limit = 100, page = 1 } = req.query;
+    const {
+      status = "all",
+      limit = 100,
+      page = 1,
+      search = "",
+      sort = "newest",
+    } = req.query;
 
-    const filter = status && status !== 'all' ? { status } : {};
-    const skip = (page - 1) * limit;
+    const limitNum = parseInt(limit) || 100;
+    const pageNum = parseInt(page) || 1;
+    const skip = (pageNum - 1) * limitNum;
+
+    const filter = {};
+    if (status && status !== "all") {
+      if (status === "history") {
+        filter.status = { $in: ["paid", "rejected"] };
+      } else {
+        filter.status = status;
+      }
+    }
+
+    const escapeRegExp = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const searchTerm = typeof search === "string" ? search.trim() : "";
+    if (searchTerm) {
+      const safeSearch = escapeRegExp(searchTerm);
+      const sellerMatches = await User.find({
+        role: "seller",
+        $or: [
+          { name: { $regex: safeSearch, $options: "i" } },
+          { email: { $regex: safeSearch, $options: "i" } },
+        ],
+      }).select("_id");
+
+      const sellerIds = sellerMatches.map(s => s._id);
+      const payoutToken = searchTerm.replace(/^pay-/i, "").trim();
+      const payoutTokenSafe = payoutToken ? escapeRegExp(payoutToken) : "";
+      const payoutIdRegex = payoutTokenSafe ? new RegExp(`${payoutTokenSafe}$`, "i") : null;
+
+      const orConditions = [];
+      if (sellerIds.length) {
+        orConditions.push({ sellerId: { $in: sellerIds } });
+      }
+      if (payoutIdRegex) {
+        orConditions.push({
+          $expr: {
+            $regexMatch: {
+              input: { $toString: "$_id" },
+              regex: payoutIdRegex,
+            },
+          },
+        });
+      }
+
+      if (orConditions.length > 0) {
+        filter.$or = orConditions;
+      } else {
+        filter._id = { $exists: false };
+      }
+    }
+
+    const sortStage = sort === "oldest" ? { createdAt: 1 } : { createdAt: -1 };
 
     const payouts = await Payout.find(filter)
-      .populate("sellerId", "name email bankAccounts")
+      .populate("sellerId", "name email bankAccounts createdAt")
       .populate("paidBy", "name email")
-      .sort({ createdAt: -1 })
-      .limit(parseInt(limit))
+      .sort(sortStage)
+      .limit(limitNum)
       .skip(skip);
 
     const total = await Payout.countDocuments(filter);
 
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const [statsResult] = await Payout.aggregate([
+      {
+        $group: {
+          _id: null,
+          pendingCount: { $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] } },
+          pendingValue: { $sum: { $cond: [{ $eq: ["$status", "pending"] }, "$amount", 0] } },
+          paidThisMonth: { $sum: { $cond: [{ $and: [{ $eq: ["$status", "paid"] }, { $gte: ["$processedAt", startOfMonth] }] }, 1, 0] } },
+          rejectedThisMonth: { $sum: { $cond: [{ $and: [{ $eq: ["$status", "rejected"] }, { $gte: ["$processedAt", startOfMonth] }] }, 1, 0] } }
+        }
+      }
+    ]);
+
+    const stats = statsResult || {
+      pendingCount: 0,
+      pendingValue: 0,
+      paidThisMonth: 0,
+      rejectedThisMonth: 0
+    };
+
+    // We need product counts for each seller
+    const sellerIds = [...new Set(payouts.map(p => p.sellerId?._id?.toString()).filter(Boolean))];
+    const productCountsResult = await Product.aggregate([
+      { $match: { sellerId: { $in: sellerIds.map(id => new mongoose.Types.ObjectId(id)) } } },
+      { $group: { _id: "$sellerId", count: { $sum: 1 } } }
+    ]);
+    
+    const productCounts = productCountsResult.reduce((acc, curr) => {
+      acc[curr._id.toString()] = curr.count;
+      return acc;
+    }, {});
+
     const formattedPayouts = payouts.map(payout => {
       const seller = payout.sellerId;
       const primaryAccount = seller?.bankAccounts?.find(acc => acc.isPrimary);
+      const sid = seller?._id?.toString();
 
       return {
-        _id: payout._id,
-        sellerId: seller ? {
+        id: payout._id,
+        payoutNumber: `PAY-${payout._id.toString().slice(-6).toUpperCase()}`,
+        seller: seller ? {
           id: seller._id,
           name: seller.name || 'Unknown Seller',
           email: seller.email || 'N/A',
+          joinedAt: seller.createdAt,
+          totalProducts: sid ? (productCounts[sid] || 0) : 0
         } : null,
-        primaryBankAccount: primaryAccount ? {
-          accountHolderName: primaryAccount.accountHolderName,
+        bankDetails: primaryAccount ? {
+          holderName: primaryAccount.accountHolderName,
           accountNumber: primaryAccount.accountNumber,
-          ifscCode: primaryAccount.ifscCode,
+          ifsc: primaryAccount.ifscCode,
           bankName: primaryAccount.bankName,
-          branchName: primaryAccount.branchName,
         } : null,
-        financialBreakdown: {
-          requestedAmount: payout.amount,
-          platformCommission: payout.platformCommission,
-          gstOnCommission: payout.gstOnCommission,
-          totalDeductions: payout.totalDeductions,
-          netPayableAmount: payout.netPayableAmount,
-        },
         amount: payout.amount,
         status: payout.status,
-        paymentReference: payout.paymentReference,
-        paymentNotes: payout.paymentNotes,
-        paymentMethod: payout.paymentMethod,
-        paidBy: payout.paidBy ? { name: payout.paidBy.name, email: payout.paidBy.email } : null,
-        paidAt: payout.paidAt,
-        rejectionReason: payout.rejectionReason,
-        createdAt: payout.createdAt,
-        updatedAt: payout.updatedAt,
+        requestedAt: payout.createdAt,
+        processedAt: payout.processedAt || payout.paidAt,
+        adminNote: payout.adminNote || payout.paymentNotes,
+        rejectionReasons: payout.rejectionReasons || (payout.rejectionReason ? [payout.rejectionReason] : []),
+        rejectionMessage: payout.rejectionMessage,
+        utrNumber: payout.utrNumber || payout.paymentReference,
+        paymentMode: payout.paymentMethod,
+        paymentDate: payout.paymentDate,
+        proofImageUrl: payout.proofImageUrl,
       };
     });
 
     res.json({
+      stats: {
+        pendingPayouts: stats.pendingCount,
+        pendingValue: stats.pendingValue,
+        paidThisMonth: stats.paidThisMonth,
+        rejectedThisMonth: stats.rejectedThisMonth
+      },
       payouts: formattedPayouts,
       pagination: {
         total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        pages: Math.ceil(total / limit),
+        page: pageNum,
+        limit: limitNum,
+        pages: Math.ceil(total / limitNum),
       }
     });
   } catch (error) {
@@ -1485,56 +1611,363 @@ export const getCommissionSummary = async (req, res) => {
   }
 };
 
-export const getOpenDisputes = async (req, res) => {
+export const getAllDisputes = async (req, res) => {
   try {
-    const disputes = await Dispute.find({ status: "open" })
-      .populate({
-        path: "orderId",
-        populate: [
-          { path: "productId", select: "title" },
-          { path: "buyerId", select: "name email" },
-          { path: "sellerId", select: "name email" },
-        ],
-      })
-      .populate("buyerId", "name email");
+    const { status, search, sort, page = 1, limit = 10 } = req.query;
 
-    const formattedDisputes = disputes.map((dispute) => {
-      const order = dispute.orderId;
-      const orderBuyer = order && order.buyerId;
-      const orderSeller = order && order.sellerId;
-      const product = order && order.productId;
-      const fallbackBuyer = dispute.buyerId;
+    let matchStage = {};
+    if (status && status !== "all") {
+      matchStage.status = status;
+    }
 
-      const buyerName =
-        (orderBuyer && (orderBuyer.name || orderBuyer.email)) ||
-        (fallbackBuyer && (fallbackBuyer.name || fallbackBuyer.email)) ||
-        "Unknown buyer";
+    let sortStage = { createdAt: -1 };
+    if (sort === "oldest") sortStage = { createdAt: 1 };
+    if (sort === "amount_high") sortStage = { amount: -1 };
+    if (sort === "amount_low") sortStage = { amount: 1 };
 
-      const sellerName =
-        (orderSeller && (orderSeller.name || orderSeller.email)) ||
-        "Unknown seller";
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const limitNum = parseInt(limit);
 
-      const productName = (product && product.title) || "Product";
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
 
-      const amount = order && typeof order.amount === "number" ? order.amount : 0;
+    const result = await Dispute.aggregate([
+      {
+        $facet: {
+          stats: [
+            {
+              $group: {
+                _id: null,
+                openCount: {
+                  $sum: { $cond: [{ $eq: ["$status", "open"] }, 1, 0] },
+                },
+                resolvedToday: {
+                  $sum: {
+                    $cond: [
+                      {
+                        $and: [
+                          { $eq: ["$status", "resolved"] },
+                          { $gte: ["$updatedAt", startOfDay] },
+                        ],
+                      },
+                      1,
+                      0,
+                    ],
+                  },
+                },
+                totalRefundValue: {
+                  $sum: {
+                    $cond: [{ $eq: ["$status", "resolved"] }, "$amount", 0],
+                  },
+                },
+              },
+            },
+          ],
+          disputes: [
+            { $match: matchStage },
+            {
+              $lookup: {
+                from: "users",
+                localField: "buyerId",
+                foreignField: "_id",
+                as: "buyer",
+              },
+            },
+            {
+              $lookup: {
+                from: "users",
+                localField: "sellerId",
+                foreignField: "_id",
+                as: "seller",
+              },
+            },
+            {
+              $lookup: {
+                from: "products",
+                localField: "productId",
+                foreignField: "_id",
+                as: "product",
+              },
+            },
+            { $unwind: { path: "$buyer", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$seller", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
+            ...(search
+              ? [
+                  {
+                    $match: {
+                      $or: [
+                        { "buyer.email": { $regex: search, $options: "i" } },
+                        { "buyer.name": { $regex: search, $options: "i" } },
+                        { "seller.email": { $regex: search, $options: "i" } },
+                        { "seller.name": { $regex: search, $options: "i" } },
+                        { "product.title": { $regex: search, $options: "i" } },
+                        { reason: { $regex: search, $options: "i" } },
+                      ],
+                    },
+                  },
+                ]
+              : []),
+            { $sort: sortStage },
+            { $skip: skip },
+            { $limit: limitNum },
+          ],
+        },
+      },
+    ]);
 
+    const statsData = result[0].stats[0] || {
+      openCount: 0,
+      resolvedToday: 0,
+      totalRefundValue: 0,
+    };
+
+    const formattedDisputes = result[0].disputes.map((d) => {
       return {
-        _id: dispute._id,
-        orderId: order ? order._id : null,
-        buyerName,
-        sellerName,
-        productName,
-        amount,
-        reason: dispute.reason,
-        status: dispute.status,
-        createdAt: dispute.createdAt,
+        id: d._id,
+        disputeNumber: `DIS-${d._id.toString().slice(-6).toUpperCase()}`,
+        productTitle: d.product?.title || "Unknown Product",
+        productCategory: d.product?.category || "Unknown",
+        productFileType: d.product?.fileType || "Unknown",
+        buyer: {
+          name: d.buyer?.name || "Unknown",
+          email: d.buyer?.email || "N/A",
+        },
+        seller: {
+          name: d.seller?.name || "Unknown",
+          email: d.seller?.email || "N/A",
+        },
+        reason: d.reason || "",
+        refundAmount: d.amount || 0,
+        originalPrice: d.amount || 0,
+        status: d.status,
+        createdAt: d.createdAt,
+        resolvedAt: d.status === "resolved" ? d.updatedAt : undefined,
+        adminNote: d.adminNote,
+        history: [
+          { timestamp: d.createdAt, action: "Dispute opened" },
+          ...(new Date(d.updatedAt).getTime() !== new Date(d.createdAt).getTime()
+            ? [
+                {
+                  timestamp: d.updatedAt,
+                  action: `Status changed to ${d.status}`,
+                },
+              ]
+            : []),
+        ],
       };
     });
 
-    res.json({ disputes: formattedDisputes });
+    res.json({
+      stats: {
+        open: statsData.openCount,
+        pending: statsData.openCount,
+        resolvedToday: statsData.resolvedToday,
+        totalValue: statsData.totalRefundValue,
+      },
+      disputes: formattedDisputes,
+    });
   } catch (error) {
-    console.error("Error fetching open disputes:", error);
+    console.error("Error fetching disputes:", error);
     res.status(500).json({ message: "Failed to load disputes" });
+  }
+};
+
+export const getDisputeAnalytics = async (req, res) => {
+  try {
+    const { range } = req.query;
+    const days = range && range !== "all" ? Number(range) : null;
+    const now = new Date();
+    const startDate = days ? new Date(now.getTime() - days * 24 * 60 * 60 * 1000) : null;
+
+    const [totalDisputes, open, resolved, rejected] = await Promise.all([
+      Dispute.countDocuments(),
+      Dispute.countDocuments({ status: "open" }),
+      Dispute.countDocuments({ status: "resolved" }),
+      Dispute.countDocuments({ status: "rejected" }),
+    ]);
+
+    // Category breakdown
+    const categories = await Dispute.aggregate([
+      { $group: { _id: "$category", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]);
+
+    const submissionsQuery = startDate ? { createdAt: { $gte: startDate } } : {};
+
+    const [orderStats] = await Dispute.aggregate([
+      { $match: submissionsQuery },
+      {
+        $group: {
+          _id: null,
+          totalValue: { $sum: "$amount" },
+        },
+      },
+    ]);
+
+    const totalValue = Number((orderStats?.totalValue || 0).toFixed(2));
+
+    const [recentSubmissions, recentSubmissionsCount] = await Promise.all([
+      Dispute.find(submissionsQuery)
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate("sellerId", "name email")
+        .populate("buyerId", "name email")
+        .populate("productId", "title")
+        .lean(),
+      Dispute.countDocuments(submissionsQuery),
+    ]);
+
+    // Needs attention: oldest open disputes
+    const needsAttention = await Dispute.find({ status: "open" })
+      .sort({ createdAt: 1 })
+      .limit(5)
+      .populate("productId", "title")
+      .select("category status createdAt reason amount")
+      .lean();
+
+    const topSellerDisputes = await Dispute.aggregate([
+      { $match: submissionsQuery },
+      {
+        $group: {
+          _id: "$sellerId",
+          totalDisputedValue: { $sum: "$amount" },
+          totalDisputes: { $sum: 1 },
+        },
+      },
+      { $sort: { totalDisputedValue: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "seller",
+        },
+      },
+      { $unwind: "$seller" },
+      {
+        $project: {
+          _id: 1,
+          name: "$seller.name",
+          email: "$seller.email",
+          totalDisputedValue: 1,
+          totalDisputes: 1,
+        },
+      },
+    ]);
+
+    const topSellers = topSellerDisputes.map((seller) => ({
+      id: seller._id,
+      name: seller.name,
+      email: seller.email,
+      disputeCount: seller.totalDisputes || 0,
+      disputedValue: Number((seller.totalDisputedValue || 0).toFixed(2)),
+    }));
+
+    let timelineLabels = [];
+    let timelineCounts = [];
+
+    if (days && days <= 90) {
+      const dates = [];
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        dates.push(d.toISOString().split("T")[0]);
+      }
+      timelineLabels = dates.map(d => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      
+      const timelineData = await Dispute.aggregate([
+        { $match: submissionsQuery },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            count: { $sum: 1 }
+          }
+        }
+      ]);
+
+      const dataMap = timelineData.reduce((acc, curr) => {
+        acc[curr._id] = curr.count;
+        return acc;
+      }, {});
+
+      timelineCounts = dates.map(dateStr => dataMap[dateStr] || 0);
+    } else {
+      const months = [];
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        months.push({ month: d.getMonth() + 1, year: d.getFullYear() });
+      }
+      
+      const timelineData = await Dispute.aggregate([
+        { $match: submissionsQuery },
+        {
+          $group: {
+            _id: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" }
+            },
+            count: { $sum: 1 }
+          }
+        }
+      ]);
+
+      timelineLabels = months.map(m => {
+        const date = new Date(m.year, m.month - 1, 1);
+        return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      });
+
+      timelineCounts = months.map(m => {
+        const found = timelineData.find(d => d._id.year === m.year && d._id.month === m.month);
+        return found ? found.count : 0;
+      });
+    }
+
+    const resolutionRate = totalDisputes > 0 ? (resolved / totalDisputes) * 100 : 0;
+    const activeDisputes = await Dispute.countDocuments({ status: { $in: ["open", "under_review"] } });
+
+    res.json({
+      stats: {
+        total: totalDisputes,
+        open,
+        resolved,
+        rejected,
+        recentSubmissions: recentSubmissionsCount,
+        totalValue,
+      },
+      categories,
+      topSellers,
+      recentSubmissions: recentSubmissions.map(d => ({
+        _id: d._id,
+        title: d.productId?.title || 'Unknown Product',
+        sellerName: d.sellerId?.name || 'Unknown',
+        buyerName: d.buyerId?.name || 'Unknown',
+        category: d.category,
+        status: d.status,
+        amount: d.amount,
+        createdAt: d.createdAt
+      })),
+      needsAttention: needsAttention.map(d => ({
+        _id: d._id,
+        title: d.productId?.title || 'Unknown Product',
+        status: d.status,
+        createdAt: d.createdAt,
+        reason: d.reason,
+        amount: d.amount
+      })),
+      timeline: { labels: timelineLabels, counts: timelineCounts },
+      health: {
+        resolutionRate: Number(resolutionRate.toFixed(1)),
+        avgResolutionDays: 0,
+        activeDisputes,
+      },
+    });
+  } catch (error) {
+    console.error("Error in getDisputeAnalytics:", error);
+    res.status(500).json({ message: "Failed to fetch analytics" });
   }
 };
 
@@ -1641,13 +2074,37 @@ export const getAdminBankStats = async (req, res) => {
   try {
     const admin = await User.findById(req.user.id).select("bankAccounts");
 
-    // Calculate total commission earned
+    // Fetch all paid orders to compute breakdowns
     const orders = await Order.find({ status: "paid" });
-    const totalCommission = orders.reduce((sum, order) => sum + (order.platformFee || 0), 0);
+    
+    let totalPaymentArrived = 0;
+    let totalActualPayment = 0;
+    let totalGST = 0;
+    let totalBuyerCommission = 0;
+    let totalSellerCommission = 0;
+    let totalSellerEarnings = 0;
 
-    // Calculate total payouts made to sellers
-    const payouts = await Payout.find({ status: { $in: ["approved", "paid"] } });
+    orders.forEach(order => {
+      totalPaymentArrived += order.amount || 0;
+      
+      const sellerAmount = order.sellerAmount || 0;
+      // sellerAmount is 90% of actual payment
+      const actualPayment = sellerAmount / 0.90;
+      
+      totalActualPayment += actualPayment;
+      totalSellerEarnings += sellerAmount;
+      totalSellerCommission += (actualPayment * 0.10);
+      totalBuyerCommission += (actualPayment * 0.02);
+      totalGST += (actualPayment * 0.05);
+    });
+
+    const totalCommissionEarned = totalSellerCommission + totalBuyerCommission;
+
+    // Calculate total payouts made to sellers (approved/paid)
+    const payouts = await Payout.find({ status: { $in: ["approved", "paid", "processing"] } });
     const totalPayouts = payouts.reduce((sum, payout) => sum + payout.amount, 0);
+
+    const totalClaimableBySellers = totalSellerEarnings - totalPayouts;
 
     const primaryAccount = admin.bankAccounts.find(acc => acc.isPrimary);
 
@@ -1663,9 +2120,15 @@ export const getAdminBankStats = async (req, res) => {
         isVerified: primaryAccount.isVerified,
       } : null,
       stats: {
-        totalCommissionEarned: totalCommission,
+        totalPaymentArrived,
+        totalActualPayment,
+        totalGST,
+        totalBuyerCommission,
+        totalSellerCommission,
+        totalCommissionEarned,
         totalPayoutsMade: totalPayouts,
-        netBalance: totalCommission - totalPayouts,
+        totalClaimableBySellers,
+        netBalance: totalPaymentArrived - totalPayouts,
       }
     });
   } catch (error) {
@@ -2400,7 +2863,12 @@ export const getAllTransactions = async (req, res) => {
       status = "all",
       sortBy = "date_desc",
       userId,
+      dateRange,
+      startDate,
+      endDate,
     } = req.query;
+    const normalizedType = typeof type === "string" ? type.toLowerCase() : "all";
+    const normalizedStatus = typeof status === "string" ? status.toLowerCase() : "all";
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     let scopedUser = null;
@@ -2411,27 +2879,48 @@ export const getAllTransactions = async (req, res) => {
       }
     }
     
+    let dateQuery = null;
+    if (dateRange && dateRange !== "all") {
+      const now = new Date();
+      if (dateRange === "7d") dateQuery = { $gte: new Date(now.setDate(now.getDate() - 7)) };
+      else if (dateRange === "30d") dateQuery = { $gte: new Date(now.setDate(now.getDate() - 30)) };
+      else if (dateRange === "90d") dateQuery = { $gte: new Date(now.setDate(now.getDate() - 90)) };
+    } else if (startDate && endDate) {
+      // Create a Date object for endDate and push it to the end of the day to include the whole day
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      dateQuery = { $gte: new Date(startDate), $lte: end };
+    } else if (startDate) {
+      dateQuery = { $gte: new Date(startDate) };
+    } else if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      dateQuery = { $lte: end };
+    }
+
     // Build filters for Orders
     const orderFilter = {};
-    if (status !== "all") {
-      if (status === "success") orderFilter.status = "paid";
-      else if (status === "failed") orderFilter.status = "failed";
-      else orderFilter.status = "created";
+    if (normalizedStatus !== "all") {
+      if (normalizedStatus === "success") orderFilter.status = { $in: ["paid"] };
+      else if (normalizedStatus === "failed") orderFilter.status = { $in: ["failed"] };
+      else orderFilter.status = { $in: ["created"] };
     }
+    if (dateQuery) orderFilter.createdAt = dateQuery;
     
     // Build filters for Payouts
     const payoutFilter = {};
-    if (status !== "all") {
-      if (status === "success") payoutFilter.status = "paid";
-      else if (status === "failed") payoutFilter.status = "rejected";
-      else payoutFilter.status = "pending";
+    if (normalizedStatus !== "all") {
+      if (normalizedStatus === "success") payoutFilter.status = { $in: ["paid"] };
+      else if (normalizedStatus === "failed") payoutFilter.status = { $in: ["rejected"] };
+      else payoutFilter.status = { $in: ["pending", "processing"] };
     }
+    if (dateQuery) payoutFilter.createdAt = dateQuery;
 
     let orders = [];
     let payouts = [];
 
     // Fetch Orders if type is 'all' or 'buyer_to_admin'
-    if (type === "all" || type === "buyer_to_admin") {
+    if (normalizedType === "all" || normalizedType === "buyer_to_admin") {
       const query = { ...orderFilter };
 
       if (userId) {
@@ -2456,7 +2945,7 @@ export const getAllTransactions = async (req, res) => {
     }
 
     // Fetch Payouts if type is 'all' or 'admin_to_seller'
-    if ((type === "all" || type === "admin_to_seller") && scopedUser?.role !== "buyer") {
+    if ((normalizedType === "all" || normalizedType === "admin_to_seller") && scopedUser?.role !== "buyer") {
       const query = { ...payoutFilter };
 
       if (userId && scopedUser?.role === "seller") {
@@ -2508,6 +2997,16 @@ export const getAllTransactions = async (req, res) => {
     }));
 
     let allTransactions = [...buyerTransactions, ...sellerTransactions];
+
+    // Apply normalized UI filters after combining both collections so the
+    // table always matches the dropdown values, even if source statuses differ.
+    if (normalizedType !== "all") {
+      allTransactions = allTransactions.filter((t) => t.type === normalizedType);
+    }
+
+    if (normalizedStatus !== "all") {
+      allTransactions = allTransactions.filter((t) => t.status === normalizedStatus);
+    }
 
     // Final search filter for user names/emails (after formatting/populating)
     if (search) {
@@ -2664,50 +3163,20 @@ export const getMalwareFlaggedProducts = async (req, res) => {
 /**
  * Get malware scan dashboard statistics
  */
-export const getMalwareDashboardStats = async (req, res) => {
+export const getMalwareStats = async (req, res) => {
   try {
-    // Total scans performed
-    const totalScans = await Product.countDocuments({
-      virusTotalId: { $exists: true }
-    });
-    
-    // Products with detections
+    const totalScans = await Product.countDocuments({ scanStatus: { $ne: "PENDING" } });
     const productsWithDetections = await Product.countDocuments({
-      $or: [
-        { "malwareScanDetails.detections.malicious": { $gt: 0 } },
-        { "malwareScanDetails.detections.suspicious": { $gt: 0 } }
-      ]
+      scanStatus: { $in: ["FLAGGED", "MALICIOUS"] }
     });
-    
-    // Clean products
-    const cleanProducts = await Product.countDocuments({
-      virusTotalId: { $exists: true },
-      "malwareScanDetails.detections.malicious": 0,
-      "malwareScanDetails.detections.suspicious": 0
-    });
-    
-    // Products with basic checks only (no VirusTotal)
+    const cleanProducts = await Product.countDocuments({ scanStatus: "CLEAN" });
     const basicCheckOnly = await Product.countDocuments({
       "malwareScanDetails.basicCheckOnly": true
     });
-    
-    // Recent scans (last 7 days)
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    
     const recentScans = await Product.countDocuments({
-      virusTotalId: { $exists: true },
-      createdAt: { $gte: sevenDaysAgo }
+      scanStatus: { $ne: "PENDING" },
+      createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
     });
-    
-    // Get products with highest threat scores
-    const highThreatProducts = await Product.find({
-      "malwareScanDetails.detections.malicious": { $gt: 0 }
-    })
-      .populate("sellerId", "name email")
-      .sort({ "malwareScanDetails.detections.malicious": -1 })
-      .limit(10)
-      .select("title virusTotalLink malwareScanDetails sellerId createdAt");
     
     res.json({
       totalScans,
@@ -2716,11 +3185,371 @@ export const getMalwareDashboardStats = async (req, res) => {
       basicCheckOnly,
       recentScans,
       scanRate: totalScans > 0 ? ((cleanProducts / totalScans) * 100).toFixed(1) : 0,
-      highThreatProducts
     });
   } catch (error) {
-    console.error("Error fetching malware dashboard stats:", error);
-    res.status(500).json({ message: "Failed to fetch malware dashboard stats" });
+    console.error("Error fetching malware stats:", error);
+    res.status(500).json({ message: "Failed to fetch malware stats" });
+  }
+};
+
+export const getMalwareScans = async (req, res) => {
+  try {
+    const { cursor, limit = 20 } = req.query;
+    const query = { scanStatus: { $ne: "PENDING" } };
+    
+    if (cursor) {
+      const { createdAt, id } = JSON.parse(Buffer.from(cursor, 'base64').toString('ascii'));
+      query.$or = [
+        { createdAt: { $lt: new Date(createdAt) } },
+        { createdAt: new Date(createdAt), _id: { $lt: id } }
+      ];
+    }
+
+    const scans = await Product.find(query)
+      .populate("sellerId", "name email")
+      .sort({ createdAt: -1, _id: -1 })
+      .limit(Number(limit))
+      .select("title scanStatus virusTotalLink malwareScanDetails sellerId createdAt malwareScanDate");
+      
+    let nextCursor = null;
+    if (scans.length === Number(limit)) {
+      const lastScan = scans[scans.length - 1];
+      nextCursor = Buffer.from(JSON.stringify({ 
+        createdAt: lastScan.createdAt.toISOString(), 
+        id: lastScan._id.toString() 
+      })).toString('base64');
+    }
+    
+    const totalCount = await Product.countDocuments({ scanStatus: { $ne: "PENDING" } });
+
+    res.json({
+      scans,
+      nextCursor,
+      totalCount
+    });
+  } catch (error) {
+    console.error("Error fetching malware scans:", error);
+    res.status(500).json({ message: "Failed to fetch malware scans" });
+  }
+};
+
+export const getMalwareScanDetails = async (req, res) => {
+  try {
+    const { scanId } = req.params;
+    
+    // Explicit whitelist of allowed VT fields to prevent evasion
+    const scan = await Product.findById(scanId)
+      .populate("sellerId", "name email")
+      .select("title scanStatus scanLockedAt virusTotalLink malwareScanDate createdAt");
+      
+    if (!scan) return res.status(404).json({ message: "Scan not found" });
+
+    // Assuming we need malwareScanDetails separately to sanitize it
+    const productData = await Product.findById(scanId).select("malwareScanDetails");
+    
+    let sanitizedDetails = null;
+    if (productData?.malwareScanDetails) {
+      const dets = productData.malwareScanDetails.detections || {};
+      const totalEngines = (dets.malicious || 0) + (dets.suspicious || 0) + (dets.harmless || 0) + (dets.undetected || 0);
+      
+      sanitizedDetails = {
+        scan_date: scan.malwareScanDate,
+        total_engines: totalEngines,
+        malicious_count: dets.malicious || 0,
+        suspicious_count: dets.suspicious || 0,
+        harmless_count: productData.malwareScanDetails.detections?.harmless || 0,
+        undetected_count: productData.malwareScanDetails.detections?.undetected || 0,
+        threat_category: productData.malwareScanDetails.threat_category,
+        basicCheckOnly: productData.malwareScanDetails.basicCheckOnly
+      };
+    }
+
+    res.json({
+      ...scan.toObject(),
+      malwareScanDetails: sanitizedDetails
+    });
+  } catch (error) {
+    console.error("Error fetching malware scan details:", error);
+    res.status(500).json({ message: "Failed to fetch malware scan details" });
+  }
+};
+
+/**
+ * Step 1: Whitelist a malware scan
+ */
+export const whitelistMalwareScan = async (req, res) => {
+  const { scanId } = req.params;
+  const adminId = req.user._id;
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const scan = await Product.findById(scanId).session(session);
+    if (!scan) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ message: "Scan not found" });
+    }
+
+    scan.scanStatus = 'MANUALLY_REVIEWED';
+    await scan.save({ session });
+
+    await ModerationLog.create([{
+      action: 'scan_whitelisted',
+      targetId: scanId,
+      adminId,
+      timestamp: new Date()
+    }], { session });
+    
+    await session.commitTransaction();
+    res.json({ message: "Scan whitelisted successfully", scanStatus: 'MANUALLY_REVIEWED' });
+  } catch (err) {
+    await session.abortTransaction();
+    console.error("Error whitelisting scan:", err);
+    res.status(500).json({ message: "Failed to whitelist scan" });
+  } finally {
+    session.endSession();
+  }
+};
+
+/**
+ * Step 2: Notify seller about threat
+ */
+export const notifySellerThreat = async (req, res) => {
+  const { scanId } = req.params;
+  const adminId = req.user._id;
+
+  try {
+    const alreadyNotified = await ModerationLog.findOne({
+      targetId: scanId,
+      action: 'scan_seller_notified'
+    });
+    
+    if (alreadyNotified) {
+      return res.status(409).json({ message: 'Seller already notified' });
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    let product;
+    try {
+      product = await Product.findById(scanId).populate("sellerId").session(session);
+      if (!product) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      await ModerationLog.create([{
+        action: 'scan_seller_notified',
+        targetId: scanId,
+        adminId,
+        timestamp: new Date()
+      }], { session });
+
+      await session.commitTransaction();
+    } catch (err) {
+      await session.abortTransaction();
+      throw err;
+    } finally {
+      session.endSession();
+    }
+
+    // Outside transaction
+    await sendThreatNotificationEmail(product.sellerId, product, "Please review the security report and upload a safe version.");
+    
+    res.json({ message: "Seller notified successfully" });
+  } catch (error) {
+    console.error("Error notifying seller:", error);
+    res.status(500).json({ message: "Failed to notify seller" });
+  }
+};
+
+/**
+ * Step 3: Remove malicious product
+ */
+export const takedownMaliciousProduct = async (req, res) => {
+  const { scanId } = req.params;
+  const adminId = req.user._id;
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const product = await Product.findById(scanId).session(session);
+    if (!product) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // 1. Update product status
+    product.status = 'rejected'; // Or maybe 'deleted', but rejected unpublishes it usually
+    product.scanStatus = 'MANUALLY_REVIEWED'; // To stop it appearing in urgent queues
+    await product.save({ session });
+
+    // 2. Write ModerationLog
+    await ModerationLog.create([{
+      action: 'scan_product_removed',
+      targetId: scanId,
+      adminId,
+      timestamp: new Date()
+    }], { session });
+
+    // 3. Cancel pending/processing orders
+    await Order.updateMany(
+      { productId: scanId, status: { $in: ['pending', 'processing'] } },
+      { $set: { status: 'cancelled' } },
+      { session }
+    );
+
+    // 4. Commit
+    await session.commitTransaction();
+    
+    // 5/6: Notify/Refund logic would go here asynchronously
+    // fireAndForgetRefunds(scanId);
+
+    res.json({ message: "Product removed successfully" });
+  } catch (err) {
+    await session.abortTransaction();
+    console.error("Error removing product:", err);
+    res.status(500).json({ message: "Failed to remove product" });
+  } finally {
+    session.endSession();
+  }
+};
+
+/**
+ * Step 4: Force Re-scan
+ */
+export const rescanMalware = async (req, res) => {
+  const { scanId } = req.params;
+  
+  try {
+    // 1. Atomic DB lock
+    const lock = await Product.findOneAndUpdate(
+      { 
+        _id: scanId, 
+        scanStatus: { $nin: ['SCANNING'] }
+      },
+      { 
+        $set: { 
+          scanStatus: 'SCANNING', 
+          scanLockedAt: new Date() 
+        } 
+      },
+      { new: true }
+    );
+
+    if (!lock) {
+      return res.status(409).json({ message: 'Scan already in progress' });
+    }
+
+    // 2. Return 202 immediately
+    res.status(202).json({ message: "Re-scan started", scanStatus: "SCANNING" });
+
+    // 3. Background job
+    (async () => {
+      try {
+        if (!lock.virusTotalId) {
+          throw new Error("No virusTotalId present for this product to re-scan.");
+        }
+
+        let fileHashForVT = lock.virusTotalId;
+        try {
+          // If it's a base64 encoded Analysis ID, extract the hash. e.g. "NzQzYWE..." -> "743aa33c...:1778324192"
+          const decoded = Buffer.from(lock.virusTotalId, 'base64').toString('utf-8');
+          if (decoded.includes(':')) {
+            fileHashForVT = decoded.split(':')[0];
+          }
+        } catch (e) {
+          // Leave as is if it can't be parsed
+        }
+
+        // Step 1: Trigger re-analysis
+        const reanalysis = await fetch(
+          `https://www.virustotal.com/api/v3/files/${fileHashForVT}/analyse`,
+          { method: 'POST', headers: { 'x-apikey': process.env.VIRUSTOTAL_API_KEY } }
+        );
+        const reanalysisResult = await reanalysis.json();
+        
+        let stats = null;
+        let scanDate = new Date();
+
+        if (reanalysisResult.error || !reanalysisResult.data) {
+          console.warn(`VT API POST /analyse Error: ${reanalysisResult.error?.message}. Falling back to GET /files/{id}.`);
+          // Fallback: Just get the current file report
+          const fileReport = await fetch(
+            `https://www.virustotal.com/api/v3/files/${fileHashForVT}`,
+            { headers: { 'x-apikey': process.env.VIRUSTOTAL_API_KEY } }
+          );
+          const fileData = await fileReport.json();
+          if (fileData.error || !fileData.data) {
+             throw new Error(`VT API GET /files Error: ${fileData.error?.message || 'Unknown error'}`);
+          }
+          stats = fileData.data.attributes.last_analysis_stats;
+          scanDate = new Date(fileData.data.attributes.last_analysis_date * 1000 || Date.now());
+        } else {
+          const analysisId = reanalysisResult.data.id;
+
+          // Step 2: Poll until completed
+          let attempts = 0;
+          const MAX_ATTEMPTS = 30; // 30 attempts = 7.5 minutes
+          const POLL_INTERVAL = 15000; // 15 seconds
+
+          const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+          while (attempts < MAX_ATTEMPTS && !stats) {
+            await sleep(POLL_INTERVAL);
+            
+            const result = await fetch(
+              `https://www.virustotal.com/api/v3/analyses/${analysisId}`,
+              { headers: { 'x-apikey': process.env.VIRUSTOTAL_API_KEY } }
+            );
+            const analysis = await result.json();
+
+            if (analysis.data && analysis.data.attributes && analysis.data.attributes.status === 'completed') {
+              stats = analysis.data.attributes.stats;
+              scanDate = new Date(analysis.data.attributes.date * 1000 || Date.now());
+              break;
+            }
+
+            attempts++;
+          }
+        }
+
+        if (stats) {
+          // NOW store the real results
+          await Product.findByIdAndUpdate(scanId, {
+            $set: {
+              scanStatus: stats.malicious > 0 ? 'MALICIOUS' : 'CLEAN',
+              'malwareScanDetails.detections.malicious': stats.malicious || 0,
+              'malwareScanDetails.detections.suspicious': stats.suspicious || 0,
+              'malwareScanDetails.detections.harmless': stats.harmless || 0,
+              'malwareScanDetails.detections.undetected': stats.undetected || 0,
+              malwareScanDate: scanDate,
+              scanLockedAt: null
+            }
+          });
+          return;
+        }
+
+        // Max attempts exceeded — mark as failed
+        await Product.findByIdAndUpdate(scanId, {
+          $set: { scanStatus: 'SCAN_FAILED', scanLockedAt: null }
+        });
+
+      } catch (bgError) {
+        console.error("Background rescan failed:", bgError);
+        await Product.updateOne(
+          { _id: scanId },
+          { $set: { scanStatus: 'SCAN_FAILED', scanLockedAt: null } }
+        );
+      }
+    })();
+    
+  } catch (error) {
+    console.error("Error starting rescan:", error);
+    res.status(500).json({ message: "Failed to start re-scan" });
   }
 };
 
@@ -2730,37 +3559,49 @@ export const getMalwareDashboardStats = async (req, res) => {
  */
 export const getContentReviewQueue = async (req, res) => {
   try {
-    const { severity } = req.query; // 'all', 'high', 'medium', 'low'
+    const { severity, cursor, limit = 75 } = req.query; // 'all', 'high', 'medium', 'low'
     
     const query = {
       requiresManualReview: true,
-      status: { $ne: 'rejected' } // Exclude already rejected
+      status: { $ne: 'rejected' }, // Exclude already rejected
+      reviewedAt: null // Exclude already manually reviewed items
     };
     
+    // Calculate summary across all unreviewed flagged products
+    const [summaryResult] = await Product.aggregate([
+      { $match: query },
+      { $group: {
+        _id: null,
+        total: { $sum: 1 },
+        high: { $sum: { $cond: [{ $eq: ["$reviewSeverity", "high"] }, 1, 0] } },
+        medium: { $sum: { $cond: [{ $eq: ["$reviewSeverity", "medium"] }, 1, 0] } },
+        low: { $sum: { $cond: [{ $eq: ["$reviewSeverity", "low"] }, 1, 0] } }
+      }}
+    ]);
+    const summary = summaryResult || { total: 0, high: 0, medium: 0, low: 0 };
+    
+    // Apply filters for the list
     if (severity && severity !== 'all') {
       query.reviewSeverity = severity;
     }
     
+    if (cursor) {
+      query._id = { $lt: cursor };
+    }
+    
+    const limitNum = parseInt(limit) || 75;
+    
     const products = await Product.find(query)
       .populate("sellerId", "name email totalSales averageRating identityVerified")
-      .sort({ createdAt: -1 });
-    
-    // Group by severity
-    const grouped = {
-      high: products.filter(p => p.reviewSeverity === 'high'),
-      medium: products.filter(p => p.reviewSeverity === 'medium'),
-      low: products.filter(p => p.reviewSeverity === 'low')
-    };
+      .sort({ _id: -1 })
+      .limit(limitNum);
+      
+    const nextCursor = products.length === limitNum ? products[products.length - 1]._id : null;
     
     res.json({
       products,
-      summary: {
-        total: products.length,
-        high: grouped.high.length,
-        medium: grouped.medium.length,
-        low: grouped.low.length
-      },
-      grouped
+      summary,
+      nextCursor
     });
   } catch (error) {
     console.error("Error fetching content review queue:", error);
@@ -2896,12 +3737,12 @@ export const getModerationLogs = async (req, res) => {
 
 /**
  * Verify seller identity
- * Updates seller's identityVerified status and timestamp
+ * Updates seller's identityVerificationStatus and tracks submission history
  */
 export const verifySellerIdentity = async (req, res) => {
   try {
     const { sellerId } = req.params;
-    const { verified, notes } = req.body; // verified: boolean
+    const { verified, notes } = req.body; // verified: boolean, notes: string (rejection reason)
     
     const seller = await User.findById(sellerId);
     if (!seller) {
@@ -2912,9 +3753,28 @@ export const verifySellerIdentity = async (req, res) => {
       return res.status(400).json({ message: "User is not a seller" });
     }
     
-    seller.identityVerified = verified;
-    seller.identityVerifiedAt = verified ? new Date() : null;
-    seller.identityVerificationNotes = notes || '';
+    seller.identityVerificationStatus = verified ? 'verified' : 'rejected';
+    
+    if (verified) {
+      seller.latestRejectionReason = undefined;
+      seller.latestRejectionAt = undefined;
+    } else {
+      seller.latestRejectionReason = notes;
+      seller.latestRejectionAt = new Date();
+    }
+
+    // Update current submission round status
+    if (seller.identityDocuments && seller.identityDocuments.length > 0) {
+      const highestRound = Math.max(...seller.identityDocuments.map(d => d.submissionRound || 1));
+      seller.identityDocuments.forEach(doc => {
+        if (doc.submissionRound === highestRound) {
+          doc.status = verified ? 'approved' : 'rejected';
+          doc.reviewedAt = new Date();
+          doc.reviewedBy = req.user._id;
+          if (!verified) doc.rejectionReason = notes;
+        }
+      });
+    }
     
     await seller.save();
     
@@ -2925,19 +3785,18 @@ export const verifySellerIdentity = async (req, res) => {
       verified ? 'Identity Verified ' : 'Identity Verification Issue',
       verified
         ? 'Your identity has been verified! This badge will help build trust with buyers.'
-        : `There was an issue with your identity verification. ${notes || 'Please contact support for details.'}`,
+        : `There was an issue with your identity verification. ${notes || 'Please fix the issues and try again.'}`,
       seller._id,
       'User'
     );
     
     res.json({
-      message: verified ? "Seller identity verified" : "Seller identity verification revoked",
+      message: verified ? "Seller identity verified" : "Seller identity verification rejected",
       seller: {
         _id: seller._id,
         name: seller.name,
         email: seller.email,
-        identityVerified: seller.identityVerified,
-        identityVerifiedAt: seller.identityVerifiedAt
+        identityVerificationStatus: seller.identityVerificationStatus
       }
     });
   } catch (error) {
@@ -2951,19 +3810,195 @@ export const verifySellerIdentity = async (req, res) => {
  */
 export const getPendingIdentityVerifications = async (req, res) => {
   try {
-    // Find sellers who haven't been verified yet but have submitted documents
-    // For now, get all sellers who are approved but not identity verified
-    const sellers = await User.find({
-      role: 'seller',
-      approvalStatus: 'approved',
-      identityVerified: { $ne: true }
-    })
-      .select('-password')
-      .sort({ createdAt: -1 });
+    const { cursor, limit = 75 } = req.query;
     
-    res.json(sellers);
+    const query = {
+      role: 'seller',
+      identityVerificationStatus: 'pending'
+    };
+    
+    if (cursor) {
+      query._id = { $lt: cursor };
+    }
+    
+    const limitNum = parseInt(limit) || 75;
+
+    const sellers = await User.find(query)
+      .select('-password')
+      .sort({ _id: -1 })
+      .limit(limitNum);
+      
+    const nextCursor = sellers.length === limitNum ? sellers[sellers.length - 1]._id : null;
+    
+    res.json({
+      sellers,
+      nextCursor
+    });
   } catch (error) {
     console.error("Error fetching pending identity verifications:", error);
     res.status(500).json({ message: "Failed to fetch pending identity verifications" });
+  }
+};
+
+/**
+ * Generate a signed URL for an admin to view a private identity document
+ */
+export const viewIdentityDocument = async (req, res) => {
+  try {
+    const { publicId } = req.query;
+    
+    if (!publicId) {
+      return res.status(400).json({ message: "publicId is required" });
+    }
+
+    // Find the document in the DB to extract its format and resource_type
+    const user = await User.findOne({ "identityDocuments.public_id": publicId });
+    if (!user) {
+      return res.status(404).json({ message: "Document not found" });
+    }
+
+    const doc = user.identityDocuments.find(d => d.public_id === publicId);
+    
+    let resourceType = 'image';
+    if (doc.url && doc.url.includes('/raw/')) resourceType = 'raw';
+    else if (doc.url && doc.url.includes('/video/')) resourceType = 'video';
+
+    const match = doc.url ? doc.url.match(/\.([a-z0-9]+)$/i) : null;
+    const format = match ? match[1] : '';
+
+    const signedUrl = cloudinary.utils.private_download_url(
+      publicId, 
+      format,
+      { 
+        expires_at: Math.floor(Date.now() / 1000) + 300, 
+        resource_type: resourceType,
+        type: 'authenticated'
+      } 
+    );
+    
+    // Proxy the fetch through our server so the Cloudinary URL never reaches the browser
+    const response = await fetch(signedUrl);
+    if (!response.ok) {
+      throw new Error(`Cloudinary returned ${response.status}`);
+    }
+
+    const contentType = response.headers.get('content-type');
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    res.setHeader('Content-Type', contentType || 'application/octet-stream');
+    res.setHeader('Content-Disposition', `inline; filename="document.${format || 'bin'}"`);
+    res.send(buffer);
+
+  } catch (error) {
+    console.error("Error generating document proxy:", error);
+    res.status(500).json({ message: "Failed to fetch document" });
+  }
+};
+
+export const getPayoutAnalytics = async (req, res) => {
+  try {
+    const { range = "30" } = req.query;
+    const days = parseInt(range) || 30;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const [statsResult] = await Payout.aggregate([
+      {
+        $group: {
+          _id: null,
+          pendingCount: { $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] } },
+          pendingValue: { $sum: { $cond: [{ $eq: ["$status", "pending"] }, "$amount", 0] } },
+          paidThisMonth: { $sum: { $cond: [{ $and: [{ $eq: ["$status", "paid"] }, { $gte: ["$processedAt", startOfMonth] }] }, 1, 0] } },
+          rejectedThisMonth: { $sum: { $cond: [{ $and: [{ $eq: ["$status", "rejected"] }, { $gte: ["$processedAt", startOfMonth] }] }, 1, 0] } }
+        }
+      }
+    ]);
+
+    const stats = statsResult || {
+      pendingCount: 0,
+      pendingValue: 0,
+      paidThisMonth: 0,
+      rejectedThisMonth: 0
+    };
+
+    const volumeDataRaw = await Payout.aggregate([
+      { $match: { createdAt: { $gte: startDate } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          amount: { $sum: "$amount" },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const volumeData = [];
+    const currDate = new Date(startDate);
+    const endDate = new Date();
+    while (currDate <= endDate) {
+      const dateStr = currDate.toISOString().split('T')[0];
+      const found = volumeDataRaw.find(d => d._id === dateStr);
+      volumeData.push({
+        date: dateStr,
+        amount: found ? found.amount : 0,
+        count: found ? found.count : 0
+      });
+      currDate.setDate(currDate.getDate() + 1);
+    }
+
+    const statusDataRaw = await Payout.aggregate([
+      { $match: { createdAt: { $gte: startDate } } },
+      {
+        $group: {
+          _id: "$status",
+          value: { $sum: 1 }
+        }
+      }
+    ]);
+    
+    const statuses = ["pending", "paid", "rejected"];
+    const statusData = statuses.map(s => {
+      const found = statusDataRaw.find(d => d._id === s);
+      return {
+        name: s.charAt(0).toUpperCase() + s.slice(1),
+        value: found ? found.value : 0,
+        color: s === 'pending' ? '#f59e0b' : s === 'paid' ? '#10b981' : '#ef4444'
+      };
+    });
+
+    const needsAttentionRaw = await Payout.find({ status: "pending" })
+      .sort({ createdAt: 1 })
+      .limit(5)
+      .populate("sellerId", "name email");
+
+    const needsAttention = needsAttentionRaw.map(p => ({
+      id: p._id,
+      sellerName: p.sellerId?.name || "Unknown Seller",
+      amount: p.amount,
+      createdAt: p.createdAt,
+      daysOpen: Math.floor((new Date() - new Date(p.createdAt)) / (1000 * 60 * 60 * 24))
+    }));
+
+    res.json({
+      stats: {
+        pendingPayouts: stats.pendingCount,
+        pendingValue: stats.pendingValue,
+        paidThisMonth: stats.paidThisMonth,
+        rejectedThisMonth: stats.rejectedThisMonth
+      },
+      volumeData,
+      statusData,
+      needsAttention
+    });
+  } catch (error) {
+    console.error("Error fetching payout analytics:", error);
+    res.status(500).json({ message: "Failed to fetch payout analytics" });
   }
 };

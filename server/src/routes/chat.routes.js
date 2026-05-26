@@ -34,10 +34,10 @@ router.get("/unread-count", requireRole(["buyer", "seller", "admin"]), getUnread
 router.post("/mark-read", requireRole(["buyer", "seller", "admin"]), markAllAsRead);
 
 // Admin-only routes
-router.get("/conversations", requireRole(["admin"]), adminListConversations);
-router.get("/thread/:userId", requireRole(["admin"]), adminGetThread);
-router.post("/thread/:userId", requireRole(["admin"]), adminSendMessage);
-router.post("/thread/:userId/mark-read", requireRole(["admin"]), adminMarkThreadAsRead);
+router.get("/admin/conversations", requireRole(["admin"]), adminListConversations);
+router.get("/admin/thread/:userId", requireRole(["admin"]), adminGetThread);
+router.post("/admin/thread/:userId", requireRole(["admin"]), adminSendMessage);
+router.post("/admin/thread/:userId/mark-read", requireRole(["admin"]), adminMarkThreadAsRead);
 router.delete("/admin/messages", requireRole(["admin"]), adminDeleteMessages);
 router.delete("/admin/thread/:userId", requireRole(["admin"]), adminClearThread);
 router.delete("/admin/all", requireRole(["admin"]), adminClearAllChats);
