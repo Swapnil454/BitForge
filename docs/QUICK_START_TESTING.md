@@ -34,7 +34,7 @@ npm run dev
 
 ## Testing Workflow
 
-### Test 1: Upload Product with Malware Scanning ✅
+### Test 1: Upload Product with Malware Scanning 
 
 1. **Login as Seller**
    - Navigate to `/dashboard`
@@ -53,7 +53,7 @@ npm run dev
 
 ---
 
-### Test 2: PDF Page Extraction ✅
+### Test 2: PDF Page Extraction 
 
 1. **Upload PDF Product**
    - Upload a product with a PDF file
@@ -67,7 +67,7 @@ npm run dev
 
 ---
 
-### Test 3: Review & Rating System ✅
+### Test 3: Review & Rating System 
 
 #### As Buyer:
 1. **Purchase a Product**
@@ -98,18 +98,18 @@ npm run dev
 
 ---
 
-### Test 4: Seller Profile Pages ✅
+### Test 4: Seller Profile Pages 
 
 1. **Access Seller Profile**
    - Click seller name on any product
    - Or navigate to `/seller/:sellerId`
 
 2. **View Profile Features**
-   - ✅ Seller avatar and bio
-   - ✅ Stats grid (total sales, products, rating, member since)
-   - ✅ Products tab with product cards
-   - ✅ Reviews tab with buyer reviews
-   - ✅ Identity verified badge (if verified)
+   -  Seller avatar and bio
+   -  Stats grid (total sales, products, rating, member since)
+   -  Products tab with product cards
+   -  Reviews tab with buyer reviews
+   -  Identity verified badge (if verified)
 
 3. **Test Navigation**
    - Click product cards → Navigate to marketplace
@@ -118,7 +118,7 @@ npm run dev
 
 ---
 
-### Test 5: Admin Security Dashboard ✅
+### Test 5: Admin Security Dashboard 
 
 1. **Access Dashboard**
    - Login as admin
@@ -137,17 +137,17 @@ npm run dev
    - View products flagged for manual review
    - See flags: "Low page count", "Small file", "Price anomaly"
    - View severity (high/medium/low)
-   - Click "✅ Approve" to clear flags
-   - Click "❌ Reject" to reject product (with reason)
+   - Click " Approve" to clear flags
+   - Click " Reject" to reject product (with reason)
    - Notification sent to seller on action
 
 4. **Identity Verification Tab**
    - View sellers pending verification
    - See seller stats (sales, rating, member since)
-   - Click "✅ Verify Identity" to approve
+   - Click " Verify Identity" to approve
    - Enter verification notes (optional)
    - Seller receives notification
-   - ✅ badge appears on seller profile
+   -  badge appears on seller profile
 
 ---
 
@@ -380,11 +380,11 @@ Password: Buyer@123
 
 ## Success! 🎉
 
-If you've completed all tests above, your ContentSellify marketplace now has:
-- ✅ Enterprise-level malware protection
-- ✅ Accurate PDF validation
-- ✅ Complete review and rating system
-- ✅ Public seller reputation pages
-- ✅ Comprehensive admin security tools
+If you've completed all tests above, your Bitforge marketplace now has:
+-  Enterprise-level malware protection
+-  Accurate PDF validation
+-  Complete review and rating system
+-  Public seller reputation pages
+-  Comprehensive admin security tools
 
 Your platform is now **production-ready** with advanced trust and security features!

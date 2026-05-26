@@ -127,23 +127,23 @@ export default function SellerDeletionsPage() {
   if (!user)
     return (
       <div className="w-full h-screen bg-linear-to-br from-[#0b0b14] to-[#1a1a2e] flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+        <div className="text-slate-900 dark:text-white">Loading...</div>
       </div>
     );
 
   return (
     <div className="min-h-screen bg-linear-to-br from-[#0b0b14] to-[#1a1a2e]">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-white/10 backdrop-blur-xl bg-[#0b0b14]/80">
+      <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-white/10 backdrop-blur-xl bg-[#0b0b14]/80">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-white">Seller Account Deletions</h1>
-            <p className="text-sm text-white/60">Review and manage seller deletion requests</p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Seller Account Deletions</h1>
+            <p className="text-sm text-slate-500 dark:text-white/60">Review and manage seller deletion requests</p>
           </div>
           <div className="flex items-center gap-4">
             <button
-              onClick={() => router.push("/dashboard/admin")}
-              className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white transition"
+              onClick={() => router.back()}
+              className="px-4 py-2 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-900 dark:text-white transition"
             >
               Back to Dashboard
             </button>
@@ -179,7 +179,7 @@ export default function SellerDeletionsPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="text-center py-12 text-white/60"
+                className="text-center py-12 text-slate-500 dark:text-white/60"
               >
                 Loading deletion requests...
               </motion.div>
@@ -188,7 +188,7 @@ export default function SellerDeletionsPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="text-center py-12 text-white/60"
+                className="text-center py-12 text-slate-500 dark:text-white/60"
               >
                 No pending seller deletion requests
               </motion.div>
@@ -200,24 +200,24 @@ export default function SellerDeletionsPage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ delay: index * 0.05 }}
-                  className="p-6 rounded-xl border-l-4 border-l-orange-500 bg-white/5 border-b border-r border-white/10"
+                  className="p-6 rounded-xl border-l-4 border-l-orange-500 bg-slate-100 dark:bg-white/5 border-b border-r border-slate-200 dark:border-white/10"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
                         <span className="text-3xl">🗑️</span>
                         <div>
-                          <h3 className="text-xl font-bold text-white">{request.name}</h3>
-                          <p className="text-sm text-white/60">{request.email}</p>
-                          <p className="text-xs text-white/50 mt-1">
+                          <h3 className="text-xl font-bold text-slate-900 dark:text-white">{request.name}</h3>
+                          <p className="text-sm text-slate-500 dark:text-white/60">{request.email}</p>
+                          <p className="text-xs text-slate-400 dark:text-white/50 mt-1">
                             Requested: {formatDate(request.deletionRequestDate)}
                           </p>
                         </div>
                       </div>
 
-                      <div className="bg-white/10 p-4 rounded-lg border border-white/10 mb-4">
-                        <p className="text-sm font-semibold text-white/80 mb-2">Reason for deletion:</p>
-                        <p className="text-sm text-white/70 whitespace-pre-wrap">
+                      <div className="bg-slate-200 dark:bg-white/10 p-4 rounded-lg border border-slate-200 dark:border-white/10 mb-4">
+                        <p className="text-sm font-semibold text-slate-700 dark:text-white/80 mb-2">Reason for deletion:</p>
+                        <p className="text-sm text-slate-600 dark:text-white/70 whitespace-pre-wrap">
                           {request.deletionRequestReason}
                         </p>
                       </div>
@@ -265,28 +265,28 @@ export default function SellerDeletionsPage() {
               setSelectedRequest(null);
               setRejectionReason("");
             }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-white dark:bg-black/50 flex items-center justify-center z-50 p-4"
           >
             <motion.div
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.95 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#0b0b14] border border-white/10 rounded-2xl p-6 w-full max-w-md"
+              className="bg-[#0b0b14] border border-slate-200 dark:border-white/10 rounded-2xl p-6 w-full max-w-md"
             >
-              <h2 className="text-2xl font-bold text-white mb-4">Reject Deletion Request</h2>
-              <p className="text-white/70 mb-4">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Reject Deletion Request</h2>
+              <p className="text-slate-600 dark:text-white/70 mb-4">
                 Rejecting deletion request for <strong>{selectedRequest.name}</strong>
               </p>
               <div className="mb-6">
-                <label className="block text-sm font-medium text-white/80 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">
                   Rejection Reason *
                 </label>
                 <textarea
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/50 focus:border-red-500 focus:outline-none resize-none"
+                  className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-white/50 focus:border-red-500 focus:outline-none resize-none"
                   placeholder="Explain why you're rejecting this deletion request (min 3 characters)"
                 />
               </div>
@@ -297,14 +297,14 @@ export default function SellerDeletionsPage() {
                     setSelectedRequest(null);
                     setRejectionReason("");
                   }}
-                  className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition"
+                  className="flex-1 px-4 py-2 bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white rounded-lg transition"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleReject}
                   disabled={actionLoading}
-                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-slate-900 dark:text-white rounded-lg transition disabled:opacity-50"
                 >
                   {actionLoading ? "Rejecting..." : "Confirm Reject"}
                 </button>

@@ -9,6 +9,18 @@ import { createNotification } from "./notification.controller.js";
 const generateOtp = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
+const buildAuthUser = (user) => ({
+  id: user._id,
+  name: user.name,
+  email: user.email,
+  phone: user.phone,
+  role: user.role || "buyer",
+  isVerified: user.isVerified,
+  accountStatus: user.accountStatus,
+  approvalStatus: user.approvalStatus,
+  isApproved: user.isApproved,
+});
+
 // Temporary storage for pending user registrations
 const pendingRegistrations = new Map();
 
@@ -163,7 +175,7 @@ export const verifyEmailOtp = async (req, res) => {
         for (const admin of admins) {
           await createNotification(
             admin._id,
-            'product_pending_review',
+            'new_seller_registration',
             'New Seller Registration',
             `${newUser.name} (${newUser.email}) has registered as a seller and is awaiting approval.`,
             newUser._id,
@@ -185,13 +197,7 @@ export const verifyEmailOtp = async (req, res) => {
     res.status(201).json({ 
       message: "Email verified successfully! Your account has been created.",
       token, // Include token for automatic login
-      user: {
-        id: newUser._id,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role, // Include role in response
-        isVerified: newUser.isVerified
-      }
+      user: buildAuthUser(newUser)
     });
   } catch (err) {
     console.error("OTP Verification Error:", err);
@@ -231,11 +237,34 @@ export const login = async (req, res) => {
       });
     }
 
-    // Compare password
+    // Compare password first
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
+
+    // ─── Account Status Guard ───────────────────────────────────────────────
+    // Deleted accounts: prompt reactivation
+    if (user.accountStatus === 'deleted') {
+      return res.status(403).json({
+        message: "This account has been deactivated.",
+        accountStatus: 'deleted',
+        email: user.email,
+      });
+    }
+
+    // Banned accounts: block full access but provide token for report tracking
+    if (user.accountStatus === 'banned') {
+      const token = generateToken(user);
+      return res.status(403).json({
+        message: "Your account has been suspended.",
+        accountStatus: 'banned',
+        bannedReason: user.bannedReason || null,
+        token,
+        user: buildAuthUser(user)
+      });
+    }
+    // ────────────────────────────────────────────────────────────────────────
 
     // Generate JWT token
     const token = generateToken(user);
@@ -243,14 +272,7 @@ export const login = async (req, res) => {
     res.status(200).json({
       message: "Login successful",
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role || 'buyer', // Include role field
-        isVerified: user.isVerified
-      }
+      user: buildAuthUser(user)
     });
 
   } catch (err) {
@@ -366,6 +388,19 @@ export const resetPassword = async (req, res) => {
     user.resetPasswordOtp = undefined;
     user.resetPasswordOtpExpires = undefined;
     await user.save();
+
+    await createNotification(
+      user._id,
+      "password_reset",
+      "Password reset completed",
+      "Your BitForge password was reset successfully. If this was not you, secure your account immediately.",
+      user._id,
+      "User",
+      {
+        audienceRole: user.role,
+        pushWhenInactiveOnly: false,
+      }
+    );
 
     res.status(200).json({ message: "Password reset successful! You can now login with your new password." });
 

@@ -31,11 +31,26 @@ const payoutSchema = new mongoose.Schema({
   paidAt: Date,
   paymentMethod: {
     type: String,
-    enum: ["manual", "bank_transfer", "upi", "razorpayx"],
+    enum: ["manual", "bank_transfer", "upi", "razorpayx", "NEFT", "RTGS", "IMPS", "UPI"],
     default: "manual",
   },
   paymentReference: String, // UTR number or reference from admin
   paymentNotes: String, // Admin notes about the payment
+  utrNumber: String,
+  paymentDate: Date,
+  proofImageUrl: String,
+  adminNote: String,
+  rejectionReasons: [{ type: String }],
+  rejectionMessage: String,
+  processedAt: Date,
+  processedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  
+  // Admin review flag
+  reviewedByAdmin: {
+    type: Boolean,
+    default: false,
+  },
+  reviewedAt: Date,
   
   // Legacy RazorpayX fields (commented out for future use)
   // razorpayPayoutId: String,

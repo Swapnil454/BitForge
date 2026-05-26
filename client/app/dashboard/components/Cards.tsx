@@ -11,6 +11,7 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
+import { BarChart3, TrendingDown } from "lucide-react";
 
 interface MonthlyPoint {
   month: string;
@@ -21,6 +22,7 @@ interface MonthlyPoint {
 type KPIProps = {
   title: string,
   value: string | number,
+  compact?: boolean,
 }
 
 type GlassProps = {
@@ -36,20 +38,32 @@ type MenuItemProps = {
   badge?: number ,
 }
 
-export function KPI({ title, value }: KPIProps) {
+export function KPI({ title, value, compact = false }: KPIProps) {
   return (
-    <div className="group bg-linear-to-br from-white/10 via-white/5 to-transparent border border-white/20 hover:border-white/30 rounded-2xl p-5 shadow-lg hover:shadow-xl hover:shadow-purple-500/20 transition-all duration-300 hover:scale-105 hover:-translate-y-1">
-      <p className="text-sm font-semibold text-white/70 group-hover:text-white/90 transition-colors">{title}</p>
-      <p className="text-3xl font-black mt-2 bg-linear-to-r from-white to-white/80 bg-clip-text text-transparent group-hover:from-purple-300 group-hover:to-blue-300 transition-all">{value}</p>
-      <div className="mt-3 h-1 w-0 group-hover:w-full bg-linear-to-r from-purple-500 to-blue-500 rounded-full transition-all duration-300"></div>
+    <div
+      className={`group bg-white dark:bg-transparent dark:bg-linear-to-br dark:from-white/10 dark:via-white/5 dark:to-transparent border border-gray-200 dark:border-white/20 hover:border-purple-300 dark:hover:border-white/30 rounded-2xl shadow-lg hover:shadow-xl hover:shadow-purple-500/20 transition-all duration-300 hover:scale-105 hover:-translate-y-1 ${
+        compact ? "p-3 md:p-3" : "p-5"
+      }`}
+    >
+      <p className={`${compact ? "text-[13px]" : "text-sm"} font-semibold text-gray-500 dark:text-white/70 group-hover:text-gray-900 dark:group-hover:text-slate-800 dark:group-hover:text-white/90 transition-colors`}>{title}</p>
+      <p
+        className={`font-black bg-linear-to-r from-gray-900 to-gray-700 dark:from-white dark:to-white/80 bg-clip-text text-transparent group-hover:from-purple-600 group-hover:to-blue-600 dark:group-hover:from-purple-300 dark:group-hover:to-blue-300 transition-all ${
+          compact ? "text-[1.95rem] leading-none mt-1" : "text-3xl mt-2"
+        }`}
+      >
+        {value}
+      </p>
+      {!compact && (
+        <div className="mt-3 h-1 w-0 group-hover:w-full bg-linear-to-r from-purple-500 to-blue-500 rounded-full transition-all duration-300"></div>
+      )}
     </div>
   );
 };
 
 export function Glass({ title, children }: GlassProps) {
   return (
-    <div className="bg-linear-to-br from-white/10 via-white/5 to-transparent border border-white/20 hover:border-white/30 rounded-2xl p-5 shadow-xl hover:shadow-2xl transition-all duration-300">
-      <h3 className="mb-4 font-bold text-base text-white flex items-center gap-2">{title}</h3>
+    <div className="bg-white dark:bg-transparent dark:bg-linear-to-br dark:from-white/10 dark:via-white/5 dark:to-transparent border border-gray-200 dark:border-white/20 hover:border-gray-300 dark:hover:border-white/30 rounded-2xl p-5 shadow-xl hover:shadow-2xl transition-all duration-300">
+      <h3 className="mb-4 font-bold text-base text-gray-900 dark:text-white flex items-center gap-2">{title}</h3>
       {children}
     </div>
   );
@@ -60,15 +74,19 @@ export function MenuItem({ label, danger, onClick, icon, badge }: MenuItemProps)
     <button
       onClick={onClick}
       className={`w-full text-left px-4 py-3 text-sm transition-all duration-200 flex items-center justify-between group relative overflow-hidden
-        ${danger ? "text-red-400 hover:bg-red-500/15 hover:border-l-2 hover:border-red-400" : "text-white/80 hover:text-white hover:bg-white/10 hover:border-l-2 hover:border-indigo-400"}`}
+        ${danger ? "text-red-500 dark:text-red-400 hover:bg-red-500/15 hover:border-l-2 hover:border-red-400" : "text-gray-700 dark:text-white/80 hover:text-gray-900 dark:hover:text-slate-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-200 dark:hover:bg-white/10 hover:border-l-2 hover:border-indigo-400"}`}
     >
-      <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      <div className="absolute inset-0 bg-linear-to-r from-transparent via-gray-100 dark:via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
       <div className="relative flex items-center gap-3">
-        {icon && <span className="text-lg group-hover:scale-110 transition-transform duration-200">{icon}</span>}
+        {icon && (
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-700 dark:text-white/90 group-hover:scale-110 group-hover:border-gray-300 dark:group-hover:border-slate-300 dark:group-hover:border-white/20 group-hover:bg-gray-100 dark:group-hover:bg-slate-200 dark:group-hover:bg-white/10 transition-all duration-200">
+            {icon}
+          </span>
+        )}
         <span className="font-medium group-hover:font-semibold transition-all">{label}</span>
       </div>
       {badge !== undefined && badge > 0 && (
-        <span className="relative bg-linear-to-r from-purple-500 to-indigo-500 text-white text-xs rounded-full px-2.5 py-1 font-bold min-w-6 text-center shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform">
+        <span className="relative bg-linear-to-r from-purple-500 to-indigo-500 text-slate-900 dark:text-white text-xs rounded-full px-2.5 py-1 font-bold min-w-6 text-center shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform">
           {badge > 99 ? '99+' : badge}
         </span>
       )}
@@ -97,8 +115,10 @@ export function ChartArea({ data }: { data: MonthlyPoint[] }) {
           </AreaChart>
         </ResponsiveContainer>
       ) : (
-        <div className="text-center w-full text-cyan-300/70 text-xs md:text-sm select-none">
-          <span className="text-2xl block mb-1">📉</span>
+        <div className="text-center w-full text-cyan-600 dark:text-cyan-300/70 text-xs md:text-sm select-none">
+          <span className="mx-auto mb-1 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-cyan-500/30 bg-cyan-500/10">
+            <TrendingDown className="h-4 w-4 text-cyan-600 dark:text-cyan-300" />
+          </span>
           No revenue data to display
         </div>
       )}
@@ -127,8 +147,10 @@ export function ChartBar({ data }: { data: MonthlyPoint[] }) {
           </BarChart>
         </ResponsiveContainer>
       ) : (
-        <div className="text-center w-full text-indigo-300/70 text-xs md:text-sm select-none">
-          <span className="text-2xl block mb-1">📊</span>
+        <div className="text-center w-full text-indigo-600 dark:text-indigo-300/70 text-xs md:text-sm select-none">
+          <span className="mx-auto mb-1 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-500/10">
+            <BarChart3 className="h-4 w-4 text-indigo-600 dark:text-indigo-300" />
+          </span>
           No sales data to display
         </div>
       )}
@@ -138,9 +160,9 @@ export function ChartBar({ data }: { data: MonthlyPoint[] }) {
 
 export function Row({ left, right }: any) {
   return (
-    <div className="flex justify-between py-2 border-b border-white/10 last:border-0">
-      <span>{left}</span>
-      <span className="text-white/60">{right}</span>
+    <div className="flex justify-between py-2 border-b border-gray-200 dark:border-white/10 last:border-0">
+      <span className="text-gray-900 dark:text-white">{left}</span>
+      <span className="text-gray-500 dark:text-white/60">{right}</span>
     </div>
   );
 }

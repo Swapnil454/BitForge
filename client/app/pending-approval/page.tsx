@@ -1,535 +1,341 @@
-// "use client";
-
-// import { useEffect, useState, useRef } from "react";
-// import { useRouter } from "next/navigation";
-// import { getStoredUser, clearAuthStorage, setCookie } from "@/lib/cookies";
-// import { userAPI } from "@/lib/api";
-// import { motion } from "framer-motion";
-// import toast from "react-hot-toast";
-
-// export default function PendingApprovalPage() {
-//   const [user, setUser] = useState<any>(null);
-//   const [loading, setLoading] = useState(true);
-//   const [checking, setChecking] = useState(false);
-//   const [shouldRender, setShouldRender] = useState(false);
-//   const prevStatus = useRef<string | undefined>(undefined);
-//   const router = useRouter();
-
-//   const fetchUserStatus = async () => {
-//     try {
-//       setChecking(true);
-//       const fresh = await userAPI.getCurrentUser();
-//       // Update stored user data
-//       setCookie("user", JSON.stringify(fresh), 7);
-//       if (typeof localStorage !== "undefined") {
-//         localStorage.setItem("user", JSON.stringify(fresh));
-//       }
-//       setUser(fresh);
-//       // Detect status change from pending to approved
-//       const wasPending = prevStatus.current === "pending";
-//       const isNowApproved = fresh.role === "seller" && (fresh.approvalStatus === "approved" || fresh.isApproved);
-//       const congratsFlag = typeof window !== 'undefined' ? localStorage.getItem('sellerApprovedCongratsShown') : null;
-//       // Only show popup if status actually transitions from pending to approved and flag is not set
-//       if (wasPending && isNowApproved && !congratsFlag) {
-//         toast.success("Congratulations! Your account has been approved! Redirecting to your dashboard...");
-//         if (typeof window !== 'undefined') {
-//           localStorage.setItem('sellerApprovedCongratsShown', 'true');
-//         }
-//         setTimeout(() => {
-//           router.replace("/dashboard/seller");
-//         }, 2000);
-//         setShouldRender(false);
-//         setLoading(false);
-//         prevStatus.current = fresh.approvalStatus;
-//         return;
-//       }
-//       // If already approved (not a transition), just redirect and set flag silently
-//       if (isNowApproved) {
-//         if (typeof window !== 'undefined' && !congratsFlag) {
-//           localStorage.setItem('sellerApprovedCongratsShown', 'true');
-//         }
-//         router.replace("/dashboard/seller");
-//         setShouldRender(false);
-//         setLoading(false);
-//         prevStatus.current = fresh.approvalStatus;
-//         return;
-//       }
-//       // Only render if pending or rejected
-//       setShouldRender(true);
-//       if (fresh.approvalStatus === "rejected") {
-//         toast.error("Your account application was not approved.");
-//       } else if (fresh.approvalStatus === "pending" || (!fresh.isApproved && !fresh.approvalStatus)) {
-//         toast("Your account is still pending approval. Please wait for admin review.", {
-//           icon: "⏳",
-//           duration: 4000,
-//         });
-//       }
-//       setLoading(false);
-//       prevStatus.current = fresh.approvalStatus;
-//     } catch (error) {
-//       console.error("Failed to fetch user status:", error);
-//       toast.error("Failed to check status");
-//       setLoading(false);
-//       setShouldRender(false);
-//     } finally {
-//       setChecking(false);
-//     }
-//   };
-
-//   useEffect(() => {
-//     const stored = getStoredUser();
-//     if (!stored) {
-//       router.replace("/login");
-//       return;
-//     }
-//     if (stored.role !== "seller") {
-//       router.replace("/dashboard");
-//       return;
-//     }
-//     prevStatus.current = stored.approvalStatus;
-//     fetchUserStatus();
-//   }, [router]);
-
-//   const handleLogout = () => {
-//     clearAuthStorage();
-//     router.push("/login");
-//   };
-
-//   const handleCheckStatus = () => {
-//     fetchUserStatus();
-//   };
-
-//   if (loading || !user) {
-//     return (
-//       <div className="min-h-screen flex items-center justify-center bg-black/80">
-//         <div className="text-white text-lg animate-pulse">Checking your approval status...</div>
-//       </div>
-//     );
-//   }
-
-//   if (!shouldRender) {
-//     // Don't render anything if not pending/rejected
-//     return null;
-//   }
-
-//   const isPending = user.approvalStatus === "pending" || (!user.isApproved && !user.approvalStatus);
-//   const isRejected = user.approvalStatus === "rejected";
-
-//   return (
-//     <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden font-sans">
-//       {/* Glassmorphism background */}
-//       <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#e0e7ef] via-[#f8fafc] to-[#dbeafe] dark:from-[#0f172a] dark:via-[#1e293b] dark:to-[#0e1726] transition-colors duration-500" />
-//       {/* Subtle floating glass shapes */}
-//       <div className="absolute -top-32 -left-32 w-96 h-96 bg-cyan-200 dark:bg-cyan-900 opacity-10 rounded-full blur-3xl" />
-//       <div className="absolute bottom-0 right-0 w-80 h-80 bg-blue-200 dark:bg-blue-900 opacity-10 rounded-full blur-2xl" />
-//       <motion.div
-//         initial={{ opacity: 0, y: 24 }}
-//         animate={{ opacity: 1, y: 0 }}
-//         className="max-w-xl w-full z-10"
-//       >
-//         <div className="relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl shadow-2xl border border-slate-200 dark:border-slate-800 rounded-3xl px-10 py-14 md:py-16 text-center flex flex-col items-center gap-8 transition-all duration-500">
-//           {isPending && (
-//             <>
-//               {/* Modern illustration */}
-//               <div className="w-32 h-32 mx-auto mb-2 flex items-center justify-center">
-//                 <img
-//                   src="/illustrations/reviewing-docs.svg"
-//                   alt="Account under review"
-//                   className="w-full h-full object-contain select-none pointer-events-none"
-//                   style={{ filter: 'drop-shadow(0 4px 24px rgba(0,180,255,0.10))' }}
-//                   loading="lazy"
-//                 />
-//               </div>
-//               <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
-//                 Seller Account Review
-//               </h1>
-//               <p className="text-lg text-slate-600 dark:text-slate-300 mb-6 max-w-lg mx-auto">
-//                 Thank you for registering, <span className="font-semibold text-cyan-700 dark:text-cyan-300">{user.name}</span>.<br />
-//                 Your seller account is being reviewed by our compliance team.<br />
-//                 You will be notified as soon as your account is approved.
-//               </p>
-//               <div className="flex flex-col md:flex-row gap-4 justify-center w-full mb-2">
-//                 <button
-//                   onClick={handleCheckStatus}
-//                   disabled={checking}
-//                   className="px-7 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-semibold text-base shadow-lg transition disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-//                 >
-//                   {checking ? (
-//                     <span className="flex items-center gap-2"><span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>Checking...</span>
-//                   ) : "Check Status"}
-//                 </button>
-//                 <button
-//                   onClick={handleLogout}
-//                   className="px-7 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white rounded-xl font-semibold text-base shadow-lg transition focus:outline-none focus:ring-2 focus:ring-cyan-400"
-//                 >
-//                   Logout
-//                 </button>
-//               </div>
-//               <div className="w-full flex flex-col items-center gap-2 mt-6">
-//                 <div className="w-2/3 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-//                   <div className="h-full bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-600 animate-progress-bar" />
-//                 </div>
-//                 <span className="text-xs text-slate-400 dark:text-slate-500 mt-1 tracking-wide">Waiting for admin approval</span>
-//               </div>
-//               <div className="w-full mt-8 text-left">
-//                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-//                   <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-3-3v6m9-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-//                   What happens next?
-//                 </h3>
-//                 <ul className="space-y-2 text-slate-700 dark:text-slate-300 text-base">
-//                   <li className="flex items-start gap-2">
-//                     <span className="text-cyan-500 mt-1">•</span>
-//                     <span>Your application is being reviewed by our compliance team</span>
-//                   </li>
-//                   <li className="flex items-start gap-2">
-//                     <span className="text-cyan-500 mt-1">•</span>
-//                     <span>You will receive an email once your account is approved</span>
-//                   </li>
-//                   <li className="flex items-start gap-2">
-//                     <span className="text-cyan-500 mt-1">•</span>
-//                     <span>After approval, you can access your seller dashboard and start listing products</span>
-//                   </li>
-//                   <li className="flex items-start gap-2">
-//                     <span className="text-cyan-500 mt-1">•</span>
-//                     <span>Set up your payment details and bank account for payouts</span>
-//                   </li>
-//                 </ul>
-//               </div>
-//             </>
-//           )}
-
-//           {isRejected && (
-//             <>
-//               <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-linear-to-br from-red-400 to-red-600 flex items-center justify-center">
-//                 <svg
-//                   className="w-12 h-12 text-white"
-//                   fill="none"
-//                   stroke="currentColor"
-//                   viewBox="0 0 24 24"
-//                 >
-//                   <path
-//                     strokeLinecap="round"
-//                     strokeLinejoin="round"
-//                     strokeWidth={2}
-//                     d="M6 18L18 6M6 6l12 12"
-//                   />
-//                 </svg>
-//               </div>
-              
-//               <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-//                 Application Not Approved
-//               </h1>
-              
-//               <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 mb-6">
-//                 <h2 className="text-xl font-semibold text-red-400 mb-2">
-//                   Account Rejected
-//                 </h2>
-//                 <p className="text-white/70 leading-relaxed mb-4">
-//                   Unfortunately, your seller account application was not approved at this time.
-//                 </p>
-//                 {user.approvalReason && (
-//                   <div className="bg-white/5 rounded-lg p-4 text-left">
-//                     <p className="text-sm text-white/60 mb-1">Reason:</p>
-//                     <p className="text-white/90">{user.approvalReason}</p>
-//                   </div>
-//                 )}
-//               </div>
-
-//               <div className="bg-white/5 rounded-xl p-6 mb-8 text-left">
-//                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-//                   <span className="text-2xl">💡</span>
-//                   What can you do?
-//                 </h3>
-//                 <ul className="space-y-3 text-white/70">
-//                   <li className="flex items-start gap-3">
-//                     <span className="text-cyan-400 mt-1">•</span>
-//                     <span>Contact our support team for more information</span>
-//                   </li>
-//                   <li className="flex items-start gap-3">
-//                     <span className="text-cyan-400 mt-1">•</span>
-//                     <span>Address the concerns mentioned in the rejection reason</span>
-//                   </li>
-//                   <li className="flex items-start gap-3">
-//                     <span className="text-cyan-400 mt-1">•</span>
-//                     <span>You can create a new account and reapply in the future</span>
-//                   </li>
-//                 </ul>
-//               </div>
-
-//               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-//                 <button
-//                   onClick={() => router.push("/dashboard")}
-//                   className="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-semibold transition"
-//                 >
-//                   Browse as Buyer
-//                 </button>
-//                 <button
-//                   onClick={handleLogout}
-//                   className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold transition"
-//                 >
-//                   Logout
-//                 </button>
-//               </div>
-//             </>
-//           )}
-//         </div>
-
-//         <p className="text-center text-white/60 text-base mt-8">
-//           Need help? <a href="mailto:support@sellify.com" className="underline text-cyan-300 hover:text-cyan-400 transition">Contact us at support@sellify.com</a>
-//         </p>
-//       </motion.div>
-//     </div>
-//   );
-// }
-
-
-
 "use client";
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { getStoredUser, clearAuthStorage, setCookie } from "@/lib/cookies";
+import { getStoredUser, clearAuthStorage } from "@/lib/cookies";
 import { userAPI } from "@/lib/api";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { UploadCloud, FileType, X, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+
+type DocType = 'government_id' | 'passport' | 'drivers_license' | 'business_license' | 'utility_bill' | 'other';
+
+interface SelectedFile {
+  file: File;
+  type: DocType;
+  id: string;
+}
 
 export default function PendingApprovalPage() {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [checking, setChecking] = useState(false);
-  const [shouldRender, setShouldRender] = useState(false);
-  const prevStatus = useRef<string | undefined>(undefined);
   const router = useRouter();
+  const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchUserStatus = async () => {
-    try {
-      setChecking(true);
-      const fresh = await userAPI.getCurrentUser();
-
-      setCookie("user", JSON.stringify(fresh), 7);
-      localStorage.setItem("user", JSON.stringify(fresh));
-      setUser(fresh);
-
-      const wasPending = prevStatus.current === "pending";
-      const isNowApproved =
-        fresh.role === "seller" &&
-        (fresh.approvalStatus === "approved" || fresh.isApproved);
-
-      const congratsFlag = localStorage.getItem(
-        "sellerApprovedCongratsShown"
-      );
-
-      if (wasPending && isNowApproved && !congratsFlag) {
-        toast.success(
-          "Congratulations! Your account has been approved. Redirecting to your dashboard..."
-        );
-        localStorage.setItem("sellerApprovedCongratsShown", "true");
-
-        setTimeout(() => {
-          router.replace("/dashboard/seller");
-        }, 2000);
-
-        setShouldRender(false);
-        setLoading(false);
-        prevStatus.current = fresh.approvalStatus;
-        return;
-      }
-
-      if (isNowApproved) {
-        router.replace("/dashboard/seller");
-        setShouldRender(false);
-        setLoading(false);
-        prevStatus.current = fresh.approvalStatus;
-        return;
-      }
-
-      setShouldRender(true);
-
-      if (fresh.approvalStatus === "rejected") {
-        toast.error("Your account application was not approved.");
-      } else {
-        toast("Your account is still pending approval.", {
-          icon: "⏳",
-        });
-      }
-
-      setLoading(false);
-      prevStatus.current = fresh.approvalStatus;
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to check status");
-      setLoading(false);
-      setShouldRender(false);
-    } finally {
-      setChecking(false);
-    }
-  };
-
+  // Authentication Check
   useEffect(() => {
     const stored = getStoredUser();
-
     if (!stored) {
       router.replace("/login");
       return;
     }
-
     if (stored.role !== "seller") {
       router.replace("/dashboard");
-      return;
     }
-
-    prevStatus.current = stored.approvalStatus;
-    fetchUserStatus();
   }, [router]);
+
+  // Query Identity Status
+  const { data: statusData, isLoading, refetch } = useQuery({
+    queryKey: ['identityStatus'],
+    queryFn: userAPI.getIdentityStatus,
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      const isApproved =
+        data?.approvalStatus === "approved" || Boolean(data?.isApproved);
+
+      // Keep polling while identity or seller approval is still pending.
+      return data?.status === "pending" || (data?.status === "verified" && !isApproved)
+        ? 10000
+        : false;
+    },
+  });
+
+  const isSellerApproved =
+    statusData?.approvalStatus === "approved" || Boolean(statusData?.isApproved);
+  const isAwaitingSellerAccountApproval =
+    statusData?.status === "verified" && !isSellerApproved;
+
+  // Redirect only after the seller account itself is approved.
+  useEffect(() => {
+    if (isSellerApproved) {
+      const congratsFlag = localStorage.getItem("sellerApprovedCongratsShown");
+      if (!congratsFlag) {
+        toast.success("Congratulations! Your identity has been verified. Redirecting to your dashboard...");
+        localStorage.setItem("sellerApprovedCongratsShown", "true");
+      }
+      router.replace("/dashboard/seller");
+    }
+  }, [isSellerApproved, router]);
+
+  // Upload Mutation
+  const uploadMutation = useMutation({
+    mutationFn: (formData: FormData) => userAPI.uploadIdentityDocuments(formData),
+    onSuccess: () => {
+      toast.success("Documents uploaded successfully!");
+      setSelectedFiles([]);
+      refetch();
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to upload documents");
+    }
+  });
 
   const handleLogout = () => {
     clearAuthStorage();
     router.push("/login");
   };
 
-  if (loading || !user) {
+  // Drag and Drop Handlers
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const onDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    handleFiles(e.dataTransfer.files);
+  };
+
+  const onFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      handleFiles(e.target.files);
+    }
+  };
+
+  const handleFiles = (files: FileList) => {
+    const newFiles: SelectedFile[] = Array.from(files).map(file => ({
+      file,
+      type: 'government_id', // default
+      id: Math.random().toString(36).substring(7)
+    }));
+
+    if (selectedFiles.length + newFiles.length > 5) {
+      toast.error("You can only upload up to 5 documents per submission");
+      return;
+    }
+
+    setSelectedFiles(prev => [...prev, ...newFiles]);
+  };
+
+  const removeFile = (id: string) => {
+    setSelectedFiles(prev => prev.filter(f => f.id !== id));
+  };
+
+  const updateFileType = (id: string, type: DocType) => {
+    setSelectedFiles(prev => prev.map(f => f.id === id ? { ...f, type } : f));
+  };
+
+  const handleUpload = () => {
+    if (selectedFiles.length === 0) {
+      toast.error("Please select at least one document");
+      return;
+    }
+
+    const hasGovId = selectedFiles.some(f => ['government_id', 'passport', 'drivers_license'].includes(f.type));
+    if (!hasGovId) {
+      toast.error("At least one primary ID (Government ID, Passport, or Driver's License) is required");
+      return;
+    }
+
+    const formData = new FormData();
+    const documentTypes = selectedFiles.map(f => f.type);
+    formData.append("documentTypes", JSON.stringify(documentTypes));
+    
+    selectedFiles.forEach(f => {
+      formData.append("documents", f.file);
+    });
+
+    uploadMutation.mutate(formData);
+  };
+
+  if (isLoading || !statusData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <p className="text-white/70">Checking approval status…</p>
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950">
+        <Loader2 className="w-10 h-10 animate-spin text-cyan-500" />
       </div>
     );
   }
 
-  if (!shouldRender) return null;
+  // If the seller is fully approved, UI is hidden while redirecting.
+  if (isSellerApproved) return null;
 
-  const isPending =
-    user.approvalStatus === "pending" ||
-    (!user.isApproved && !user.approvalStatus);
-
-  const isRejected = user.approvalStatus === "rejected";
+  const isPending = statusData.status === 'pending' || isAwaitingSellerAccountApproval;
+  const isRejected = statusData.status === 'rejected';
+  const isUnverified = statusData.status === 'unverified' || !statusData.status;
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-16">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-16 px-4 font-sans">
       <motion.div
-        initial={{ opacity: 0, y: 16 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-3xl mx-auto"
       >
-        {isPending && (
-          <>
-            <h1 className="text-3xl font-bold text-white mb-4 text-center">
-              Seller Account Under Review
-            </h1>
-
-            <p className="text-slate-400 text-center mb-8">
-              Dear{" "}
-              <span className="font-semibold text-cyan-400">
-                {user.name}
-              </span>
-              , your seller account is currently under administrative review.
-            </p>
-
-            <div className="space-y-3 text-slate-400 mb-10">
-              <p>
-                During this process, your submitted information is verified to
-                ensure compliance with platform requirements.
-              </p>
-
-              <p>
-                Reviews are typically completed within <strong>24–48 hours</strong>.
-                No action is required from you at this time.
-              </p>
-
-              <p>
-                Upon approval, you will gain access to the seller dashboard and
-                related features.
-              </p>
-            </div>
-
-            <div className="mb-10">
-              <h2 className="text-lg font-semibold text-white mb-3">
-                Review Process
-              </h2>
-              <ul className="list-disc list-inside space-y-2 text-slate-400">
-                <li>Application review by an administrator</li>
-                <li>Status update upon completion</li>
-                <li>Dashboard access if approved</li>
-                <li>Rejection reason displayed if declined</li>
-              </ul>
-            </div>
-
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={fetchUserStatus}
-                disabled={checking}
-                className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-md font-semibold disabled:opacity-50"
-              >
-                {checking ? "Checking…" : "Check Status"}
-              </button>
-
-              <button
-                onClick={handleLogout}
-                className="px-6 py-2 border border-slate-700 text-slate-300 rounded-md"
-              >
-                Logout
-              </button>
-            </div>
-          </>
-        )}
-
-        {isRejected && (
-          <>
-            <h1 className="text-3xl font-bold text-white mb-4 text-center">
-              Application Not Approved
-            </h1>
-
-            <p className="text-slate-400 text-center mb-8">
-              Your seller account application was not approved at this time.
-            </p>
-
-            {user.approvalReason && (
-              <div className="mb-8">
-                <p className="text-sm text-slate-500 mb-1">
-                  Reason for rejection
-                </p>
-                <p className="text-slate-300">{user.approvalReason}</p>
+        <div className="bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-800 rounded-3xl p-8 md:p-12">
+          
+          {isPending && (
+            <div className="text-center flex flex-col items-center">
+              <div className="w-24 h-24 bg-cyan-100 dark:bg-cyan-900/30 rounded-full flex items-center justify-center mb-6">
+                <Loader2 className="w-12 h-12 text-cyan-500 animate-spin" />
               </div>
-            )}
-
-            <div className="mb-10">
-              <h2 className="text-lg font-semibold text-white mb-3">
-                Next Steps
-              </h2>
-              <ul className="list-disc list-inside space-y-2 text-slate-400">
-                <li>Review the provided reason carefully</li>
-                <li>Contact support for clarification if required</li>
-                <li>Reapply after addressing the identified issues</li>
-                <li>Continue using the platform as a buyer</li>
-              </ul>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
+                {isAwaitingSellerAccountApproval ? "Seller Account Under Review" : "Identity Under Review"}
+              </h1>
+              <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-lg">
+                {isAwaitingSellerAccountApproval
+                  ? "Your identity has been verified. Your seller account is still awaiting final approval, and you'll get access as soon as the review is complete."
+                  : "Your identity documents have been submitted and are currently being reviewed by our compliance team. This usually takes 24-48 hours."}
+              </p>
+              
+              <div className="flex gap-4 w-full justify-center">
+                <button
+                  onClick={() => refetch()}
+                  className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-semibold transition"
+                >
+                  Refresh Status
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="px-6 py-2 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
+          )}
 
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => router.push("/dashboard")}
-                className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-md font-semibold"
-              >
-                Browse as Buyer
-              </button>
+          {(isUnverified || isRejected) && (
+            <div className="flex flex-col">
+              <div className="text-center mb-10">
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
+                  Verify Your Identity
+                </h1>
+                <p className="text-slate-500 dark:text-slate-400">
+                  Before you can start selling, we need to verify your identity to ensure a safe marketplace for everyone.
+                </p>
+              </div>
 
-              <button
-                onClick={handleLogout}
-                className="px-6 py-2 border border-slate-700 text-slate-300 rounded-md"
+              {isRejected && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-5 mb-8 flex gap-4">
+                  <AlertCircle className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="text-red-800 dark:text-red-400 font-semibold mb-1">Previous Submission Rejected</h3>
+                    <p className="text-red-600 dark:text-red-300 text-sm">
+                      {statusData.rejectionReason || "Your previous documents were not accepted. Please upload clearer copies or different documents."}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Upload Dropzone */}
+              <div 
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                onDrop={onDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
+                  isDragging 
+                    ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-900/10' 
+                    : 'border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                }`}
               >
-                Logout
-              </button>
+                <UploadCloud className={`w-12 h-12 mb-4 ${isDragging ? 'text-cyan-500' : 'text-slate-400'}`} />
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                  Click or drag files here
+                </h3>
+                <p className="text-sm text-slate-500">
+                  Support for JPG, PNG, WEBP, and PDF. Up to 5 files (Max 5MB each).
+                </p>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={onFileInput}
+                  className="hidden" 
+                  multiple 
+                  accept=".jpg,.jpeg,.png,.webp,.pdf"
+                />
+              </div>
+
+              {/* Selected Files List */}
+              <AnimatePresence>
+                {selectedFiles.length > 0 && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mt-8 space-y-4"
+                  >
+                    <h4 className="font-semibold text-slate-900 dark:text-white">Selected Documents ({selectedFiles.length}/5)</h4>
+                    {selectedFiles.map((f) => (
+                      <div key={f.id} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center gap-3 flex-1 overflow-hidden">
+                          <div className="w-10 h-10 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg flex items-center justify-center shrink-0">
+                            <FileType className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{f.file.name}</p>
+                            <p className="text-xs text-slate-500">{(f.file.size / 1024 / 1024).toFixed(2)} MB</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
+                          <select 
+                            value={f.type}
+                            onChange={(e) => updateFileType(f.id, e.target.value as DocType)}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-cyan-500 w-full sm:w-48"
+                          >
+                            <option value="government_id">Government ID</option>
+                            <option value="passport">Passport</option>
+                            <option value="drivers_license">Driver's License</option>
+                            <option value="business_license">Business License</option>
+                            <option value="utility_bill">Utility Bill (Proof of Address)</option>
+                            <option value="other">Other Document</option>
+                          </select>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); removeFile(f.id); }}
+                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="mt-10 flex gap-4">
+                <button
+                  onClick={handleUpload}
+                  disabled={uploadMutation.isPending || selectedFiles.length === 0}
+                  className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-3 px-6 rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {uploadMutation.isPending ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-5 h-5" />
+                  )}
+                  {uploadMutation.isPending ? "Uploading..." : "Submit Documents"}
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="px-6 py-3 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                >
+                  Logout
+                </button>
+              </div>
+
             </div>
-          </>
-        )}
+          )}
 
-        <p className="mt-16 text-center text-slate-500">
-          Need assistance?{" "}
-          <a
-            href="mailto:support@bitforge.com"
-            className="underline hover:text-slate-300"
-          >
-            support@bitforge.com
-          </a>
-        </p>
+        </div>
       </motion.div>
     </div>
   );

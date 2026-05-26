@@ -24,9 +24,35 @@ const chatMessageSchema = new mongoose.Schema(
     },
     message: {
       type: String,
-      required: true,
+      required: false, // Make it optional since a message could just be an attachment
       trim: true,
     },
+    attachments: [
+      {
+        url: { type: String, required: true },
+        type: { type: String, required: true }, // e.g., 'image/png', 'application/pdf'
+        name: { type: String, required: true },
+      }
+    ],
+    supportTicketId: {
+      type: String,
+      default: null,
+    },
+    status: {
+      type: String,
+      enum: ["active", "deleted", "placeholderDeleted"],
+      default: "active",
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false
+    },
+    deletedFor: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      }
+    ],
     readBy: [
       {
         type: mongoose.Schema.Types.ObjectId,

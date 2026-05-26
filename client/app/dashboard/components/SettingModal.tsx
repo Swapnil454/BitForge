@@ -101,23 +101,23 @@ export default function SettingsModal({ user, onClose, allowDelete = true}: Sett
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
-      className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-white dark:bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     >
       <motion.div
         initial={{ scale: 0.95 }}
         animate={{ scale: 1 }}
         exit={{ scale: 0.95 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-linear-to-br from-slate-800/80 via-slate-900/80 to-slate-800/80 border border-white/20 rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-2xl shadow-indigo-500/20"
+        className="bg-linear-to-br from-slate-800/80 via-slate-900/80 to-slate-800/80 border border-slate-300 dark:border-white/20 rounded-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-2xl shadow-indigo-500/20"
       >
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-white">Settings</h2>
-            <p className="text-xs text-white/70">Security and account options</p>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Settings</h2>
+            <p className="text-xs text-slate-600 dark:text-white/70">Security and account options</p>
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-lg bg-white/20 hover:bg-white/30 text-white/80 hover:text-white transition grid place-items-center"
+            className="w-9 h-9 rounded-lg bg-white/20 hover:bg-white/30 text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white transition grid place-items-center"
             aria-label="Close"
           >
             ✕
@@ -139,8 +139,8 @@ export default function SettingsModal({ user, onClose, allowDelete = true}: Sett
                   </svg>
                 </span>
                 <div>
-                  <div className="text-white font-semibold">Change Password</div>
-                  <div className="text-xs text-white/70">Update your current password</div>
+                  <div className="text-slate-900 dark:text-white font-semibold">Change Password</div>
+                  <div className="text-xs text-slate-600 dark:text-white/70">Update your current password</div>
                 </div>
               </div>
               <span className="w-8 h-8 rounded-full bg-cyan-400/15 border border-cyan-400/30 grid place-items-center text-cyan-100">
@@ -161,8 +161,8 @@ export default function SettingsModal({ user, onClose, allowDelete = true}: Sett
                   </svg>
                 </span>
                 <div>
-                  <div className="text-white font-semibold">Reset Password</div>
-                  <div className="text-xs text-white/70">Use email verification code</div>
+                  <div className="text-slate-900 dark:text-white font-semibold">Reset Password</div>
+                  <div className="text-xs text-slate-600 dark:text-white/70">Use email verification code</div>
                 </div>
               </div>
               <span className="w-8 h-8 rounded-full bg-indigo-400/15 border border-indigo-400/30 grid place-items-center text-indigo-100">
@@ -185,7 +185,7 @@ export default function SettingsModal({ user, onClose, allowDelete = true}: Sett
                     </svg>
                   </span>
                   <div>
-                    <div className="text-white font-semibold">Delete Account</div>
+                    <div className="text-slate-900 dark:text-white font-semibold">Delete Account</div>
                     <div className="text-xs text-red-200/80">Permanent and irreversible</div>
                   </div>
                 </div>
@@ -204,45 +204,45 @@ export default function SettingsModal({ user, onClose, allowDelete = true}: Sett
           <div className="space-y-4">
             <button
               onClick={() => setActiveTab("menu")}
-              className="text-xs text-white/80 hover:text-white flex items-center gap-1 px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 w-fit"
+              className="text-xs text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-200 dark:bg-white/10 hover:bg-white/20 w-fit"
             >
               ← Back
             </button>
-            <div className="text-sm text-white/80 font-semibold">Change Password</div>
+            <div className="text-sm text-slate-700 dark:text-white/80 font-semibold">Change Password</div>
             <div>
-              <label className="block text-sm font-medium text-white/80 mb-2">Old Password</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">Old Password</label>
               <input
                 type="password"
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
-                className="w-full px-4 py-2.5 bg-white/20 border border-white/25 rounded-xl text-white placeholder-white/60 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 shadow-inner shadow-black/20"
+                className="w-full px-4 py-2.5 bg-white/20 border border-white/25 rounded-xl text-slate-900 dark:text-white placeholder-white/60 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 shadow-inner shadow-black/20"
                 placeholder="Enter old password"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white/80 mb-2">New Password</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">New Password</label>
               <input
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-4 py-2.5 bg-white/20 border border-white/25 rounded-xl text-white placeholder-white/60 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 shadow-inner shadow-black/20"
+                className="w-full px-4 py-2.5 bg-white/20 border border-white/25 rounded-xl text-slate-900 dark:text-white placeholder-white/60 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 shadow-inner shadow-black/20"
                 placeholder="Enter new password"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-white/80 mb-2">Confirm Password</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">Confirm Password</label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-2.5 bg-white/20 border border-white/25 rounded-xl text-white placeholder-white/60 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 shadow-inner shadow-black/20"
+                className="w-full px-4 py-2.5 bg-white/20 border border-white/25 rounded-xl text-slate-900 dark:text-white placeholder-white/60 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 shadow-inner shadow-black/20"
                 placeholder="Confirm new password"
               />
             </div>
             <button
               onClick={handleUpdatePassword}
               disabled={loading}
-              className="w-full px-4 py-2.5 bg-linear-to-r from-indigo-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-white rounded-xl transition disabled:opacity-50 mt-4 shadow-lg shadow-cyan-500/30"
+              className="w-full px-4 py-2.5 bg-linear-to-r from-indigo-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-slate-900 dark:text-white rounded-xl transition disabled:opacity-50 mt-4 shadow-lg shadow-cyan-500/30"
             >
               {loading ? "Updating..." : "Update Password"}
             </button>
@@ -254,56 +254,56 @@ export default function SettingsModal({ user, onClose, allowDelete = true}: Sett
           <div className="space-y-4">
             <button
               onClick={() => setActiveTab("menu")}
-              className="text-xs text-white/80 hover:text-white flex items-center gap-1 px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 w-fit"
+              className="text-xs text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-200 dark:bg-white/10 hover:bg-white/20 w-fit"
             >
               ← Back
             </button>
-            <div className="text-sm text-white/80 font-semibold">Reset Password</div>
-            <p className="text-xs text-white/70">We'll send a verification code to your email</p>
+            <div className="text-sm text-slate-700 dark:text-white/80 font-semibold">Reset Password</div>
+            <p className="text-xs text-slate-600 dark:text-white/70">We'll send a verification code to your email</p>
             {!showOtpField ? (
               <button
                 onClick={handleSendOtp}
                 disabled={loading}
-                className="w-full px-4 py-2.5 bg-linear-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white rounded-xl transition disabled:opacity-50 shadow-lg shadow-blue-500/30"
+                className="w-full px-4 py-2.5 bg-linear-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-slate-900 dark:text-white rounded-xl transition disabled:opacity-50 shadow-lg shadow-blue-500/30"
               >
                 {loading ? "Sending..." : "Send Verification Code"}
               </button>
             ) : (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">Verification Code</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">Verification Code</label>
                   <input
                     type="text"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-white/20 border border-white/25 rounded-xl text-white placeholder-white/60 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 shadow-inner shadow-black/20"
+                    className="w-full px-4 py-2.5 bg-white/20 border border-white/25 rounded-xl text-slate-900 dark:text-white placeholder-white/60 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 shadow-inner shadow-black/20"
                     placeholder="Enter code"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">New Password</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">New Password</label>
                   <input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-white/20 border border-white/25 rounded-xl text-white placeholder-white/60 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 shadow-inner shadow-black/20"
+                    className="w-full px-4 py-2.5 bg-white/20 border border-white/25 rounded-xl text-slate-900 dark:text-white placeholder-white/60 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 shadow-inner shadow-black/20"
                     placeholder="Enter new password"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">Confirm Password</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">Confirm Password</label>
                   <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-white/20 border border-white/25 rounded-xl text-white placeholder-white/60 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 shadow-inner shadow-black/20"
+                    className="w-full px-4 py-2.5 bg-white/20 border border-white/25 rounded-xl text-slate-900 dark:text-white placeholder-white/60 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 shadow-inner shadow-black/20"
                     placeholder="Confirm new password"
                   />
                 </div>
                 <button
                   onClick={handleResetPassword}
                   disabled={loading}
-                  className="w-full px-4 py-2.5 bg-linear-to-r from-indigo-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-white rounded-xl transition disabled:opacity-50 mt-2 shadow-lg shadow-cyan-500/30"
+                  className="w-full px-4 py-2.5 bg-linear-to-r from-indigo-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-slate-900 dark:text-white rounded-xl transition disabled:opacity-50 mt-2 shadow-lg shadow-cyan-500/30"
                 >
                   {loading ? "Resetting..." : "Reset Password"}
                 </button>
@@ -317,11 +317,11 @@ export default function SettingsModal({ user, onClose, allowDelete = true}: Sett
           <div className="space-y-4">
             <button
               onClick={() => setActiveTab("menu")}
-              className="text-xs text-white/80 hover:text-white flex items-center gap-1 px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 w-fit"
+              className="text-xs text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-200 dark:bg-white/10 hover:bg-white/20 w-fit"
             >
               ← Back
             </button>
-            <div className="text-sm text-white/80 font-semibold">Delete Account</div>
+            <div className="text-sm text-slate-700 dark:text-white/80 font-semibold">Delete Account</div>
             <div className="p-3 rounded-xl border border-red-500/40 bg-red-500/15 text-sm text-red-200">
               Deleting your account is permanent. Your profile and access will be removed.
             </div>
@@ -341,29 +341,29 @@ export default function SettingsModal({ user, onClose, allowDelete = true}: Sett
                   }
                 }}
                 disabled={loading}
-                className="w-full px-4 py-2.5 bg-linear-to-r from-red-500 to-rose-500 hover:from-red-400 hover:to-rose-400 text-white rounded-xl transition disabled:opacity-50 shadow-lg shadow-red-500/30"
+                className="w-full px-4 py-2.5 bg-linear-to-r from-red-500 to-rose-500 hover:from-red-400 hover:to-rose-400 text-slate-900 dark:text-white rounded-xl transition disabled:opacity-50 shadow-lg shadow-red-500/30"
               >
                 {loading ? "Sending..." : "Send Verification Code"}
               </button>
             ) : (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">Verification Code</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">Verification Code</label>
                   <input
                     type="text"
                     value={delOtp}
                     onChange={(e) => setDelOtp(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-white/20 border border-white/25 rounded-xl text-white placeholder-white/60 focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/40 shadow-inner shadow-black/20"
+                    className="w-full px-4 py-2.5 bg-white/20 border border-white/25 rounded-xl text-slate-900 dark:text-white placeholder-white/60 focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/40 shadow-inner shadow-black/20"
                     placeholder="Enter code"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">Reason for deletion</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">Reason for deletion</label>
                   <textarea
                     value={delReason}
                     onChange={(e) => setDelReason(e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-2.5 bg-white/20 border border-white/25 rounded-xl text-white placeholder-white/60 focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/40 shadow-inner shadow-black/20"
+                    className="w-full px-4 py-2.5 bg-white/20 border border-white/25 rounded-xl text-slate-900 dark:text-white placeholder-white/60 focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/40 shadow-inner shadow-black/20"
                     placeholder="Tell us why you are deleting your account"
                   />
                 </div>
@@ -394,7 +394,7 @@ export default function SettingsModal({ user, onClose, allowDelete = true}: Sett
                     }
                   }}
                   disabled={loading}
-                  className="w-full px-4 py-2.5 bg-linear-to-r from-red-500 to-rose-500 hover:from-red-400 hover:to-rose-400 text-white rounded-xl transition disabled:opacity-50 mt-2 shadow-lg shadow-red-500/30"
+                  className="w-full px-4 py-2.5 bg-linear-to-r from-red-500 to-rose-500 hover:from-red-400 hover:to-rose-400 text-slate-900 dark:text-white rounded-xl transition disabled:opacity-50 mt-2 shadow-lg shadow-red-500/30"
                 >
                   {loading ? "Deleting..." : "Confirm Delete Account"}
                 </button>

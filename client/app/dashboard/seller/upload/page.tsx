@@ -6,12 +6,30 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
+import {
+  Upload, FileText, Image as ImageIcon, Tag,
+  Globe, FileType, Users, Hash, Pencil, Trash2,
+  CheckCircle, Clock, XCircle, ChevronLeft,
+  Package, Star, Calendar, MoreVertical, Eye, Megaphone
+} from "lucide-react";
 
 /* ================= CONSTANTS ================= */
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+const SURFACE_CARD_CLASS =
+  "group relative overflow-hidden rounded-[20px] sm:rounded-[24px] border border-slate-200/90 bg-white/96 p-4 sm:p-5 shadow-[0_16px_40px_-30px_rgba(15,23,42,0.24)] ring-1 ring-slate-950/5 transition-all duration-300 before:absolute before:inset-x-10 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-cyan-400/45 before:to-transparent hover:border-cyan-200/70 hover:shadow-[0_22px_48px_-34px_rgba(8,145,178,0.2)] dark:border-white/5 dark:bg-[#0c0e14] dark:ring-white/10 dark:before:via-cyan-300/25 dark:hover:border-cyan-400/20";
+
+const categoryColors: Record<string, { pill: string }> = {
+  Course: { pill: "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" },
+  eBook: { pill: "bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400" },
+  Template: { pill: "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400" },
+  Software: { pill: "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400" },
+  "Design Asset": { pill: "bg-pink-50 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400" },
+};
+const defaultCat = { pill: "bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-slate-400" };
 
 /* ================= TYPES ================= */
 
@@ -29,11 +47,17 @@ interface Product {
   thumbnailKey?: string;
   thumbnailUrl?: string;
   createdAt: string;
+  language?: string;
+  format?: string;
+  intendedAudience?: string;
+  pageCount?: number;
+  category?: string;
 }
 
 /* ================= PAGE ================= */
 
 export default function UploadAndProductsPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [submitted, setSubmitted] = useState(false);
@@ -47,33 +71,22 @@ export default function UploadAndProductsPage() {
 
   const [price, setPrice] = useState<number>(0);
   const [discount, setDiscount] = useState<number>(0);
-  
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [ownershipAccepted, setOwnershipAccepted] = useState(false);
+
   // B. Structured validation fields
   const [language, setLanguage] = useState<string>("English");
   const [format, setFormat] = useState<string>("PDF");
   const [intendedAudience, setIntendedAudience] = useState<string>("All Levels");
   const [pageCount, setPageCount] = useState<number>(1);
+  const [category, setCategory] = useState<string>("eBook");
 
   const [products, setProducts] = useState<Product[]>([]);
 
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | ProductStatus>("all");
 
-  // Edit modal state
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [editTitle, setEditTitle] = useState("");
-  const [editDescription, setEditDescription] = useState("");
-  const [editPrice, setEditPrice] = useState<number>(0);
-  const [editDiscount, setEditDiscount] = useState<number>(0);
-  const [editLanguage, setEditLanguage] = useState<string>("English");
-  const [editFormat, setEditFormat] = useState<string>("PDF");
-  const [editIntendedAudience, setEditIntendedAudience] = useState<string>("All Levels");
-  const [editPageCount, setEditPageCount] = useState<number>(1);
-  const [editFile, setEditFile] = useState<File | null>(null);
-  const [editFileError, setEditFileError] = useState("");
-  const [editThumbnail, setEditThumbnail] = useState<File | null>(null);
-  const [editThumbnailPreview, setEditThumbnailPreview] = useState<string | null>(null);
-  const [editLoading, setEditLoading] = useState(false);
 
   // Delete confirmation state
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
@@ -114,6 +127,26 @@ export default function UploadAndProductsPage() {
       return matchesSearch && matchesFilter;
     });
   }, [products, search, filter]);
+
+  const checklistItems = [
+    { label: "Title added", missingLabel: "Title", complete: title.trim().length > 0 },
+    { label: "Description added", missingLabel: "Description", complete: description.trim().length > 0 },
+    { label: "Price set", missingLabel: "Price", complete: price > 0 },
+    { label: "Thumbnail uploaded", missingLabel: "Thumbnail", complete: Boolean(thumbnailPreview) },
+    { label: "Product file selected", missingLabel: "Product file", complete: Boolean(file) },
+    { label: "Terms accepted", missingLabel: "Terms", complete: acceptedTerms && ownershipAccepted },
+  ];
+
+  const completedChecklistCount = checklistItems.filter((item) => item.complete).length;
+  const completionPercentage = Math.round((completedChecklistCount / checklistItems.length) * 100);
+  const isReadyForReview = checklistItems.every((item) => item.complete);
+  const missingChecklistItems = checklistItems
+    .filter((item) => !item.complete)
+    .map((item) => item.missingLabel);
+  const previewTags = [category, language, format, intendedAudience].filter(Boolean);
+  const previewTitle = title.trim() || "Product Title";
+  const previewDescription =
+    description.trim() || "Product description preview will appear here.";
 
   /* ================= HANDLERS ================= */
 
@@ -160,12 +193,12 @@ export default function UploadAndProductsPage() {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    
-    if (!acceptedTerms) {
-      showError("Please accept the Seller Terms & Conditions to continue");
+
+    if (!acceptedTerms || !ownershipAccepted) {
+      showError("Please accept the ownership and policy terms to continue");
       return;
     }
-    
+
     if (!file) {
       setFileError("Please select a file");
       return;
@@ -179,14 +212,15 @@ export default function UploadAndProductsPage() {
     setLoading(true);
 
     const formData = new FormData();
-    formData.append("title", e.target.title.value);
-    formData.append("description", e.target.description.value);
+    formData.append("title", title);
+    formData.append("description", description);
     formData.append("price", String(price));
     formData.append("discount", String(discount || 0));
     formData.append("language", language);
     formData.append("format", format);
     formData.append("intendedAudience", intendedAudience);
     formData.append("pageCount", String(pageCount));
+    formData.append("category", category);
     formData.append("file", file);
     if (thumbnail) {
       formData.append("thumbnail", thumbnail);
@@ -211,6 +245,7 @@ export default function UploadAndProductsPage() {
       setFormat("PDF");
       setIntendedAudience("All Levels");
       setPageCount(1);
+      setCategory("eBook");
       setAcceptedTerms(false);
     } catch (error: any) {
       console.error("Upload error:", error);
@@ -220,149 +255,7 @@ export default function UploadAndProductsPage() {
     }
   };
 
-  const handleEditClick = (product: Product) => {
-    setEditingProduct(product);
-    setEditTitle(product.title);
-    setEditDescription(product.description);
-    setEditPrice(product.price);
-    setEditDiscount(product.discount);
-    setEditLanguage((product as any).language || "English");
-    setEditFormat((product as any).format || "PDF");
-    setEditIntendedAudience((product as any).intendedAudience || "All Levels");
-    setEditPageCount((product as any).pageCount || 1);
-    setEditFile(null);
-    setEditFileError("");
-    setEditThumbnail(null);
-    setEditThumbnailPreview(product.thumbnailUrl || null);
-  };
 
-  const handleEditFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (!selectedFile) {
-      setEditFile(null);
-      setEditFileError("");
-      return;
-    }
-
-    if (selectedFile.size > MAX_FILE_SIZE) {
-      setEditFileError(`File too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB)`);
-      setEditFile(null);
-      return;
-    }
-
-    setEditFileError("");
-    setEditFile(selectedFile);
-  };
-
-  const handleEditThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
-    if (!selected) return;
-
-    if (!selected.type.startsWith("image/")) {
-      showError("Thumbnail must be an image file");
-      return;
-    }
-
-    if (selected.size > 5 * 1024 * 1024) {
-      showError("Thumbnail size must be under 5MB");
-      return;
-    }
-
-    setEditThumbnail(selected);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setEditThumbnailPreview(reader.result as string);
-    };
-    reader.readAsDataURL(selected);
-  };
-
-  const removeEditThumbnail = async () => {
-    if (!editingProduct) return;
-
-    // If there's a new thumbnail file, just remove the preview
-    if (editThumbnail) {
-      setEditThumbnail(null);
-      setEditThumbnailPreview(editingProduct.thumbnailUrl || null);
-      return;
-    }
-
-    // If there's an existing thumbnail on the server, delete it
-    if (editingProduct.thumbnailUrl) {
-      try {
-        const formData = new FormData();
-        formData.append("title", editTitle);
-        formData.append("description", editDescription);
-        formData.append("price", editPrice.toString());
-        formData.append("discount", editDiscount.toString());
-        formData.append("deleteThumbnail", "true");
-
-        const response = await api.patch(`/products/${editingProduct._id}`, formData);
-        
-        showSuccess("Thumbnail deleted");
-        
-        // Update products list and editing state with the response
-        const updatedProduct = response.data.product;
-        setProducts((prev) =>
-          prev.map((p) => (p._id === editingProduct._id ? updatedProduct : p))
-        );
-        
-        // Update the editing product state to reflect the null thumbnail
-        setEditingProduct(updatedProduct);
-        setEditThumbnailPreview(null);
-      } catch (error: any) {
-        console.error("Delete thumbnail error:", error);
-        showError("Failed to delete thumbnail");
-      }
-    } else {
-      // If no existing thumbnail, just clear the preview
-      setEditThumbnail(null);
-      setEditThumbnailPreview(null);
-    }
-  };
-
-  const handleUpdateProduct = async () => {
-    if (!editingProduct) return;
-
-    if (!editTitle || !editDescription || !editPrice || editPrice <= 0) {
-      showError("Please fill all fields with valid values");
-      return;
-    }
-
-    setEditLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append("title", editTitle);
-      formData.append("description", editDescription);
-      formData.append("price", editPrice.toString());
-      formData.append("discount", editDiscount.toString());
-      formData.append("language", editLanguage);
-      formData.append("format", editFormat);
-      formData.append("intendedAudience", editIntendedAudience);
-      formData.append("pageCount", editPageCount.toString());
-      if (editFile) {
-        formData.append("file", editFile);
-      }
-      if (editThumbnail) {
-        formData.append("thumbnail", editThumbnail);
-      }
-
-      const response = await api.patch(`/products/${editingProduct._id}`, formData);
-
-      showSuccess("Product updated successfully!");
-      setProducts((prev) =>
-        prev.map((p) => (p._id === editingProduct._id ? response.data.product : p))
-      );
-      setEditingProduct(null);
-      setEditFile(null);
-      setEditThumbnail(null);
-      setEditThumbnailPreview(null);
-    } catch (error: any) {
-      console.error("Update error:", error);
-      showError(error.response?.data?.message || "Failed to update product");
-    } finally {
-      setEditLoading(false);
-    }
-  };
 
   const handleDeleteClick = (productId: string) => {
     setDeletingProductId(productId);
@@ -388,335 +281,401 @@ export default function UploadAndProductsPage() {
   /* ================= UI CLASSES ================= */
 
   const inputClass =
-    "w-full rounded-xl bg-[#0b0b14] border border-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 transition";
+    "w-full rounded-xl bg-slate-100 dark:bg-[#05070a] border border-slate-200 dark:border-white/5 px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 hover:border-slate-300 dark:hover:border-white/10 focus:bg-white dark:focus:bg-[#07090d] focus:border-cyan-400 dark:focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-400 dark:focus:ring-cyan-500/50 transition-all shadow-sm dark:shadow-none";
 
   /* ================= RENDER ================= */
 
   return (
-    <main className="min-h-screen bg-[#05050a] text-white">
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-12">
-
-        {/* ================= UPLOAD ================= */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-          <h1 className="text-xl font-black">Upload Product</h1>
-          <p className="text-sm text-white/60 mb-6">
-            Add new digital content for sale
-          </p>
-
-          {loading ? (
-            <UploadSkeleton />
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <Field label="Title">
-                <input
-                  name="title"
-                  placeholder="React Admin Dashboard"
-                  required
-                  className={inputClass}
-                />
-              </Field>
-
-              <Field label="Description">
-                <textarea
-                  name="description"
-                  rows={4}
-                  placeholder="Explain what the buyer will get..."
-                  required
-                  className={`${inputClass} resize-none`}
-                />
-              </Field>
-
-              <div className="grid grid-cols-2 gap-4">
-                <Field label="Price (₹)">
-                  <input
-                    name="price"
-                    type="number"
-                    placeholder="1000"
-                    onChange={(e) => setPrice(+e.target.value)}
-                    className={inputClass}
-                  />
-                </Field>
-
-                <Field label="Discount (%)">
-                  <input
-                    name="discount"
-                    type="number"
-                    placeholder="10"
-                    onChange={(e) => setDiscount(+e.target.value)}
-                    className={inputClass}
-                  />
-                </Field>
-              </div>
-              
-              {/* Product Validation Fields */}
-              <div className="bg-purple-500/5 border border-purple-500/20 rounded-xl p-4 space-y-4">
-                <div className="flex items-center gap-2 text-xs text-purple-300 font-semibold">
-                  <span>📋</span>
-                  <span>Product Details (Required)</span>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <Field label="Language">
-                    <select
-                      value={language}
-                      onChange={(e) => setLanguage(e.target.value)}
-                      className={inputClass}
-                      required
-                    >
-                      <option value="English">English</option>
-                      <option value="Hindi">Hindi</option>
-                      <option value="Spanish">Spanish</option>
-                      <option value="French">French</option>
-                      <option value="German">German</option>
-                      <option value="Chinese">Chinese</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </Field>
-
-                  <Field label="Format">
-                    <select
-                      value={format}
-                      onChange={(e) => setFormat(e.target.value)}
-                      className={inputClass}
-                      required
-                    >
-                      <option value="PDF">PDF</option>
-                      <option value="EPUB">EPUB</option>
-                      <option value="ZIP">ZIP</option>
-                      <option value="DOCX">DOCX</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </Field>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <Field label="Page Count">
-                    <input
-                      type="number"
-                      min="1"
-                      value={pageCount}
-                      onChange={(e) => setPageCount(+e.target.value)}
-                      placeholder="e.g., 50"
-                      className={inputClass}
-                      required
-                    />
-                  </Field>
-
-                  <Field label="Intended Audience">
-                    <select
-                      value={intendedAudience}
-                      onChange={(e) => setIntendedAudience(e.target.value)}
-                      className={inputClass}
-                      required
-                    >
-                      <option value="Beginner">Beginner</option>
-                      <option value="Intermediate">Intermediate</option>
-                      <option value="Advanced">Advanced</option>
-                      <option value="All Levels">All Levels</option>
-                    </select>
-                  </Field>
-                </div>
-              </div>
-
-              {/* FINAL PRICE BAR */}
-              <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm">
-                <span className="text-white/60">
-                  Final price (after discount)
-                </span>
-                <span className="font-semibold text-cyan-400">
-                  ₹{finalPrice || 0}
-                </span>
-              </div>
-
-              {/* FILE */}
-              <Field label="Product File">
-                <input
-                  type="file"
-                  name="file"
-                  onChange={handleFile}
-                  className="
-                    w-full text-sm text-white/70
-                    file:mr-4 file:rounded-lg
-                    file:border-0 file:bg-cyan-500/20
-                    file:px-4 file:py-2
-                    file:text-sm file:font-medium
-                    file:text-cyan-300
-                    hover:file:bg-cyan-500/30
-                    cursor-pointer
-                  "
-                />
-
-                {file && (
-                  <div className="mt-2 text-xs text-white/60">
-                    📄 {file.name} •{" "}
-                    {(file.size / 1024 / 1024).toFixed(2)} MB
-                  </div>
-                )}
-
-                {fileError && (
-                  <p className="text-xs text-red-400 mt-1">{fileError}</p>
-                )}
-              </Field>
-
-              {/* THUMBNAIL */}
-              <Field label="Product Thumbnail (Optional)">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleThumbnail}
-                  className="
-                    w-full text-sm text-white/70
-                    file:mr-4 file:rounded-lg
-                    file:border-0 file:bg-purple-500/20
-                    file:px-4 file:py-2
-                    file:text-sm file:font-medium
-                    file:text-purple-300
-                    hover:file:bg-purple-500/30
-                    cursor-pointer
-                  "
-                />
-
-                {thumbnailPreview && (
-                  <div className="mt-3 relative inline-block">
-                    <img
-                      src={thumbnailPreview}
-                      alt="Thumbnail preview"
-                      className="w-32 h-24 object-cover rounded-lg border border-white/10"
-                    />
-                    <button
-                      type="button"
-                      onClick={removeThumbnail}
-                      className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                )}
-              </Field>
-
-              {/* PREVIEW PDF - AUTOMATIC */}
-              <div className="rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/30 p-4">
-                <div className="flex items-start gap-3">
-                  <div className="text-2xl">✨</div>
-                  <div>
-                    <h4 className="font-semibold text-indigo-300 mb-1">Automatic Preview Generation</h4>
-                    <p className="text-xs text-white/70 leading-relaxed">
-                      <strong>No extra work needed!</strong> When you upload a PDF, our system automatically:
-                    </p>
-                    <ul className="text-xs text-white/60 mt-2 space-y-1 ml-4">
-                      <li>• Detects total page count</li>
-                      <li>• Generates watermarked preview pages based on document size</li>
-                      <li>• Adds locked placeholder pages</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              {/* Terms & Conditions Checkbox */}
-              <div className="mt-6 flex items-start gap-3 bg-slate-800/40 border border-slate-700/50 rounded-xl p-4">
-                <input
-                  type="checkbox"
-                  id="termsCheckbox"
-                  checked={acceptedTerms}
-                  onChange={(e) => setAcceptedTerms(e.target.checked)}
-                  className="mt-1 w-4 h-4 accent-cyan-500 cursor-pointer"
-                />
-                <label htmlFor="termsCheckbox" className="text-sm text-slate-300 cursor-pointer">
-                  I have read and agree to the{" "}
-                  <a
-                    href="/seller-terms"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-cyan-400 hover:text-cyan-300 underline font-medium"
-                  >
-                    Seller Terms & Conditions
-                  </a>
-                  , including content security policies and preview disclosure rules.
-                </label>
-              </div>
-
-              <button
-                type="submit"
-                disabled={!acceptedTerms || loading}
-                className={`
-                  mt-2 inline-flex items-center justify-center
-                  rounded-xl px-6 py-2.5 font-semibold
-                  transition
-                  ${
-                    acceptedTerms && !loading
-                      ? "bg-cyan-600/20 border border-cyan-500/30 hover:bg-cyan-600/30"
-                      : "bg-slate-700/20 border border-slate-600/30 cursor-not-allowed opacity-50"
-                  }
-                `}
-              >
-                {loading ? "Uploading..." : "Upload Product"}
-              </button>
-
-              {submitted && (
-                <div className="text-xs text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 px-3 py-2 rounded-lg">
-                  ⏳ Pending admin approval
-                </div>
-              )}
-            </form>
-          )}
+    <>
+      <div className="relative isolate min-h-screen overflow-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#f1f5f9_48%,#eef2f7_100%)] dark:bg-[linear-gradient(180deg,#05070c_0%,#0a1220_48%,#05070c_100%)]">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[280px] overflow-hidden">
+          <div className="absolute left-[12%] top-[-140px] h-56 w-56 rounded-full bg-cyan-200/25 blur-3xl dark:bg-cyan-400/8" />
+          <div className="absolute right-[14%] top-[-60px] h-48 w-48 rounded-full bg-sky-200/25 blur-3xl dark:bg-blue-500/8" />
         </div>
 
-        {/* ================= PRODUCTS ================= */}
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-            <h2 className="text-lg font-black">My Products</h2>
+        <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/92 backdrop-blur-xl dark:border-white/10 dark:bg-[#070b14]/90">
+          <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">
+            <div className="relative flex min-h-[40px] sm:min-h-[48px] items-center justify-center">
+              <button
+                onClick={() => router.push("/dashboard/seller")}
+                className="absolute left-0 top-1/2 inline-flex -translate-y-1/2 items-center gap-1 sm:gap-2 rounded-full px-2 sm:px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
+              >
+                <ChevronLeft className="h-5 w-5 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Dashboard</span>
+              </button>
 
-            {!loadingProducts && products.length > 0 && (
-              <div className="flex gap-2">
-                <input
-                  placeholder="Search products..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className={inputClass + " w-48"}
-                />
-
-                <select
-                  value={filter}
-                  onChange={(e) => setFilter(e.target.value as any)}
-                  className={inputClass}
-                >
-                  <option value="all">All</option>
-                  <option value="approved">Approved</option>
-                  <option value="pending">Pending</option>
-                  <option value="rejected">Rejected</option>
-                </select>
+              <div className="min-w-0 px-12 sm:px-24 text-center">
+                <h1 className="truncate text-lg sm:text-xl font-bold tracking-tight text-slate-950 dark:text-white">
+                  Upload Product
+                </h1>
+                <p className="mt-1 hidden sm:block text-sm text-slate-500 dark:text-slate-400">
+                  Create a digital product listing for marketplace review.
+                </p>
               </div>
+
+              
+            </div>
+          </div>
+        </header>
+
+        {/* Main upload area */}
+        <main className="relative mx-auto grid max-w-7xl grid-cols-1 items-start gap-4 sm:gap-5 px-4 py-4 sm:px-6 lg:px-8 xl:grid-cols-[minmax(0,1fr)_380px] xl:gap-6">
+
+          {/* Left form column */}
+          <div className="min-w-0">
+            {loading ? (
+              <div className="animate-pulse space-y-4">
+                <div className="h-64 bg-white dark:bg-slate-900/40 rounded-[24px] border border-slate-200 dark:border-white/5" />
+                <div className="h-40 bg-white dark:bg-slate-900/40 rounded-[24px] border border-slate-200 dark:border-white/5" />
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+
+                {/* === CARD 1: BASIC DETAILS === */}
+                <div className={SURFACE_CARD_CLASS}>
+                  <SectionHeading
+                    number="01"
+                    title="Basic Details"
+                    description="Tell buyers what this product is about."
+                  />
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Title</label>
+                      <input
+                        name="title"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="React Admin Dashboard"
+                        required
+                        className={inputClass}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
+                      <textarea
+                        name="description"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        rows={3}
+                        placeholder="Explain what the buyer will get..."
+                        required
+                        className={`${inputClass} min-h-[80px] resize-none`}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* === CARD 2: PRICING === */}
+                <div className={SURFACE_CARD_CLASS}>
+                  <SectionHeading
+                    number="02"
+                    title="Pricing"
+                    description="Set your product price and optional discount."
+                  />
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Original Price (&#8377;)</label>
+                      <input
+                        name="price"
+                        type="number"
+                        placeholder="1000"
+                        min="0"
+                        value={price || ""}
+                        onChange={(e) => setPrice(+e.target.value)}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Discount (%)</label>
+                      <input
+                        name="discount"
+                        type="number"
+                        placeholder="10"
+                        min="0"
+                        max="100"
+                        value={discount || ""}
+                        onChange={(e) => setDiscount(+e.target.value)}
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between rounded-xl border border-cyan-100 bg-cyan-50/70 px-4 py-3 dark:border-cyan-500/10 dark:bg-cyan-500/5">
+                    <span className="text-sm font-medium text-cyan-800 dark:text-cyan-400">Final Buyer Price</span>
+                    <span className="text-lg font-bold text-cyan-700 dark:text-cyan-300">&#8377;{finalPrice || 0}</span>
+                  </div>
+                </div>
+
+                {/* === CARD 3: PRODUCT METADATA === */}
+                <div className={SURFACE_CARD_CLASS}>
+                  <SectionHeading
+                    number="03"
+                    title="Product Metadata"
+                    description="Help buyers discover your product through filters."
+                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Category</label>
+                      <CustomSelect value={category} onChange={setCategory} options={["eBook", "Course", "Template", "Software", "Design Asset", "Other"]} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Format</label>
+                      <CustomSelect value={format} onChange={setFormat} options={["PDF", "EPUB", "ZIP", "DOCX", "Other"]} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Language</label>
+                      <CustomSelect value={language} onChange={setLanguage} options={["English", "Hindi", "Spanish", "French", "German", "Chinese", "Other"]} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Intended Audience</label>
+                      <CustomSelect value={intendedAudience} onChange={setIntendedAudience} options={["Beginner", "Intermediate", "Advanced", "All Levels"]} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Page Count (Optional)</label>
+                      <input type="number" min="1" value={pageCount || ""} onChange={(e) => setPageCount(+e.target.value)} placeholder="e.g. 50" className={inputClass} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* === CARD 4: FILES & THUMBNAIL === */}
+                <div className={SURFACE_CARD_CLASS}>
+                  <SectionHeading
+                    number="04"
+                    title="Files & Thumbnail"
+                    description="Upload your actual product and a preview image."
+                  />
+
+                  <div className="space-y-6">
+                    {/* Product File Upload */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block">Product File</label>
+
+                      <div className="relative overflow-hidden flex h-32 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-center transition hover:border-cyan-400 hover:bg-cyan-50/40 dark:border-white/15 dark:bg-slate-900/60 dark:hover:border-cyan-400/60 dark:hover:bg-cyan-500/5">
+                        <input
+                          type="file"
+                          name="file"
+                          onChange={handleFile}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+
+                        {!file ? (
+                          <div className="flex flex-col items-center justify-center pointer-events-none">
+                            <Upload className="w-6 h-6 text-slate-400 mb-2" />
+                            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Click or drag file here</p>
+                            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">PDF, ZIP, DOCX supported - Max 100MB</p>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center pointer-events-none z-20">
+                            <FileText className="w-6 h-6 text-cyan-500 mb-2" />
+                            <p className="text-sm font-medium text-slate-900 dark:text-white truncate max-w-[200px]">{file.name}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setFile(null); setFileError(""); }}
+                              className="text-xs font-semibold text-red-500 hover:text-red-600 mt-2 z-30 pointer-events-auto"
+                            >
+                              Remove file
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      {fileError && <p className="text-xs text-red-500 font-medium px-1 mt-1">{fileError}</p>}
+                    </div>
+
+                    {/* Thumbnail Upload */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block">Thumbnail</label>
+                      <div className="flex gap-4 items-start">
+                        <div className="w-24 h-16 shrink-0 rounded-lg border border-slate-200 dark:border-white/10 overflow-hidden bg-slate-100 dark:bg-slate-900 flex items-center justify-center relative">
+                          {thumbnailPreview ? (
+                            <>
+                              <img src={thumbnailPreview} alt="Thumbnail preview" className="w-full h-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={removeThumbnail}
+                                className="absolute top-1 right-1 bg-black/50 hover:bg-red-500 text-white rounded-full p-0.5 transition-colors"
+                              >
+                                <XCircle className="w-3 h-3" />
+                              </button>
+                            </>
+                          ) : (
+                            <ImageIcon className="w-5 h-5 text-slate-400" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="relative inline-block">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleThumbnail}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            />
+                            <div className="h-9 px-4 inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-sm font-medium text-slate-700 dark:text-slate-300 transition-colors pointer-events-none">
+                              Choose Image
+                            </div>
+                          </div>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">Recommended: 1200 x 675px (16:9)</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 xl:hidden">
+                  <PublishStatusCard
+                    completionPercentage={completionPercentage}
+                    completedChecklistCount={completedChecklistCount}
+                    isReadyForReview={isReadyForReview}
+                    missingChecklistItems={missingChecklistItems}
+                    totalChecklistItems={checklistItems.length}
+                  />
+                  <MarketplacePreviewCard
+                    thumbnailPreview={thumbnailPreview}
+                    category={category}
+                    title={previewTitle}
+                    description={previewDescription}
+                    finalPrice={finalPrice}
+                    price={price}
+                    discount={discount}
+                    tags={previewTags}
+                  />
+                  <ChecklistCard
+                    checklistItems={checklistItems}
+                    completedChecklistCount={completedChecklistCount}
+                  />
+                  <SellerTipsCard />
+                </div>
+
+                {/* === CARD 5: SELLER AGREEMENT === */}
+                <div className={SURFACE_CARD_CLASS}>
+                  <SectionHeading
+                    number="05"
+                    title="Seller Agreement"
+                    description="Confirm ownership and marketplace policy compliance."
+                  />
+
+                  <div className="space-y-3">
+                    <label className="flex items-start gap-3 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={ownershipAccepted}
+                        onChange={(e) => setOwnershipAccepted(e.target.checked)}
+                        className="mt-0.5 w-4 h-4 accent-cyan-500 cursor-pointer rounded border-slate-300"
+                      />
+                      <span className="text-sm text-slate-700 dark:text-slate-300">
+                        I confirm that I own this content or have explicit commercial rights to sell it.
+                      </span>
+                    </label>
+
+                    <label className="flex items-start gap-3 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={acceptedTerms}
+                        onChange={(e) => setAcceptedTerms(e.target.checked)}
+                        className="mt-0.5 w-4 h-4 accent-cyan-500 cursor-pointer rounded border-slate-300"
+                      />
+                      <span className="text-sm text-slate-700 dark:text-slate-300">
+                        I agree to the <a href="/seller-terms" target="_blank" rel="noreferrer" className="text-cyan-500 hover:underline">Seller Terms & Conditions</a>, including content security policies.
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* === SUBMIT ACTIONS === */}
+                <div>
+                  <button
+                    type="submit"
+                    disabled={!acceptedTerms || !ownershipAccepted || loading}
+                    className={`
+                    h-11 w-full sm:w-auto px-6 rounded-xl font-medium flex items-center justify-center gap-2 transition-all
+                    ${acceptedTerms && ownershipAccepted && !loading
+                        ? "bg-cyan-600 text-white hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600"
+                        : "bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-500 cursor-not-allowed"
+                      }
+                  `}
+                  >
+                    {loading ? "Uploading..." : "Upload Product"}
+                  </button>
+                  {submitted && (
+                    <p className="mt-2 text-xs text-amber-500 flex items-center gap-1 font-medium"><Clock className="w-3.5 h-3.5" /> Pending admin approval</p>
+                  )}
+                </div>
+              </form>
             )}
           </div>
 
+          <aside className="hidden xl:block xl:sticky xl:top-24 space-y-4">
+            <PublishStatusCard
+              completionPercentage={completionPercentage}
+              completedChecklistCount={completedChecklistCount}
+              isReadyForReview={isReadyForReview}
+              missingChecklistItems={missingChecklistItems}
+              totalChecklistItems={checklistItems.length}
+            />
+            <MarketplacePreviewCard
+              thumbnailPreview={thumbnailPreview}
+              category={category}
+              title={previewTitle}
+              description={previewDescription}
+              finalPrice={finalPrice}
+              price={price}
+              discount={discount}
+              tags={previewTags}
+            />
+            <ChecklistCard
+              checklistItems={checklistItems}
+              completedChecklistCount={completedChecklistCount}
+            />
+            <SellerTipsCard />
+          </aside>
+        </main>
+
+        {/* ================= RECENT PRODUCTS ================= */}
+        <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold tracking-tight text-slate-950 dark:text-white">Recent Products</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Your latest uploaded listings</p>
+            </div>
+          </div>
+
           {loadingProducts ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-5 animate-pulse">
-                  <div className="h-4 bg-white/10 rounded w-3/4 mb-2" />
-                  <div className="h-3 bg-white/10 rounded w-1/2 mb-4" />
-                  <div className="h-8 bg-white/10 rounded w-1/3" />
+                <div key={i} className="flex flex-col bg-white dark:bg-[#0b0b14] border border-gray-100 dark:border-white/5 rounded-2xl overflow-hidden animate-pulse">
+                  <div className="w-full aspect-video bg-slate-100 dark:bg-white/5" />
+                  <div className="p-4 flex flex-col flex-1 gap-3">
+                    <div className="h-5 bg-slate-200 dark:bg-white/10 rounded-md w-3/4" />
+                    <div className="space-y-2 mt-1">
+                      <div className="h-3 bg-slate-200 dark:bg-white/10 rounded-md w-full" />
+                      <div className="h-3 bg-slate-200 dark:bg-white/10 rounded-md w-4/5" />
+                    </div>
+                    <div className="mt-auto pt-4 flex items-end justify-between border-t border-slate-100 dark:border-white/5">
+                      <div className="h-7 bg-slate-200 dark:bg-white/10 rounded-md w-1/3" />
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           ) : products.length === 0 ? (
-            <div className="text-center py-12 bg-white/5 border border-white/10 rounded-2xl">
-              <p className="text-white/60">No products yet</p>
-              <p className="text-sm text-white/40 mt-2">Upload your first product above</p>
+            <div className="text-center py-16 bg-white dark:bg-[#0f0f17] border border-slate-200 dark:border-white/5 rounded-2xl">
+              <Package className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
+              <p className="text-slate-600 dark:text-white/60 font-medium">No products yet</p>
+              <p className="text-sm text-slate-400 dark:text-white/40 mt-1">Upload your first product above</p>
             </div>
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
               <AnimatePresence>
-                {filteredProducts.map((p) => (
+                {filteredProducts.slice(0, 6).map((p) => (
                   <motion.div
                     key={p._id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
                   >
-                    <ProductCard 
+                    <ProductCard
                       product={p}
-                      onEdit={handleEditClick}
+                      router={router}
                       onDelete={handleDeleteClick}
                     />
                   </motion.div>
@@ -724,355 +683,573 @@ export default function UploadAndProductsPage() {
               </AnimatePresence>
 
               {filteredProducts.length === 0 && (
-                <p className="text-sm text-white/50 col-span-full text-center py-8">
+                <p className="text-sm text-slate-400 dark:text-white/50 col-span-full text-center py-8">
                   No products match your search
                 </p>
               )}
             </div>
           )}
-        </div>
-      </section>
+        </section>
+      </div>
 
-      {/* ================= EDIT MODAL ================= */}
-      {editingProduct && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#0b0b14] border border-white/10 rounded-2xl p-6 max-w-md w-full space-y-4"
-          >
-            <h2 className="text-lg font-black">Edit Product</h2>
-
-            <Field label="Title">
-              <input
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                className={inputClass}
-              />
-            </Field>
-
-            <Field label="Description">
-              <textarea
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-                rows={3}
-                className={`${inputClass} resize-none`}
-              />
-            </Field>
-
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="Price (₹)">
-                <input
-                  type="number"
-                  value={editPrice}
-                  onChange={(e) => setEditPrice(+e.target.value)}
-                  className={inputClass}
-                />
-              </Field>
-
-              <Field label="Discount (%)">
-                <input
-                  type="number"
-                  value={editDiscount}
-                  onChange={(e) => setEditDiscount(+e.target.value)}
-                  className={inputClass}
-                />
-              </Field>
-            </div>
-            
-            {/* Product Details */}
-            <div className="bg-purple-500/5 border border-purple-500/20 rounded-xl p-3 space-y-3">
-              <div className="text-xs text-purple-300 font-semibold">Product Details</div>
-              
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Language">
-                  <select
-                    value={editLanguage}
-                    onChange={(e) => setEditLanguage(e.target.value)}
-                    className={inputClass}
-                  >
-                    <option value="English">English</option>
-                    <option value="Hindi">Hindi</option>
-                    <option value="Spanish">Spanish</option>
-                    <option value="French">French</option>
-                    <option value="German">German</option>
-                    <option value="Chinese">Chinese</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </Field>
-
-                <Field label="Format">
-                  <select
-                    value={editFormat}
-                    onChange={(e) => setEditFormat(e.target.value)}
-                    className={inputClass}
-                  >
-                    <option value="PDF">PDF</option>
-                    <option value="EPUB">EPUB</option>
-                    <option value="ZIP">ZIP</option>
-                    <option value="DOCX">DOCX</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </Field>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Page Count">
-                  <input
-                    type="number"
-                    min="1"
-                    value={editPageCount}
-                    onChange={(e) => setEditPageCount(+e.target.value)}
-                    className={inputClass}
-                  />
-                </Field>
-
-                <Field label="Audience">
-                  <select
-                    value={editIntendedAudience}
-                    onChange={(e) => setEditIntendedAudience(e.target.value)}
-                    className={inputClass}
-                  >
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
-                    <option value="All Levels">All Levels</option>
-                  </select>
-                </Field>
-              </div>
-            </div>
-
-            <Field label="Update File (Optional)">
-              <input
-                type="file"
-                onChange={handleEditFile}
-                className="
-                  w-full text-sm text-white/70
-                  file:mr-4 file:rounded-lg
-                  file:border-0 file:bg-cyan-500/20
-                  file:px-4 file:py-2
-                  file:text-sm file:font-medium
-                  file:text-cyan-300
-                  hover:file:bg-cyan-500/30
-                  cursor-pointer
-                "
-              />
-
-              {editFile && (
-                <div className="mt-2 text-xs text-white/60">
-                  📄 {editFile.name} • {(editFile.size / 1024 / 1024).toFixed(2)} MB
-                </div>
-              )}
-
-              {editFileError && (
-                <p className="text-xs text-red-400 mt-1">{editFileError}</p>
-              )}
-            </Field>
-
-            <Field label="Update Thumbnail (Optional)">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleEditThumbnail}
-                className="
-                  w-full text-sm text-white/70
-                  file:mr-4 file:rounded-lg
-                  file:border-0 file:bg-purple-500/20
-                  file:px-4 file:py-2
-                  file:text-sm file:font-medium
-                  file:text-purple-300
-                  hover:file:bg-purple-500/30
-                  cursor-pointer
-                "
-              />
-
-              {editThumbnailPreview && (
-                <div className="mt-3 relative inline-block">
-                  <img
-                    src={editThumbnailPreview}
-                    alt="Thumbnail preview"
-                    className="w-32 h-24 object-cover rounded-lg border border-white/10"
-                  />
-                  <button
-                    type="button"
-                    onClick={removeEditThumbnail}
-                    className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
-                  >
-                    ✕
-                  </button>
-                </div>
-              )}
-            </Field>
-
-            <div className="flex gap-2">
-              <button
-                onClick={() => setEditingProduct(null)}
-                className="flex-1 py-2 px-4 bg-white/10 hover:bg-white/20 rounded-lg transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleUpdateProduct}
-                disabled={editLoading}
-                className="flex-1 py-2 px-4 bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/30 rounded-lg transition disabled:opacity-50"
-              >
-                {editLoading ? "Updating..." : "Update"}
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
 
       {/* ================= DELETE CONFIRMATION ================= */}
       {deletingProductId && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-white dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#0b0b14] border border-red-500/20 rounded-2xl p-6 max-w-md w-full space-y-4"
+            className="bg-white dark:bg-[#0b0b14] border border-red-200 dark:border-red-500/20 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-xl"
           >
             <h2 className="text-lg font-black text-red-400">Delete Product?</h2>
-            <p className="text-sm text-white/60">
+            <p className="text-sm text-slate-500 dark:text-white/60">
               This action cannot be undone. The product file will also be permanently deleted.
             </p>
-
             <div className="flex gap-2">
-              <button
-                onClick={() => setDeletingProductId(null)}
-                disabled={deleteLoading}
-                className="flex-1 py-2 px-4 bg-white/10 hover:bg-white/20 rounded-lg transition disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmDelete}
-                disabled={deleteLoading}
-                className="flex-1 py-2 px-4 bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 text-red-300 rounded-lg transition disabled:opacity-50"
-              >
+              <button onClick={() => setDeletingProductId(null)} disabled={deleteLoading} className="flex-1 py-2 px-4 bg-slate-200 dark:bg-white/10 hover:bg-white/20 rounded-lg transition disabled:opacity-50">Cancel</button>
+              <button onClick={handleConfirmDelete} disabled={deleteLoading} className="flex-1 py-2 px-4 bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 text-red-300 rounded-lg transition disabled:opacity-50">
                 {deleteLoading ? "Deleting..." : "Delete"}
               </button>
             </div>
           </motion.div>
         </div>
       )}
-    </main>
+    </>
   );
 }
 
 /* ================= UI ================= */
 
+function SectionHeading({
+  number,
+  title,
+  description,
+}: {
+  number: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="mb-4 flex items-start gap-3">
+      <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200/80 bg-[linear-gradient(180deg,#ffffff_0%,#eef6ff_100%)] text-sm font-semibold text-slate-700 shadow-sm shadow-slate-200/70 ring-1 ring-slate-950/5 dark:border-white/10 dark:bg-[linear-gradient(180deg,#0f1724_0%,#0b1220_100%)] dark:text-slate-200 dark:shadow-none dark:ring-white/10">
+        {number}
+      </div>
+      <div>
+        <h2 className="text-base font-semibold tracking-tight text-slate-950 dark:text-white">{title}</h2>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{description}</p>
+      </div>
+    </div>
+  );
+}
+
+function PublishStatusCard({
+  completionPercentage,
+  completedChecklistCount,
+  isReadyForReview,
+  missingChecklistItems,
+  totalChecklistItems,
+}: {
+  completionPercentage: number;
+  completedChecklistCount: number;
+  isReadyForReview: boolean;
+  missingChecklistItems: string[];
+  totalChecklistItems: number;
+}) {
+  return (
+    <div className={SURFACE_CARD_CLASS}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+            Listing Status
+          </p>
+          <h3 className="mt-2 text-lg font-semibold text-slate-950 dark:text-white">
+            {isReadyForReview ? "Ready for Review" : "Draft"}
+          </h3>
+        </div>
+
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-medium ${isReadyForReview
+              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
+              : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
+            }`}
+        >
+          {isReadyForReview ? "Ready" : "Not Ready"}
+        </span>
+      </div>
+
+      <div className="mt-5">
+        <div className="mb-2 flex items-center justify-between text-xs">
+          <span className="text-slate-500 dark:text-slate-400">Completion</span>
+          <span className="font-semibold text-slate-900 dark:text-white">{completionPercentage}%</span>
+        </div>
+
+        <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800">
+          <div
+            className="h-2 rounded-full bg-gradient-to-r from-cyan-500 to-violet-600"
+            style={{ width: `${completionPercentage}%` }}
+          />
+        </div>
+      </div>
+
+      <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+        {isReadyForReview
+          ? "Everything required is in place. You can submit this listing for review now."
+          : "Complete product details, upload your file, and accept seller policies before submitting."}
+      </p>
+
+      <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-slate-900">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+            Required Progress
+          </span>
+          <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+            {completedChecklistCount}/{totalChecklistItems}
+          </span>
+        </div>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+          {missingChecklistItems.length > 0
+            ? `Missing: ${missingChecklistItems.join(", ")}`
+            : "All required fields are complete."}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function MarketplacePreviewCard({
+  thumbnailPreview,
+  category,
+  title,
+  description,
+  finalPrice,
+  price,
+  discount,
+  tags,
+}: {
+  thumbnailPreview: string | null;
+  category: string;
+  title: string;
+  description: string;
+  finalPrice: number;
+  price: number;
+  discount: number;
+  tags: string[];
+}) {
+  return (
+    <div className={SURFACE_CARD_CLASS}>
+      <div className="mb-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+          Marketplace Preview
+        </p>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Buyers will see a similar product card after approval.
+        </p>
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-slate-900">
+        <div className="relative aspect-[16/9] bg-slate-100 dark:bg-slate-800">
+          <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-medium text-slate-700 shadow-sm dark:bg-slate-950/90 dark:text-slate-200">
+            {category || "eBook"}
+          </span>
+
+          {thumbnailPreview ? (
+            <img src={thumbnailPreview} alt="Preview thumbnail" className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full items-center justify-center text-slate-400 dark:text-slate-500">
+              <div className="flex flex-col items-center gap-2">
+                <ImageIcon className="h-8 w-8" />
+                <span className="text-xs font-medium">Image preview</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="p-4">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="line-clamp-2 text-sm font-semibold text-slate-950 dark:text-white">
+              {title}
+            </h3>
+
+            <span className="shrink-0 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+              Pending Review
+            </span>
+          </div>
+
+          <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
+            {description}
+          </p>
+
+          <div className="mt-3 flex items-center gap-2">
+            <span className="text-lg font-bold text-cyan-600 dark:text-cyan-400">&#8377;{finalPrice || 0}</span>
+            <span className="text-xs text-slate-400 line-through">&#8377;{price || 0}</span>
+            <span className="rounded-md bg-rose-50 px-1.5 py-0.5 text-[11px] text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+              -{discount || 0}%
+            </span>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] text-slate-600 dark:border-white/10 dark:bg-slate-800 dark:text-slate-300"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChecklistCard({
+  checklistItems,
+  completedChecklistCount,
+}: {
+  checklistItems: Array<{ label: string; complete: boolean }>;
+  completedChecklistCount: number;
+}) {
+  return (
+    <div className={SURFACE_CARD_CLASS}>
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+          Upload Checklist
+        </p>
+        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          {completedChecklistCount}/{checklistItems.length}
+        </span>
+      </div>
+
+      <div className="mt-4 space-y-3">
+        {checklistItems.map((item) => (
+          <div key={item.label} className="flex items-center gap-3">
+            {item.complete ? (
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300">
+                &#10003;
+              </span>
+            ) : (
+              <span className="h-5 w-5 rounded-full border border-slate-300 dark:border-slate-700" />
+            )}
+            <span className={`text-sm ${item.complete ? "text-slate-700 dark:text-slate-300" : "text-slate-500 dark:text-slate-400"}`}>
+              {item.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SellerTipsCard() {
+  return (
+    <div className="relative overflow-hidden rounded-[28px] border border-blue-200/80 bg-[linear-gradient(180deg,rgba(239,246,255,0.96)_0%,rgba(219,234,254,0.9)_100%)] p-5 shadow-[0_20px_55px_-34px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/60 dark:border-blue-500/20 dark:bg-[linear-gradient(180deg,rgba(14,24,40,0.96)_0%,rgba(8,18,34,0.96)_100%)] dark:ring-blue-500/10">
+      <div className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/80 to-transparent" />
+      <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-blue-950 dark:text-blue-200">Seller Tips</h3>
+      <ul className="mt-3 space-y-2 text-sm text-blue-900/85 dark:text-blue-100/80">
+        <li>Use a clear, searchable product title.</li>
+        <li>Add a clean 16:9 thumbnail image.</li>
+        <li>Keep your description short and useful.</li>
+        <li>Make sure the preview matches the actual file and policy rules.</li>
+      </ul>
+    </div>
+  );
+}
+
 function Field({ label, children }: any) {
   return (
     <div>
-      <label className="text-xs text-white/60 mb-1 block">{label}</label>
+      <label className="text-xs text-slate-500 dark:text-white/60 mb-1 block">{label}</label>
       {children}
     </div>
   );
 }
 
-function ProductCard({ 
-  product, 
-  onEdit,
+function ProductCard({
+  product,
+  router,
   onDelete
-}: { 
+}: {
   product: Product;
-  onEdit: (product: Product) => void;
+  router: any;
   onDelete: (productId: string) => void;
 }) {
-  const displayPrice = product.discount 
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  const approved = product.status === "approved";
+  const finalPrice = product.discount > 0
     ? Math.max(product.price - (product.price * product.discount) / 100, 0)
     : product.price;
-
-  const canEdit = product.status !== "approved";
+    
+  const rating = (product as any).rating ? Number((product as any).rating).toFixed(1) : null;
+  const catStyle = categoryColors[product.category || ""] ?? defaultCat;
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 transition">
-      {/* Thumbnail */}
-      {product.thumbnailUrl && (
-        <div className="relative w-full h-40 bg-white/5">
-          <img
-            src={product.thumbnailUrl}
-            alt={product.title}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
-      
-      <div className="p-5 space-y-3">
-        {/* Header with Status */}
-        <div className="flex justify-between items-start gap-2">
-          <div className="flex-1">
-            <h3 className="font-semibold text-white truncate">{product.title}</h3>
-            <p className="text-xs text-white/60 mt-1 line-clamp-2">{product.description}</p>
-          </div>
-
+    <div
+      onClick={() => router.push(`/dashboard/seller/products/${product._id}`)}
+      className={`
+        w-full group bg-white dark:bg-slate-900/40 transition-all duration-300
+        flex flex-col cursor-pointer
+        rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-lg hover:-translate-y-1
+        ${!approved ? "opacity-90" : ""}
+      `}
+    >
+      {/* TOP BAR */}
+      <div className="w-full flex justify-between items-start px-3 pt-3 sm:px-4 sm:pt-4 pb-2 bg-transparent relative">
+        <div className="flex items-center gap-2 flex-wrap z-10">
           <span
-            className={`text-xs px-3 py-1 rounded-full border whitespace-nowrap
+            className={`flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm
               ${
-                product.status === "approved"
-                  ? "bg-green-500/10 text-green-400 border-green-500/20"
-                  : product.status === "pending"
-                  ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
-                  : "bg-red-500/10 text-red-400 border-red-500/20"
+                approved
+                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
+                  : product.status === "rejected"
+                  ? "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400"
+                  : "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
               }`}
           >
             {product.status}
           </span>
         </div>
-
-        {/* Price Info */}
-        <div className="space-y-1">
-          {product.discount > 0 ? (
-            <div className="flex items-center gap-2">
-              <p className="text-xs text-white/40 line-through">₹{product.price}</p>
-              <p className="text-sm font-semibold text-cyan-400">₹{displayPrice}</p>
-              <p className="text-xs bg-red-500/20 text-red-300 px-2 py-0.5 rounded">
-                -{product.discount}%
-              </p>
-            </div>
-          ) : (
-            <p className="text-sm font-semibold text-cyan-400">₹{product.price}</p>
-          )}
+        
+        {/* Category pill */}
+        <div className="absolute left-1/2 -translate-x-1/2 top-3 sm:top-4 z-0 pointer-events-none">
+          <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-md ${catStyle.pill}`}>
+            {product.category || "Product"}
+          </span>
         </div>
 
-        {/* Meta Info */}
-        <div className="text-xs text-white/50 pt-2 border-t border-white/10">
-          <p>Uploaded {new Date(product.createdAt).toLocaleDateString()}</p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-2 pt-2">
-          {canEdit && (
-            <button
-              onClick={() => onEdit(product)}
-              className="flex-1 text-xs py-2 px-3 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 rounded-lg transition"
-            >
-              ✏️ Edit
-            </button>
-          )}
+        {/* MENU */}
+        <div className="relative shrink-0 z-20">
           <button
-            onClick={() => onDelete(product._id)}
-            className="flex-1 text-xs py-2 px-3 bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 rounded-lg transition"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.nativeEvent.stopImmediatePropagation();
+              setOpenMenuId(openMenuId === product._id ? null : product._id);
+            }}
+            className="h-8 w-8 grid place-items-center rounded-full bg-transparent hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer -mt-1 -mr-1"
           >
-            🗑️ Delete
+            <MoreVertical className="w-4 h-4" />
           </button>
+
+          <AnimatePresence>
+            {openMenuId === product._id && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, transformOrigin: "top right" }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className="absolute right-0 mt-1 w-40 bg-white dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl shadow-2xl z-30 overflow-hidden"
+              >
+                <div className="relative group">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/seller/products/${product._id}`); }}
+                    className="w-full flex items-center gap-2 text-left px-3 py-2.5 text-sm transition-colors text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
+                  >
+                    <Eye className="w-3.5 h-3.5" /> View Product
+                  </button>
+                </div>
+                <div className="relative group">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/seller/products/${product._id}/edit`); }}
+                    className="w-full flex items-center gap-2 text-left px-3 py-2.5 text-sm transition-colors text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
+                  >
+                    <Pencil className="w-3.5 h-3.5" /> Edit Details
+                  </button>
+                </div>
+                <div className="relative group">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onDelete(product._id); }}
+                    className="w-full flex items-center gap-2 text-left px-3 py-2.5 text-sm transition-colors text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Delete Product
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* BODY */}
+      <div className="flex flex-row sm:flex-col items-start px-3 pb-3 sm:px-4 sm:pb-4 pt-1 sm:pt-0">
+        <div className="relative w-1/3 sm:w-full shrink-0 aspect-square sm:aspect-video bg-gray-50 dark:bg-[#0A101D] overflow-hidden rounded-xl">
+          {product.thumbnailUrl ? (
+            <img
+              src={product.thumbnailUrl}
+              alt={product.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-50 dark:bg-[#0A101D]">
+              <Package className="w-10 h-10 text-slate-300 dark:text-slate-700" />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        </div>
+        
+        {/* INFO AREA */}
+        <div className="flex flex-col flex-1 w-full pl-3 sm:pl-0 sm:pt-3 min-w-0">
+          <h3 className="font-extrabold text-[15px] text-gray-900 dark:text-white line-clamp-2 leading-snug tracking-tight">
+            {product.title}
+          </h3>
+          
+          <p className="text-xs text-gray-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed">
+            {product.description}
+          </p>
+
+          <div className="flex items-center gap-1.5 mt-2">
+            {rating ? (
+              <>
+                <div className="flex items-center gap-0.5">
+                  {[1,2,3,4,5].map((s) => (
+                    <Star key={s} size={11} className={
+                      s <= Math.round(Number(rating))
+                        ? "fill-[#FFA41C] text-[#FFA41C]"
+                        : "fill-gray-200 text-gray-200 dark:fill-slate-700 dark:text-slate-700"
+                    } />
+                  ))}
+                </div>
+                <span className="text-[10px] font-medium text-[#007185] dark:text-cyan-400 ml-0.5">
+                  {rating} <span className="text-gray-400">({(product as any).buyers || 0})</span>
+                </span>
+              </>
+            ) : (
+              <span className="text-[10px] text-gray-400 dark:text-slate-500 italic">No ratings yet</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5 sm:gap-2 mt-auto pt-2 sm:pt-4 flex-wrap">
+            <span className="font-extrabold text-base sm:text-lg text-gray-900 dark:text-white tracking-tight">
+              <span className="text-[10px] sm:text-[11px] font-semibold mr-0.5">₹</span>
+              {finalPrice.toLocaleString()}
+            </span>
+            {product.discount > 0 && (
+              <span className="text-[10px] sm:text-[11px] text-gray-400 dark:text-slate-500 line-through">
+                ₹{product.price.toLocaleString()}
+              </span>
+            )}
+            {product.discount > 0 && (
+              <span className="bg-[#CC0C39] text-white px-1 sm:px-1.5 py-0.5 rounded-md text-[8px] sm:text-[9px] font-bold tracking-wide">
+                -{product.discount}%
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-row items-center justify-between gap-2 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-slate-100 dark:border-white/5 w-full">
+            <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-medium">
+              <Calendar className="w-3 h-3" />
+              {new Date(product.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+            </div>
+
+            {approved && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/dashboard/seller/promotions/create?productId=${product._id}`);
+                }}
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-600 dark:text-cyan-300 transition hover:border-cyan-300/50 hover:bg-cyan-500/15"
+              >
+                <Megaphone className="h-3 w-3" />
+                Promote
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
+function Chip({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 dark:text-white/45 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/8 rounded-md px-1.5 py-0.5">
+      {icon} {label}
+    </span>
+  );
+}
+
 
 function UploadSkeleton() {
   return (
     <div className="space-y-4 animate-pulse">
-      <div className="h-5 w-1/3 bg-white/10 rounded" />
-      <div className="h-10 bg-white/10 rounded" />
-      <div className="h-24 bg-white/10 rounded" />
+      <div className="h-5 w-1/3 bg-slate-200 dark:bg-white/10 rounded" />
+      <div className="h-10 bg-slate-200 dark:bg-white/10 rounded" />
+      <div className="h-24 bg-slate-200 dark:bg-white/10 rounded" />
       <div className="grid grid-cols-2 gap-4">
-        <div className="h-10 bg-white/10 rounded" />
-        <div className="h-10 bg-white/10 rounded" />
+        <div className="h-10 bg-slate-200 dark:bg-white/10 rounded" />
+        <div className="h-10 bg-slate-200 dark:bg-white/10 rounded" />
       </div>
-      <div className="h-10 w-40 bg-white/10 rounded" />
+      <div className="h-10 w-40 bg-slate-200 dark:bg-white/10 rounded" />
     </div>
   );
 }
+
+function CustomSelect({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  options: string[];
+}) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = () => setOpen(false);
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [open]);
+
+  return (
+    <div className="relative" onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between rounded-xl bg-slate-100 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] px-4 py-3 text-sm text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-[#1f1f22] focus:outline-none focus:border-cyan-400 dark:focus:border-zinc-500 focus:ring-1 focus:ring-cyan-400 dark:focus:ring-zinc-500 transition-all shadow-sm dark:shadow-none"
+      >
+        <span>{value}</span>
+        <ChevronLeft className={`w-4 h-4 text-slate-400 dark:text-white/40 transition-transform ${open ? 'rotate-90' : '-rotate-90'}`} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            transition={{ duration: 0.15 }}
+            className="absolute z-50 mt-2 w-full rounded-xl border border-slate-200 dark:border-[#27272a] bg-white dark:bg-[#18181b] shadow-xl overflow-hidden"
+          >
+            <div className="max-h-56 overflow-y-auto p-1 custom-scrollbar">
+              {options.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => {
+                    onChange(opt);
+                    setOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${value === opt ? "bg-slate-100 dark:bg-[#27272a] text-slate-900 dark:text-white font-medium" : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-[#27272a] hover:text-slate-900 dark:hover:text-white"
+                    }`}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+
+
+
+
+
+
+

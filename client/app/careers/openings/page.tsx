@@ -124,6 +124,16 @@ export default function AllOpeningsPage() {
 
   const formatSalary = (career: Career) => {
     if (!career.salary?.min || !career.salary?.max) return null;
+    
+    if (career.salary.currency === "INR") {
+      const isLpaDirect = career.salary.max < 1000;
+      const minLpa = isLpaDirect ? career.salary.min : career.salary.min / 100000;
+      const maxLpa = isLpaDirect ? career.salary.max : career.salary.max / 100000;
+      const fmt = (v: number) =>
+        v % 1 === 0 ? v.toFixed(0) : v.toFixed(2).replace(/\.?0+$/, "");
+      return `₹${fmt(minLpa)}–₹${fmt(maxLpa)} LPA`;
+    }
+
     return `${career.salary.currency} ${career.salary.min.toLocaleString()} - ${career.salary.max.toLocaleString()} per year`;
   };
 
@@ -134,9 +144,9 @@ export default function AllOpeningsPage() {
       .replace(/(^-|-$)/g, "");
 
   return (
-    <main className="relative min-h-screen bg-[#05050a] text-white overflow-x-hidden">
+    <main className="relative min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white overflow-x-hidden">
       {/* HEADER */}
-      <header className="fixed top-0 left-0 right-0 z-40 h-16 sm:h-20 border-b border-white/10 bg-[#05050a]/80 backdrop-blur-xl">
+      <header className="fixed top-0 left-0 right-0 z-40 h-16 sm:h-20 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#05050a]/80 backdrop-blur-xl">
         <nav className="mx-auto flex h-full max-w-7xl items-center justify-between px-5 md:px-6">
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
@@ -156,7 +166,7 @@ export default function AllOpeningsPage() {
           <div className="flex items-center gap-4 text-sm">
             <Link
               href="/login"
-              className="rounded-lg border border-white/20 px-3 py-1.5 text-white/80 hover:border-cyan-400 hover:text-white"
+              className="rounded-lg border border-slate-300 dark:border-white/20 px-3 py-1.5 text-slate-700 dark:text-white/80 hover:border-cyan-400 hover:text-slate-900 dark:hover:text-white"
             >
               Sign in
             </Link>
@@ -185,17 +195,17 @@ export default function AllOpeningsPage() {
           <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl md:text-[40px]">
             All Open Positions
           </h1>
-          <p className="mt-4 max-w-2xl text-sm text-white/70 sm:text-base">
+          <p className="mt-4 max-w-2xl text-sm text-slate-600 dark:text-white/70 sm:text-base">
             Browse all currently open roles at BitForge. Use search and filters to quickly find
             positions that match your skills, location, and preferred way of working.
           </p>
         </section>
 
         {/* SEARCH & FILTERS */}
-        <section className="mt-10 rounded-2xl border border-white/10 bg-black/40 p-4 sm:p-5">
+        <section className="mt-10 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-black/40 p-4 sm:p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex-1">
-              <label className="block text-xs font-medium text-white/60 mb-1.5">Search</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-white/60 mb-1.5">Search</label>
               <div className="relative">
                 <input
                   type="text"
@@ -205,7 +215,7 @@ export default function AllOpeningsPage() {
                     setCurrentPage(1);
                   }}
                   placeholder="Search by job title or keyword"
-                  className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                  className="w-full rounded-lg border border-white/15 bg-white dark:bg-black/40 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/40 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-500"
                 />
               </div>
             </div>
@@ -213,7 +223,7 @@ export default function AllOpeningsPage() {
               <span>
                 Showing {from}-{to} of {totalRoles} role{totalRoles === 1 ? "" : "s"}
               </span>
-              <span className="text-white/40">
+              <span className="text-slate-400 dark:text-white/40">
                 Use filters to narrow down by department, location, or employment type.
               </span>
             </div>
@@ -221,14 +231,14 @@ export default function AllOpeningsPage() {
 
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             <div>
-              <label className="block text-xs font-medium text-white/60 mb-1.5">Department</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-white/60 mb-1.5">Department</label>
               <select
                 value={department}
                 onChange={(e) => {
                   setDepartment(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-xs text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                className="w-full rounded-lg border border-white/15 bg-white dark:bg-black/40 px-3 py-2 text-xs text-slate-900 dark:text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-500"
               >
                 <option value="all">All departments</option>
                 {departments.map((dept) => (
@@ -240,14 +250,14 @@ export default function AllOpeningsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-white/60 mb-1.5">Location</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-white/60 mb-1.5">Location</label>
               <select
                 value={location}
                 onChange={(e) => {
                   setLocation(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-xs text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                className="w-full rounded-lg border border-white/15 bg-white dark:bg-black/40 px-3 py-2 text-xs text-slate-900 dark:text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-500"
               >
                 <option value="all">All locations</option>
                 {locations.map((loc) => (
@@ -259,14 +269,14 @@ export default function AllOpeningsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-white/60 mb-1.5">Employment Type</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-white/60 mb-1.5">Employment Type</label>
               <select
                 value={employmentType}
                 onChange={(e) => {
                   setEmploymentType(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-xs text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                className="w-full rounded-lg border border-white/15 bg-white dark:bg-black/40 px-3 py-2 text-xs text-slate-900 dark:text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-500"
               >
                 <option value="all">All types</option>
                 {employmentTypes.map((type) => (
@@ -282,13 +292,13 @@ export default function AllOpeningsPage() {
         {/* JOB LIST */}
         <section className="mt-10">
           {loading ? (
-            <div className="mt-4 text-center py-16 bg-white/5 border border-white/10 rounded-2xl">
-              <div className="text-white/60">Loading open positions...</div>
+            <div className="mt-4 text-center py-16 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
+              <div className="text-slate-500 dark:text-white/60">Loading open positions...</div>
             </div>
           ) : totalRoles === 0 ? (
-            <div className="mt-4 text-center py-16 bg-white/5 border border-white/10 rounded-2xl">
+            <div className="mt-4 text-center py-16 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
               <div className="text-4xl mb-4">💼</div>
-              <p className="text-white/60 mb-2">No open positions match your filters.</p>
+              <p className="text-slate-500 dark:text-white/60 mb-2">No open positions match your filters.</p>
               <p className="text-white/50 text-sm">
                 Try clearing some filters or checking back a little later.
               </p>
@@ -300,14 +310,14 @@ export default function AllOpeningsPage() {
                   <Link
                     key={career._id}
                     href={`/careers/${generateSlug(career.title)}`}
-                    className="block rounded-2xl border border-white/12 bg-white/5 p-4 hover:bg-white/[0.07] transition-colors group"
+                    className="block rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-4 hover:bg-white/[0.07] transition-colors group"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <h3 className="text-sm font-semibold group-hover:text-cyan-300 transition-colors">
                           {career.title}
                         </h3>
-                        <p className="mt-1 text-[11px] text-white/60">
+                        <p className="mt-1 text-[11px] text-slate-500 dark:text-white/60">
                           {career.location} · {career.department}
                         </p>
                       </div>
@@ -315,15 +325,15 @@ export default function AllOpeningsPage() {
                         {career.featured ? "⭐ Featured" : "Open"}
                       </span>
                     </div>
-                    <p className="mt-3 text-xs text-white/70 line-clamp-2">
+                    <p className="mt-3 text-xs text-slate-600 dark:text-white/70 line-clamp-2">
                       {career.description}
                     </p>
-                    <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-white/60">
-                      <span className="rounded-full bg-black/40 px-2.5 py-1">
+                    <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-slate-500 dark:text-white/60">
+                      <span className="rounded-full bg-white dark:bg-black/40 px-2.5 py-1">
                         {career.employmentType}
                       </span>
                       {formatSalary(career) && (
-                        <span className="rounded-full bg-black/40 px-2.5 py-1">
+                        <span className="rounded-full bg-white dark:bg-black/40 px-2.5 py-1">
                           {formatSalary(career)}
                         </span>
                       )}
@@ -344,14 +354,14 @@ export default function AllOpeningsPage() {
               {/* PAGINATION */}
               {totalPages > 1 && (
                 <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
-                  <div className="text-xs text-white/60">
+                  <div className="text-xs text-slate-500 dark:text-white/60">
                     Page {currentPageSafe} of {totalPages}
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handlePageChange(currentPageSafe - 1)}
                       disabled={currentPageSafe === 1}
-                      className="px-3 py-1.5 rounded-lg text-xs border border-white/20 text-white/80 disabled:opacity-40 disabled:cursor-not-allowed hover:border-cyan-400 hover:text-white"
+                      className="px-3 py-1.5 rounded-lg text-xs border border-slate-300 dark:border-white/20 text-slate-700 dark:text-white/80 disabled:opacity-40 disabled:cursor-not-allowed hover:border-cyan-400 hover:text-slate-900 dark:hover:text-white"
                     >
                       Previous
                     </button>
@@ -362,8 +372,8 @@ export default function AllOpeningsPage() {
                         <button
                           key={page}
                           onClick={() => handlePageChange(page)}
-                          className={`min-w-[2rem] px-2 py-1.5 rounded-lg text-xs border text-white/80 hover:border-cyan-400 hover:text-white ${
-                            isActive ? "border-cyan-400 bg-cyan-500/20" : "border-white/20 bg-transparent"
+                          className={`min-w-[2rem] px-2 py-1.5 rounded-lg text-xs border text-slate-700 dark:text-white/80 hover:border-cyan-400 hover:text-slate-900 dark:hover:text-white ${
+                            isActive ? "border-cyan-400 bg-cyan-500/20" : "border-slate-300 dark:border-white/20 bg-transparent"
                           }`}
                         >
                           {page}
@@ -373,7 +383,7 @@ export default function AllOpeningsPage() {
                     <button
                       onClick={() => handlePageChange(currentPageSafe + 1)}
                       disabled={currentPageSafe === totalPages}
-                      className="px-3 py-1.5 rounded-lg text-xs border border-white/20 text-white/80 disabled:opacity-40 disabled:cursor-not-allowed hover:border-cyan-400 hover:text-white"
+                      className="px-3 py-1.5 rounded-lg text-xs border border-slate-300 dark:border-white/20 text-slate-700 dark:text-white/80 disabled:opacity-40 disabled:cursor-not-allowed hover:border-cyan-400 hover:text-slate-900 dark:hover:text-white"
                     >
                       Next
                     </button>

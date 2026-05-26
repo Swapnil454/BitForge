@@ -199,7 +199,7 @@ export default function LandingPage() {
   };
 
   return (
-    <main className="relative min-h-screen bg-[#05050a] text-white overflow-x-hidden">
+    <main className="relative min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white overflow-x-hidden">
       {/* CURSOR GLOW - Only on desktop */}
       {!isMobile && (
         <motion.div
@@ -217,7 +217,7 @@ export default function LandingPage() {
             fixed top-0 left-0 right-0 z-100
             h-16 sm:h-20
             backdrop-blur-xl
-            border-b border-white/10
+            border-b border-slate-200 dark:border-white/10
             bg-[rgba(5,5,10,0.95)]
             shadow-[0_10px_40px_rgba(0,0,0,0.75)]
           "
@@ -258,7 +258,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-4">
               <Link
                 href="/login"
-                className=" text-sm text-white/70 hover:text-white"
+                className=" text-sm text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
               >
                 Login
               </Link>
@@ -287,7 +287,7 @@ export default function LandingPage() {
             fixed top-0 left-0 right-0 z-100
             h-16 sm:h-20
             backdrop-blur-xl
-            border-b border-white/10
+            border-b border-slate-200 dark:border-white/10
           "
         >
           <nav className="max-w-7xl mx-auto px-5 md:px-6 h-full flex items-center justify-between">
@@ -326,7 +326,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-4">
               <Link
                 href="/login"
-                className=" text-sm text-white/70 hover:text-white"
+                className=" text-sm text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
               >
                 Login
               </Link>
@@ -359,7 +359,7 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          <p className="mt-5 text-base md:text-lg text-white/70 max-w-xl">
+          <p className="mt-5 text-base md:text-lg text-slate-600 dark:text-white/70 max-w-xl">
             A modern marketplace where creators launch digital products and buyers find what matters.
             Secure access, instant downloads, and real-time support — all in one place.
           </p>
@@ -367,12 +367,12 @@ export default function LandingPage() {
 
         {/* FEATURE CARD - Static on mobile, animated on desktop */}
         {isMobile ? (
-          <div className="rounded-3xl bg-linear-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 shadow-[0_30px_100px_rgba(56,189,248,0.35)] p-6 transition-transform duration-300 hover:-translate-y-2">
+          <div className="rounded-3xl bg-linear-to-br from-white/10 to-white/5 backdrop-blur-xl border border-slate-300 dark:border-white/20 shadow-[0_30px_100px_rgba(56,189,248,0.35)] p-6 transition-transform duration-300 hover:-translate-y-2">
             <div className="h-1 w-16 rounded-full bg-linear-to-r from-cyan-400 to-indigo-400 mb-3" />
-            <p className="text-sm text-white/60">Featured Product</p>
+            <p className="text-sm text-slate-500 dark:text-white/60">Featured Product</p>
 
             {loadingFeatured && !featuredProduct && (
-              <div className="mt-4 h-24 rounded-2xl bg-white/10 animate-pulse" />
+              <div className="mt-4 h-24 rounded-2xl bg-slate-200 dark:bg-white/10 animate-pulse" />
             )}
 
             {!loadingFeatured && !featuredProduct && (
@@ -380,7 +380,7 @@ export default function LandingPage() {
                 <h3 className="mt-3 text-xl font-semibold">
                   Discover Amazing Products
                 </h3>
-                <p className="mt-2 text-white/70 text-sm">
+                <p className="mt-2 text-slate-600 dark:text-white/70 text-sm">
                   New creators are joining every day. Explore the marketplace to find trending and newly launched products.
                 </p>
                 <div className="mt-5 flex justify-end">
@@ -397,7 +397,7 @@ export default function LandingPage() {
             {featuredProduct && (
               <>
                 {featuredProduct.thumbnailUrl && (
-                  <div className="w-full h-40 mt-4 mb-3 bg-black/20 rounded-2xl overflow-hidden flex items-center justify-center">
+                  <div className="w-full h-40 mt-4 mb-3 bg-white dark:bg-black/20 rounded-2xl overflow-hidden flex items-center justify-center">
                     <img
                       src={featuredProduct.thumbnailUrl}
                       alt={featuredProduct.title}
@@ -409,7 +409,7 @@ export default function LandingPage() {
                 <h3 className="mt-1 text-xl font-semibold line-clamp-1">
                   {featuredProduct.title}
                 </h3>
-                <p className="mt-2 text-white/70 text-sm line-clamp-3">
+                <p className="mt-2 text-slate-600 dark:text-white/70 text-sm line-clamp-3">
                   {featuredProduct.description}
                 </p>
 
@@ -417,10 +417,10 @@ export default function LandingPage() {
                   {featuredProduct.discount > 0 ? (
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-white/40 line-through">
+                        <span className="text-sm text-slate-400 dark:text-white/40 line-through">
                           ₹{featuredProduct.price.toLocaleString()}
                         </span>
-                        <span className="text-xs bg-linear-to-r from-red-500 to-rose-500 text-white px-2 py-0.5 rounded-full font-semibold shadow-lg shadow-red-500/30">
+                        <span className="text-xs bg-linear-to-r from-red-500 to-rose-500 text-slate-900 dark:text-white px-2 py-0.5 rounded-full font-semibold shadow-lg shadow-red-500/30">
                           -{featuredProduct.discount}% OFF
                         </span>
                       </div>
@@ -458,13 +458,13 @@ export default function LandingPage() {
           <motion.div
             whileHover={{ y: -8 }}
             transition={{ type: "spring", stiffness: 180, damping: 18 }}
-            className="rounded-3xl bg-linear-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 shadow-[0_30px_100px_rgba(56,189,248,0.35)] p-6"
+            className="rounded-3xl bg-linear-to-br from-white/10 to-white/5 backdrop-blur-xl border border-slate-300 dark:border-white/20 shadow-[0_30px_100px_rgba(56,189,248,0.35)] p-6"
           >
             <div className="h-1 w-16 rounded-full bg-linear-to-r from-cyan-400 to-indigo-400 mb-3" />
-            <p className="text-sm text-white/60">Featured Product</p>
+            <p className="text-sm text-slate-500 dark:text-white/60">Featured Product</p>
 
             {loadingFeatured && !featuredProduct && (
-              <div className="mt-4 h-24 rounded-2xl bg-white/10 animate-pulse" />
+              <div className="mt-4 h-24 rounded-2xl bg-slate-200 dark:bg-white/10 animate-pulse" />
             )}
 
             {!loadingFeatured && !featuredProduct && (
@@ -472,7 +472,7 @@ export default function LandingPage() {
                 <h3 className="mt-3 text-xl font-semibold">
                   Discover Amazing Products
                 </h3>
-                <p className="mt-2 text-white/70 text-sm">
+                <p className="mt-2 text-slate-600 dark:text-white/70 text-sm">
                   New creators are joining every day. Explore the marketplace to find trending and newly launched products.
                 </p>
                 <div className="mt-5 flex justify-end">
@@ -489,7 +489,7 @@ export default function LandingPage() {
             {featuredProduct && (
               <>
                 {featuredProduct.thumbnailUrl && (
-                  <div className="w-full h-40 mt-4 mb-3 bg-black/20 rounded-2xl overflow-hidden flex items-center justify-center">
+                  <div className="w-full h-40 mt-4 mb-3 bg-white dark:bg-black/20 rounded-2xl overflow-hidden flex items-center justify-center">
                     <img
                       src={featuredProduct.thumbnailUrl}
                       alt={featuredProduct.title}
@@ -501,7 +501,7 @@ export default function LandingPage() {
                 <h3 className="mt-1 text-xl font-semibold line-clamp-1">
                   {featuredProduct.title}
                 </h3>
-                <p className="mt-2 text-white/70 text-sm line-clamp-3">
+                <p className="mt-2 text-slate-600 dark:text-white/70 text-sm line-clamp-3">
                   {featuredProduct.description}
                 </p>
 
@@ -509,10 +509,10 @@ export default function LandingPage() {
                   {featuredProduct.discount > 0 ? (
                     <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-white/40 line-through">
+                      <span className="text-sm text-slate-400 dark:text-white/40 line-through">
                         ₹{featuredProduct.price.toLocaleString()}
                       </span>
-                      <span className="text-xs bg-linear-to-r from-red-500 to-rose-500 text-white px-2 py-0.5 rounded-full font-semibold shadow-lg shadow-red-500/30">
+                      <span className="text-xs bg-linear-to-r from-red-500 to-rose-500 text-slate-900 dark:text-white px-2 py-0.5 rounded-full font-semibold shadow-lg shadow-red-500/30">
                         -{featuredProduct.discount}% OFF
                       </span>
                     </div>
@@ -561,8 +561,8 @@ export default function LandingPage() {
               className="
                 rounded-2xl
                 p-6 sm:p-8
-                border border-white/10
-                bg-white/5 backdrop-blur-xl
+                border border-slate-200 dark:border-white/10
+                bg-slate-100 dark:bg-white/5 backdrop-blur-xl
                 hover:border-cyan-400
                 transition-all duration-300
                 hover:-translate-y-1.5
@@ -572,11 +572,11 @@ export default function LandingPage() {
                 For Buyers
               </h3>
 
-              <p className="text-sm sm:text-base text-white/60 mb-5 sm:mb-6">
+              <p className="text-sm sm:text-base text-slate-500 dark:text-white/60 mb-5 sm:mb-6">
                 Discover and access digital products with zero friction.
               </p>
 
-              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-white/80">
+              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-slate-700 dark:text-white/80">
                 <li>✔ No extra fees for buyers</li>
                 <li>✔ Secure payments & instant downloads</li>
                 <li>✔ Live help when you need it</li>
@@ -609,8 +609,8 @@ export default function LandingPage() {
               className="
                 rounded-2xl
                 p-6 sm:p-8
-                border border-white/10
-                bg-white/5 backdrop-blur-xl
+                border border-slate-200 dark:border-white/10
+                bg-slate-100 dark:bg-white/5 backdrop-blur-xl
                 hover:border-cyan-400
                 transition-all duration-300
               "
@@ -619,11 +619,11 @@ export default function LandingPage() {
                 For Buyers
               </h3>
 
-              <p className="text-sm sm:text-base text-white/60 mb-5 sm:mb-6">
+              <p className="text-sm sm:text-base text-slate-500 dark:text-white/60 mb-5 sm:mb-6">
                 Discover and access digital products with zero friction.
               </p>
 
-              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-white/80">
+              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-slate-700 dark:text-white/80">
                 <li>✔ No extra fees for buyers</li>
                 <li>✔ Secure payments & instant downloads</li>
                 <li>✔ Live help when you need it</li>
@@ -657,8 +657,8 @@ export default function LandingPage() {
               className="
                 rounded-2xl
                 p-6 sm:p-8
-                border border-white/10
-                bg-white/5 backdrop-blur-xl
+                border border-slate-200 dark:border-white/10
+                bg-slate-100 dark:bg-white/5 backdrop-blur-xl
                 hover:border-indigo-400
                 transition-all duration-300
                 hover:-translate-y-1.5
@@ -668,11 +668,11 @@ export default function LandingPage() {
                 For Sellers
               </h3>
 
-              <p className="text-sm sm:text-base text-white/60 mb-5 sm:mb-6">
+              <p className="text-sm sm:text-base text-slate-500 dark:text-white/60 mb-5 sm:mb-6">
                 Launch, sell, and scale your digital products with ease.
               </p>
 
-              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-white/80">
+              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-slate-700 dark:text-white/80">
                 <li>✔ Low, transparent platform fees</li>
                 <li>✔ Instant withdrawals & automated payouts</li>
                 <li>✔ Live help when you need it</li>
@@ -705,8 +705,8 @@ export default function LandingPage() {
               className="
                 rounded-2xl
                 p-6 sm:p-8
-                border border-white/10
-                bg-white/5 backdrop-blur-xl
+                border border-slate-200 dark:border-white/10
+                bg-slate-100 dark:bg-white/5 backdrop-blur-xl
                 hover:border-indigo-400
                 transition-all duration-300
               "
@@ -715,11 +715,11 @@ export default function LandingPage() {
                 For Sellers
               </h3>
 
-              <p className="text-sm sm:text-base text-white/60 mb-5 sm:mb-6">
+              <p className="text-sm sm:text-base text-slate-500 dark:text-white/60 mb-5 sm:mb-6">
                 Launch, sell, and scale your digital products with ease.
               </p>
 
-              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-white/80">
+              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-slate-700 dark:text-white/80">
                 <li>✔ Low, transparent platform fees</li>
                 <li>✔ Instant withdrawals & automated payouts</li>
                 <li>✔ Live help when you need it</li>
@@ -759,10 +759,10 @@ export default function LandingPage() {
             isMobile ? (
               <div
                 key={i}
-                className="rounded-2xl bg-white/5 border border-white/10 p-6 backdrop-blur-xl animate-fade-in-up"
+                className="rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-6 backdrop-blur-xl animate-fade-in-up"
                 style={{ animationDelay: `${i * 100}ms` }}
               >
-                <p className="text-white/70">“{t.quote}”</p>
+                <p className="text-slate-600 dark:text-white/70">“{t.quote}”</p>
                 <p className="mt-4 font-semibold">{t.name}</p>
                 <p className="text-sm text-white/50">{t.role}</p>
               </div>
@@ -773,9 +773,9 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="rounded-2xl bg-white/5 border border-white/10 p-6 backdrop-blur-xl"
+                className="rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-6 backdrop-blur-xl"
               >
-                <p className="text-white/70">“{t.quote}”</p>
+                <p className="text-slate-600 dark:text-white/70">“{t.quote}”</p>
                 <p className="mt-4 font-semibold">{t.name}</p>
                 <p className="text-sm text-white/50">{t.role}</p>
               </motion.div>
@@ -788,7 +788,7 @@ export default function LandingPage() {
         <h2 className="text-4xl md:text-5xl font-black">
           Build your digital empire
         </h2>
-        <p className="mt-4 text-white/70">
+        <p className="mt-4 text-slate-600 dark:text-white/70">
           Join creators building the future of digital commerce.
         </p>
 
@@ -797,7 +797,7 @@ export default function LandingPage() {
         </MagneticButton>
       </section>
 
-      <footer className="-mt-12 relative z-10 border-t border-white/10 bg-black/40 backdrop-blur">
+      <footer className="-mt-12 relative z-10 border-t border-slate-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur">
         {/* subtle top glow */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/15 to-transparent" />
 
@@ -808,22 +808,22 @@ export default function LandingPage() {
             <div className="md:max-w-xs">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-lg font-semibold tracking-tight">BitForge</span>
-                <span className="inline-flex items-center rounded-full border border-white/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-white/60">
+                <span className="inline-flex items-center rounded-full border border-slate-200 dark:border-white/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-500 dark:text-white/60">
                   Digital Marketplace
                 </span>
               </div>
               {/* Mobile: short one-liner for better scanability */}
-              <p className="text-[13px] text-white/60 sm:hidden">
+              <p className="text-[13px] text-slate-500 dark:text-white/60 sm:hidden">
                 A secure digital marketplace for creators and buyers.
               </p>
               {/* Desktop / tablet: full trust-focused paragraph */}
-              <p className="hidden text-sm text-white/60 sm:block">
+              <p className="hidden text-sm text-slate-500 dark:text-white/60 sm:block">
                 A modern digital marketplace where creators sell and buyers securely purchase digital products with instant access and transparent payouts.
               </p>
 
               {/* Mobile-only socials directly under brand for early trust */}
-              <div className="mt-4 flex items-center gap-3 text-white/60 sm:hidden">
-                <span className="text-xs uppercase tracking-wide text-white/40">
+              <div className="mt-4 flex items-center gap-3 text-slate-500 dark:text-white/60 sm:hidden">
+                <span className="text-xs uppercase tracking-wide text-slate-400 dark:text-white/40">
                   Socials
                 </span>
                 <div className="flex items-center gap-3">
@@ -896,22 +896,22 @@ export default function LandingPage() {
             {/* Link columns */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8 sm:gap-12 text-[13px] sm:text-sm">
               <div>
-                <h4 className="mb-2 sm:mb-3 text-[11px] sm:text-xs font-bold tracking-wide text-white/60 uppercase">
+                <h4 className="mb-2 sm:mb-3 text-[11px] sm:text-xs font-bold tracking-wide text-slate-500 dark:text-white/60 uppercase">
                   Product
                 </h4>
-                <ul className="space-y-3 text-white/60">
+                <ul className="space-y-3 text-slate-500 dark:text-white/60">
                   <li>
-                    <Link href="/marketplace" className="hover:text-white hover:underline underline-offset-2 transition">
+                    <Link href="/marketplace" className="hover:text-slate-900 dark:hover:text-white hover:underline underline-offset-2 transition">
                       Marketplace
                     </Link>
                   </li>
                   <li>
-                    <Link href="/register" className="hover:text-white hover:underline underline-offset-2 transition">
+                    <Link href="/register" className="hover:text-slate-900 dark:hover:text-white hover:underline underline-offset-2 transition">
                       For Buyers
                     </Link>
                   </li>
                   <li>
-                    <Link href="/register?role=seller" className="hover:text-white hover:underline underline-offset-2 transition">
+                    <Link href="/register?role=seller" className="hover:text-slate-900 dark:hover:text-white hover:underline underline-offset-2 transition">
                       For Sellers
                     </Link>
                   </li>
@@ -919,22 +919,22 @@ export default function LandingPage() {
               </div>
 
               <div>
-                <h4 className="mb-2 sm:mb-3 text-[11px] sm:text-xs font-bold tracking-wide text-white/60 uppercase">
+                <h4 className="mb-2 sm:mb-3 text-[11px] sm:text-xs font-bold tracking-wide text-slate-500 dark:text-white/60 uppercase">
                   Company
                 </h4>
-                <ul className="space-y-3 text-white/60">
+                <ul className="space-y-3 text-slate-500 dark:text-white/60">
                   <li>
-                    <Link href="/about" className="hover:text-white hover:underline underline-offset-2 transition">
+                    <Link href="/about" className="hover:text-slate-900 dark:hover:text-white hover:underline underline-offset-2 transition">
                       About Us
                     </Link>
                   </li>
                   <li>
-                    <Link href="/contact" className="hover:text-white hover:underline underline-offset-2 transition">
+                    <Link href="/contact" className="hover:text-slate-900 dark:hover:text-white hover:underline underline-offset-2 transition">
                       Contact
                     </Link>
                   </li>
                   <li>
-                    <Link href="/careers" className="hover:text-white hover:underline underline-offset-2 transition">
+                    <Link href="/careers" className="hover:text-slate-900 dark:hover:text-white hover:underline underline-offset-2 transition">
                       Careers
                     </Link>
                   </li>
@@ -942,27 +942,27 @@ export default function LandingPage() {
               </div>
 
               <div>
-                <h4 className="mb-2 sm:mb-3 text-[11px] sm:text-xs font-bold tracking-wide text-white/60 uppercase">
+                <h4 className="mb-2 sm:mb-3 text-[11px] sm:text-xs font-bold tracking-wide text-slate-500 dark:text-white/60 uppercase">
                   Legal
                 </h4>
-                <ul className="space-y-3 text-white/60">
+                <ul className="space-y-3 text-slate-500 dark:text-white/60">
                   <li>
-                    <Link href="/legal/terms-and-conditions" className="hover:text-white hover:underline underline-offset-2 transition">
+                    <Link href="/legal/terms-and-conditions" className="hover:text-slate-900 dark:hover:text-white hover:underline underline-offset-2 transition">
                       Terms &amp; Conditions
                     </Link>
                   </li>
                   <li>
-                    <Link href="/legal/privacy-policy" className="hover:text-white hover:underline underline-offset-2 transition">
+                    <Link href="/legal/privacy-policy" className="hover:text-slate-900 dark:hover:text-white hover:underline underline-offset-2 transition">
                       Privacy Policy
                     </Link>
                   </li>
                   <li>
-                    <Link href="/legal/refund-cancellation-policy" className="hover:text-white hover:underline underline-offset-2 transition">
+                    <Link href="/legal/refund-cancellation-policy" className="hover:text-slate-900 dark:hover:text-white hover:underline underline-offset-2 transition">
                       Refund &amp; Cancellation Policy
                     </Link>
                   </li>
                   <li>
-                    <Link href="/trust-center" className="hover:text-white hover:underline underline-offset-2 transition">
+                    <Link href="/trust-center" className="hover:text-slate-900 dark:hover:text-white hover:underline underline-offset-2 transition">
                       Trust Center
                     </Link>
                   </li>
@@ -970,17 +970,17 @@ export default function LandingPage() {
               </div>
 
               <div>
-                <h4 className="mb-2 sm:mb-3 text-[11px] sm:text-xs font-bold tracking-wide text-white/60 uppercase">
+                <h4 className="mb-2 sm:mb-3 text-[11px] sm:text-xs font-bold tracking-wide text-slate-500 dark:text-white/60 uppercase">
                   Resources
                 </h4>
-                <ul className="space-y-3 text-white/60">
+                <ul className="space-y-3 text-slate-500 dark:text-white/60">
                   <li>
-                    <Link href="/docs" className="hover:text-white hover:underline underline-offset-2 transition">
+                    <Link href="/docs" className="hover:text-slate-900 dark:hover:text-white hover:underline underline-offset-2 transition">
                       Docs
                     </Link>
                   </li>
                   <li>
-                    <Link href="/status" className="hover:text-white hover:underline underline-offset-2 transition">
+                    <Link href="/status" className="hover:text-slate-900 dark:hover:text-white hover:underline underline-offset-2 transition">
                       Status
                     </Link>
                   </li>
@@ -990,8 +990,8 @@ export default function LandingPage() {
           </div>
 
           {/* Bottom row */}
-          <div className="border-t border-white/10 pt-4 space-y-3 text-xs sm:text-[13px] text-white/50">
-            <p className="text-[11px] text-white/40">
+          <div className="border-t border-slate-200 dark:border-white/10 pt-4 space-y-3 text-xs sm:text-[13px] text-white/50">
+            <p className="text-[11px] text-slate-400 dark:text-white/40">
               Secure payments powered by trusted payment partners.
             </p>
 
@@ -999,7 +999,7 @@ export default function LandingPage() {
               <div className="flex flex-col gap-1">
                 <a
                   href="mailto:help@bittforge.in"
-                  className="text-[13px] font-medium text-white/80 hover:text-cyan-400 hover:underline underline-offset-2 cursor-pointer transition"
+                  className="text-[13px] font-medium text-slate-700 dark:text-white/80 hover:text-cyan-400 hover:underline underline-offset-2 cursor-pointer transition"
                 >
                   help@bittforge.in
                 </a>
@@ -1008,8 +1008,8 @@ export default function LandingPage() {
                 </span>
               </div>
 
-              <div className="hidden sm:flex items-center gap-4 text-white/60">
-                <span className="text-[14px] uppercase tracking-wide text-white/40">
+              <div className="hidden sm:flex items-center gap-4 text-slate-500 dark:text-white/60">
+                <span className="text-[14px] uppercase tracking-wide text-slate-400 dark:text-white/40">
                   Socials
                 </span>
                 <div className="flex items-center gap-4">

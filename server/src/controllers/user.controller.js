@@ -131,6 +131,19 @@ export const changePassword = async (req, res) => {
     user.password = hashedPassword;
     await user.save();
 
+    await createNotification(
+      user._id,
+      "password_changed",
+      "Password changed",
+      "Your BitForge password was changed successfully. If this was not you, contact support immediately.",
+      user._id,
+      "User",
+      {
+        audienceRole: user.role,
+        pushWhenInactiveOnly: false,
+      }
+    );
+
     res.json({ message: "Password changed successfully" });
   } catch (error) {
     console.error("Error changing password:", error);
@@ -226,6 +239,19 @@ export const resetPassword = async (req, res) => {
     user.resetPasswordExpire = undefined;
     await user.save();
 
+    await createNotification(
+      user._id,
+      "password_reset",
+      "Password reset completed",
+      "Your BitForge password was reset successfully. If this was not you, secure your account right away.",
+      user._id,
+      "User",
+      {
+        audienceRole: user.role,
+        pushWhenInactiveOnly: false,
+      }
+    );
+
     res.json({ message: "Password reset successfully" });
   } catch (error) {
     console.error("Error resetting password:", error);
@@ -299,7 +325,7 @@ export const confirmAccountDeletion = async (req, res) => {
     user.deletionOTP = undefined;
     user.deletionOTPExpire = undefined;
 
-    // BUYER: Delete immediately and notify admins
+    // BUYER: Soft-delete (mark as deleted, preserve data)
     if (user.role === 'buyer') {
       try {
         const admins = await User.find({ role: 'admin' }).select('_id');
@@ -307,8 +333,8 @@ export const confirmAccountDeletion = async (req, res) => {
           await createNotification(
             admin._id,
             'user_deleted',
-            'Buyer Account Deleted',
-            `${user.name} (${user.email}) deleted their account. Reason: ${String(reason).trim()}`,
+            'Buyer Account Deactivated',
+            `${user.name} (${user.email}) deactivated their account. Reason: ${String(reason).trim()}`,
             user._id,
             'User'
           );
@@ -317,10 +343,13 @@ export const confirmAccountDeletion = async (req, res) => {
         console.error("Error creating admin notifications for buyer deletion:", notifyErr);
       }
 
+      // Soft-delete: change status, do NOT remove the document
+      user.accountStatus = 'deleted';
+      user.accountStatusUpdatedAt = new Date();
+      user.deletedAt = new Date();
       await user.save();
-      await User.findByIdAndDelete(userId);
 
-      return res.json({ message: "Account deleted successfully" });
+      return res.json({ message: "Account deactivated successfully" });
     }
 
     // SELLER: Request admin approval
@@ -361,3 +390,266 @@ export const confirmAccountDeletion = async (req, res) => {
 };
 
 // Request account deletion (send OTP)
+
+/**
+ * REQUEST REACTIVATION OTP
+ * Public endpoint — sends OTP to the email of a deleted account.
+ */
+export const requestReactivationOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      return res.status(404).json({ message: "No account found with this email" });
+    }
+
+    if (user.accountStatus !== 'deleted') {
+      return res.status(400).json({ message: "This account is not eligible for reactivation" });
+    }
+
+    const otp = generateOTP();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    user.deletionOTP = otp;
+    user.deletionOTPExpire = otpExpiry;
+    await user.save();
+
+    try {
+      await sendOtpEmail(user.email, otp, 'Account Reactivation');
+      return res.json({ message: "Reactivation code sent to your email" });
+    } catch (emailError) {
+      console.error("Error sending reactivation OTP:", emailError);
+      return res.status(500).json({ message: "Failed to send reactivation email" });
+    }
+  } catch (error) {
+    console.error("Error requesting reactivation OTP:", error);
+    res.status(500).json({ message: "Failed to request reactivation" });
+  }
+};
+
+/**
+ * REACTIVATE ACCOUNT
+ * Public endpoint — verifies OTP and restores accountStatus to 'active'.
+ */
+export const reactivateAccount = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      return res.status(404).json({ message: "No account found with this email" });
+    }
+
+    if (user.accountStatus !== 'deleted') {
+      return res.status(400).json({ message: "This account is not eligible for reactivation" });
+    }
+
+    if (!user.deletionOTP || !user.deletionOTPExpire) {
+      return res.status(400).json({ message: "No reactivation request found. Please request a new code" });
+    }
+
+    if (new Date() > user.deletionOTPExpire) {
+      user.deletionOTP = undefined;
+      user.deletionOTPExpire = undefined;
+      await user.save();
+      return res.status(400).json({ message: "Reactivation code has expired. Please request a new one" });
+    }
+
+    if (user.deletionOTP !== otp) {
+      return res.status(401).json({ message: "Invalid reactivation code" });
+    }
+
+    // Restore account
+    user.accountStatus = 'active';
+    user.accountStatusUpdatedAt = new Date();
+    user.deletedAt = undefined;
+    user.deletionOTP = undefined;
+    user.deletionOTPExpire = undefined;
+    await user.save();
+
+    // Generate token for immediate login
+    const { generateToken } = await import('../utils/token.js');
+    const token = generateToken(user);
+
+    res.json({
+      message: "Account reactivated successfully. Welcome back!",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isVerified: user.isVerified,
+        accountStatus: user.accountStatus,
+        approvalStatus: user.approvalStatus,
+        isApproved: user.isApproved,
+      },
+    });
+  } catch (error) {
+    console.error("Error reactivating account:", error);
+    res.status(500).json({ message: "Failed to reactivate account" });
+  }
+};
+
+/**
+ * UPDATE PREFERENCES
+ * Protected endpoint — updates user preferences like theme.
+ */
+export const updatePreferences = async (req, res) => {
+  try {
+    const { theme } = req.body;
+    const userId = req.user.id;
+
+    if (!["light", "dark", "system"].includes(theme)) {
+      return res.status(400).json({ message: "Invalid theme" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { "preferences.theme": theme },
+      { new: true }
+    ).select("-password -resetPasswordOTP -resetPasswordExpire");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      success: true,
+      preferences: user.preferences,
+    });
+  } catch (error) {
+    console.error("Error updating preferences:", error);
+    res.status(500).json({ message: "Failed to update preferences" });
+  }
+};
+
+/**
+ * Upload identity documents
+ * Expects multipart/form-data with 'documents' and 'documentTypes' (as a stringified array or multiple values)
+ */
+export const uploadIdentityDocuments = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user || user.role !== 'seller') {
+      return res.status(403).json({ message: "Only sellers can upload identity documents." });
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No documents provided." });
+    }
+
+    // Parse document types from the request body
+    let documentTypes = [];
+    if (req.body.documentTypes) {
+      if (Array.isArray(req.body.documentTypes)) {
+        documentTypes = req.body.documentTypes;
+      } else {
+        try {
+          documentTypes = JSON.parse(req.body.documentTypes);
+        } catch (e) {
+          documentTypes = [req.body.documentTypes];
+        }
+      }
+    }
+
+    // Determine current submission round
+    let currentRound = 1;
+    if (user.identityDocuments && user.identityDocuments.length > 0) {
+      const highestRound = Math.max(...user.identityDocuments.map(d => d.submissionRound || 1));
+      if (user.identityVerificationStatus === 'rejected') {
+        currentRound = highestRound + 1;
+      } else {
+        currentRound = highestRound;
+      }
+    }
+
+    const uploadedDocs = [];
+    
+    // Process each file
+    for (let i = 0; i < req.files.length; i++) {
+      const file = req.files[i];
+      const docType = documentTypes[i] || 'government_id'; // fallback
+      
+      const b64 = Buffer.from(file.buffer).toString("base64");
+      const dataURI = "data:" + file.mimetype + ";base64," + b64;
+      
+      const uploadResult = await cloudinary.uploader.upload(dataURI, {
+        folder: "identity_documents",
+        type: "authenticated",
+        access_mode: "authenticated",
+        resource_type: "auto"
+      });
+
+      uploadedDocs.push({
+        url: uploadResult.secure_url,
+        public_id: uploadResult.public_id,
+        documentType: docType,
+        uploadedAt: new Date(),
+        submissionRound: currentRound,
+        status: 'pending'
+      });
+    }
+
+    // Ensure at least one government_id is uploaded in this round
+    const hasGovId = uploadedDocs.some(d => d.documentType === 'government_id');
+    if (!hasGovId) {
+      // Cleanup uploaded files on cloudinary if validation fails post-upload
+      for (const doc of uploadedDocs) {
+        await cloudinary.uploader.destroy(doc.public_id, { type: 'authenticated' });
+      }
+      return res.status(400).json({ message: "At least one Government ID is required." });
+    }
+
+    // Append to existing documents
+    if (!user.identityDocuments) user.identityDocuments = [];
+    user.identityDocuments.push(...uploadedDocs);
+    
+    // Change status
+    user.identityVerificationStatus = 'pending';
+    await user.save();
+
+    res.json({ 
+      success: true, 
+      message: "Documents uploaded successfully. Awaiting admin review.",
+      status: user.identityVerificationStatus 
+    });
+  } catch (error) {
+    console.error("Error uploading identity documents:", error);
+    res.status(500).json({ message: "Failed to upload identity documents" });
+  }
+};
+
+/**
+ * Get the current identity verification status
+ */
+export const getIdentityStatus = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('identityVerificationStatus latestRejectionReason isApproved approvalStatus');
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      status: user.identityVerificationStatus,
+      rejectionReason: user.latestRejectionReason || null,
+      isApproved: user.isApproved,
+      approvalStatus: user.approvalStatus
+    });
+  } catch (error) {
+    console.error("Error fetching identity status:", error);
+    res.status(500).json({ message: "Failed to fetch identity status" });
+  }
+};
+

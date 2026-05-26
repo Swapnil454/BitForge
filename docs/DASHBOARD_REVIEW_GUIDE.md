@@ -36,7 +36,7 @@ After purchasing a product, buyers can **easily write reviews directly from thei
 │  🏠 Buyer Dashboard                                     │
 ├─────────────────────────────────────────────────────────┤
 │                                                          │
-│  📊 Quick Stats                                         │
+│   Quick Stats                                         │
 │  ┌───────────┬───────────┬───────────┐                │
 │  │ Spent     │ Purchases │ Downloads │                 │
 │  │ ₹2,499    │ 3         │ 3         │                 │
@@ -44,7 +44,7 @@ After purchasing a product, buyers can **easily write reviews directly from thei
 │                                                          │
 │  🎯 Quick Actions                                       │
 │  ┌─────────────┬─────────────┬─────────────┐          │
-│  │ 📦 My       │ 🛒 Shopping │ ⚖️ My       │          │
+│  │  My       │ 🛒 Shopping │ ⚖️ My       │          │
 │  │ Purchases   │ Cart        │ Disputes    │          │
 │  │ View orders │ 2 items     │ Track status│          │
 │  └─────────────┴─────────────┴─────────────┘          │
@@ -64,7 +64,7 @@ After purchasing a product, buyers can **easily write reviews directly from thei
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  ← Back to Dashboard        📦 My Purchases                │
+│  ← Back to Dashboard         My Purchases                │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  View your order history, downloads and disputes           │
@@ -72,7 +72,7 @@ After purchasing a product, buyers can **easily write reviews directly from thei
 │  [Browse Marketplace]  [View My Disputes]                  │
 │                                                              │
 │  ┌──────────────────────────────────────────────────────┐  │
-│  │  📚 React Mastering Guide                          ✅ │  │
+│  │  📚 React Mastering Guide                           │  │
 │  │                                                         │  │
 │  │  ₹499   Status: completed                             │  │
 │  │  Purchased on 02/10/2026, 10:30 AM                    │  │
@@ -82,7 +82,7 @@ After purchasing a product, buyers can **easily write reviews directly from thei
 │  └──────────────────────────────────────────────────────┘  │
 │                                                              │
 │  ┌──────────────────────────────────────────────────────┐  │
-│  │  🎨 Figma UI Kit Pro                               ✅ │  │
+│  │  🎨 Figma UI Kit Pro                                │  │
 │  │                                                         │  │
 │  │  ₹899   Status: completed                             │  │
 │  │  Purchased on 02/09/2026, 3:15 PM                     │  │
@@ -95,7 +95,7 @@ After purchasing a product, buyers can **easily write reviews directly from thei
 ```
 
 **Key Features:**
-- ✅ **"Write Review"** button appears ONLY for completed/success orders
+-  **"Write Review"** button appears ONLY for completed/success orders
 - 🎨 Yellow/orange gradient button with star icon makes it easy to spot
 - 👁️ "View Product" button also available to see product details
 
@@ -143,9 +143,9 @@ After purchasing a product, buyers can **easily write reviews directly from thei
 **Modal Features:**
 - 🎯 **Large, centered modal** - Can't miss it!
 - ⭐ **Interactive star rating** - Hover to preview, click to select
-- 📝 **Optional comment field** - 1000 character limit
+-  **Optional comment field** - 1000 character limit
 - 💡 **Helpful tips** - Guidelines visible while writing
-- ✅ **Clear validation** - Rating is required, comment is optional
+-  **Clear validation** - Rating is required, comment is optional
 
 ---
 
@@ -169,7 +169,7 @@ After purchasing a product, buyers can **easily write reviews directly from thei
 **Interactive Features:**
 - 👆 **Hover effect:** Stars light up yellow as you hover
 - 👆 **Click to select:** Stars stay selected after clicking
-- 📊 **Rating labels:** Poor/Fair/Good/Very Good/Excellent
+-  **Rating labels:** Poor/Fair/Good/Very Good/Excellent
 - 🔄 **Change anytime:** Click different stars to change rating
 
 ---
@@ -194,9 +194,9 @@ After purchasing a product, buyers can **easily write reviews directly from thei
 
 **Comment Features:**
 - ✍️ **Multi-line text area** - Plenty of space to write
-- 📊 **Character counter** - Live count updates as you type
+-  **Character counter** - Live count updates as you type
 - 🚫 **1000 char limit** - Prevents overly long reviews
-- ⚠️ **Optional field** - Can submit with just stars!
+-  **Optional field** - Can submit with just stars!
 
 ---
 
@@ -213,7 +213,7 @@ After purchasing a product, buyers can **easily write reviews directly from thei
 ║  ─────────────────────────────────────────────────────    ║
 ║                                                            ║
 ║                                                            ║
-║  [Cancel]        [⏳ Submitting Review...]               ║
+║  [Cancel]        [ Submitting Review...]               ║
 ║                        ↑ Loading state                    ║
 ║                                                            ║
 ╚═══════════════════════════════════════════════════════════╝
@@ -225,7 +225,7 @@ After purchasing a product, buyers can **easily write reviews directly from thei
 
 ```
 ┌────────────────────────────────────────────────────────┐
-│  ✅ Success!                                            │
+│   Success!                                            │
 │  Thank you for your review!                            │
 └────────────────────────────────────────────────────────┘
 
@@ -236,7 +236,7 @@ Back to My Purchases page
 ↓
 
 ┌──────────────────────────────────────────────────────┐
-│  📚 React Mastering Guide                          ✅ │
+│  📚 React Mastering Guide                           │
 │                                                       │
 │  ⭐⭐⭐⭐⭐ (Your review submitted!)                │
 │                                                       │
@@ -246,11 +246,11 @@ Back to My Purchases page
 ```
 
 **After Submission:**
-- ✅ Success toast notification appears
+-  Success toast notification appears
 - 🔄 Modal closes automatically
-- 📝 "Write Review" button changes to "View Review"
+-  "Write Review" button changes to "View Review"
 - 🔔 Seller receives notification
-- 📊 Product rating updates instantly
+-  Product rating updates instantly
 
 ---
 
@@ -266,14 +266,14 @@ Back to My Purchases page
 ```
 
 ### Only Visible When:
-- ✅ Order status is "completed" or "success"
-- ✅ You haven't reviewed the product yet
-- ✅ You're logged in as a buyer
+-  Order status is "completed" or "success"
+-  You haven't reviewed the product yet
+-  You're logged in as a buyer
 
 ### Not Visible When:
-- ❌ Order is pending/failed
-- ❌ You already submitted a review
-- ❌ You're not the buyer
+-  Order is pending/failed
+-  You already submitted a review
+-  You're not the buyer
 
 ---
 
@@ -326,14 +326,14 @@ Back to My Purchases page
    ```
 
 8. **Click "Submit Review"**
-   - Button shows loading: [⏳ Submitting Review...]
+   - Button shows loading: [ Submitting Review...]
    - API call to `/api/reviews`
    - Backend validates purchase
    - Review saved to database
 
 9. **Success Notification**
    ```
-   ✅ Success!
+    Success!
    Thank you for your review!
    ```
 
@@ -358,7 +358,7 @@ Back to My Purchases page
 
 ---
 
-## 🔍 Finding Past Reviews
+##  Finding Past Reviews
 
 ### Option 1: On Product Page
 1. Navigate to product: `/marketplace/:productId`
@@ -405,10 +405,10 @@ Two ways to edit:
 ### Q: Why don't I see the "Write Review" button?
 
 **A:** Check these conditions:
-1. ✅ Order status must be "completed" or "success"
-2. ✅ You must be logged in as a buyer
-3. ✅ You haven't already reviewed this product
-4. ✅ You actually purchased this product (verified order)
+1.  Order status must be "completed" or "success"
+2.  You must be logged in as a buyer
+3.  You haven't already reviewed this product
+4.  You actually purchased this product (verified order)
 
 ### Q: Can I review a product I got for free?
 
@@ -450,23 +450,23 @@ Two ways to edit:
 
 ## 🎯 Pro Tips
 
-### 📝 Writing Great Reviews:
+###  Writing Great Reviews:
 
 1. **Be Specific**
-   - ✅ "The PDF has 250 pages with clear diagrams"
-   - ❌ "It's good"
+   -  "The PDF has 250 pages with clear diagrams"
+   -  "It's good"
 
 2. **Mention Value**
-   - ✅ "Worth the price for the quality of content"
-   - ❌ "Expensive"
+   -  "Worth the price for the quality of content"
+   -  "Expensive"
 
 3. **Help Others Decide**
-   - ✅ "Perfect for beginners learning React"
-   - ❌ "I liked it"
+   -  "Perfect for beginners learning React"
+   -  "I liked it"
 
 4. **Be Constructive**
-   - ✅ "Could use more advanced examples"
-   - ❌ "This sucks"
+   -  "Could use more advanced examples"
+   -  "This sucks"
 
 5. **Check Before Submitting**
    - Correct spelling and grammar
@@ -477,14 +477,14 @@ Two ways to edit:
 
 ## 🛡️ Review Guidelines (Enforced)
 
-### ✅ Allowed:
+###  Allowed:
 - Honest opinions about quality
 - Comments on accuracy of description
 - Value for money assessments
 - Suggestions for improvement
 - Comparisons with similar products
 
-### ❌ Not Allowed:
+###  Not Allowed:
 - Offensive language
 - Personal attacks on seller
 - Fake or spam reviews
@@ -492,7 +492,7 @@ Two ways to edit:
 - Private information (email, phone)
 - Off-topic content
 
-### ⚠️ Consequences:
+###  Consequences:
 - First offense: Warning
 - Repeat offense: Review hidden
 - Serious violations: Account suspension
@@ -537,14 +537,14 @@ Mobile View:
 ## 🎓 Summary
 
 ### You can write reviews from:
-1. ✅ **Buyer Dashboard** → "Write Reviews" card → Purchases → "Write Review" button (EASIEST!)
-2. ✅ **Purchases page directly** → Find order → "Write Review" button
-3. ✅ **Product page** → Scroll to reviews → Fill form
+1.  **Buyer Dashboard** → "Write Reviews" card → Purchases → "Write Review" button (EASIEST!)
+2.  **Purchases page directly** → Find order → "Write Review" button
+3.  **Product page** → Scroll to reviews → Fill form
 
 ### Key Benefits:
 - 🚀 **Fast:** Write reviews without leaving dashboard
 - 🎯 **Easy:** Modal interface, no page navigation needed
-- ✅ **Verified:** Only completed purchases can be reviewed
+-  **Verified:** Only completed purchases can be reviewed
 - 💬 **Interactive:** Seller can respond to your reviews
 - 🔔 **Notified:** Get alerts when sellers respond
 

@@ -4,16 +4,24 @@ import Order from "../models/Order.js";
 export const getBuyerDisputes = async (req, res) => {
   try {
     const buyerId = req.user.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    const disputes = await Dispute.find({ buyerId })
-      .sort({ createdAt: -1 })
-      .populate({
-        path: "orderId",
-        populate: [
-          { path: "productId", select: "title" },
-          { path: "sellerId", select: "name email" },
-        ],
-      });
+    const [disputes, totalRecords] = await Promise.all([
+      Dispute.find({ buyerId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate({
+          path: "orderId",
+          populate: [
+            { path: "productId", select: "title" },
+            { path: "sellerId", select: "name email" },
+          ],
+        }),
+      Dispute.countDocuments({ buyerId })
+    ]);
 
     const formatted = disputes.map((dispute) => {
       const order = dispute.orderId;
@@ -34,7 +42,17 @@ export const getBuyerDisputes = async (req, res) => {
       };
     });
 
-    res.json({ disputes: formatted });
+    res.json({
+      disputes: formatted,
+      pagination: {
+        page,
+        limit,
+        totalRecords,
+        totalPages: Math.ceil(totalRecords / limit),
+        hasNextPage: page * limit < totalRecords,
+        hasPrevPage: page > 1,
+      }
+    });
   } catch (error) {
     console.error("Error fetching buyer disputes:", error);
     res.status(500).json({ message: "Failed to load disputes" });

@@ -173,7 +173,7 @@ export default function AdminAllProductsPage() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
           <button
-            onClick={() => router.push("/dashboard/admin")}
+            onClick={() => router.back()}
             className="text-purple-600 hover:text-purple-700 mb-4"
           >
             ← Back to Dashboard
@@ -188,11 +188,10 @@ export default function AdminAllProductsPage() {
             <button
               key={status}
               onClick={() => setFilterStatus(status)}
-              className={`px-4 py-2 rounded-lg font-medium transition ${
-                filterStatus === status
-                  ? "bg-purple-600 text-white"
+              className={`px-4 py-2 rounded-lg font-medium transition ${filterStatus === status
+                  ? "bg-purple-600 text-slate-900 dark:text-white"
                   : "bg-white text-gray-700 border border-gray-200 hover:border-purple-600"
-              }`}
+                }`}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)} ({statusCounts[status]})
             </button>
@@ -232,13 +231,12 @@ export default function AdminAllProductsPage() {
                     />
                     <div className="absolute top-2 right-2">
                       <span
-                        className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
-                          product.status === "approved"
+                        className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${product.status === "approved"
                             ? "bg-green-100 text-green-800"
                             : product.status === "pending"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
                       >
                         {product.status.toUpperCase()}
                       </span>
@@ -306,7 +304,7 @@ export default function AdminAllProductsPage() {
 
       {/* EDIT MODAL */}
       {showEditModal && selectedProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-white dark:bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center">
               <h2 className="text-2xl font-bold text-gray-900">Edit Product</h2>
@@ -375,14 +373,14 @@ export default function AdminAllProductsPage() {
                 <button
                   onClick={handleEditProduct}
                   disabled={processing}
-                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-purple-600 text-slate-900 dark:text-white rounded-lg hover:bg-purple-700 font-medium disabled:opacity-50"
                 >
                   {processing ? "Saving..." : "Save Changes"}
                 </button>
                 <button
                   onClick={() => setShowEditModal(false)}
                   disabled={processing}
-                  className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-medium disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-gray-600 text-slate-900 dark:text-white rounded-lg hover:bg-gray-700 font-medium disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -394,7 +392,7 @@ export default function AdminAllProductsPage() {
 
       {/* DELETE MODAL */}
       {showDeleteModal && selectedProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-white dark:bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center">
               <h2 className="text-2xl font-bold text-red-600">Delete Product</h2>
@@ -408,7 +406,7 @@ export default function AdminAllProductsPage() {
 
             <div className="p-6 space-y-4">
               <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                <h3 className="font-bold text-red-900 mb-2">⚠️ Warning</h3>
+                <h3 className="font-bold text-red-900 mb-2"> Warning</h3>
                 <p className="text-red-700">
                   You are about to permanently delete the product <strong>"{selectedProduct.title}"</strong>. This action cannot be undone.
                 </p>
@@ -435,14 +433,14 @@ export default function AdminAllProductsPage() {
                 <button
                   onClick={handleDeleteProduct}
                   disabled={processing || deleteReason.trim().length < 5}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-red-600 text-slate-900 dark:text-white rounded-lg hover:bg-red-700 font-medium disabled:opacity-50"
                 >
                   {processing ? "Deleting..." : "Confirm Delete"}
                 </button>
                 <button
                   onClick={() => setShowDeleteModal(false)}
                   disabled={processing}
-                  className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-medium disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-gray-600 text-slate-900 dark:text-white rounded-lg hover:bg-gray-700 font-medium disabled:opacity-50"
                 >
                   Cancel
                 </button>

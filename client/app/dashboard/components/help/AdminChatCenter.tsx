@@ -1,571 +1,418 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@/lib/useAuth";
 import { io, Socket } from "socket.io-client";
-import { useQueryClient } from "@tanstack/react-query";
-import { adminAPI, chatAPI } from "@/lib/api";
-import { getCookie } from "@/lib/cookies";
-import toast from "react-hot-toast";
+import { toast } from "react-hot-toast";
+import { useTheme } from "next-themes";
+import SupportSidebar from "./SupportSidebar";
+import ChatWindow from "./ChatWindow";
+import EmptyState from "./EmptyState";
 
-interface ConversationSummary {
+interface Conversation {
   userId: string;
   name: string;
-  role: "buyer" | "seller";
-  email?: string;
+  role: string;
+  email: string;
   lastMessageAt: string;
-  unreadCount?: number;
-}
-
-interface ChatMessage {
-  _id: string;
-  message: string;
-  createdAt: string;
-  from: {
-    _id: string;
-    name: string;
-    role: "buyer" | "seller" | "admin";
-  };
-  to: {
-    _id: string;
-    name: string;
-    role: "buyer" | "seller" | "admin";
-  };
+  unreadCount: number;
+  lastIncomingMessage: string;
+  lastIncomingAttachments: any[];
+  lastIncomingAt: string;
+  lastIncomingStatus: string;
+  lastIncomingIsDeleted: boolean;
 }
 
 export default function AdminChatCenter() {
-  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
-  const [loadingConvos, setLoadingConvos] = useState(true);
-  const [loadingThread, setLoadingThread] = useState(false);
-  const [sending, setSending] = useState(false);
-  const socketRef = useRef<Socket | null>(null);
-  const [roleFilter, setRoleFilter] = useState<"buyer" | "seller">("seller");
-  const [allUsers, setAllUsers] = useState<{
-    _id: string;
-    name: string;
-    email?: string;
-    role: "buyer" | "seller" | "admin";
-    createdAt: string;
-  }[]>([]);
-  const [selectedMessageIds, setSelectedMessageIds] = useState<string[]>([]);
-  const [selectionMode, setSelectionMode] = useState(false);
-  const [unreadByUser, setUnreadByUser] = useState<Record<string, number>>({});
-  const [isMobileThreadView, setIsMobileThreadView] = useState(false);
-  const [actionsOpen, setActionsOpen] = useState(false);
-  const queryClient = useQueryClient();
-  
-  const loadConversations = async () => {
-    try {
-      const [convData, usersData] = await Promise.all([
-        chatAPI.adminGetConversations(),
-        adminAPI.getAllUsers(),
-      ]);
+  const { user, auth } = useAuth();
+  const token = auth.token;
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
-      setConversations(convData.conversations || []);
-      setAllUsers(
-        (usersData || []).filter(
-          (u: any) => u.role === "buyer" || u.role === "seller"
-        )
-      );
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
-      // Initialize unreadByUser from server data
-      const serverUnread: Record<string, number> = {};
-      (convData.conversations || []).forEach((c: any) => {
-        if (c.unreadCount > 0) {
-          serverUnread[c.userId] = c.unreadCount;
-        }
-      });
-      setUnreadByUser(serverUnread);
+  // Filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [tabFilter, setTabFilter] = useState<"all" | "seller" | "buyer" | "unread">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "open" | "resolved">("all");
 
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to load chats");
-    } finally {
-      setLoadingConvos(false);
-    }
-  };
+  // Selection & Chat
+  const params = useParams();
+  const router = useRouter();
+  const urlId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
-  const loadThread = async (userId: string) => {
-    try {
-      setLoadingThread(true);
-      const data = await chatAPI.adminGetThread(userId);
-      setMessages(data.messages || []);
-      setSelectedMessageIds([]);
-      
-      // Mark this thread as read
-      try {
-        await chatAPI.adminMarkThreadAsRead(userId);
-        // Clear local unread count for this user
-        setUnreadByUser((prev) => {
-          const updated = { ...prev };
-          delete updated[userId];
-          return updated;
-        });
-        // Update conversation list to reflect read status
-        setConversations((prev) =>
-          prev.map((c) =>
-            c.userId === userId ? { ...c, unreadCount: 0 } : c
-          )
-        );
-        // Get current count and decrement by the messages we just read
-        const currentCount = queryClient.getQueryData<number>(["chat", "unread"]) || 0;
-        const threadUnread = conversations.find(c => c.userId === userId)?.unreadCount || 0;
-        const newCount = Math.max(0, currentCount - threadUnread);
-        queryClient.setQueryData(["chat", "unread"], newCount);
-      } catch (err) {
-        console.error("Failed to mark thread as read", err);
-      }
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to load thread");
-    } finally {
-      setLoadingThread(false);
-    }
-  };
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(urlId || null);
+  const selectedUserIdRef = useRef<string | null>(urlId || null);
 
   useEffect(() => {
-    loadConversations();
-  }, []);
-
-  useEffect(() => {
-    if (!selectedUserId) return;
-    loadThread(selectedUserId);
+    selectedUserIdRef.current = selectedUserId;
   }, [selectedUserId]);
 
-  // Socket.IO subscription for real-time admin chat
+  const hasInitializedUrl = useRef(false);
+
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!hasInitializedUrl.current && urlId) {
+      setMobileView("chat");
+      fetchThread(urlId);
+      markThreadAsRead(urlId);
+      hasInitializedUrl.current = true;
+    } else if (urlId && urlId !== selectedUserIdRef.current) {
+      setSelectedUserId(urlId);
+      setMobileView("chat");
+      fetchThread(urlId);
+      markThreadAsRead(urlId);
+    } else if (!urlId && selectedUserIdRef.current) {
+      setSelectedUserId(null);
+      setMobileView("sidebar");
+    }
+  }, [urlId]);
 
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-    const socketUrl = apiBase.replace(/\/api$/, "");
-    const token = getCookie("token");
+  const [messages, setMessages] = useState<any[]>([]);
+  const [ticketId, setTicketId] = useState<string | null>(null);
+  const [avgResponseTime, setAvgResponseTime] = useState<number | null>(null);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [messagePage, setMessagePage] = useState(1);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [loadingMoreMessages, setLoadingMoreMessages] = useState(false);
 
-    const socket = io(socketUrl, {
+  // Responsive Layout
+  const [mobileView, setMobileView] = useState<"sidebar" | "chat">("sidebar");
+
+  useEffect(() => {
+    if (!token) return;
+    fetchConversations(1);
+
+    const newSocket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000", {
+      path: "/socket.io",
       auth: { token },
-      withCredentials: true,
+      transports: ["websocket", "polling"],
+      reconnectionAttempts: 5,
     });
+    setSocket(newSocket);
 
-    socketRef.current = socket;
+    newSocket.on("chat:new-message", (newMsg: any) => {
+      fetchConversations(page);
+      
+      const currentSelectedId = selectedUserIdRef.current;
+      const fromId = typeof newMsg.from === 'object' ? newMsg.from._id : newMsg.from;
+      const toId = typeof newMsg.to === 'object' ? newMsg.to._id : newMsg.to;
 
-    socket.on("chat:new-message", (msg: ChatMessage) => {
-      // Determine the non-admin participant for conversation updates
-      const isFromAdmin = msg.from.role === "admin";
-      const otherUser = isFromAdmin ? msg.to : msg.from;
-      const otherUserId = otherUser._id;
-
-      // Update messages if this thread is selected
-      setMessages((prev) => {
-        if (!selectedUserId || selectedUserId !== otherUserId) return prev;
-        if (prev.some((m) => m._id === msg._id)) return prev;
-        return [...prev, msg];
-      });
-
-      // Update conversation summaries
-      setConversations((prev) => {
-        const existing = prev.find((c) => c.userId === otherUserId);
-        if (existing) {
-          return prev.map((c) =>
-            c.userId === otherUserId
-              ? { ...c, lastMessageAt: msg.createdAt }
-              : c
-          );
-        }
-
-        // New conversation
-        return [
-          {
-            userId: otherUserId,
-            name: otherUser.name,
-            role: otherUser.role as "buyer" | "seller",
-            lastMessageAt: msg.createdAt,
-          },
-          ...prev,
-        ];
-      });
-
-      // Track unread per user for messages coming from buyers/sellers to admin
-      if (!isFromAdmin && msg.to.role === "admin") {
-        setUnreadByUser((prev) => {
-          // If admin is currently viewing this user's thread, treat as read
-          if (selectedUserId === otherUserId) return prev;
-          const current = prev[otherUserId] || 0;
-          return { ...prev, [otherUserId]: current + 1 };
-        });
-      }
-    });
-
-    socket.on("connect_error", (err) => {
-      console.error("Socket connect error (admin chat)", err.message || err);
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [selectedUserId]);
-
-  const handleSend = async () => {
-    if (!selectedUserId || !input.trim()) return;
-    try {
-      setSending(true);
-      const data = await chatAPI.adminSendMessage(selectedUserId, input.trim());
-      setInput("");
-      if (data.chat) {
+      if (currentSelectedId && (fromId === currentSelectedId || toId === currentSelectedId)) {
         setMessages((prev) => {
-          if (prev.some((m) => m._id === data.chat._id)) return prev;
-          return [...prev, data.chat];
+          // Prevent duplicates
+          if (prev.some(m => m._id === newMsg._id)) return prev;
+          return [...prev, newMsg];
         });
-      } else {
-        loadThread(selectedUserId);
+        if (fromId === currentSelectedId) {
+          markThreadAsRead(currentSelectedId);
+        }
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to send message");
-    } finally {
-      setSending(false);
-    }
-  };
+    });
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      if (!sending) handleSend();
-    }
-  };
+    newSocket.on("chat:messages-read", ({ readerId }) => {
+      setMessages((prev) => 
+        prev.map((msg) => {
+          if (msg.to === readerId && !msg.readBy?.includes(readerId)) {
+            return { ...msg, readBy: [...(msg.readBy || []), readerId] };
+          }
+          return msg;
+        })
+      );
+    });
 
-  const selectedUser = selectedUserId
-    ?
-        allUsers.find((u) => u._id === selectedUserId) ||
-        (() => {
-          const conv = conversations.find((c) => c.userId === selectedUserId);
-          if (!conv) return null;
-          return {
-            _id: conv.userId,
-            name: conv.name,
-            email: conv.email,
-            role: conv.role as "buyer" | "seller" | "admin",
-            createdAt: "",
-          };
-        })()
-    : null;
+    newSocket.on("chat:messages-status-updated", (updates: any[]) => {
+      setMessages((prev) =>
+        prev.map((msg) => {
+          const update = updates.find((u) => u._id === msg._id);
+          if (update) {
+            return {
+              ...msg,
+              status: update.status,
+              isDeleted: update.status === "deleted" || update.status === "placeholderDeleted",
+            };
+          }
+          return msg;
+        })
+      );
+      fetchConversations(1); // refresh list for previews
+    });
 
-  const toggleSelectMessage = (id: string) => {
-    setSelectedMessageIds((prev) =>
-      prev.includes(id) ? prev.filter((mId) => mId !== id) : [...prev, id]
-    );
-  };
+    setSocket(newSocket);
+    return () => {
+      newSocket.disconnect();
+    };
+  }, [token]);
 
-  const handleDeleteSelected = async () => {
-    if (!selectedUserId || selectedMessageIds.length === 0) return;
+  const fetchConversations = async (pageNum = 1) => {
+    if (pageNum > 1) setLoadingMore(true);
     try {
-      await chatAPI.adminDeleteMessages(selectedMessageIds);
-      setMessages((prev) => prev.filter((m) => !selectedMessageIds.includes(m._id)));
-      setSelectedMessageIds([]);
-      toast.success("Selected messages deleted");
-      loadConversations();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to delete messages");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/admin/conversations?page=${pageNum}&limit=10`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const newConvos = data.conversations || [];
+        
+        if (pageNum === 1) {
+          setConversations(newConvos);
+          setPage(1);
+        } else {
+          setConversations((prev) => {
+            const existing = new Set(prev.map((c: any) => c.userId));
+            const added = newConvos.filter((c: any) => !existing.has(c.userId));
+            return [...prev, ...added];
+          });
+        }
+        setHasMore(newConvos.length === 10);
+      }
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (!hasMore || loading || loadingMore) return;
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchConversations(nextPage);
+  };
+
+  const fetchThread = async (uId: string, pageNum = 1) => {
+    if (pageNum === 1) {
+      setChatLoading(true);
+    } else {
+      setLoadingMoreMessages(true);
+    }
+    
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/admin/thread/${uId}?page=${pageNum}&limit=7`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const newMsgs = data.messages || [];
+        
+        if (pageNum === 1) {
+          setMessages(newMsgs);
+          setMessagePage(1);
+          setAvgResponseTime(data.avgResponseTime);
+          setTicketId(data.ticketId);
+        } else {
+          setMessages((prev) => {
+            const existing = new Set(prev.map(m => m._id));
+            const added = newMsgs.filter((m: any) => !existing.has(m._id));
+            return [...added, ...prev]; // Prepend older messages
+          });
+        }
+        setHasMoreMessages(newMsgs.length === 7);
+      }
+    } catch (error) {
+      console.error("Error fetching thread:", error);
+    } finally {
+      setChatLoading(false);
+      setLoadingMoreMessages(false);
+    }
+  };
+
+  const handleLoadMoreMessages = () => {
+    if (!hasMoreMessages || chatLoading || loadingMoreMessages || !selectedUserId) return;
+    const nextPage = messagePage + 1;
+    setMessagePage(nextPage);
+    fetchThread(selectedUserId, nextPage);
+  };
+
+  const markThreadAsRead = async (uId: string) => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/admin/thread/${uId}/mark-read`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // Locally reset unread count immediately for better UX
+      setConversations((prev) => 
+        prev.map((c) => c.userId === uId ? { ...c, unreadCount: 0 } : c)
+      );
+    } catch (err) {
+      console.error("Failed to mark as read", err);
+    }
+  };
+
+  const handleSelectConversation = (uId: string) => {
+    // Optimistically update the UI instantly
+    setSelectedUserId(uId);
+    setMobileView("chat");
+    
+    // Only fetch if it's a new user
+    if (uId !== selectedUserIdRef.current) {
+      fetchThread(uId);
+      markThreadAsRead(uId);
+    }
+    
+    // Change the URL without triggering a full page remount
+    window.history.pushState(null, '', `/dashboard/admin/help-center/${uId}`);
+  };
+
+  const handleSendMessage = async (text: string, files: File[]) => {
+    if (!selectedUserId) return;
+    try {
+      const uploadedAttachments = [];
+      for (const file of files) {
+        const fd = new FormData();
+        fd.append("attachment", file);
+        const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/upload`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: fd,
+        });
+        if (uploadRes.ok) {
+          const data = await uploadRes.json();
+          uploadedAttachments.push(data);
+        } else {
+          toast.error(`Failed to upload ${file.name}`);
+        }
+      }
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/admin/thread/${selectedUserId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ message: text, attachments: uploadedAttachments }),
+      });
+
+      if (!res.ok) throw new Error("Failed to send message");
+      
+      const data = await res.json();
+      setMessages((prev) => {
+        if (prev.some(m => m._id === data.chat._id)) return prev;
+        return [...prev, data.chat];
+      });
+    } catch (err) {
+      toast.error("Failed to send message");
+    }
+  };
+
+  const handleDeleteMessages = async (messageIds: string[]) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/admin/messages`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ messageIds }),
+      });
+      if (res.ok) {
+        toast.success("Message deleted");
+      } else {
+        toast.error("Failed to delete message");
+      }
+    } catch (err) {
+      toast.error("An error occurred while deleting");
     }
   };
 
   const handleClearThread = async () => {
     if (!selectedUserId) return;
     try {
-      await chatAPI.adminClearThread(selectedUserId);
-      setMessages([]);
-      setSelectedMessageIds([]);
-      toast.success("Thread cleared");
-      loadConversations();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to clear thread");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/admin/thread/${selectedUserId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setMessages([]);
+        fetchConversations();
+        setSelectedUserId(null);
+        setMobileView("sidebar");
+        toast.success("Thread cleared");
+      }
+    } catch (err) {
+      toast.error("Failed to clear thread");
     }
   };
 
-  const handleClearAllChats = async () => {
-    try {
-      await chatAPI.adminClearAllChats();
-      setMessages([]);
-      setSelectedMessageIds([]);
-      setConversations([]);
-      toast.success("All chats cleared");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to clear all chats");
+  // Filter and Sort Logic
+  const filteredConversations = useMemo(() => {
+    let result = conversations;
+
+    // 1. Search Query
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      result = result.filter(c => c.name.toLowerCase().includes(q));
     }
-  };
+
+    // 2. Tab Filter
+    if (tabFilter !== "all") {
+      if (tabFilter === "seller") result = result.filter(c => c.role === "seller");
+      else if (tabFilter === "buyer") result = result.filter(c => c.role === "buyer");
+      else if (tabFilter === "unread") result = result.filter(c => c.unreadCount > 0);
+    }
+
+    // 3. Status Filter
+    if (statusFilter !== "all") {
+      if (statusFilter === "open") result = result.filter(c => true); // For now, treat all as open unless explicitly resolved
+      else if (statusFilter === "resolved") result = result.filter(c => false); // Stub
+    }
+
+    // 4. Sort Descending
+    return result.sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
+  }, [conversations, searchQuery, tabFilter, statusFilter]);
+
+  const selectedUser = conversations.find((c) => c.userId === selectedUserId);
 
   return (
-    <div className="flex flex-col md:flex-row max-w-6xl mx-auto h-[calc(100vh-9rem)] min-h-[60vh] bg-gradient-to-br from-slate-950/90 via-slate-900/90 to-slate-950/95 border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/60 backdrop-blur-xl">
-      {/* Left: conversations list */}
-      <div
-        className={`w-full md:w-64 border-b md:border-b-0 md:border-r border-white/10 bg-black/70/ ${
-          isMobileThreadView && selectedUserId ? "hidden md:block" : "block"
-        } flex flex-col`}
-      >
-        <div className="px-4 py-3 border-b border-white/10 bg-gradient-to-r from-indigo-600/40 to-purple-600/30 flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-white">Help Center Chats</h2>
-            <p className="text-[11px] text-white/70">Buyers & Sellers needing support</p>
-          </div>
-        </div>
+    <div className={`h-[calc(100vh-80px)] w-full flex overflow-hidden rounded-xl border shadow-sm ${isDark ? "bg-[#0b1016] border-white/10" : "bg-white border-slate-200"}`}>
+      <SupportSidebar
+        conversations={filteredConversations}
+        selectedUserId={selectedUserId}
+        onSelectConversation={handleSelectConversation}
+        loading={loading}
+        loadingMore={loadingMore}
+        hasMore={hasMore}
+        onLoadMore={handleLoadMore}
+        mobileHidden={mobileView === "chat"}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        tabFilter={tabFilter}
+        setTabFilter={setTabFilter}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+      />
 
-        {/* Role filter tabs */}
-        <div className="flex text-[11px] border-b border-white/10">
-          {["seller", "buyer"].map((role) => {
-            // Count total unread for this role
-            const unreadForRole = allUsers
-              .filter((u) => u.role === role)
-              .reduce((sum, u) => {
-                const conv = conversations.find((c) => c.userId === u._id);
-                const serverUnread = conv?.unreadCount || 0;
-                const localUnread = unreadByUser[u._id] || 0;
-                return sum + Math.max(serverUnread, localUnread);
-              }, 0);
-            
-            return (
-              <button
-                key={role}
-                onClick={() => setRoleFilter(role as "seller" | "buyer")}
-                className={`flex-1 py-2 border-r last:border-r-0 border-white/10 uppercase tracking-wide font-semibold transition text-center relative ${
-                  roleFilter === role
-                    ? "bg-white/15 text-white"
-                    : "bg-black/40 text-white/60 hover:text-white"
-                }`}
-              >
-                {role === "seller" ? "Sellers" : "Buyers"}
-                {unreadForRole > 0 && (
-                  <span className="ml-1 px-1.5 py-0.5 text-[9px] bg-red-500 text-white rounded-full font-bold">
-                    {unreadForRole}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {loadingConvos ? (
-            <p className="text-xs text-white/60 px-4 py-3">Loading conversations...</p>
-          ) : (
-            // Build list of users for the selected role, merged with lastMessageAt from conversations
-            allUsers
-              .filter((u) => u.role === roleFilter)
-              .map((u) => {
-                const conv = conversations.find((c) => c.userId === u._id);
-                // Use server unreadCount if available, otherwise check local tracking
-                const serverUnread = conv?.unreadCount || 0;
-                const localUnread = unreadByUser[u._id] || 0;
-                return {
-                  userId: u._id,
-                  name: u.name,
-                  role: u.role as "buyer" | "seller",
-                  email: u.email,
-                  lastMessageAt: conv?.lastMessageAt || u.createdAt,
-                  unreadCount: Math.max(serverUnread, localUnread),
-                };
-              })
-              .sort((a, b) =>
-                new Date(b.lastMessageAt).getTime() -
-                new Date(a.lastMessageAt).getTime()
-              )
-              .map((c) => (
-              <button
-                key={c.userId}
-                onClick={() => {
-                  setSelectedUserId(c.userId);
-                  if (typeof window !== "undefined" && window.innerWidth < 768) {
-                    setIsMobileThreadView(true);
-                  }
-                  // Clear unread badge for this user when opened
-                  setUnreadByUser((prev) => {
-                    if (!prev[c.userId]) return prev;
-                    const copy = { ...prev };
-                    delete copy[c.userId];
-                    return copy;
-                  });
-                }}
-                className={`w-full text-left px-4 py-3 text-xs border-b border-white/5 hover:bg-white/5 transition flex flex-col gap-0.5 ${
-                  selectedUserId === c.userId ? "bg-white/10" : ""
-                }`}
-              >
-                <span className="font-semibold text-white flex items-center gap-1">
-                  {c.name}
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full border border-white/20 text-white/70">
-                    {c.role}
-                  </span>
-                  {c.unreadCount > 0 && (
-                    <span className="ml-auto flex items-center gap-1">
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-400 text-black font-semibold uppercase tracking-wide">
-                        New
-                      </span>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-red-500/90 text-white font-semibold">
-                        {c.unreadCount}
-                      </span>
-                    </span>
-                  )}
-                </span>
-                {c.email && (
-                  <span className="text-[10px] text-white/50 truncate">{c.email}</span>
-                )}
-                <span className="text-[10px] text-white/40">
-                  Last: {new Date(c.lastMessageAt).toLocaleString()}
-                </span>
-              </button>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Right: thread */}
-      {selectedUserId && (
-      <div className="flex-1 flex flex-col bg-gradient-to-br from-slate-950/60 via-slate-900/70 to-slate-950/80">
-        <div className="px-4 sm:px-6 py-3 border-b border-white/10 bg-gradient-to-r from-slate-900/70 to-slate-800/70 flex items-center justify-between gap-3 relative">
-          <div>
-              <div className="flex items-center gap-2">
-                {selectedUserId && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      // On mobile, go back to list view; on desktop just keep selection
-                      if (typeof window !== "undefined" && window.innerWidth < 768) {
-                        setIsMobileThreadView(false);
-                        setSelectedUserId(null);
-                        setSelectedMessageIds([]);
-                      }
-                    }}
-                    className="md:hidden text-[11px] px-2 py-1 rounded-full bg-white/10 border border-white/20 text-white/80 hover:bg-white/15"
-                  >
-                    ← 
-                  </button>
-                )}
-                <h1 className="text-sm sm:text-base font-semibold text-white">
-                  {selectedUser ? selectedUser.name : "Chat Thread"}
-                </h1>
-              </div>
-              <p className="text-[11px] text-white/70">Buyers & Sellers support thread</p>
-          </div>
-            <div className="flex items-center gap-2 text-[10px] sm:text-xs">
-              <button
-                type="button"
-                onClick={() => setActionsOpen((v) => !v)}
-                className="h-7 w-7 rounded-full bg-black/40 border border-white/20 flex items-center justify-center text-white/80 hover:bg-white/10 hover:border-indigo-400"
-                title="Chat actions"
-              >
-                
-              </button>
-            </div>
-
-            {actionsOpen && (
-              <div className="absolute right-3 top-full mt-2 w-40 rounded-xl bg-black/95 border border-white/10 shadow-lg shadow-black/60 text-[11px] z-20">
-                <button
-                  className="w-full text-left px-3 py-2 hover:bg-white/10 text-white/80 disabled:opacity-40 disabled:cursor-not-allowed"
-                  disabled={!selectedUserId || messages.length === 0}
-                  onClick={() => {
-                    setSelectionMode((v) => !v);
-                    setActionsOpen(false);
-                  }}
-                >
-                  {selectionMode ? "Cancel select" : "Select messages"}
-                </button>
-                <button
-                  className="w-full text-left px-3 py-2 hover:bg-red-500/10 text-red-300 disabled:opacity-40 disabled:cursor-not-allowed"
-                  disabled={!selectionMode || selectedMessageIds.length === 0}
-                  onClick={() => {
-                    handleDeleteSelected();
-                    setActionsOpen(false);
-                  }}
-                >
-                  Delete selected
-                </button>
-                <button
-                  className="w-full text-left px-3 py-2 hover:bg-amber-500/10 text-amber-200 disabled:opacity-40 disabled:cursor-not-allowed"
-                  disabled={!selectedUserId || messages.length === 0}
-                  onClick={() => {
-                    handleClearThread();
-                    setActionsOpen(false);
-                  }}
-                >
-                  Clear thread
-                </button>
-                <button
-                  className="w-full text-left px-3 py-2 hover:bg-red-600/15 text-red-200 border-t border-white/5"
-                  onClick={() => {
-                    handleClearAllChats();
-                    setActionsOpen(false);
-                  }}
-                >
-                  Clear all chats
-                </button>
-              </div>
-            )}
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-3">
-          {loadingThread ? (
-            <p className="text-sm text-white/60">Loading messages...</p>
-          ) : !selectedUserId ? (
-            <p className="text-sm text-white/60">Select a conversation to view messages.</p>
-          ) : messages.length === 0 ? (
-            <p className="text-sm text-white/60">
-              No messages in this thread yet. Start by sending a message.
-            </p>
-          ) : (
-            messages.map((m) => {
-              const isFromAdmin = m.from.role === "admin";
-              return (
-                <div
-                  key={m._id}
-                  className={`flex ${isFromAdmin ? "justify-end" : "justify-start"}`}
-                >
-                  <div className="flex items-start gap-2 max-w-[90%]">
-                    {selectionMode && (
-                      <input
-                        type="checkbox"
-                        checked={selectedMessageIds.includes(m._id)}
-                        onChange={() => toggleSelectMessage(m._id)}
-                        className="mt-1 h-3 w-3 rounded border-white/40 bg-black/40 text-indigo-400 focus:ring-0"
-                      />
-                    )}
-                    <div
-                      className={`max-w-full rounded-2xl px-3 py-2 text-sm shadow-md shadow-black/40 border border-white/10 ${
-                        isFromAdmin
-                          ? "bg-indigo-600/80 text-white"
-                          : "bg-slate-900/80 text-white"
-                      }`}
-                    >
-                      <p className="text-xs text-white/60 mb-1">
-                        {isFromAdmin ? "You (Admin)" : `${m.from.name} (${m.from.role})`}
-                      </p>
-                      <p className="whitespace-pre-wrap break-words">{m.message}</p>
-                      <p className="mt-1 text-[10px] text-white/50 text-right">
-                        {new Date(m.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        <div className="border-t border-white/10 bg-black/70 px-4 sm:px-6 py-3 flex flex-col gap-2 sm:flex-row sm:items-end">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={selectedUserId ? "Type your reply..." : "Select a conversation first"}
-            disabled={!selectedUserId}
-            className="flex-1 bg-black border border-white/10 rounded-xl px-3 py-2 text-sm text-white resize-none min-h-[44px] max-h-32 focus:outline-none focus:ring-2 focus:ring-indigo-500/80 disabled:opacity-60 disabled:cursor-not-allowed"
+      <div className={`flex-1 flex flex-col min-w-0 ${mobileView === "sidebar" ? "hidden md:flex" : "flex"}`}>
+        {selectedUser ? (
+          <ChatWindow
+            user={selectedUser}
+            messages={messages}
+            ticketId={ticketId}
+            avgResponseTime={avgResponseTime}
+            loading={chatLoading}
+            onBack={() => {
+              setMobileView("sidebar");
+              setSelectedUserId(null);
+              window.history.pushState(null, '', '/dashboard/admin/help-center');
+            }}
+            onSendMessage={handleSendMessage}
+            onDeleteMessages={handleDeleteMessages}
+            onClearThread={handleClearThread}
+            adminId={user?._id}
+            hasMoreMessages={hasMoreMessages}
+            loadingMoreMessages={loadingMoreMessages}
+            onLoadMoreMessages={handleLoadMoreMessages}
           />
-          <button
-            onClick={handleSend}
-            disabled={sending || !input.trim() || !selectedUserId}
-            className="mt-1 sm:mt-0 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800/60 text-sm font-semibold text-white shadow-md shadow-indigo-500/30 disabled:cursor-not-allowed"
-          >
-            {sending ? "Sending..." : "Send"}
-          </button>
-        </div>
+        ) : (
+          <EmptyState />
+        )}
       </div>
-      )}
     </div>
   );
 }

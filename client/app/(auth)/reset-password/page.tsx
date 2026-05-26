@@ -110,9 +110,9 @@ function ResetPasswordPageContent() {
 
   if (!email) {
     return (
-      <div className="min-h-screen bg-[#05050a] grid place-items-center text-white">
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center">
-          <p className="text-white/70 mb-4">Invalid reset request</p>
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] grid place-items-center text-slate-900 dark:text-white">
+        <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-8 text-center">
+          <p className="text-slate-600 dark:text-white/70 mb-4">Invalid reset request</p>
           <Link href="/forgot-password" className="text-cyan-400 font-semibold">
             Go back
           </Link>
@@ -122,7 +122,7 @@ function ResetPasswordPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#05050a] text-white flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white flex items-center justify-center px-4 relative overflow-hidden">
 
       {/* BACKGROUND GLOW */}
       <div className="absolute -top-40 -left-40 w-[500px] h-[500px] bg-indigo-600/30 rounded-full blur-[160px]" />
@@ -130,18 +130,18 @@ function ResetPasswordPageContent() {
 
       {/* SUCCESS OVERLAY */}
       {showSuccess && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm grid place-items-center">
+        <div className="fixed inset-0 z-50 bg-white dark:bg-black/80 backdrop-blur-sm grid place-items-center">
           <div className="flex flex-col items-center gap-4 animate-[scaleIn_0.4s_ease-out]">
             <CheckCircle2 size={72} className="text-cyan-400" />
             <p className="text-xl font-bold">Password reset successful</p>
-            <p className="text-sm text-white/60">Redirecting to login…</p>
+            <p className="text-sm text-slate-500 dark:text-white/60">Redirecting to login…</p>
           </div>
         </div>
       )}
 
       {/* CARD */}
       <div className="relative z-10 w-full max-w-md rounded-3xl p-8
-        bg-white/5 backdrop-blur-xl border border-white/10
+        bg-slate-100 dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10
         shadow-[0_30px_120px_rgba(56,189,248,0.25)]
       ">
 
@@ -167,7 +167,7 @@ function ResetPasswordPageContent() {
         </div>
 
         <h1 className="text-2xl font-black text-center -mt-5 sm:-mt-8 lg:-mt-12 leading-none">Reset password</h1>
-        <p className="text-center text-sm text-white/60 mb-4 mt-1">
+        <p className="text-center text-sm text-slate-500 dark:text-white/60 mb-4 mt-1">
           Enter the code sent to <br />
           <span className="text-cyan-400 font-semibold">{email}</span>
         </p>
@@ -176,7 +176,7 @@ function ResetPasswordPageContent() {
 
           {/* OTP */}
           <div>
-            <label className="text-xs text-white/60 mb-2 block">Reset code</label>
+            <label className="text-xs text-slate-500 dark:text-white/60 mb-2 block">Reset code</label>
             <div className="flex justify-center gap-2">
               {otp.map((d, i) => (
                 <input
@@ -193,7 +193,7 @@ function ResetPasswordPageContent() {
                   disabled={isLoading}
                   className="
                     w-11 h-12 text-center text-lg font-bold
-                    rounded-xl bg-white/5 border border-white/10
+                    rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10
                     outline-none focus:border-cyan-400
                     focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)]
                     transition
@@ -210,7 +210,7 @@ function ResetPasswordPageContent() {
               placeholder="New password"
               value={newPassword}
               onChange={e => setNewPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 pr-10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)]"
+              className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 pr-10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)]"
             />
             <button
               type="button"
@@ -228,7 +228,7 @@ function ResetPasswordPageContent() {
               placeholder="Confirm password"
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 pr-10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)]"
+              className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 pr-10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)]"
             />
             <button
               type="button"
@@ -253,7 +253,7 @@ function ResetPasswordPageContent() {
         </form>
 
         {/* RESEND */}
-        <p className="text-center text-sm text-white/60 mt-5">
+        <p className="text-center text-sm text-slate-500 dark:text-white/60 mt-5">
           {resendTimer > 0 ? (
             <>Resend in <span className="text-cyan-400 font-semibold">{resendTimer}s</span></>
           ) : (
@@ -266,7 +266,7 @@ function ResetPasswordPageContent() {
           )}
         </p>
 
-        <p className="text-center text-sm text-white/60 mt-4">
+        <p className="text-center text-sm text-slate-500 dark:text-white/60 mt-4">
           <Link href="/login" className="text-cyan-400 font-semibold">
             Back to login
           </Link>
@@ -278,8 +278,8 @@ function ResetPasswordPageContent() {
 
 function ResetPasswordFallback() {
   return (
-    <div className="min-h-screen bg-[#05050a] grid place-items-center text-white">
-      <div className="h-10 w-10 border-4 border-white/20 border-t-cyan-400 rounded-full animate-spin" />
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] grid place-items-center text-slate-900 dark:text-white">
+      <div className="h-10 w-10 border-4 border-slate-300 dark:border-white/20 border-t-cyan-400 rounded-full animate-spin" />
     </div>
   );
 }

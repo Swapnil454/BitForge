@@ -13,7 +13,10 @@ import {
   adminDeleteMessages,
   adminClearThread,
   adminClearAllChats,
+  uploadAttachment,
+  deleteMessages,
 } from "../controllers/chat.controller.js";
+import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
@@ -23,16 +26,18 @@ router.use(authMiddleware);
 // Buyer/Seller (and admin if needed) support thread
 router.get("/support-thread", requireRole(["buyer", "seller", "admin"]), getSupportThread);
 router.post("/support-thread", requireRole(["buyer", "seller", "admin"]), sendSupportMessage);
+router.post("/upload", requireRole(["buyer", "seller", "admin"]), upload.single("attachment"), uploadAttachment);
+router.delete("/messages", requireRole(["buyer", "seller", "admin"]), deleteMessages);
 
 // Unread helpers
 router.get("/unread-count", requireRole(["buyer", "seller", "admin"]), getUnreadCount);
 router.post("/mark-read", requireRole(["buyer", "seller", "admin"]), markAllAsRead);
 
 // Admin-only routes
-router.get("/conversations", requireRole(["admin"]), adminListConversations);
-router.get("/thread/:userId", requireRole(["admin"]), adminGetThread);
-router.post("/thread/:userId", requireRole(["admin"]), adminSendMessage);
-router.post("/thread/:userId/mark-read", requireRole(["admin"]), adminMarkThreadAsRead);
+router.get("/admin/conversations", requireRole(["admin"]), adminListConversations);
+router.get("/admin/thread/:userId", requireRole(["admin"]), adminGetThread);
+router.post("/admin/thread/:userId", requireRole(["admin"]), adminSendMessage);
+router.post("/admin/thread/:userId/mark-read", requireRole(["admin"]), adminMarkThreadAsRead);
 router.delete("/admin/messages", requireRole(["admin"]), adminDeleteMessages);
 router.delete("/admin/thread/:userId", requireRole(["admin"]), adminClearThread);
 router.delete("/admin/all", requireRole(["admin"]), adminClearAllChats);

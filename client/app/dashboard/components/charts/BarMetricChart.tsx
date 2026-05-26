@@ -1,6 +1,6 @@
-
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -26,13 +26,24 @@ export function BarMetricChart<T extends { month: string }>({
   height = 160,
   gradientId = "barGradient",
   barColor = "#6366f1",
-  emptyIcon = "📊",
+  emptyIcon = "",
   emptyText = "No data to display",
 }: BarMetricChartProps<T>) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile(); // Check on mount
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const displayData = isMobile ? data.slice(-4) : data.slice(-6);
+
   const hasData =
-    Array.isArray(data) &&
-    data.length > 0 &&
-    data.some((d) => Number(d[dataKey]) > 0);
+    Array.isArray(displayData) &&
+    displayData.length > 0 &&
+    displayData.some((d) => Number(d[dataKey]) > 0);
 
   if (!hasData) {
     return (
@@ -47,14 +58,15 @@ export function BarMetricChart<T extends { month: string }>({
   }
 
   return (
-    <div style={{ height }}>
+    <div style={{ height }} className="focus:outline-none [&_.recharts-wrapper]:outline-none [&_.recharts-surface]:outline-none [&_*]:focus:outline-none">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+        <BarChart data={displayData} margin={{ top: 8, right: 16, left: 16, bottom: 0 }}>
           <XAxis
             dataKey="month"
-            tick={{ fill: "#a5b4fc", fontSize: 12, fontWeight: 600 }}
+            tick={{ fill: "#a5b4fc", fontSize: 11, fontWeight: 600 }}
             axisLine={false}
             tickLine={false}
+            interval="preserveStartEnd"
           />
           <YAxis hide />
           <Tooltip
@@ -66,11 +78,23 @@ export function BarMetricChart<T extends { month: string }>({
               boxShadow: "0 4px 24px #6366f1aa",
             }}
             cursor={{ fill: "#6366f122" }}
+            formatter={(value: any) => {
+              const num = Number(value);
+              const label = String(dataKey).charAt(0).toUpperCase() + String(dataKey).slice(1);
+              if (!isNaN(num)) {
+                if (dataKey === "revenue") {
+                  return [`₹${num.toFixed(2)}`, label];
+                }
+                return [Number.isInteger(num) ? num : num.toFixed(2), label];
+              }
+              return [value, label];
+            }}
           />
           <Bar
             dataKey={dataKey as string}
             fill={`url(#${gradientId})`}
             radius={[8, 8, 0, 0]}
+            activeBar={{ stroke: 'none' }}
             isAnimationActive
             animationDuration={900}
           />

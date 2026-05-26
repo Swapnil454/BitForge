@@ -22,7 +22,7 @@ RAZORPAYX_ACCOUNT_NUMBER=
 # ==============================================
 # DATABASE
 # ==============================================
-MONGODB_URI=mongodb://localhost:27017/contentSellify
+MONGODB_URI=mongodb://localhost:27017/Bitforge
 
 # ==============================================
 # JWT & SECURITY
@@ -130,7 +130,7 @@ RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxx
 RAZORPAY_KEY_SECRET=xxxxxxxxxxxxx
 
 # For database
-MONGODB_URI=mongodb://localhost:27017/contentSellify
+MONGODB_URI=mongodb://localhost:27017/Bitforge
 
 # For authentication
 JWT_SECRET=your_very_long_and_secure_secret_key_here

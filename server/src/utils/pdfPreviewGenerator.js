@@ -29,7 +29,7 @@ import cloudinary from "../config/cloudinary.js";
 //   // Standard A4 size in points (595 x 842)
 //   const page = pdfDoc.addPage([595, 842]);
 //   const { width, height } = page.getSize();
-  
+
 //   // Background - light gray
 //   page.drawRectangle({
 //     x: 0,
@@ -38,7 +38,7 @@ import cloudinary from "../config/cloudinary.js";
 //     height: height,
 //     color: rgb(0.95, 0.95, 0.95),
 //   });
-  
+
 //   // Lock indicator (WinAnsi-safe text instead of emoji)
 //   const lockText = "LOCKED";
 //   const lockTextWidth = font.widthOfTextAtSize(lockText, 40);
@@ -49,7 +49,7 @@ import cloudinary from "../config/cloudinary.js";
 //     font: font,
 //     color: rgb(0.3, 0.3, 0.3),
 //   });
-  
+
 //   // Main message
 //   const mainText = "Content Locked";
 //   const mainTextWidth = font.widthOfTextAtSize(mainText, 32);
@@ -60,7 +60,7 @@ import cloudinary from "../config/cloudinary.js";
 //     font: font,
 //     color: rgb(0.2, 0.2, 0.2),
 //   });
-  
+
 //   // Sub message
 //   const subText = "Purchase to unlock full content";
 //   const subTextWidth = font.widthOfTextAtSize(subText, 18);
@@ -71,7 +71,7 @@ import cloudinary from "../config/cloudinary.js";
 //     font: font,
 //     color: rgb(0.4, 0.4, 0.4),
 //   });
-  
+
 //   // Page indicator
 //   const pageText = `Page ${pageNumber}`;
 //   const pageTextWidth = font.widthOfTextAtSize(pageText, 14);
@@ -82,7 +82,7 @@ import cloudinary from "../config/cloudinary.js";
 //     font: font,
 //     color: rgb(0.5, 0.5, 0.5),
 //   });
-  
+
 //   return page;
 // }
 
@@ -215,8 +215,8 @@ function createPremiumLockedPage(pdfDoc, font, pageNumber, totalPages) {
  */
 export async function generateAutomaticPreviewPDF(originalPdfBuffer, productId) {
   try {
-    console.log("🔍 Starting automatic PDF preview generation...");
-    console.log("📦 Original PDF size:", originalPdfBuffer.length, "bytes");
+    console.log(" Starting automatic PDF preview generation...");
+    console.log(" Original PDF size:", originalPdfBuffer.length, "bytes");
 
     // Load original PDF
     const originalPdf = await PDFDocument.load(originalPdfBuffer);
@@ -241,7 +241,7 @@ export async function generateAutomaticPreviewPDF(originalPdfBuffer, productId) 
     const TOTAL_PREVIEW_PAGES = 5;
     const lockedPagesCount = TOTAL_PREVIEW_PAGES - previewPageCount;
 
-    console.log(`📋 Will show ${previewPageCount} real page(s) + ${lockedPagesCount} locked page(s) = ${TOTAL_PREVIEW_PAGES} total`);
+    console.log(` Will show ${previewPageCount} real page(s) + ${lockedPagesCount} locked page(s) = ${TOTAL_PREVIEW_PAGES} total`);
 
     // Create NEW preview PDF
     const previewPdf = await PDFDocument.create();
@@ -250,7 +250,7 @@ export async function generateAutomaticPreviewPDF(originalPdfBuffer, productId) 
     for (let i = 0; i < previewPageCount; i++) {
       const [copiedPage] = await previewPdf.copyPages(originalPdf, [i]);
       previewPdf.addPage(copiedPage);
-      console.log(`✅ Copied page ${i + 1}`);
+      console.log(` Copied page ${i + 1}`);
     }
 
     // Embed font
@@ -281,12 +281,12 @@ export async function generateAutomaticPreviewPDF(originalPdfBuffer, productId) 
         color: rgb(0.6, 0.6, 0.6),
       });
 
-      console.log(`✅ Watermarked page ${i + 1}`);
+      console.log(` Watermarked page ${i + 1}`);
     }
 
     // Add clean locked pages - focus on clarity and value
     console.log(`🔒 Adding ${lockedPagesCount} locked pages...`);
-    
+
     for (let i = 0; i < lockedPagesCount; i++) {
       const pageNumber = previewPageCount + i + 1;
       const page = previewPdf.addPage([595, 842]);
@@ -370,7 +370,7 @@ export async function generateAutomaticPreviewPDF(originalPdfBuffer, productId) 
         color: rgb(0.6, 0.6, 0.6),
       });
 
-      console.log(`✅ Added locked page ${pageNumber}`);
+      console.log(` Added locked page ${pageNumber}`);
     }
 
     // Save with compatibility options
@@ -388,13 +388,13 @@ export async function generateAutomaticPreviewPDF(originalPdfBuffer, productId) 
     try {
       const testPdf = await PDFDocument.load(previewBuffer);
       const generatedPageCount = testPdf.getPageCount();
-      console.log(`✅ Preview PDF validation successful - Generated ${generatedPageCount} pages (${previewPageCount} real + ${lockedPagesCount} locked)`);
-      
+      console.log(` Preview PDF validation successful - Generated ${generatedPageCount} pages (${previewPageCount} real + ${lockedPagesCount} locked)`);
+
       if (generatedPageCount !== TOTAL_PREVIEW_PAGES) {
-        console.warn(`⚠️ Expected ${TOTAL_PREVIEW_PAGES} pages but got ${generatedPageCount}`);
+        console.warn(` Expected ${TOTAL_PREVIEW_PAGES} pages but got ${generatedPageCount}`);
       }
     } catch (validationError) {
-      console.error("❌ Generated PDF is invalid:", validationError.message);
+      console.error(" Generated PDF is invalid:", validationError.message);
       throw new Error("Generated preview PDF is corrupted");
     }
 
@@ -414,7 +414,7 @@ export async function generateAutomaticPreviewPDF(originalPdfBuffer, productId) 
       previewPdfKey: uploadResult.public_id,
     };
   } catch (error) {
-    console.error("❌ Preview generation failed:", error);
+    console.error(" Preview generation failed:", error);
     throw error;
   }
 }
@@ -428,31 +428,31 @@ async function uploadPreviewToCloudinary(previewBuffer, productId) {
   const baseFileName = productId.split('/').pop() || productId;
   const timestamp = Date.now();
   const publicId = `preview_${baseFileName}_${timestamp}`; // NO .pdf extension
-  
+
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        resource_type: "image",  // ✅ Use "image" for PDFs (industry standard)
-        format: "pdf",           // ✅ Explicitly set format
+        resource_type: "image",  //  Use "image" for PDFs (industry standard)
+        format: "pdf",           //  Explicitly set format
         folder: "sellify/previews",
         public_id: publicId,
         type: "upload",
       },
       (error, result) => {
         if (error) {
-          console.error("❌ Cloudinary upload error:", error);
+          console.error(" Cloudinary upload error:", error);
           reject(error);
         } else {
-          console.log("✅ Preview uploaded to Cloudinary");
-          console.log("📋 Public ID:", result.public_id);
-          console.log("📋 Secure URL:", result.secure_url);
-          console.log("📋 Format:", result.format);
-          
+          console.log(" Preview uploaded to Cloudinary");
+          console.log(" Public ID:", result.public_id);
+          console.log(" Secure URL:", result.secure_url);
+          console.log(" Format:", result.format);
+
           resolve(result);
         }
       }
     );
-    
+
     uploadStream.end(previewBuffer);
   });
 }
@@ -467,7 +467,7 @@ async function uploadPreviewToCloudinary(previewBuffer, productId) {
  */
 export function generatePreviewPageImages(previewPdfKey, pageCount) {
   const previewPages = [];
-  
+
   for (let i = 1; i <= pageCount; i++) {
     // Generate Cloudinary transformation URL for each page
     const imageUrl = cloudinary.url(previewPdfKey, {
@@ -481,14 +481,14 @@ export function generatePreviewPageImages(previewPdfKey, pageCount) {
         // { effect: "blur:100" },
       ],
     });
-    
+
     previewPages.push({
       pageNumber: i,
       imageUrl: imageUrl,
       imageKey: `${previewPdfKey}_page_${i}`,
     });
   }
-  
+
   return previewPages;
 }
 
@@ -499,12 +499,12 @@ export function validatePDF(fileBuffer, mimetype) {
   if (!mimetype.includes("pdf")) {
     throw new Error("File must be a PDF");
   }
-  
+
   // Check PDF magic number (header)
   const header = fileBuffer.slice(0, 5).toString();
   if (!header.startsWith("%PDF-")) {
     throw new Error("Invalid PDF file format");
   }
-  
+
   return true;
 }

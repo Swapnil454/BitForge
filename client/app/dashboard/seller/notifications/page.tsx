@@ -1,298 +1,232 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { CheckCheck, Bell, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 import { notificationAPI } from "@/lib/api";
+import { getStoredUser } from "@/lib/cookies";
 import { showError, showSuccess } from "@/lib/toast";
-import { getStoredUser, clearAuthStorage } from "@/lib/cookies";
+import PageHeader from "../../buyer/transactions/components/PageHeader";
+import NotificationCard from "@/app/dashboard/components/notifications/NotificationCard";
+import { AppNotification, getNotificationDestination } from "@/lib/notification-ui";
 
 interface User {
   id: string;
-  name: string;
-  email: string;
   role: "seller";
 }
 
-interface NotificationItem {
-  _id: string;
-  title: string;
-  message: string;
-  type: string;
-  icon: string;
-  isRead: boolean;
-  createdAt: string;
-  relatedId?: string;
-  relatedModel?: string;
-}
-
 export default function SellerNotificationsPage() {
+  const ITEMS_PER_PAGE = 20;
   const [user, setUser] = useState<User | null>(null);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [filter, setFilter] = useState<"all" | "unread">("all");
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalNotifications, setTotalNotifications] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
   const router = useRouter();
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const stored = getStoredUser<User>();
-    if (!stored) {
+    if (!stored || stored.role !== "seller") {
       router.push("/login");
       return;
     }
-    if (stored.role !== "seller") {
-      router.push("/dashboard");
-      return;
-    }
     setUser(stored);
-    fetchNotifications();
+    fetchNotifications(1);
   }, [router]);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (page = 1, append = false) => {
     try {
-      setLoading(true);
-      const response = await notificationAPI.getNotifications(100, 0);
-      setNotifications(response.notifications || []);
-      setUnreadCount(response.unreadCount || 0);
+      if (page === 1) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+      const data = await notificationAPI.getNotifications({
+        page,
+        limit: ITEMS_PER_PAGE,
+      });
+      const incoming = data.notifications || [];
+      setNotifications((prev) => (append ? [...prev, ...incoming] : incoming));
+      setUnreadCount(data.unreadCount || 0);
+      setCurrentPage(data.pagination?.page || page);
+      setTotalPages(data.pagination?.totalPages || 1);
+      setTotalNotifications(data.pagination?.total || 0);
+      setHasNextPage((data.pagination?.page || page) < (data.pagination?.totalPages || 1));
     } catch (error) {
-      console.error("Failed to fetch notifications", error);
+      console.error("Error fetching notifications:", error);
       showError("Failed to load notifications");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
-  const handleMarkAsRead = async (id: string) => {
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !loadingMore && !loading) {
+          void fetchNotifications(currentPage + 1, true);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, loadingMore, loading, currentPage]);
+
+  const handleMarkAsRead = async (notificationId: string) => {
     try {
-      await notificationAPI.markAsRead(id);
-      setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
-      setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (error) {
-      console.error("Mark read failed", error);
-      showError("Failed to update notification");
+      setActionLoading(true);
+      await notificationAPI.markAsRead(notificationId);
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === notificationId ? { ...n, isRead: true } : n))
+      );
+      setUnreadCount((prev) => Math.max(prev - 1, 0));
+    } catch {
+      showError("Failed to mark notification as read");
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const handleMarkAllAsRead = async () => {
     try {
+      setActionLoading(true);
       await notificationAPI.markAllAsRead();
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
       showSuccess("All notifications marked as read");
-    } catch (error) {
-      console.error("Mark all read failed", error);
-      showError("Failed to update notifications");
+    } catch {
+      showError("Failed to mark all as read");
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (notificationId: string) => {
     try {
-      await notificationAPI.deleteNotification(id);
-      const notif = notifications.find(n => n._id === id);
-      if (notif && !notif.isRead) setUnreadCount(prev => Math.max(0, prev - 1));
-      setNotifications(prev => prev.filter(n => n._id !== id));
+      setActionLoading(true);
+      await notificationAPI.deleteNotification(notificationId);
+      const deletedNotif = notifications.find((n) => n._id === notificationId);
+      if (deletedNotif && !deletedNotif.isRead) {
+        setUnreadCount((prev) => Math.max(prev - 1, 0));
+      }
+      setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
+      setTotalNotifications((prev) => Math.max(prev - 1, 0));
       showSuccess("Notification deleted");
-    } catch (error) {
-      console.error("Delete failed", error);
+    } catch {
       showError("Failed to delete notification");
+    } finally {
+      setActionLoading(false);
     }
-  };
-
-  const filtered = notifications.filter(n => filter === "unread" ? !n.isRead : true);
-
-  const formatDate = (date: string) => {
-    const d = new Date(date);
-    const now = new Date();
-    const diff = now.getTime() - d.getTime();
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (minutes < 1) return "Just now";
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-    return d.toLocaleDateString();
-  };
-
-  const logout = () => {
-    clearAuthStorage();
-    router.push("/login");
   };
 
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-[#0b0b14] to-[#1a1a2e]">
-      <header className="sticky top-0 z-40 border-b border-white/10 backdrop-blur-xl bg-[#0b0b14]/80">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white">Notifications</h1>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push("/dashboard/seller")}
-              className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 border border-white/10 transition"
-            >
-              Back to Dashboard
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-slate-50 pb-20 dark:bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.14),_transparent_32%),linear-gradient(180deg,#030712_0%,#111827_100%)]">
+      <PageHeader
+        title="Notifications"
+        subtitle={unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
+        backHref="/dashboard/seller"
+        backLabel="Dashboard"
+      />
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-xl bg-white/5 border border-white/10"
-          >
-            <div className="text-sm text-white/60">Total Notifications</div>
-            <div className="text-3xl font-bold text-white">{notifications.length}</div>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="p-4 rounded-xl bg-white/5 border border-white/10"
-          >
-            <div className="text-sm text-white/60">Unread</div>
-            <div className="text-3xl font-bold text-cyan-400">{unreadCount}</div>
-          </motion.div>
-        </div>
-
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setFilter("all")}
-              className={`px-4 py-2 rounded-lg transition ${
-                filter === "all"
-                  ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                  : "bg-white/5 text-white/60 border border-white/10 hover:border-white/20"
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setFilter("unread")}
-              className={`px-4 py-2 rounded-lg transition ${
-                filter === "unread"
-                  ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                  : "bg-white/5 text-white/60 border border-white/10 hover:border-white/20"
-              }`}
-            >
-              Unread ({unreadCount})
-            </button>
-          </div>
-          {unreadCount > 0 && (
+      <div className="mx-auto mt-8 max-w-5xl px-4 sm:px-6">
+        {notifications.length > 0 && unreadCount > 0 && (
+          <div className="mb-6">
             <button
               onClick={handleMarkAllAsRead}
-              className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 transition text-sm"
+              disabled={actionLoading}
+              className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60 dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300"
             >
-              Mark All as Read
+              <CheckCheck className="h-4 w-4" />
+              {actionLoading ? "Updating..." : "Mark all as read"}
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className="space-y-3">
-          <AnimatePresence>
-            {loading ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-center py-12 text-white/60"
-              >
-                Loading notifications...
-              </motion.div>
-            ) : filtered.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-center py-12 text-white/60"
-              >
-                No {filter === "unread" ? "unread" : ""} notifications
-              </motion.div>
-            ) : (
-              filtered.map((n, index) => (
-                <motion.div
-                  key={n._id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={`p-4 rounded-lg border-l-4 bg-white/5 border-b border-r border-white/10 ${
-                    !n.isRead ? "ring-1 ring-cyan-500/30" : ""
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        {/* SVG ICONS BASED ON TYPE */}
-                        <span className="inline-block">
-                          {n.type === "product_approved" && (
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-green-400" xmlns="http://www.w3.org/2000/svg">
-                              <circle cx="12" cy="12" r="12" fill="#22c55e" fillOpacity="0.15"/>
-                              <path d="M8 12.5l2.5 2.5 5-5" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          )}
-                          {n.type === "product_deleted" && (
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-red-400" xmlns="http://www.w3.org/2000/svg">
-                              <circle cx="12" cy="12" r="12" fill="#ef4444" fillOpacity="0.15"/>
-                              <path d="M9 9l6 6M15 9l-6 6" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          )}
-                          {n.type === "admin_update" && (
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-cyan-400" xmlns="http://www.w3.org/2000/svg">
-                              <circle cx="12" cy="12" r="12" fill="#06b6d4" fillOpacity="0.15"/>
-                              <path d="M12 8v4l2.5 2.5" stroke="#06b6d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          )}
-                          {/* Default icon */}
-                          {n.type !== "product_approved" && n.type !== "product_deleted" && n.type !== "admin_update" && (
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" className="text-indigo-400" xmlns="http://www.w3.org/2000/svg">
-                              <circle cx="12" cy="12" r="12" fill="#6366f1" fillOpacity="0.15"/>
-                              <path d="M12 8v4h4" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              <circle cx="12" cy="16" r="1" fill="#6366f1" />
-                            </svg>
-                          )}
-                        </span>
-                        <div>
-                          <h3
-                            className={`font-semibold ${n.isRead ? "text-white/70" : "text-white font-bold"}`}
-                          >
-                            {n.title}
-                          </h3>
-                          <p className="text-sm text-white/50">{formatDate(n.createdAt)}</p>
-                        </div>
-                      </div>
-                      <p className="text-sm text-white/60 ml-11">{n.message}</p>
-                    </div>
-                    <div className="flex gap-2 ml-4">
-                      {!n.isRead && (
-                        <button
-                          onClick={() => handleMarkAsRead(n._id)}
-                          className="p-2 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 transition"
-                          title="Mark as read"
-                        >
-                          ✓
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleDelete(n._id)}
-                        className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition"
-                        title="Delete"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))
-            )}
-          </AnimatePresence>
-        </div>
-      </main>
+        {loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={index}
+                className="h-32 rounded-2xl border border-slate-200 bg-white/80 animate-pulse dark:border-white/10 dark:bg-white/5"
+              />
+            ))}
+          </div>
+        ) : notifications.length === 0 ? (
+          <div className="flex flex-col items-center justify-center text-center max-w-md mx-auto py-16 sm:py-24 px-4">
+            {/* Animated floating empty state icon */}
+            <motion.div
+              animate={{
+                y: [0, -8, 0],
+                rotate: [0, -2, 2, 0],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="relative w-20 h-20 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-slate-100/50 dark:shadow-none"
+            >
+              <Bell className="h-9 w-9 text-slate-400 dark:text-white/40" />
+            </motion.div>
+
+            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">
+              No Notifications Yet
+            </h3>
+            <p className="text-slate-500 dark:text-white/50 text-sm max-w-xs leading-relaxed">
+              Product reviews, payouts, sales, and admin updates will appear here.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {notifications.map((notification) => (
+              <NotificationCard
+                key={notification._id}
+                notification={notification}
+                actionLoading={actionLoading}
+                onClick={() => {
+                  if (!notification.isRead) {
+                    void handleMarkAsRead(notification._id);
+                  }
+                  router.push(getNotificationDestination(notification));
+                }}
+                onMarkAsRead={
+                  notification.isRead
+                    ? undefined
+                    : () => {
+                        void handleMarkAsRead(notification._id);
+                      }
+                }
+                onDelete={() => {
+                  void handleDelete(notification._id);
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Sentinel div for Intersection Observer */}
+        <div ref={sentinelRef} className="h-10 w-full" />
+
+        {loadingMore && (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

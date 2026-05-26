@@ -42,7 +42,8 @@ api.interceptors.response.use(
             const ignorePaths = [
                 '/users/change-password',
                 '/users/reset-password',
-                '/users/request-password-reset'
+                '/users/request-password-reset',
+                '/reports/my-reports'
             ];
 
             const isIgnoredRoute = ignorePaths.some((path) => requestUrl.includes(path));
@@ -60,6 +61,22 @@ api.interceptors.response.use(
             } else {
                 // Let caller handle non-token 401 errors (e.g., wrong password)
                 return Promise.reject(error);
+            }
+        }
+
+        // Global Ban/Delete Interceptor
+        if (status === 403) {
+            const accountStatus = error.response?.data?.accountStatus;
+            if (accountStatus === 'banned') {
+                if (typeof window !== 'undefined') {
+                    const reason = error.response?.data?.bannedReason || 'Terms of service violation';
+                    window.dispatchEvent(new CustomEvent('account-banned', { detail: { reason } }));
+                }
+            } else if (accountStatus === 'deleted') {
+                if (typeof window !== 'undefined') {
+                    const email = error.response?.data?.email || '';
+                    window.dispatchEvent(new CustomEvent('account-deleted', { detail: { email } }));
+                }
             }
         }
 
@@ -107,8 +124,24 @@ export const adminAPI = {
         return response.data;
     },
 
-    getAllTransactions: async () => {
-        const response = await api.get('/admin/transactions');
+    getAllTransactions: async (params?: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        type?: string;
+        status?: string;
+        sortBy?: string;
+        dateRange?: string;
+        startDate?: string;
+        endDate?: string;
+        userId?: string;
+    }) => {
+        const response = await api.get('/admin/transactions', { params });
+        return response.data;
+    },
+
+    bulkMarkTransactionsReviewed: async (ids: string[]) => {
+        const response = await api.post('/admin/transactions/bulk-review', { ids });
         return response.data;
     },
 
@@ -127,18 +160,28 @@ export const adminAPI = {
         return response.data;
     },
     
-    getPendingProducts: async () => {
-        const response = await api.get('/admin/products/pending');
+    getPendingProducts: async (params?: { page?: number; limit?: number; search?: string; category?: string; sort?: string; status?: string }) => {
+        const response = await api.get('/admin/products/pending', { params });
+        return response.data;
+    },
+
+    getProductStats: async () => {
+        const response = await api.get('/admin/products/stats');
         return response.data;
     },
     
-    approveProduct: async (id: string) => {
-        const response = await api.post(`/admin/products/${id}/approve`);
+    approveProduct: async (id: string, adminNote?: string) => {
+        const response = await api.post(`/admin/products/${id}/approve`, { adminNote });
         return response.data;
     },
     
-    rejectProduct: async (id: string, reason: string) => {
-        const response = await api.post(`/admin/products/${id}/reject`, { reason });
+    rejectProduct: async (id: string, reasons: string[], adminNote?: string) => {
+        const response = await api.post(`/admin/products/${id}/reject`, { reasons, adminNote });
+        return response.data;
+    },
+
+    requestProductChanges: async (id: string, reasons: string[], adminNote?: string) => {
+        const response = await api.post(`/admin/products/${id}/request-changes`, { reasons, adminNote });
         return response.data;
     },
 
@@ -161,19 +204,43 @@ export const adminAPI = {
         const response = await api.get('/admin/payouts/pending');
         return response.data;
     },
+
+    getAllPayouts: async (params?: { status?: string; page?: number; limit?: number; search?: string; sort?: "newest" | "oldest" }) => {
+        const response = await api.get('/admin/payouts/all', { params });
+        return response.data;
+    },
+
+    getPayoutAnalytics: async (params?: { range?: string }) => {
+        const response = await api.get('/admin/payouts/analytics', { params });
+        return response.data;
+    },
     
-    approvePayout: async (id: string, paymentData: { paymentReference: string; paymentNotes: string; paymentMethod?: string }) => {
+    approvePayout: async (id: string, paymentData: { utrNumber: string; paymentDate: string; paymentMode: string; proofImageUrl?: string; adminNote?: string }) => {
         const response = await api.post(`/admin/payouts/${id}/approve`, paymentData);
         return response.data;
     },
     
-    rejectPayout: async (id: string, reason: string) => {
-        const response = await api.post(`/admin/payouts/${id}/reject`, { reason });
+    rejectPayout: async (id: string, reasons: string[], message: string) => {
+        const response = await api.post(`/admin/payouts/${id}/reject`, { reasons, message });
+        return response.data;
+    },
+
+    uploadPayoutProof: async (id: string, file: File) => {
+        const formData = new FormData();
+        formData.append('proof', file);
+        const response = await api.post(`/admin/payouts/${id}/proof`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
         return response.data;
     },
     
-    getOpenDisputes: async () => {
-        const response = await api.get('/admin/disputes/open');
+    getAllDisputes: async (params?: { page?: number; limit?: number; search?: string; status?: string; sort?: string }) => {
+        const response = await api.get('/admin/disputes', { params });
+        return response.data;
+    },
+
+    getDisputeAnalytics: async (params?: { range?: string }) => {
+        const response = await api.get('/admin/disputes/analytics', { params });
         return response.data;
     },
     
@@ -207,8 +274,15 @@ export const adminAPI = {
         return response.data;
     },
 
-    getAllUsers: async () => {
-        const response = await api.get('/admin/users');
+    getAllUsers: async (params?: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        role?: string;
+        sort?: string;
+        isVerified?: string;
+    }) => {
+        const response = await api.get('/admin/users', { params });
         return response.data;
     },
 
@@ -217,18 +291,55 @@ export const adminAPI = {
         return response.data;
     },
 
-    deleteUser: async (id: string, reason: string) => {
-        const response = await api.delete(`/admin/users/${id}`, { data: { reason } });
+    deleteUser: async (id: string) => {
+        const response = await api.delete(`/admin/users/${id}`);
         return response.data;
     },
 
-    getAllProducts: async () => {
-        const response = await api.get('/admin/products/all');
+    suspendUser: async (id: string, reason: string) => {
+        const response = await api.post(`/admin/users/${id}/suspend`, { reason });
+        return response.data;
+    },
+
+    getUserById: async (id: string) => {
+        const response = await api.get(`/admin/users/${id}`);
+        return response.data;
+    },
+
+    unbanUser: async (id: string) => {
+        const response = await api.post(`/admin/users/${id}/unban`);
+        return response.data;
+    },
+
+    updateUserLimit: async (id: string, productLimit: number) => {
+        const response = await api.put(`/admin/users/${id}/limit`, { productLimit });
+        return response.data;
+    },
+
+    getAllProducts: async (params?: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        status?: string;
+        category?: string;
+        sortBy?: string;
+    }) => {
+        const response = await api.get('/admin/products/all', { params });
         return response.data;
     },
 
     getProductDetails: async (id: string) => {
         const response = await api.get(`/admin/products/${id}/details`);
+        return response.data;
+    },
+
+    getProductAnalytics: async (params?: { range?: string }) => {
+        const response = await api.get("/admin/products/analytics", { params });
+        return response.data;
+    },
+
+    getProductReport: async () => {
+        const response = await api.get("/admin/products/report", { responseType: 'blob' });
         return response.data;
     },
 
@@ -250,14 +361,44 @@ export const adminAPI = {
         return response.data;
     },
 
-    getMalwareDashboardStats: async () => {
+    getMalwareStats: async () => {
         const response = await api.get('/admin/security/malware/stats');
         return response.data;
     },
 
-    getContentReviewQueue: async (severity?: 'all' | 'high' | 'medium' | 'low') => {
+    getMalwareScans: async (params?: { cursor?: string; limit?: number }) => {
+        const response = await api.get('/admin/security/malware/scans', { params });
+        return response.data;
+    },
+
+    getMalwareScanDetails: async (scanId: string) => {
+        const response = await api.get(`/admin/security/malware/scans/${scanId}`);
+        return response.data;
+    },
+
+    whitelistMalwareScan: async (scanId: string) => {
+        const response = await api.post(`/admin/security/malware/scans/${scanId}/whitelist`);
+        return response.data;
+    },
+
+    notifySellerThreat: async (scanId: string) => {
+        const response = await api.post(`/admin/security/malware/scans/${scanId}/notify`);
+        return response.data;
+    },
+
+    takedownMaliciousProduct: async (scanId: string) => {
+        const response = await api.post(`/admin/security/malware/scans/${scanId}/remove`);
+        return response.data;
+    },
+
+    rescanMalware: async (scanId: string) => {
+        const response = await api.post(`/admin/security/malware/scans/${scanId}/rescan`);
+        return response.data;
+    },
+
+    getContentReviewQueue: async (severity?: 'all' | 'high' | 'medium' | 'low', cursor?: string, limit?: number) => {
         const response = await api.get('/admin/security/content-review/queue', {
-            params: { severity }
+            params: { severity, cursor, limit }
         });
         return response.data;
     },
@@ -270,8 +411,10 @@ export const adminAPI = {
         return response.data;
     },
 
-    getPendingIdentityVerifications: async () => {
-        const response = await api.get('/admin/security/identity/pending');
+    getPendingIdentityVerifications: async (cursor?: string, limit?: number) => {
+        const response = await api.get('/admin/security/identity/pending', {
+            params: { cursor, limit }
+        });
         return response.data;
     },
 
@@ -281,7 +424,15 @@ export const adminAPI = {
             notes
         });
         return response.data;
-    }
+    },
+
+    viewIdentityDocument: async (publicId: string) => {
+        const response = await api.get('/admin/security/identity/document/view', { 
+            params: { publicId },
+            responseType: 'blob' 
+        });
+        return response.data;
+    },
 };
 
 // Seller API functions
@@ -306,13 +457,23 @@ export const sellerAPI = {
         return response.data;
     },
     
-    getTransactions: async () => {
-        const response = await api.get('/seller/transactions');
+    getTransactions: async (params?: {
+        page?: number;
+        limit?: number;
+        status?: "all" | "completed" | "pending" | "cancelled";
+        search?: string;
+    }) => {
+        const response = await api.get('/seller/transactions', { params });
         return response.data;
     },
 
-    getAllSales: async () => {
-        const response = await api.get('/seller/sales');
+    getAllSales: async (params?: {
+        page?: number;
+        limit?: number;
+        status?: "all" | "paid" | "failed" | "created";
+        search?: string;
+    }) => {
+        const response = await api.get('/seller/sales', { params });
         return response.data;
     },
 
@@ -346,8 +507,14 @@ export const productAPI = {
 
 // Marketplace API functions
 export const marketplaceAPI = {
-    getAllProducts: async () => {
-        const response = await api.get('/marketplace');
+    getAllProducts: async (params?: {
+        page?: number;
+        limit?: number;
+        category?: string;
+        sort?: "newest" | "trending" | "rating" | "price_asc" | "price_desc";
+        search?: string;
+    }) => {
+        const response = await api.get('/marketplace', { params });
         return response.data;
     },
     
@@ -392,8 +559,14 @@ export const buyerAPI = {
         return response.data;
     },
 
-    getAllTransactions: async () => {
-        const response = await api.get('/buyer/transactions');
+    getAllTransactions: async (params?: {
+        page?: number;
+        limit?: number;
+        status?: "all" | "paid" | "created" | "failed";
+        sortBy?: "newest" | "oldest";
+        search?: string;
+    }) => {
+        const response = await api.get('/buyer/transactions', { params });
         return response.data;
     },
 
@@ -402,8 +575,13 @@ export const buyerAPI = {
         return response.data;
     },
 
-    getAllPurchases: async () => {
-        const response = await api.get('/buyer/purchases');
+    getAllPurchases: async (params?: {
+        page?: number;
+        limit?: number;
+        sortBy?: "newest" | "oldest";
+        search?: string;
+    }) => {
+        const response = await api.get('/buyer/purchases', { params });
         return response.data;
     },
 
@@ -418,8 +596,8 @@ export const buyerAPI = {
         return response.data;
     },
 
-    getMyDisputes: async () => {
-        const response = await api.get('/disputes/my');
+    getMyDisputes: async (params?: { page?: number; limit?: number }) => {
+        const response = await api.get('/disputes/my', { params });
         return response.data;
     },
 
@@ -436,8 +614,22 @@ export const buyerAPI = {
             return response.data;
         },
 
-        sendSupportMessage: async (message: string) => {
-            const response = await api.post('/chat/support-thread', { message });
+        sendSupportMessage: async (message: string, attachments?: any[]) => {
+            const response = await api.post('/chat/support-thread', { message, attachments });
+            return response.data;
+        },
+
+        uploadAttachment: async (formData: FormData) => {
+            const response = await api.post('/chat/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            return response.data;
+        },
+
+        deleteMessages: async (messageIds: string[]) => {
+            const response = await api.delete('/chat/messages', { data: { messageIds } });
             return response.data;
         },
 
@@ -451,8 +643,8 @@ export const buyerAPI = {
             return response.data;
         },
 
-        adminSendMessage: async (userId: string, message: string) => {
-            const response = await api.post(`/chat/thread/${userId}`, { message });
+        adminSendMessage: async (userId: string, message: string, attachments?: any[]) => {
+            const response = await api.post(`/chat/thread/${userId}`, { message, attachments });
             return response.data;
         },
 
@@ -521,9 +713,23 @@ export const cartAPI = {
 };
 
 // Notification API functions
+type NotificationQueryOptions = {
+    limit?: number;
+    skip?: number;
+    page?: number;
+};
+
 export const notificationAPI = {
-    getNotifications: async (limit = 10, skip = 0) => {
-        const response = await api.get(`/notifications?limit=${limit}&skip=${skip}`);
+    getNotifications: async (
+        limitOrOptions: number | NotificationQueryOptions = 10,
+        skip = 0
+    ) => {
+        const params =
+            typeof limitOrOptions === "number"
+                ? { limit: limitOrOptions, skip }
+                : limitOrOptions;
+
+        const response = await api.get('/notifications', { params });
         return response.data;
     },
     
@@ -545,6 +751,45 @@ export const notificationAPI = {
     deleteNotification: async (notificationId: string) => {
         const response = await api.delete(`/notifications/${notificationId}`);
         return response.data;
+    },
+
+    getPreferences: async () => {
+        const response = await api.get("/notifications/preferences");
+        return response.data;
+    },
+
+    updatePreferences: async (payload: {
+        browserPushEnabled?: boolean;
+        marketingEnabled?: boolean;
+        securityEnabled?: boolean;
+        transactionEnabled?: boolean;
+        chatEnabled?: boolean;
+        moderationEnabled?: boolean;
+    }) => {
+        const response = await api.patch("/notifications/preferences", payload);
+        return response.data;
+    },
+
+    registerPushToken: async (payload: {
+        token: string;
+        deviceId?: string;
+        platform?: string;
+        browserName?: string;
+    }) => {
+        const response = await api.post("/notifications/push-token", payload);
+        return response.data;
+    },
+
+    unregisterPushToken: async (token: string) => {
+        const response = await api.delete("/notifications/push-token", {
+            data: { token },
+        });
+        return response.data;
+    },
+
+    sendHeartbeat: async () => {
+        const response = await api.post("/notifications/heartbeat", {});
+        return response.data;
     }
 };
 
@@ -555,6 +800,162 @@ export const contactAPI = {
         const response = await api.post('/contact', payload);
         return response.data;
     }
+};
+
+// Promotion API functions
+export const promotionAPI = {
+    createSellerPromotion: async (formData: FormData) => {
+        const response = await api.post('/seller/promotions', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+        return response.data;
+    },
+
+    getSellerPromotions: async (params?: { status?: string }) => {
+        const response = await api.get('/seller/promotions', { params });
+        return response.data;
+    },
+
+    getSellerPromotion: async (id: string) => {
+        const response = await api.get(`/seller/promotions/${id}`);
+        return response.data;
+    },
+
+    cancelSellerPromotion: async (id: string) => {
+        const response = await api.patch(`/seller/promotions/${id}/cancel`);
+        return response.data;
+    },
+
+    uploadSellerPaymentProof: async (id: string, formData: FormData) => {
+        const response = await api.post(`/seller/promotions/${id}/payment-proof`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+        return response.data;
+    },
+
+    createPromotionPaymentOrder: async (id: string) => {
+        const response = await api.post(`/seller/promotions/${id}/create-payment-order`);
+        return response.data;
+    },
+
+    verifySellerPromotionPayment: async (id: string, payload: {
+        razorpay_order_id: string;
+        razorpay_payment_id: string;
+        razorpay_signature: string;
+    }) => {
+        const response = await api.post(`/seller/promotions/${id}/verify-payment`, payload);
+        return response.data;
+    },
+
+    getAdminPromotions: async (params?: { status?: string; placement?: string }) => {
+        const response = await api.get('/admin/promotions', { params });
+        return response.data;
+    },
+
+    getAdminPromotion: async (id: string) => {
+        const response = await api.get(`/admin/promotions/${id}`);
+        return response.data;
+    },
+
+    approvePromotion: async (id: string, payload: {
+        amount: number;
+        approvedDurationDays?: number;
+        priority?: number;
+        placement?: string;
+        maxImpressions?: number;
+        adminNote?: string;
+        heroBgColor?: string;
+        heroTextColor?: string;
+        heroTitleColor?: string;
+        heroSubtitleColor?: string;
+        heroButtonBgColor?: string;
+        heroButtonTextColor?: string;
+        heroFontFamily?: string;
+        heroLayout?: string;
+    }) => {
+        const response = await api.patch(`/admin/promotions/${id}/approve`, payload);
+        return response.data;
+    },
+
+    rejectPromotion: async (id: string, payload: { rejectedReason: string; adminNote?: string }) => {
+        const response = await api.patch(`/admin/promotions/${id}/reject`, payload);
+        return response.data;
+    },
+
+    verifyPromotionPayment: async (id: string, payload?: {
+        paymentMethod?: string;
+        transactionId?: string;
+        adminNote?: string;
+    }) => {
+        const response = await api.patch(`/admin/promotions/${id}/verify-payment`, payload || {});
+        return response.data;
+    },
+
+    pausePromotion: async (id: string, payload?: { adminNote?: string }) => {
+        const response = await api.patch(`/admin/promotions/${id}/pause`, payload || {});
+        return response.data;
+    },
+
+    resumePromotion: async (id: string, payload?: { adminNote?: string }) => {
+        const response = await api.patch(`/admin/promotions/${id}/resume`, payload || {});
+        return response.data;
+    },
+
+    updatePromotionPriority: async (id: string, priority: number) => {
+        const response = await api.patch(`/admin/promotions/${id}/priority`, { priority });
+        return response.data;
+    },
+
+    updatePromotionStyle: async (id: string, payload: { 
+        heroBgColor?: string, 
+        heroTextColor?: string, 
+        heroLayout?: string,
+        heroTitleColor?: string,
+        heroSubtitleColor?: string,
+        heroButtonBgColor?: string,
+        heroButtonTextColor?: string,
+        heroFontFamily?: string
+    }) => {
+        const response = await api.patch(`/admin/promotions/${id}/style`, payload);
+        return response.data;
+    },
+
+    getAdSettings: async () => {
+        const response = await api.get('/admin/ad-settings');
+        return response.data;
+    },
+
+    updateAdSettings: async (payload: {
+        marketplaceHeroMaxAds: number;
+        autoRotate: boolean;
+        defaultDurationDays: number;
+        minimumPrice: number;
+        maximumActiveAdsPerSeller: number;
+    }) => {
+        const response = await api.put('/admin/ad-settings', payload);
+        return response.data;
+    },
+
+    getActivePromotions: async (placement: string = 'MARKETPLACE_HERO') => {
+        const response = await api.get('/promotions/active', {
+            params: { placement }
+        });
+        return response.data;
+    },
+
+    trackPromotionImpression: async (id: string) => {
+        const response = await api.post(`/promotions/${id}/impression`);
+        return response.data;
+    },
+
+    trackPromotionClick: async (id: string) => {
+        const response = await api.post(`/promotions/${id}/click`);
+        return response.data;
+    },
 };
 
 
@@ -599,6 +1000,20 @@ export const userAPI = {
         return response.data;
     },
 
+    uploadIdentityDocuments: async (formData: FormData) => {
+        const response = await api.post('/users/identity/upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+        return response.data;
+    },
+
+    getIdentityStatus: async () => {
+        const response = await api.get('/users/identity/status');
+        return response.data;
+    },
+
     requestAccountDeletion: async () => {
         const response = await api.post('/users/request-account-deletion');
         return response.data;
@@ -606,6 +1021,48 @@ export const userAPI = {
 
     confirmAccountDeletion: async (otp: string, reason: string) => {
         const response = await api.post('/users/confirm-account-deletion', { otp, reason });
+        return response.data;
+    },
+
+    requestReactivationOtp: async (email: string) => {
+        const response = await api.post('/users/request-reactivation-otp', { email });
+        return response.data;
+    },
+
+    reactivateAccount: async (email: string, otp: string) => {
+        const response = await api.post('/users/reactivate-account', { email, otp });
+        return response.data;
+    },
+
+    updatePreferences: async (preferences: { theme: string }) => {
+        const response = await api.patch('/users/preferences', preferences);
+        return response.data;
+    }
+};
+
+// Report API functions
+export const reportAPI = {
+    submitReport: async (formData: FormData) => {
+        const response = await api.post('/reports', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+        return response.data;
+    },
+
+    getMyReports: async (params?: { page?: number; limit?: number }) => {
+        const response = await api.get('/reports/my-reports', { params });
+        return response.data;
+    },
+
+    getAllReports: async (params?: { page?: number; limit?: number; status?: string }) => {
+        const response = await api.get('/reports/admin', { params });
+        return response.data;
+    },
+
+    updateReportStatus: async (id: string, data: { status: string; adminNotes?: string }) => {
+        const response = await api.patch(`/reports/admin/${id}/status`, data);
         return response.data;
     }
 };
@@ -646,3 +1103,28 @@ export const reviewAPI = {
 };
 
 export default api;
+
+// Search API functions
+export const searchAPI = {
+    getSuggestions: async (q: string): Promise<{ suggestions: { text: string; category: string }[] }> => {
+        const response = await api.get('/marketplace/search/suggestions', { params: { q } });
+        return response.data;
+    },
+
+    getHistory: async (): Promise<{ history: { query: string; searchedAt: string }[] }> => {
+        const response = await api.get('/marketplace/search/history');
+        return response.data;
+    },
+
+    saveHistory: async (query: string): Promise<void> => {
+        await api.post('/marketplace/search/history', { query });
+    },
+
+    deleteHistoryItem: async (query: string): Promise<void> => {
+        await api.delete('/marketplace/search/history/' + encodeURIComponent(query));
+    },
+
+    clearHistory: async (): Promise<void> => {
+        await api.delete('/marketplace/search/history/all');
+    },
+};

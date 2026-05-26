@@ -1,6 +1,6 @@
 # Manual Payout API Quick Reference
 
-## 🔐 Authentication
+## Authentication
 All endpoints require authentication. Admin endpoints require admin role.
 
 ---
@@ -261,7 +261,7 @@ Platform Commission:    ₹1,000   (10% of ₹10,000)
 GST on Commission:      ₹180     (18% of ₹1,000)
 ─────────────────────────────────
 Total Deductions:       ₹1,180
-Net Payable to Seller:  ₹8,820   ✅ Transfer this amount
+Net Payable to Seller:  ₹8,820    Transfer this amount
 ```
 
 **Formula:**
@@ -274,7 +274,7 @@ netPayableAmount = amount - totalDeductions
 
 ---
 
-## 📊 Payout Status Flow
+##  Payout Status Flow
 
 ```
 ┌─────────┐
@@ -292,7 +292,7 @@ netPayableAmount = amount - totalDeductions
 
 ---
 
-## 🔍 Error Responses
+##  Error Responses
 
 ### 400 Bad Request
 ```json
@@ -317,7 +317,7 @@ netPayableAmount = amount - totalDeductions
 
 ---
 
-## 📝 Notes
+##  Notes
 
 1. **Net Payable Amount**: This is what admin should transfer to seller
 2. **Payment Reference**: Always save UTR/transaction ID

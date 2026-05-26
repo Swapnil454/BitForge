@@ -12,9 +12,11 @@
 export function autoReviewContent(productData) {
   const flags = [];
   
-  // Flag if page count is too low
-  if (productData.pageCount && productData.pageCount < 3) {
-    flags.push("Low page count (< 3 pages)");
+  const category = (productData.category || '').toLowerCase();
+  
+  // Flag if page count is suspicious in context
+  if (productData.pageCount && productData.pageCount < 3 && ['ebook', 'template', 'course', 'document'].includes(category)) {
+    flags.push("Low page count for document category");
   }
   
   // Flag if file size is suspiciously small
@@ -39,32 +41,27 @@ export function autoReviewContent(productData) {
     flags.push("Suspicious keywords in title");
   }
   
-  // If multiple flags, require manual review
-  if (flags.length >= 2) {
-    return {
-      status: "not-reviewed",
-      requiresManualReview: true,
-      flags,
-      severity: "high"
-    };
-  }
+  const HIGH_SIGNAL_FLAGS = [
+    "Suspicious keywords in title",
+    "Suspiciously low price for large file",
+    "High price for small file"
+  ];
   
-  // Single flag = medium priority manual review
-  if (flags.length === 1) {
-    return {
-      status: "not-reviewed",
-      requiresManualReview: true,
-      flags,
-      severity: "medium"
-    };
-  }
+  const severity = 
+    flags.filter(f => HIGH_SIGNAL_FLAGS.includes(f)).length >= 1 ? 'high' :
+    flags.length >= 3 ? 'medium' :
+    flags.length >= 1 ? 'low' : null;
+    
+  const requiresManualReview = severity === 'high' || severity === 'medium';
   
-  // No flags = auto-approve for content review
+  const score = calculateContentQualityScore(productData);
+  
   return {
-    status: "auto-reviewed",
-    requiresManualReview: false,
-    flags: [],
-    severity: "none"
+    status: requiresManualReview ? "not-reviewed" : "auto-reviewed",
+    requiresManualReview,
+    flags,
+    severity,
+    score
   };
 }
 

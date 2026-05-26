@@ -4,6 +4,7 @@
 import Order from "../models/Order.js";
 import Payout from "../models/Payout.js";
 import Product from "../models/Product.js";
+import User from "../models/User.js";
 
 export const getSellerDashboardStats = async (req, res) => {
   try {
@@ -104,12 +105,21 @@ export const getSellerEarnings = async (req, res) => {
   const pendingPayouts = await Payout.find({
     sellerId,
     status: "pending",
-  });
+  }).sort({ createdAt: -1 });
 
   const pendingAmount = pendingPayouts.reduce(
     (sum, p) => sum + p.amount,
     0
   );
+
+  // Get payout history
+  const payoutHistory = await Payout.find({
+    sellerId,
+    status: { $in: ["paid", "rejected"] }
+  }).sort({ createdAt: -1 });
+
+  const user = await User.findById(sellerId).select('bankAccounts');
+  const primaryAccount = user?.bankAccounts?.find(acc => acc.isPrimary) || user?.bankAccounts?.[0] || null;
 
   res.json({
     totalEarnings,
@@ -121,7 +131,23 @@ export const getSellerEarnings = async (req, res) => {
       amount: p.amount,
       requestedAt: p.createdAt,
       status: p.status
-    }))
+    })),
+    payoutHistory: payoutHistory.map(p => ({
+      _id: p._id,
+      amount: p.amount,
+      requestedAt: p.createdAt,
+      status: p.status,
+      utrNumber: p.utrNumber,
+      paymentDate: p.paymentDate,
+      paymentMode: p.paymentMethod,
+      proofImageUrl: p.proofImageUrl,
+      rejectionReasons: p.rejectionReasons,
+      rejectionMessage: p.rejectionMessage
+    })),
+    bankAccount: primaryAccount ? {
+      bankName: primaryAccount.bankName,
+      accountNumber: primaryAccount.accountNumber,
+    } : null
   });
 };
 
@@ -156,19 +182,16 @@ export const requestWithdrawal = async (req, res) => {
     return res.status(400).json({ message: "Insufficient balance" });
   }
 
-  // Calculate GST on withdrawal (platform commission already deducted during sale)
-  const GST_RATE = 0.18; // 18%
-  
-  const gstAmount = amount * GST_RATE;
-  const netPayableAmount = amount - gstAmount;
+  // Exact amount requested is transferred; platform commission was already deducted during sale
+  const netPayableAmount = amount;
 
   await Payout.create({
     sellerId,
     amount,
     totalEarnings: amount,
     platformCommission: 0, // Already deducted during product sale
-    gstOnCommission: gstAmount,
-    totalDeductions: gstAmount,
+    gstOnCommission: 0, // Removed double-deduction
+    totalDeductions: 0, // Removed double-deduction
     netPayableAmount,
     paymentMethod: "manual",
   });
@@ -179,7 +202,7 @@ export const requestWithdrawal = async (req, res) => {
     message: "Withdrawal request submitted",
     breakdown: {
       requestedAmount: amount,
-      gstAmount,
+      gstAmount: 0,
       netPayableAmount,
     }
   });
@@ -237,10 +260,11 @@ export const getSellerTransactions = async (req, res) => {
 
     // Format transactions with breakdown
     const transactions = orders.map(order => {
-      const saleAmount = order.amount || 0;
-      const platformFee = order.platformFee || (saleAmount * 0.10);
-      const gstOnFee = platformFee * 0.18;
-      const netAmount = saleAmount - platformFee - gstOnFee;
+      // Back-calculate the base product price. Buyer paid Base + 5% GST + 2% PF = Base * 1.07
+      const grossAmount = order.amount || 0;
+      const saleAmount = grossAmount / 1.07;
+      const netAmount = order.sellerAmount || 0;
+      const totalDeduction = saleAmount - netAmount;
 
       return {
         _id: order._id,
@@ -248,10 +272,10 @@ export const getSellerTransactions = async (req, res) => {
         productName: order.productName || order.productId?.title || "Unknown Product",
         buyerName: order.buyerId?.name || "Unknown Buyer",
         buyerEmail: order.buyerId?.email || "Unknown Email",
-        saleAmount: saleAmount,
-        platformFee: Math.round(platformFee),
-        gstOnFee: Math.round(gstOnFee),
-        netAmount: Math.round(netAmount),
+        saleAmount: Number(saleAmount.toFixed(2)),
+        platformFee: Number(totalDeduction.toFixed(2)),
+        gstOnFee: 0,
+        netAmount: Number(netAmount.toFixed(2)),
         date: order.createdAt,
         status: "completed"
       };
@@ -261,10 +285,10 @@ export const getSellerTransactions = async (req, res) => {
       transactions,
       summary: {
         total: transactions.length,
-        totalRevenue: transactions.reduce((sum, t) => sum + t.saleAmount, 0),
-        totalPlatformFee: transactions.reduce((sum, t) => sum + t.platformFee, 0),
-        totalGST: transactions.reduce((sum, t) => sum + t.gstOnFee, 0),
-        totalEarned: transactions.reduce((sum, t) => sum + t.netAmount, 0)
+        totalRevenue: Number(transactions.reduce((sum, t) => sum + t.saleAmount, 0).toFixed(2)),
+        totalPlatformFee: Number(transactions.reduce((sum, t) => sum + t.platformFee, 0).toFixed(2)),
+        totalGST: Number(transactions.reduce((sum, t) => sum + t.gstOnFee, 0).toFixed(2)),
+        totalEarned: Number(transactions.reduce((sum, t) => sum + t.netAmount, 0).toFixed(2))
       }
     });
   } catch (error) {
@@ -286,10 +310,11 @@ export const getAllSales = async (req, res) => {
 
     // Format sales with breakdown
     const sales = orders.map(order => {
-      const saleAmount = order.amount || 0;
-      const platformFee = order.platformFee || (saleAmount * 0.10);
-      const gstOnFee = platformFee * 0.18;
-      const netAmount = saleAmount - platformFee - gstOnFee;
+      // Back-calculate the base product price. Buyer paid Base + 5% GST + 2% PF = Base * 1.07
+      const grossAmount = order.amount || 0;
+      const saleAmount = grossAmount / 1.07;
+      const netAmount = order.sellerAmount || 0;
+      const totalDeduction = saleAmount - netAmount;
 
       return {
         _id: order._id,
@@ -298,9 +323,9 @@ export const getAllSales = async (req, res) => {
         productId: order.productId?._id || null,
         buyerName: order.buyerId?.name || "Unknown Buyer",
         buyerEmail: order.buyerId?.email || "Unknown Email",
-        amount: saleAmount,
-        platformFee: Math.round(platformFee),
-        sellerAmount: Math.round(netAmount),
+        amount: Number(saleAmount.toFixed(2)),
+        platformFee: Number(totalDeduction.toFixed(2)),
+        sellerAmount: Number(netAmount.toFixed(2)),
         status: order.status, // paid, failed, created
         date: order.createdAt,
         razorpayPaymentId: order.razorpayPaymentId || null,

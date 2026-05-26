@@ -116,12 +116,12 @@ export default function StatusPage() {
     scheduledFor: string;
     impact: string;
   }> = [
-    // {
-    //   title: "Database maintenance and optimization",
-    //   scheduledFor: "Feb 15, 2026 02:00 - 04:00 IST",
-    //   impact: "Minimal - Read-only mode for 5-10 minutes during cutover",
-    // },
-  ];
+      // {
+      //   title: "Database maintenance and optimization",
+      //   scheduledFor: "Feb 15, 2026 02:00 - 04:00 IST",
+      //   impact: "Minimal - Read-only mode for 5-10 minutes during cutover",
+      // },
+    ];
 
   // Uptime data (last 90 days)
   const generateUptimeData = (): UptimeDay[] => {
@@ -153,9 +153,9 @@ export default function StatusPage() {
   };
 
   return (
-    <main className="relative min-h-screen bg-[#05050a] text-white overflow-x-hidden">
+    <main className="relative min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white overflow-x-hidden">
       {/* HEADER */}
-      <header className="fixed top-0 left-0 right-0 z-40 h-16 sm:h-20 border-b border-white/10 bg-[#05050a]/80 backdrop-blur-xl">
+      <header className="fixed top-0 left-0 right-0 z-40 h-16 sm:h-20 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#05050a]/80 backdrop-blur-xl">
         <nav className="mx-auto flex h-full max-w-7xl items-center justify-between px-5 md:px-6">
           <Link href="/" className="flex items-center">
             <Image
@@ -172,12 +172,12 @@ export default function StatusPage() {
           </Link>
 
           <div className="flex items-center gap-4 text-sm">
-            <Link href="/docs" className="hidden text-white/70 hover:text-white sm:inline-flex">
+            <Link href="/docs" className="hidden text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white sm:inline-flex">
               Docs
             </Link>
             <Link
               href="/login"
-              className="rounded-lg border border-white/20 px-3 py-1.5 text-white/80 hover:border-cyan-400 hover:text-white"
+              className="rounded-lg border border-slate-300 dark:border-white/20 px-3 py-1.5 text-slate-700 dark:text-white/80 hover:border-cyan-400 hover:text-slate-900 dark:hover:text-white"
             >
               Sign in
             </Link>
@@ -200,21 +200,21 @@ export default function StatusPage() {
             </p>
             <button
               onClick={() => setShowSubscribe(!showSubscribe)}
-              className="text-xs rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-white/80 hover:border-cyan-400/50 hover:bg-white/10 transition"
+              className="text-xs rounded-full border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 px-4 py-1.5 text-slate-700 dark:text-white/80 hover:border-cyan-400/50 hover:bg-slate-200 dark:hover:bg-white/10 transition"
             >
               🔔 Subscribe to Updates
             </button>
           </div>
-          
+
           {/* Overall Status Banner */}
           <div className={`mt-6 rounded-2xl border p-6 ${getStatusBorderColor(overallStatus)} ${getStatusBgColor(overallStatus)}`}>
             <div className="flex items-center gap-3">
               <div className={`h-4 w-4 rounded-full ${getStatusDotColor(overallStatus)}`} />
               <div>
-                <h1 className="text-2xl font-bold text-white">
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
                   {getStatusText(overallStatus)}
                 </h1>
-                <p className="mt-1 text-sm text-white/70">
+                <p className="mt-1 text-sm text-slate-600 dark:text-white/70">
                   Last updated: {new Date().toLocaleString("en-IN", {
                     timeZone: "Asia/Kolkata",
                     dateStyle: "medium",
@@ -227,8 +227,8 @@ export default function StatusPage() {
 
           {/* Subscribe Form */}
           {showSubscribe && (
-            <form onSubmit={handleSubscribe} className="mt-4 rounded-xl border border-white/20 bg-white/5 p-5">
-              <p className="mb-3 text-sm font-medium text-white">
+            <form onSubmit={handleSubscribe} className="mt-4 rounded-xl border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 p-5">
+              <p className="mb-3 text-sm font-medium text-slate-900 dark:text-white">
                 Get notified about incidents and maintenance
               </p>
               <div className="flex gap-2">
@@ -238,11 +238,11 @@ export default function StatusPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
                   required
-                  className="flex-1 rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-white/40 focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                  className="flex-1 rounded-lg border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 px-4 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/40 focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
                 />
                 <button
                   type="submit"
-                  className="rounded-lg bg-cyan-500 px-5 py-2 text-sm font-medium text-white hover:bg-cyan-400 transition"
+                  className="rounded-lg bg-cyan-500 px-5 py-2 text-sm font-medium text-slate-900 dark:text-white hover:bg-cyan-400 transition"
                 >
                   Subscribe
                 </button>
@@ -253,20 +253,20 @@ export default function StatusPage() {
 
         {/* SYSTEM COMPONENTS */}
         <section className="mb-14">
-          <h2 className="mb-6 text-xl font-semibold text-white">System Components</h2>
+          <h2 className="mb-6 text-xl font-semibold text-slate-900 dark:text-white">System Components</h2>
           <div className="space-y-3">
             {systemComponents.map((component) => (
               <div
                 key={component.name}
-                className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4 hover:border-white/20 transition"
+                className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4 hover:border-slate-300 dark:hover:border-white/20 transition"
               >
                 <div className="flex-1">
-                  <h3 className="text-sm font-semibold text-white">{component.name}</h3>
-                  <p className="mt-1 text-xs text-white/60">{component.description}</p>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{component.name}</h3>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-white/60">{component.description}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className={`h-2.5 w-2.5 rounded-full ${getStatusDotColor(component.status)}`} />
-                  <span className="text-xs font-medium text-white/80 capitalize">
+                  <span className="text-xs font-medium text-slate-700 dark:text-white/80 capitalize">
                     {component.status}
                   </span>
                 </div>
@@ -278,7 +278,7 @@ export default function StatusPage() {
         {/* SCHEDULED MAINTENANCE */}
         {scheduledMaintenance.length > 0 && (
           <section className="mb-14">
-            <h2 className="mb-6 text-xl font-semibold text-white">Scheduled Maintenance</h2>
+            <h2 className="mb-6 text-xl font-semibold text-slate-900 dark:text-white">Scheduled Maintenance</h2>
             <div className="space-y-4">
               {scheduledMaintenance.map((maintenance, idx) => (
                 <div
@@ -288,11 +288,11 @@ export default function StatusPage() {
                   <div className="flex items-start gap-3">
                     <span className="text-2xl">🛠️</span>
                     <div className="flex-1">
-                      <h3 className="text-base font-semibold text-white">{maintenance.title}</h3>
-                      <p className="mt-2 text-sm text-white/70">
+                      <h3 className="text-base font-semibold text-slate-900 dark:text-white">{maintenance.title}</h3>
+                      <p className="mt-2 text-sm text-slate-600 dark:text-white/70">
                         <strong>Scheduled:</strong> {maintenance.scheduledFor}
                       </p>
-                      <p className="mt-1 text-sm text-white/70">
+                      <p className="mt-1 text-sm text-slate-600 dark:text-white/70">
                         <strong>Expected Impact:</strong> {maintenance.impact}
                       </p>
                     </div>
@@ -305,62 +305,59 @@ export default function StatusPage() {
 
         {/* RECENT INCIDENTS */}
         <section className="mb-14">
-          <h2 className="mb-6 text-xl font-semibold text-white">
+          <h2 className="mb-6 text-xl font-semibold text-slate-900 dark:text-white">
             Recent Incidents
-            <span className="ml-2 text-sm font-normal text-white/60">(Last 7 days)</span>
+            <span className="ml-2 text-sm font-normal text-slate-500 dark:text-white/60">(Last 7 days)</span>
           </h2>
-          
+
           {recentIncidents.length === 0 ? (
             <div className="rounded-xl border border-emerald-400/30 bg-emerald-500/5 p-6 text-center">
               <span className="text-3xl">✓</span>
-              <p className="mt-3 text-sm font-medium text-white">No incidents reported</p>
-              <p className="mt-1 text-xs text-white/60">All systems have been operational for the past 7 days</p>
+              <p className="mt-3 text-sm font-medium text-slate-900 dark:text-white">No incidents reported</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-white/60">All systems have been operational for the past 7 days</p>
             </div>
           ) : (
             <div className="space-y-6">
               {recentIncidents.map((incident) => (
                 <div
                   key={incident.id}
-                  className={`rounded-xl border p-6 ${
-                    incident.severity === "critical"
+                  className={`rounded-xl border p-6 ${incident.severity === "critical"
                       ? "border-red-400/30 bg-red-500/5"
                       : incident.severity === "major"
-                      ? "border-orange-400/30 bg-orange-500/5"
-                      : "border-yellow-400/30 bg-yellow-500/5"
-                  }`}
+                        ? "border-orange-400/30 bg-orange-500/5"
+                        : "border-yellow-400/30 bg-yellow-500/5"
+                    }`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            incident.severity === "critical"
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${incident.severity === "critical"
                               ? "bg-red-500/20 text-red-300"
                               : incident.severity === "major"
-                              ? "bg-orange-500/20 text-orange-300"
-                              : "bg-yellow-500/20 text-yellow-300"
-                          }`}
+                                ? "bg-orange-500/20 text-orange-300"
+                                : "bg-yellow-500/20 text-yellow-300"
+                            }`}
                         >
                           {incident.severity.toUpperCase()}
                         </span>
                         <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            incident.status === "resolved"
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${incident.status === "resolved"
                               ? "bg-emerald-500/20 text-emerald-300"
                               : incident.status === "monitoring"
-                              ? "bg-cyan-500/20 text-cyan-300"
-                              : "bg-amber-500/20 text-amber-300"
-                          }`}
+                                ? "bg-cyan-500/20 text-cyan-300"
+                                : "bg-amber-500/20 text-amber-300"
+                            }`}
                         >
                           {incident.status.toUpperCase()}
                         </span>
                       </div>
-                      <h3 className="mt-3 text-base font-semibold text-white">{incident.title}</h3>
-                      <p className="mt-1 text-xs text-white/60">{incident.timestamp}</p>
+                      <h3 className="mt-3 text-base font-semibold text-slate-900 dark:text-white">{incident.title}</h3>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-white/60">{incident.timestamp}</p>
                     </div>
                   </div>
 
-                  <div className="mt-5 space-y-4 border-t border-white/10 pt-4">
+                  <div className="mt-5 space-y-4 border-t border-slate-200 dark:border-white/10 pt-4">
                     {incident.updates.map((update, idx) => (
                       <div key={idx} className="flex gap-3">
                         <div className="flex flex-col items-center">
@@ -371,11 +368,11 @@ export default function StatusPage() {
                         </div>
                         <div className="flex-1 pb-4">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-white">{update.status}</span>
+                            <span className="text-xs font-semibold text-slate-900 dark:text-white">{update.status}</span>
                             <span className="text-xs text-white/50">•</span>
-                            <span className="text-xs text-white/60">{update.time}</span>
+                            <span className="text-xs text-slate-500 dark:text-white/60">{update.time}</span>
                           </div>
-                          <p className="mt-1 text-sm text-white/70">{update.message}</p>
+                          <p className="mt-1 text-sm text-slate-600 dark:text-white/70">{update.message}</p>
                         </div>
                       </div>
                     ))}
@@ -388,28 +385,28 @@ export default function StatusPage() {
 
         {/* UPTIME HISTORY */}
         <section className="mb-14">
-          <h2 className="mb-6 text-xl font-semibold text-white">
+          <h2 className="mb-6 text-xl font-semibold text-slate-900 dark:text-white">
             Uptime History
-            <span className="ml-2 text-sm font-normal text-white/60">(Last 90 days)</span>
+            <span className="ml-2 text-sm font-normal text-slate-500 dark:text-white/60">(Last 90 days)</span>
           </h2>
-          
-          <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+
+          <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-6">
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold text-white">{averageUptime}%</p>
-                <p className="mt-1 text-sm text-white/60">Average uptime</p>
+                <p className="text-3xl font-bold text-slate-900 dark:text-white">{averageUptime}%</p>
+                <p className="mt-1 text-sm text-slate-500 dark:text-white/60">Average uptime</p>
               </div>
               <div className="text-right">
                 <p className="text-2xl font-bold text-emerald-400">
                   {uptimeData.filter((d) => d.uptime === 100).length}/90
                 </p>
-                <p className="mt-1 text-sm text-white/60">Days with 100% uptime</p>
+                <p className="mt-1 text-sm text-slate-500 dark:text-white/60">Days with 100% uptime</p>
               </div>
             </div>
 
             {/* Uptime Bar Chart */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs text-white/60">
+              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-white/60">
                 <span>90 days ago</span>
                 <span>Today</span>
               </div>
@@ -417,21 +414,20 @@ export default function StatusPage() {
                 {uptimeData.map((day, idx) => (
                   <div
                     key={idx}
-                    className={`flex-1 rounded-sm transition-all hover:opacity-80 cursor-pointer ${
-                      day.uptime === 100
+                    className={`flex-1 rounded-sm transition-all hover:opacity-80 cursor-pointer ${day.uptime === 100
                         ? "bg-emerald-500"
                         : day.uptime >= 99
-                        ? "bg-yellow-500"
-                        : day.uptime >= 95
-                        ? "bg-orange-500"
-                        : "bg-red-500"
-                    }`}
+                          ? "bg-yellow-500"
+                          : day.uptime >= 95
+                            ? "bg-orange-500"
+                            : "bg-red-500"
+                      }`}
                     style={{ height: `${day.uptime}%` }}
                     title={`${day.date}: ${day.uptime}% uptime ${day.incidents > 0 ? `(${day.incidents} incident${day.incidents > 1 ? "s" : ""})` : ""}`}
                   />
                 ))}
               </div>
-              <div className="flex items-center gap-4 text-xs text-white/60">
+              <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-white/60">
                 <div className="flex items-center gap-1.5">
                   <div className="h-3 w-3 rounded-sm bg-emerald-500" />
                   <span>100% uptime</span>
@@ -454,27 +450,27 @@ export default function StatusPage() {
         </section>
 
         {/* SUPPORT & RESOURCES */}
-        <section className="rounded-2xl border border-white/10 bg-linear-to-r from-cyan-500/10 to-indigo-500/10 p-8">
-          <h2 className="mb-4 text-xl font-semibold text-white">Need Help?</h2>
-          <p className="mb-6 text-sm text-white/70">
+        <section className="rounded-2xl border border-slate-200 dark:border-white/10 bg-linear-to-r from-cyan-500/10 to-indigo-500/10 p-8">
+          <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-white">Need Help?</h2>
+          <p className="mb-6 text-sm text-slate-600 dark:text-white/70">
             If you&apos;re experiencing issues not reflected on this page, please contact our support team.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
               href="/contact"
-              className="inline-flex items-center rounded-lg bg-cyan-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-cyan-400"
+              className="inline-flex items-center rounded-lg bg-cyan-500 px-5 py-2.5 text-sm font-medium text-slate-900 dark:text-white hover:bg-cyan-400"
             >
               Contact Support
             </Link>
             <Link
               href="/docs"
-              className="inline-flex items-center rounded-lg border border-white/20 px-5 py-2.5 text-sm font-medium text-white/90 hover:border-white/40 hover:bg-white/5"
+              className="inline-flex items-center rounded-lg border border-slate-300 dark:border-white/20 px-5 py-2.5 text-sm font-medium text-slate-800 dark:text-white/90 hover:border-white/40 hover:bg-slate-100 dark:hover:bg-white/5"
             >
               View Documentation
             </Link>
             <Link
               href="/trust-center"
-              className="inline-flex items-center rounded-lg border border-white/20 px-5 py-2.5 text-sm font-medium text-white/90 hover:border-white/40 hover:bg-white/5"
+              className="inline-flex items-center rounded-lg border border-slate-300 dark:border-white/20 px-5 py-2.5 text-sm font-medium text-slate-800 dark:text-white/90 hover:border-white/40 hover:bg-slate-100 dark:hover:bg-white/5"
             >
               Trust Center
             </Link>
@@ -482,21 +478,21 @@ export default function StatusPage() {
         </section>
 
         {/* Footer Links */}
-        <section className="mt-14 border-t border-white/10 pt-8">
+        <section className="mt-14 border-t border-slate-200 dark:border-white/10 pt-8">
           <div className="flex flex-wrap items-center justify-between gap-4 text-sm">
-            <Link href="/" className="text-white/70 hover:text-white">
+            <Link href="/" className="text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white">
               ← Back to BitForge
             </Link>
-            <div className="flex flex-wrap gap-4 text-white/70">
+            <div className="flex flex-wrap gap-4 text-slate-600 dark:text-white/70">
               <a
-                href="https://github.com/yourusername/contentSellify/issues"
+                href="https://github.com/yourusername/Bitforge/issues"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-white"
+                className="hover:text-slate-900 dark:hover:text-white"
               >
                 Report Issue
               </a>
-              <Link href="/about" className="hover:text-white">
+              <Link href="/about" className="hover:text-slate-900 dark:hover:text-white">
                 About Us
               </Link>
             </div>
@@ -538,7 +534,7 @@ function getStatusBorderColor(status: StatusLevel): string {
     case "maintenance":
       return "border-cyan-400/30";
     default:
-      return "border-white/10";
+      return "border-slate-200 dark:border-white/10";
   }
 }
 
@@ -555,7 +551,7 @@ function getStatusBgColor(status: StatusLevel): string {
     case "maintenance":
       return "bg-cyan-500/5";
     default:
-      return "bg-white/5";
+      return "bg-slate-100 dark:bg-white/5";
   }
 }
 
@@ -572,6 +568,6 @@ function getStatusDotColor(status: StatusLevel): string {
     case "maintenance":
       return "bg-cyan-500";
     default:
-      return "bg-white/50";
+      return "bg-slate-100 dark:bg-white/50";
   }
 }
