@@ -5,18 +5,18 @@ import { Rocket } from "lucide-react";
 
 export default function RateLimitsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-10 px-4">
+    <div className="py-10 px-4 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <nav className="mb-6 text-sm text-slate-500 dark:text-white/60">
-          <Link href="/docs" className="hover:text-cyan-400">Documentation</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Documentation</Link>
           <span className="mx-2">/</span>
-          <Link href="/docs" className="hover:text-cyan-400">Platform Guides</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Platform Guides</Link>
           <span className="mx-2">/</span>
           <span className="text-slate-900 dark:text-white">Rate Limits</span>
         </nav>
 
         <div className="mb-8">
-          <span className="inline-block px-3 py-1 mb-4 text-xs font-semibold text-cyan-400 bg-cyan-500/10 rounded-full border border-cyan-500/20">
+          <span className="inline-block px-3 py-1 mb-4 text-xs font-semibold text-indigo-600 dark:text-cyan-400 bg-indigo-50 dark:bg-cyan-500/10 rounded-full border border-indigo-200 dark:border-cyan-500/20">
             Platform Guides
           </span>
           <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">API Rate Limits</h1>
@@ -30,20 +30,20 @@ export default function RateLimitsPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Rate Limit Overview</h2>
           <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">
-              Rate limits protect our API infrastructure and ensure fair usage across all users. When you exceed the limit, you'll receive a <code className="text-cyan-300">429 Too Many Requests</code> error.
+              Rate limits protect our API infrastructure and ensure fair usage across all users. When you exceed the limit, you'll receive a <code className="text-indigo-600 dark:text-cyan-400">429 Too Many Requests</code> error.
             </p>
             <div className="grid md:grid-cols-3 gap-4 mt-6">
-              <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-5 text-center">
+              <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-5 text-center">
                 <div className="text-3xl mb-3">🏯</div>
                 <h3 className="text-slate-900 dark:text-white font-semibold mb-2">100 req/min</h3>
                 <p className="text-slate-500 dark:text-white/60 text-sm">Standard Tier</p>
               </div>
-              <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-5 text-center">
+              <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-5 text-center">
                 <Rocket className="w-6 h-6 mx-auto mb-3 text-blue-400" />
                 <h3 className="text-slate-900 dark:text-white font-semibold mb-2">500 req/min</h3>
                 <p className="text-slate-500 dark:text-white/60 text-sm">Pro Tier</p>
               </div>
-              <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-5 text-center">
+              <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-5 text-center">
                 <div className="text-3xl mb-3">⭐</div>
                 <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Custom</h3>
                 <p className="text-slate-500 dark:text-white/60 text-sm">Enterprise</p>
@@ -100,7 +100,7 @@ export default function RateLimitsPage() {
         {/* Headers */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Rate Limit Headers</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Every API response includes rate limit information in headers:</p>
             <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-lg p-4 space-y-2 text-sm font-mono">
               <div className="flex justify-between">
@@ -165,7 +165,7 @@ export default function RateLimitsPage() {
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
                 <span className="text-xl"></span> Batch Requests
               </h3>
-              <p className="text-slate-500 dark:text-white/60 text-sm">Use batch endpoints when available: <code className="text-cyan-300">/products/batch</code> instead of individual product requests.</p>
+              <p className="text-slate-500 dark:text-white/60 text-sm">Use batch endpoints when available: <code className="text-indigo-600 dark:text-cyan-400">/products/batch</code> instead of individual product requests.</p>
             </div>
           </div>
         </section>

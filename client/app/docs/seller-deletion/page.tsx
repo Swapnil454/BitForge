@@ -5,12 +5,12 @@ import { Trash2 } from "lucide-react";
 
 export default function SellerDeletionPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-10 px-4">
+    <div className="py-10 px-4 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <nav className="mb-6 text-sm text-slate-500 dark:text-white/60">
-          <Link href="/docs" className="hover:text-cyan-400">Documentation</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Documentation</Link>
           <span className="mx-2">/</span>
-          <Link href="/docs" className="hover:text-cyan-400">For Sellers</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">For Sellers</Link>
           <span className="mx-2">/</span>
           <span className="text-slate-900 dark:text-white">Seller Deletion</span>
         </nav>
@@ -28,7 +28,7 @@ export default function SellerDeletionPage() {
         {/* Overview */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Account Deletion Process</h2>
-          <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-6">
+          <div className="bg-red-50 dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">
               Deleting your seller account is a serious action that requires admin approval. This process ensures all pending transactions are settled and customer obligations are fulfilled.
             </p>
@@ -89,7 +89,7 @@ export default function SellerDeletionPage() {
         {/* Deletion Steps */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">How to Request Account Deletion</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <ol className="space-y-4 text-slate-700 dark:text-white/80">
               <li className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-cyan-500/20 rounded-full text-cyan-400 text-sm font-bold">1</span>
@@ -135,25 +135,25 @@ export default function SellerDeletionPage() {
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">What Gets Deleted</h2>
           <div className="grid md:grid-cols-2 gap-4">
-            <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-6">
+            <div className="bg-red-50 dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-3 flex items-center gap-2">
                 <Trash2 className="w-5 h-5" /> Permanently Removed
               </h3>
               <ul className="space-y-2 text-slate-600 dark:text-white/70 text-sm">
                 <li className="flex items-start gap-2">
-                  <span className="text-red-400">•</span>
+                  <span className="text-red-500 dark:text-red-400">•</span>
                   <span>All product listings and files</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-red-400">•</span>
+                  <span className="text-red-500 dark:text-red-400">•</span>
                   <span>Profile and bio information</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-red-400">•</span>
+                  <span className="text-red-500 dark:text-red-400">•</span>
                   <span>API keys and access tokens</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-red-400">•</span>
+                  <span className="text-red-500 dark:text-red-400">•</span>
                   <span>Unpaid earnings (must withdraw first)</span>
                 </li>
               </ul>
@@ -241,7 +241,7 @@ export default function SellerDeletionPage() {
         </section>
 
         {/* Support */}
-        <div className="bg-gradient-to-r from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-8 text-center">
+        <div className="bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-cyan-500/10 dark:to-indigo-500/10 shadow-sm border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-8 text-center">
           <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Need Help?</h3>
           <p className="text-slate-600 dark:text-white/70 mb-6">
             Have questions about account deletion? Our support team can help you explore alternatives.

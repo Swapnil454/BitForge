@@ -6,18 +6,18 @@ import { DollarSign, AlertCircle, Lock, MessageCircle, ShoppingCart, Key, TestTu
 
 export default function WebhooksPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-10 px-4">
+    <div className="py-10 px-4 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <nav className="mb-6 text-sm text-slate-500 dark:text-white/60">
-          <Link href="/docs" className="hover:text-cyan-400">Documentation</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Documentation</Link>
           <span className="mx-2">/</span>
-          <Link href="/docs" className="hover:text-cyan-400">For Developers</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">For Developers</Link>
           <span className="mx-2">/</span>
           <span className="text-slate-900 dark:text-white">Webhooks</span>
         </nav>
 
         <div className="mb-8">
-          <span className="inline-block px-3 py-1 mb-4 text-xs font-semibold text-cyan-400 bg-cyan-500/10 rounded-full border border-cyan-500/20">
+          <span className="inline-block px-3 py-1 mb-4 text-xs font-semibold text-indigo-600 dark:text-cyan-400 bg-indigo-50 dark:bg-cyan-500/10 rounded-full border border-indigo-200 dark:border-cyan-500/20">
             For Developers
           </span>
           <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">Webhooks</h1>
@@ -33,9 +33,9 @@ export default function WebhooksPage() {
             <p className="text-slate-700 dark:text-white/80 mb-4">
               Webhooks allow your application to receive real-time notifications when events occur on Bitforge. Instead of polling our API, webhooks push data to your endpoint automatically.
             </p>
-            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-cyan-500/30 rounded-lg p-4">
+            <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-indigo-200 dark:border-cyan-500/30 rounded-lg p-4">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Base Webhook URL</h3>
-              <div className="font-mono text-cyan-300 text-sm">https://api.Bitforge.com/webhooks</div>
+              <div className="font-mono text-indigo-600 dark:text-cyan-400 text-sm">https://api.Bitforge.com/webhooks</div>
             </div>
           </div>
         </section>
@@ -45,84 +45,84 @@ export default function WebhooksPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Event Types</h2>
           <div className="space-y-4">
             {/* Payment Events */}
-            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-3 flex items-center gap-2">
                 <DollarSign className="w-5 h-5" /> Payment Events
               </h3>
               <div className="space-y-2 text-slate-600 dark:text-white/70 text-sm">
                 <div className="flex items-start gap-2">
-                  <span className="font-mono text-cyan-400">payment.completed</span>
+                  <span className="font-mono text-indigo-600 dark:text-cyan-400">payment.completed</span>
                   <span>- Customer payment processed successfully</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="font-mono text-cyan-400">payment.failed</span>
+                  <span className="font-mono text-indigo-600 dark:text-cyan-400">payment.failed</span>
                   <span>- Payment processing failed</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="font-mono text-cyan-400">payment.refunded</span>
+                  <span className="font-mono text-indigo-600 dark:text-cyan-400">payment.refunded</span>
                   <span>- Payment refunded to customer</span>
                 </div>
               </div>
             </div>
 
             {/* Order Events */}
-            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-3 flex items-center gap-2">
                 <span className="text-xl"></span> Order Events
               </h3>
               <div className="space-y-2 text-slate-600 dark:text-white/70 text-sm">
                 <div className="flex items-start gap-2">
-                  <span className="font-mono text-cyan-400">order.created</span>
+                  <span className="font-mono text-indigo-600 dark:text-cyan-400">order.created</span>
                   <span>- New order placed</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="font-mono text-cyan-400">order.completed</span>
+                  <span className="font-mono text-indigo-600 dark:text-cyan-400">order.completed</span>
                   <span>- Order fulfilled and delivered</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="font-mono text-cyan-400">order.cancelled</span>
+                  <span className="font-mono text-indigo-600 dark:text-cyan-400">order.cancelled</span>
                   <span>- Order cancelled by user or system</span>
                 </div>
               </div>
             </div>
 
             {/* Payout Events */}
-            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-3 flex items-center gap-2">
                 <span className="text-xl"></span> Payout Events
               </h3>
               <div className="space-y-2 text-slate-600 dark:text-white/70 text-sm">
                 <div className="flex items-start gap-2">
-                  <span className="font-mono text-cyan-400">payout.processing</span>
+                  <span className="font-mono text-indigo-600 dark:text-cyan-400">payout.processing</span>
                   <span>- Payout request initiated</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="font-mono text-cyan-400">payout.completed</span>
+                  <span className="font-mono text-indigo-600 dark:text-cyan-400">payout.completed</span>
                   <span>- Funds transferred to seller account</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="font-mono text-cyan-400">payout.failed</span>
+                  <span className="font-mono text-indigo-600 dark:text-cyan-400">payout.failed</span>
                   <span>- Payout failed (invalid bank details, etc.)</span>
                 </div>
               </div>
             </div>
 
             {/* Product Events */}
-            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-3 flex items-center gap-2">
                 <ShoppingCart className="w-5 h-5" /> Product Events
               </h3>
               <div className="space-y-2 text-slate-600 dark:text-white/70 text-sm">
                 <div className="flex items-start gap-2">
-                  <span className="font-mono text-cyan-400">product.approved</span>
+                  <span className="font-mono text-indigo-600 dark:text-cyan-400">product.approved</span>
                   <span>- Product approved and published</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="font-mono text-cyan-400">product.rejected</span>
+                  <span className="font-mono text-indigo-600 dark:text-cyan-400">product.rejected</span>
                   <span>- Product submission rejected</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="font-mono text-cyan-400">product.updated</span>
+                  <span className="font-mono text-indigo-600 dark:text-cyan-400">product.updated</span>
                   <span>- Product changes approved and applied</span>
                 </div>
               </div>
@@ -163,7 +163,7 @@ export default function WebhooksPage() {
         {/* Setup */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Setup Webhooks</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <ol className="space-y-4 text-slate-700 dark:text-white/80">
               <li className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-cyan-500/20 rounded-full text-cyan-400 text-sm font-bold">
@@ -307,7 +307,7 @@ app.post('/webhooks', (req, res) => {
         {/* Testing */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Testing Webhooks</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Test webhooks using our CLI or dashboard:</p>
             <CodeBlock
               code={`# Install Bitforge CLI
@@ -363,7 +363,7 @@ Bitforge webhooks test --event payment.completed`}
         </section>
 
         {/* Support CTA */}
-        <div className="bg-gradient-to-r from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-8 text-center">
+        <div className="bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-cyan-500/10 dark:to-indigo-500/10 shadow-sm border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-8 text-center">
           <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Need Help with Webhooks?</h3>
           <p className="text-slate-600 dark:text-white/70 mb-6">
             Have questions about webhook implementation? Our developer support team is here to assist.
@@ -400,7 +400,7 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
         </button>
       </div>
       <pre className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl p-4 overflow-x-auto">
-        <code className="text-sm text-cyan-300">{code}</code>
+        <code className="text-sm text-indigo-600 dark:text-cyan-400">{code}</code>
       </pre>
     </div>
   );
@@ -420,10 +420,10 @@ function NextStepCard({
   return (
     <Link
       href={href}
-      className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
+      className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-indigo-400/40 dark:hover:border-cyan-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all"
     >
-      <div className="text-3xl mb-3 text-cyan-400">{icon}</div>
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-cyan-300">
+      <div className="text-3xl mb-3 text-indigo-600 dark:text-cyan-400">{icon}</div>
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">
         {title}
       </h3>
       <p className="text-slate-500 dark:text-white/60 text-sm group-hover:text-slate-600 dark:group-hover:text-white/70">{description}</p>

@@ -4,18 +4,18 @@ import Link from "next/link";
 
 export default function TestingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-10 px-4">
+    <div className="py-10 px-4 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <nav className="mb-6 text-sm text-slate-500 dark:text-white/60">
-          <Link href="/docs" className="hover:text-cyan-400">Documentation</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Documentation</Link>
           <span className="mx-2">/</span>
-          <Link href="/docs" className="hover:text-cyan-400">Platform Guides</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Platform Guides</Link>
           <span className="mx-2">/</span>
           <span className="text-slate-900 dark:text-white">Testing Guide</span>
         </nav>
 
         <div className="mb-8">
-          <span className="inline-block px-3 py-1 mb-4 text-xs font-semibold text-cyan-400 bg-cyan-500/10 rounded-full border border-cyan-500/20">
+          <span className="inline-block px-3 py-1 mb-4 text-xs font-semibold text-indigo-600 dark:text-cyan-400 bg-indigo-50 dark:bg-cyan-500/10 rounded-full border border-indigo-200 dark:border-cyan-500/20">
             Platform Guides
           </span>
           <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">Testing Guide</h1>
@@ -27,7 +27,7 @@ export default function TestingPage() {
         {/* Test Mode */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Test Mode</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">
               Test mode allows you to simulate transactions, payouts, and workflows without processing real payments or affecting production data.
             </p>
@@ -36,7 +36,7 @@ export default function TestingPage() {
               <ol className="space-y-2 text-slate-600 dark:text-white/70 text-sm list-decimal list-inside">
                 <li>Go to Dashboard → API Settings</li>
                 <li>Toggle "Test Mode" switch</li>
-                <li>Use test API keys (start with <code className="text-cyan-300">csfy_test_</code>)</li>
+                <li>Use test API keys (start with <code className="text-indigo-600 dark:text-cyan-400">csfy_test_</code>)</li>
                 <li>Transactions marked with 🧪 badge</li>
               </ol>
             </div>
@@ -60,17 +60,17 @@ export default function TestingPage() {
                   <tr className="border-t border-slate-200 dark:border-white/10">
                     <td className="p-4 text-cyan-400">4242 4242 4242 4242</td>
                     <td className="p-4">Visa</td>
-                    <td className="p-4 text-green-400">Success</td>
+                    <td className="p-4 text-emerald-500 dark:text-emerald-400">Success</td>
                   </tr>
                   <tr className="border-t border-slate-200 dark:border-white/10">
                     <td className="p-4 text-cyan-400">5555 5555 5555 4444</td>
                     <td className="p-4">Mastercard</td>
-                    <td className="p-4 text-green-400">Success</td>
+                    <td className="p-4 text-emerald-500 dark:text-emerald-400">Success</td>
                   </tr>
                   <tr className="border-t border-slate-200 dark:border-white/10">
                     <td className="p-4 text-cyan-400">4000 0000 0000 0002</td>
                     <td className="p-4">Visa</td>
-                    <td className="p-4 text-red-400">Declined</td>
+                    <td className="p-4 text-red-500 dark:text-red-400">Declined</td>
                   </tr>
                   <tr className="border-t border-slate-200 dark:border-white/10">
                     <td className="p-4 text-cyan-400">4000 0000 0000 9995</td>

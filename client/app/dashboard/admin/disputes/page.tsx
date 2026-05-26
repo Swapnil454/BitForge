@@ -258,6 +258,7 @@ export default function DisputesPage() {
               placeholder="Search by product, buyer, seller..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              suppressHydrationWarning
               className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/10 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm text-slate-900 dark:text-white"
             />
           </div>

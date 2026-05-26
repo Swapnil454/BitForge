@@ -74,9 +74,9 @@ export default function NotificationDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.96 }}
             transition={{ duration: 0.18 }}
-            className={`fixed right-2 top-16 z-[9999] w-[22rem] max-w-[calc(100vw-1rem)] overflow-hidden rounded-3xl border bg-white/95 shadow-2xl backdrop-blur-xl dark:bg-slate-950/95 sm:right-4 md:w-[26rem] ${ui.dropdownBorder}`}
+            className={`fixed right-2 top-16 z-[9999] w-[18rem] max-w-[calc(100vw-1rem)] overflow-hidden rounded-3xl border bg-white/95 shadow-2xl backdrop-blur-xl dark:bg-slate-950/95 sm:right-4 md:w-[20rem] ${ui.dropdownBorder}`}
           >
-            <div className={`border-b border-slate-200 px-5 py-4 dark:border-white/10 bg-linear-to-r ${ui.headerBg}`}>
+            <div className={`border-b border-slate-200 px-4 py-3 dark:border-white/10 bg-linear-to-r ${ui.headerBg}`}>
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/45">
@@ -94,7 +94,7 @@ export default function NotificationDropdown({
               </div>
             </div>
 
-            <div className="max-h-[24rem] space-y-3 overflow-y-auto p-3">
+            <div className="max-h-[16rem] space-y-2 overflow-y-auto p-2">
               {loading ? (
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-white/55">
                   Loading notifications...
@@ -129,13 +129,13 @@ export default function NotificationDropdown({
             </div>
 
             {notifications.length > 0 && (
-              <div className="border-t border-slate-200 p-3 dark:border-white/10">
+              <div className="border-t border-slate-200 p-2 dark:border-white/10">
                 <button
                   onClick={() => {
                     setOpen(false);
                     router.push(ui.viewAllHref);
                   }}
-                  className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+                  className="w-full rounded-2xl bg-slate-900 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
                 >
                   View all notifications
                 </button>

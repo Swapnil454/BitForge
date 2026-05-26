@@ -41,23 +41,23 @@ export default function ProductManagementPage() {
           </p>
           <ul className="space-y-2 text-slate-600 dark:text-white/70">
             <li className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
+              <Check className="w-5 h-5 text-indigo-600 dark:text-cyan-400 flex-shrink-0 mt-0.5" />
               <span>E-books, PDFs, and documents</span>
             </li>
             <li className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
+              <Check className="w-5 h-5 text-indigo-600 dark:text-cyan-400 flex-shrink-0 mt-0.5" />
               <span>Software, plugins, and code libraries</span>
             </li>
             <li className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
+              <Check className="w-5 h-5 text-indigo-600 dark:text-cyan-400 flex-shrink-0 mt-0.5" />
               <span>Digital art, graphics, and design assets</span>
             </li>
             <li className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
+              <Check className="w-5 h-5 text-indigo-600 dark:text-cyan-400 flex-shrink-0 mt-0.5" />
               <span>Templates, presets, and configurations</span>
             </li>
             <li className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
+              <Check className="w-5 h-5 text-indigo-600 dark:text-cyan-400 flex-shrink-0 mt-0.5" />
               <span>Video courses, audio files, and media</span>
             </li>
           </ul>
@@ -67,9 +67,9 @@ export default function ProductManagementPage() {
         <section>
           <h2 className="mb-4 text-2xl font-semibold text-slate-900 dark:text-white">Product Lifecycle</h2>
           <div className="space-y-4">
-            <div className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4">
+            <div className="rounded-lg border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-4">
               <div className="mb-2 flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500/20 text-sm font-bold text-yellow-300">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500/20 text-sm font-bold text-amber-700 dark:text-amber-300">
                   1
                 </span>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Upload & Submit</h3>
@@ -79,9 +79,9 @@ export default function ProductManagementPage() {
               </p>
             </div>
 
-            <div className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4">
+            <div className="rounded-lg border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-4">
               <div className="mb-2 flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-500/20 text-sm font-bold text-cyan-300">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 dark:bg-cyan-500/20 text-sm font-bold text-indigo-600 dark:text-cyan-300">
                   2
                 </span>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Admin Review</h3>
@@ -91,9 +91,9 @@ export default function ProductManagementPage() {
               </p>
             </div>
 
-            <div className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4">
+            <div className="rounded-lg border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-4">
               <div className="mb-2 flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-bold text-emerald-300">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-bold text-emerald-700 dark:text-emerald-300">
                   3
                 </span>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Approved & Live</h3>
@@ -144,7 +144,7 @@ export default function ProductManagementPage() {
             </div>
           </div>
 
-          <div className="mt-6 rounded-lg border border-cyan-500/30 bg-cyan-500/5 p-4">
+          <div className="mt-6 rounded-lg border border-indigo-200 dark:border-cyan-500/30 bg-cyan-500/5 p-4">
             <div className="flex items-start gap-3">
               <span className="text-xl">💡</span>
               <div>
@@ -169,8 +169,8 @@ export default function ProductManagementPage() {
             Access your dashboard to see all your products with their status:
           </p>
           <ul className="space-y-2 text-sm text-slate-500 dark:text-white/60">
-            <li>• <strong className="text-yellow-300">Pending:</strong> Awaiting admin approval</li>
-            <li>• <strong className="text-emerald-300">Approved:</strong> Live on marketplace</li>
+            <li>• <strong className="text-amber-700 dark:text-amber-300">Pending:</strong> Awaiting admin approval</li>
+            <li>• <strong className="text-emerald-700 dark:text-emerald-300">Approved:</strong> Live on marketplace</li>
             <li>• <strong className="text-red-300">Rejected:</strong> Needs revision (check feedback)</li>
           </ul>
 
@@ -186,9 +186,9 @@ export default function ProductManagementPage() {
             <li>5. Admin reviews and approves/rejects</li>
           </ol>
 
-          <div className="mt-4 rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
+          <div className="mt-4 rounded-lg border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/5 p-4">
             <p className="text-sm text-slate-600 dark:text-white/70">
-              <strong className="text-yellow-300">Note:</strong> Your product remains live with old content until changes are approved.
+              <strong className="text-amber-700 dark:text-amber-300">Note:</strong> Your product remains live with old content until changes are approved.
             </p>
           </div>
         </section>
@@ -207,7 +207,7 @@ export default function ProductManagementPage() {
             <li>5. Once approved, product is removed from marketplace</li>
           </ol>
 
-          <div className="mt-4 rounded-lg border border-red-500/30 bg-red-500/5 p-4">
+          <div className="mt-4 rounded-lg border border-red-200 dark:border-red-500/30 bg-red-500/5 p-4">
             <p className="text-sm text-slate-600 dark:text-white/70">
               <strong className="text-red-300">Important:</strong> Existing buyers retain access to purchased files even after deletion.
             </p>
@@ -259,7 +259,7 @@ export default function ProductManagementPage() {
               <span><strong>Views:</strong> Track how many users view your product</span>
             </li>
             <li className="flex items-start gap-3">
-              <DollarSign className="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0" />
+              <DollarSign className="w-5 h-5 text-indigo-600 dark:text-indigo-600 dark:text-cyan-400 mt-0.5 flex-shrink-0" />
               <span><strong>Sales:</strong> Monitor total sales and revenue</span>
             </li>
             <li className="flex items-start gap-3">
@@ -267,7 +267,7 @@ export default function ProductManagementPage() {
               <span><strong>Ratings:</strong> See customer feedback and ratings</span>
             </li>
             <li className="flex items-start gap-3">
-              <MessageCircle className="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0" />
+              <MessageCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-600 dark:text-cyan-400 mt-0.5 flex-shrink-0" />
               <span><strong>Reviews:</strong> Read and respond to customer reviews</span>
             </li>
           </ul>
@@ -279,20 +279,20 @@ export default function ProductManagementPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <Link
               href="/docs/payout-system"
-              className="group block rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4 transition-all hover:border-cyan-400/40"
+              className="group block rounded-xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-4 transition-all hover:border-indigo-400/40 dark:hover:border-cyan-400/40"
             >
               <DollarSign className="w-5 h-5 mb-2 text-yellow-400" />
-              <h3 className="mb-1 font-semibold text-slate-900 dark:text-white group-hover:text-cyan-300">
+              <h3 className="mb-1 font-semibold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">
                 Payout System →
               </h3>
               <p className="text-sm text-slate-500 dark:text-white/60">Learn how you get paid for sales</p>
             </Link>
             <Link
               href="/docs/upload-solutions"
-              className="group block rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4 transition-all hover:border-cyan-400/40"
+              className="group block rounded-xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-4 transition-all hover:border-indigo-400/40 dark:hover:border-cyan-400/40"
             >
-              <Upload className="w-5 h-5 mb-2 text-green-400" />
-              <h3 className="mb-1 font-semibold text-slate-900 dark:text-white group-hover:text-cyan-300">
+              <Upload className="w-5 h-5 mb-2 text-emerald-500 dark:text-emerald-400" />
+              <h3 className="mb-1 font-semibold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">
                 Upload Solutions →
               </h3>
               <p className="text-sm text-slate-500 dark:text-white/60">Troubleshoot upload issues</p>
@@ -301,14 +301,14 @@ export default function ProductManagementPage() {
         </section>
 
         {/* Support */}
-        <section className="rounded-2xl border border-slate-200 dark:border-white/10 bg-gradient-to-r from-cyan-500/10 to-indigo-500/10 p-6">
+        <section className="rounded-2xl border border-slate-200 dark:border-white/10 bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-cyan-500/10 dark:to-indigo-500/10 shadow-sm p-6">
           <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">Need Help?</h3>
           <p className="mb-4 text-sm text-slate-600 dark:text-white/70">
             Questions about product management? Our support team is here to help.
           </p>
           <Link
             href="/contact"
-            className="inline-flex items-center rounded-lg bg-cyan-500 px-4 py-2 text-sm font-medium text-slate-900 dark:text-white hover:bg-cyan-400"
+            className="inline-flex items-center rounded-lg bg-indigo-600 dark:bg-cyan-500 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 dark:hover:bg-cyan-400 transition-colors shadow-sm"
           >
             Contact Support
           </Link>

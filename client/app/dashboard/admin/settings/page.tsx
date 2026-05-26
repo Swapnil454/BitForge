@@ -18,7 +18,10 @@ import {
   ShieldAlert,
   BookOpen,
   LifeBuoy,
-  ChevronLeft
+  ChevronLeft,
+  Pencil,
+  Eye,
+  EyeOff
 } from "lucide-react";
 
 interface User {
@@ -62,6 +65,9 @@ function SettingsContent() {
   const [delOtp, setDelOtp] = useState("");
   const [delReason, setDelReason] = useState("");
   const [accountLoading, setAccountLoading] = useState(false);
+
+  // UI States
+  const [showPwd, setShowPwd] = useState({ old: false, new: false, confirm: false, resetNew: false, resetConfirm: false });
 
   useEffect(() => {
     const stored = getStoredUser<User>();
@@ -361,50 +367,43 @@ function SettingsContent() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.2 }}
-              className="p-2 md:p-6"
+              className="p-1 sm:p-2 md:p-4"
             >
-              <div className="space-y-8">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">Your Profile</h2>
-                    <p className="text-slate-500 dark:text-white/60 text-sm">Manage your personal information</p>
-                  </div>
-                  {!isEditingProfile && (
-                    <button
-                      onClick={() => setIsEditingProfile(true)}
-                      className="px-4 py-2 bg-slate-200 dark:bg-white/10 hover:bg-white/20 border border-slate-300 dark:border-white/20 text-slate-900 dark:text-white rounded-xl transition flex items-center gap-2 text-sm font-semibold"
-                    >
-                      <UserRound className="w-4 h-4" /> Edit
-                    </button>
-                  )}
-                </div>
+              <div className="space-y-5 sm:space-y-6">
 
                 {!isEditingProfile ? (
-                  <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-2xl p-6 md:p-8 shadow-sm">
-                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8 mb-8 pb-8 border-b border-slate-100 dark:border-white/10">
-                      <div className="w-28 h-28 md:w-32 md:h-32 rounded-full bg-linear-to-br from-cyan-400 to-indigo-500 flex items-center justify-center text-4xl md:text-5xl overflow-hidden shadow-xl shadow-indigo-500/20 shrink-0 border-4 border-white dark:border-slate-800">
+                  <div className="relative bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-2xl p-4 sm:p-5 md:p-6 shadow-sm">
+                    <button
+                      onClick={() => setIsEditingProfile(true)}
+                      className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 md:p-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white rounded-xl transition shadow-sm hover:shadow-md"
+                      title="Edit Profile"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-5 pb-5 sm:mb-6 sm:pb-6 border-b border-slate-100 dark:border-white/10">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full bg-linear-to-br from-cyan-400 to-indigo-500 flex items-center justify-center text-3xl md:text-5xl overflow-hidden shadow-xl shadow-indigo-500/20 shrink-0 border-4 border-white dark:border-slate-800">
                         {user.profilePictureUrl ? (
                           <img src={user.profilePictureUrl} alt={user.name} className="w-full h-full object-cover" />
                         ) : (
                           <span className="text-white font-bold opacity-80">{user.name.charAt(0).toUpperCase()}</span>
                         )}
                       </div>
-                      <div className="text-center sm:text-left mt-2 sm:mt-6">
-                        <h3 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-2">{user.name}</h3>
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-widest">
+                      <div className="text-center sm:text-left mt-1 sm:mt-3">
+                        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2">{user.name}</h3>
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 sm:py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
                           {user.role}
                         </div>
                       </div>
                     </div>
 
-                    <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
-                      <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-5 border border-slate-100 dark:border-transparent">
+                    <div className="grid gap-3 sm:gap-5 sm:grid-cols-2">
+                      <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-4 sm:p-5 border border-slate-100 dark:border-transparent">
                         <label className="text-xs font-bold text-slate-400 dark:text-white/50 uppercase tracking-wider mb-2 block">Full Name</label>
                         <div className="text-slate-900 dark:text-white font-semibold text-lg">
                           {user.name}
                         </div>
                       </div>
-                      <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-5 border border-slate-100 dark:border-transparent">
+                      <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-4 sm:p-5 border border-slate-100 dark:border-transparent">
                         <label className="text-xs font-bold text-slate-400 dark:text-white/50 uppercase tracking-wider mb-2 block">Email Address</label>
                         <div className="text-slate-900 dark:text-white font-semibold text-base sm:text-lg truncate">
                           {user.email}
@@ -416,11 +415,11 @@ function SettingsContent() {
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-2xl p-6 md:p-8 shadow-sm space-y-8">
+                  <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-2xl p-4 sm:p-5 md:p-6 shadow-sm space-y-6">
                     <div>
-                      <label className="block text-sm font-bold text-slate-700 dark:text-white/80 uppercase tracking-wider mb-4">Profile Picture</label>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-                        <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-linear-to-br from-cyan-400 to-indigo-500 flex items-center justify-center text-4xl overflow-hidden shadow-xl shadow-indigo-500/20 shrink-0 border-4 border-white dark:border-slate-800">
+                      <label className="block text-sm font-bold text-slate-700 dark:text-white/80 uppercase tracking-wider mb-3 sm:mb-4">Profile Picture</label>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full bg-linear-to-br from-cyan-400 to-indigo-500 flex items-center justify-center text-3xl md:text-4xl overflow-hidden shadow-xl shadow-indigo-500/20 shrink-0 border-4 border-white dark:border-slate-800">
                           {preview ? (
                             <img src={preview} alt="preview" className="w-full h-full object-cover" />
                           ) : user.profilePictureUrl ? (
@@ -441,25 +440,18 @@ function SettingsContent() {
                       </div>
                     </div>
 
-                    <div className="border-t border-slate-100 dark:border-white/10 pt-6">
-                      <label className="block text-sm font-bold text-slate-700 dark:text-white/80 uppercase tracking-wider mb-3">Full Name</label>
+                    <div className="border-t border-slate-100 dark:border-white/10 pt-5 sm:pt-6">
+                      <label className="block text-sm font-bold text-slate-700 dark:text-white/80 uppercase tracking-wider mb-2.5 sm:mb-3">Full Name</label>
                       <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full px-4 py-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/20 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:border-indigo-500 focus:bg-white dark:focus:bg-white/5 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition font-medium"
+                        className="w-full px-4 py-2.5 sm:py-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/20 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:border-indigo-500 focus:bg-white dark:focus:bg-white/5 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition font-medium"
                         placeholder="Your name"
                       />
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-100 dark:border-white/10">
-                      <button
-                        onClick={handleUpdateProfile}
-                        disabled={profileLoading}
-                        className="px-8 py-3.5 bg-linear-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white rounded-xl transition font-bold shadow-lg shadow-indigo-500/25 flex-1 disabled:opacity-50 text-center"
-                      >
-                        {profileLoading ? "Saving..." : "Save Changes"}
-                      </button>
+                    <div className="flex items-center justify-end gap-4 pt-4 border-t border-slate-100 dark:border-white/10 mt-2">
                       <button
                          onClick={() => {
                           setIsEditingProfile(false);
@@ -467,9 +459,16 @@ function SettingsContent() {
                           setProfilePic(null);
                           setPreview(null);
                         }}
-                        className="px-8 py-3.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white rounded-xl transition font-semibold text-center"
+                        className="text-xs text-slate-500 hover:text-slate-700 dark:text-white/50 dark:hover:text-white underline font-medium transition"
                       >
                         Cancel
+                      </button>
+                      <button
+                        onClick={handleUpdateProfile}
+                        disabled={profileLoading}
+                        className="px-4 py-2 bg-linear-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white rounded-lg transition font-bold shadow-sm disabled:opacity-50 text-center text-xs"
+                      >
+                        {profileLoading ? "Saving..." : "Save Changes"}
                       </button>
                     </div>
                   </div>
@@ -526,44 +525,71 @@ function SettingsContent() {
                 )}
 
                 {securityTab === "password" && (
-                  <div className="max-w-xl space-y-5">
-                    <button onClick={() => setSecurityTab("menu")} className="text-sm text-slate-400 dark:text-white/50 hover:text-slate-900 dark:hover:text-white mb-4 inline-flex items-center gap-2 transition bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10">
-                      <ChevronLeft className="w-5 h-5" /> Back to Security
+                  <div className="max-w-xl space-y-4 md:space-y-5">
+                    <button onClick={() => setSecurityTab("menu")} className="text-sm text-slate-500 hover:text-slate-900 dark:text-white/60 dark:hover:text-white mb-2 md:mb-4 inline-flex items-center gap-1.5 transition-colors font-medium">
+                      <ChevronLeft className="w-4 h-4" /> Back
                     </button>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">Old Password</label>
-                      <input
-                        type="password"
-                        value={oldPassword}
-                        onChange={(e) => setOldPassword(e.target.value)}
-                        className="w-full px-4 py-3 md:py-4 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 rounded-xl text-slate-900 dark:text-white focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                        placeholder="••••••••"
-                      />
+                      <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-1.5 md:mb-2">Old Password</label>
+                      <div className="relative">
+                        <input
+                          type={showPwd.old ? "text" : "password"}
+                          value={oldPassword}
+                          onChange={(e) => setOldPassword(e.target.value)}
+                          className="w-full px-4 py-2.5 md:py-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/20 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition"
+                          placeholder="••••••••"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPwd(prev => ({ ...prev, old: !prev.old }))}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition"
+                        >
+                          {showPwd.old ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">New Password</label>
-                      <input
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full px-4 py-3 md:py-4 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 rounded-xl text-slate-900 dark:text-white focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                        placeholder="••••••••"
-                      />
+                      <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-1.5 md:mb-2">New Password</label>
+                      <div className="relative">
+                        <input
+                          type={showPwd.new ? "text" : "password"}
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          className="w-full px-4 py-2.5 md:py-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/20 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition"
+                          placeholder="••••••••"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPwd(prev => ({ ...prev, new: !prev.new }))}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition"
+                        >
+                          {showPwd.new ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">Confirm New Password</label>
-                      <input
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="w-full px-4 py-3 md:py-4 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 rounded-xl text-slate-900 dark:text-white focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                        placeholder="••••••••"
-                      />
+                      <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-1.5 md:mb-2">Confirm New Password</label>
+                      <div className="relative">
+                        <input
+                          type={showPwd.confirm ? "text" : "password"}
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          className="w-full px-4 py-2.5 md:py-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/20 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition"
+                          placeholder="••••••••"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPwd(prev => ({ ...prev, confirm: !prev.confirm }))}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition"
+                        >
+                          {showPwd.confirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
                     </div>
                     <button
                       onClick={handleUpdatePassword}
                       disabled={securityLoading}
-                      className="w-full py-4 bg-linear-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-slate-900 dark:text-white rounded-xl font-bold shadow-lg shadow-cyan-500/25 transition disabled:opacity-50 mt-4 text-lg"
+                      className="w-full py-3.5 bg-linear-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/25 transition disabled:opacity-50 mt-4 text-base"
                     >
                       {securityLoading ? "Updating..." : "Update Password"}
                     </button>
@@ -571,64 +597,82 @@ function SettingsContent() {
                 )}
 
                 {securityTab === "reset" && (
-                  <div className="max-w-xl space-y-5">
-                    <button onClick={() => setSecurityTab("menu")} className="text-sm text-slate-400 dark:text-white/50 hover:text-slate-900 dark:hover:text-white mb-4 inline-flex items-center gap-2 transition bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10">
-                     <ChevronLeft className="w-5 h-5" /> Back to Security
+                  <div className="max-w-xl space-y-4 md:space-y-5">
+                    <button onClick={() => setSecurityTab("menu")} className="text-sm text-slate-500 hover:text-slate-900 dark:text-white/60 dark:hover:text-white mb-2 md:mb-4 inline-flex items-center gap-1.5 transition-colors font-medium">
+                     <ChevronLeft className="w-4 h-4" /> Back
                     </button>
                     
                     {!showOtpField ? (
-                      <div className="space-y-6 bg-slate-100 dark:bg-white/5 p-6 md:p-8 rounded-2xl border border-slate-200 dark:border-white/10 text-center">
-                        <div className="w-16 h-16 bg-indigo-500/20 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
-                           <Mail className="w-8 h-8" />
+                      <div className="space-y-4 sm:space-y-5 bg-slate-100 dark:bg-white/5 p-5 md:p-6 rounded-2xl border border-slate-200 dark:border-white/10 text-center">
+                        <div className="w-12 h-12 md:w-16 md:h-16 bg-indigo-500/20 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-4">
+                           <Mail className="w-6 h-6 md:w-8 md:h-8" />
                         </div>
-                        <p className="text-slate-700 dark:text-white/80 leading-relaxed text-lg">
+                        <p className="text-slate-700 dark:text-white/80 leading-relaxed text-base md:text-lg">
                           We will send a 6-digit verification code to <br className="hidden md:block" /><strong className="text-slate-900 dark:text-white">{user.email}</strong>.
                         </p>
-                        <p className="text-sm text-slate-400 dark:text-white/40">This code will be valid for 15 minutes.</p>
+                        <p className="text-xs md:text-sm text-slate-400 dark:text-white/40">This code will be valid for 15 minutes.</p>
                         <button
                           onClick={handleSendOtp}
                           disabled={securityLoading}
-                          className="w-full py-4 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-slate-900 dark:text-white rounded-xl font-bold shadow-lg shadow-indigo-500/25 transition disabled:opacity-50 text-lg"
+                          className="w-full py-3 md:py-3.5 bg-linear-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/25 transition disabled:opacity-50 text-base"
                         >
                           {securityLoading ? "Sending Code..." : "Send Verification Code"}
                         </button>
                       </div>
                     ) : (
-                      <div className="space-y-5">
+                      <div className="space-y-4 md:space-y-5">
                         <div>
-                          <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">Verification Code</label>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-1.5 md:mb-2">Verification Code</label>
                           <input
                             type="text"
                             value={otp}
                             onChange={(e) => setOtp(e.target.value)}
-                            className="w-full px-4 py-3 md:py-4 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 rounded-xl text-slate-900 dark:text-white focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20"
+                            className="w-full px-4 py-2.5 md:py-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/20 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition"
                             placeholder="Enter 6-digit code"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">New Password</label>
-                          <input
-                            type="password"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            className="w-full px-4 py-3 md:py-4 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 rounded-xl text-slate-900 dark:text-white focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20"
-                            placeholder="••••••••"
-                          />
+                          <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-1.5 md:mb-2">New Password</label>
+                          <div className="relative">
+                            <input
+                              type={showPwd.resetNew ? "text" : "password"}
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
+                              className="w-full px-4 py-2.5 md:py-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/20 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition"
+                              placeholder="••••••••"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPwd(prev => ({ ...prev, resetNew: !prev.resetNew }))}
+                              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition"
+                            >
+                              {showPwd.resetNew ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            </button>
+                          </div>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">Confirm New Password</label>
-                          <input
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full px-4 py-3 md:py-4 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/20 rounded-xl text-slate-900 dark:text-white focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20"
-                            placeholder="••••••••"
-                          />
+                          <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-1.5 md:mb-2">Confirm New Password</label>
+                          <div className="relative">
+                            <input
+                              type={showPwd.resetConfirm ? "text" : "password"}
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              className="w-full px-4 py-2.5 md:py-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/20 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition"
+                              placeholder="••••••••"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPwd(prev => ({ ...prev, resetConfirm: !prev.resetConfirm }))}
+                              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition"
+                            >
+                              {showPwd.resetConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            </button>
+                          </div>
                         </div>
                         <button
                           onClick={handleResetPassword}
                           disabled={securityLoading}
-                          className="w-full py-4 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-slate-900 dark:text-white rounded-xl font-bold shadow-lg shadow-indigo-500/25 transition disabled:opacity-50 mt-4 text-lg"
+                          className="w-full py-3.5 bg-linear-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/25 transition disabled:opacity-50 mt-4 text-base"
                         >
                           {securityLoading ? "Resetting..." : "Reset Password"}
                         </button>
@@ -648,23 +692,23 @@ function SettingsContent() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.2 }}
-              className="bg-white dark:bg-[#0d0505] border border-red-200 dark:border-red-500/20 rounded-3xl p-6 md:p-8 shadow-sm dark:shadow-2xl"
+              className="bg-white dark:bg-white/5 border border-slate-200/60 dark:border-white/10 rounded-3xl p-6 md:p-8 shadow-sm"
             >
               <div className="space-y-8">
                 <div>
-                  <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-1">Danger Zone</h2>
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">Danger Zone</h2>
                   <p className="text-slate-500 dark:text-white/60 text-sm">Permanent actions regarding your account</p>
                 </div>
 
                 <div className="max-w-xl space-y-6">
-                  <div className="p-6 rounded-2xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-950/40">
+                  <div className="p-5 sm:p-6 rounded-2xl border border-red-200/60 dark:border-red-500/30 bg-red-50/30 dark:bg-red-500/5">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                      <div className="w-16 h-16 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center shrink-0">
-                         <ShieldAlert className="w-8 h-8" />
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 bg-red-100/80 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center shrink-0">
+                         <ShieldAlert className="w-6 h-6 sm:w-7 sm:h-7" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-red-700 dark:text-red-300 text-lg mb-1">Delete Account</h3>
-                        <p className="text-sm text-red-700/80 dark:text-red-200/70 leading-relaxed">
+                        <h3 className="font-bold text-slate-900 dark:text-red-300 text-lg mb-1">Delete Account</h3>
+                        <p className="text-sm text-slate-600 dark:text-red-200/70 leading-relaxed">
                           Deleting your account is permanent. All your data, purchases, and settings will be permanently removed. This action cannot be undone.
                         </p>
                       </div>
@@ -675,19 +719,19 @@ function SettingsContent() {
                     <button
                       onClick={handleRequestDeletion}
                       disabled={accountLoading}
-                      className="w-full py-4 bg-red-600 hover:bg-red-700 dark:bg-red-500/15 dark:hover:bg-red-500/25 text-white dark:text-red-400 dark:hover:text-red-300 border border-red-600 dark:border-red-500/30 rounded-xl font-bold transition disabled:opacity-50 text-base shadow-md shadow-red-500/20"
+                      className="w-full py-3.5 sm:py-4 bg-white dark:bg-red-500/10 hover:bg-red-50 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/30 rounded-xl font-bold transition disabled:opacity-50 text-sm sm:text-base shadow-sm"
                     >
                       {accountLoading ? "Requesting..." : "I understand, request deletion"}
                     </button>
                   ) : (
-                    <div className="space-y-6 bg-white dark:bg-black/40 p-6 rounded-2xl border border-red-500/20">
+                    <div className="space-y-6 bg-slate-50 dark:bg-black/40 p-5 sm:p-6 rounded-2xl border border-slate-200/60 dark:border-red-500/20">
                       <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-white/80 mb-2">Verification Code</label>
                         <input
                           type="text"
                           value={delOtp}
                           onChange={(e) => setDelOtp(e.target.value)}
-                          className="w-full px-4 py-4 bg-slate-100 dark:bg-white/5 border border-red-500/30 rounded-xl text-slate-900 dark:text-white focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/20"
+                          className="w-full px-4 py-3 sm:py-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-red-500/30 rounded-xl text-slate-900 dark:text-white focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/20"
                           placeholder="Enter 6-digit code sent to email"
                         />
                       </div>
@@ -696,15 +740,15 @@ function SettingsContent() {
                         <textarea
                           value={delReason}
                           onChange={(e) => setDelReason(e.target.value)}
-                          rows={4}
-                          className="w-full px-4 py-4 bg-slate-100 dark:bg-white/5 border border-red-500/30 rounded-xl text-slate-900 dark:text-white focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/20 resize-none"
+                          rows={3}
+                          className="w-full px-4 py-3 sm:py-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-red-500/30 rounded-xl text-slate-900 dark:text-white focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/20 resize-none"
                           placeholder="We're sad to see you go. Please let us know why."
                         />
                       </div>
                       <button
                         onClick={handleConfirmDeletion}
                         disabled={accountLoading}
-                        className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-lg shadow-red-500/25 transition disabled:opacity-50 text-base"
+                        className="w-full py-3.5 sm:py-4 bg-red-600 hover:bg-red-700 dark:bg-red-600/80 dark:hover:bg-red-600 text-white rounded-xl font-bold shadow-sm transition disabled:opacity-50 text-sm sm:text-base"
                       >
                         {accountLoading ? "Processing..." : "Permanently Delete Account"}
                       </button>

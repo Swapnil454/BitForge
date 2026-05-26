@@ -155,7 +155,7 @@ export default function StatusPage() {
   return (
     <main className="relative min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white overflow-x-hidden">
       {/* HEADER */}
-      <header className="fixed top-0 left-0 right-0 z-40 h-16 sm:h-20 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#05050a]/80 backdrop-blur-xl">
+      <header className="fixed top-0 left-0 right-0 z-40 h-16 sm:h-20 border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#05050a]/80 backdrop-blur-xl shadow-sm dark:shadow-none">
         <nav className="mx-auto flex h-full max-w-7xl items-center justify-between px-5 md:px-6">
           <Link href="/" className="flex items-center">
             <Image
@@ -166,18 +166,18 @@ export default function StatusPage() {
               className="h-10 w-auto sm:h-12 drop-shadow-[0_0_20px_rgba(56,189,248,0.45)]"
               priority
             />
-            <span className="-ml-3 text-lg font-bold tracking-tight sm:-ml-4 sm:text-2xl bg-linear-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent leading-tight">
+            <span className="-ml-3 text-lg font-bold tracking-tight sm:-ml-4 sm:text-2xl bg-linear-to-r from-indigo-600 to-cyan-500 dark:from-cyan-400 dark:to-indigo-400 bg-clip-text text-transparent leading-tight">
               BitForge
             </span>
           </Link>
 
           <div className="flex items-center gap-4 text-sm">
-            <Link href="/docs" className="hidden text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white sm:inline-flex">
+            <Link href="/docs" className="hidden text-slate-600 dark:text-white/70 hover:text-indigo-600 dark:hover:text-white sm:inline-flex transition-colors">
               Docs
             </Link>
             <Link
               href="/login"
-              className="rounded-lg border border-slate-300 dark:border-white/20 px-3 py-1.5 text-slate-700 dark:text-white/80 hover:border-cyan-400 hover:text-slate-900 dark:hover:text-white"
+              className="rounded-lg border border-slate-200 dark:border-white/20 bg-white dark:bg-transparent px-3 py-1.5 text-slate-700 dark:text-white/80 hover:border-indigo-200 hover:bg-indigo-50 dark:hover:border-cyan-400 hover:text-indigo-700 dark:hover:text-white transition-all shadow-sm dark:shadow-none"
             >
               Sign in
             </Link>
@@ -185,36 +185,36 @@ export default function StatusPage() {
         </nav>
       </header>
 
-      {/* BACKGROUND GLOW */}
-      <div className="pointer-events-none fixed inset-0 z-0 opacity-60">
+      {/* BACKGROUND GLOW (Dark Mode Only) */}
+      <div className="pointer-events-none fixed inset-0 z-0 opacity-60 hidden dark:block">
         <div className="absolute -left-40 top-10 h-80 w-80 rounded-full bg-cyan-500/20 blur-3xl" />
         <div className="absolute bottom-0 -right-32 h-96 w-96 rounded-full bg-indigo-500/25 blur-3xl" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-6xl px-5 pb-20 pt-24 sm:pt-28 md:pt-32 md:pb-28">
+      <div className="relative z-10 mx-auto max-w-5xl px-4 pb-12 pt-24 sm:pt-28">
         {/* HERO */}
-        <section className="mb-12 max-w-4xl">
+        <section className="mb-8">
           <div className="flex items-center justify-between gap-4 flex-wrap">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300/80">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300/80">
               System Status
             </p>
             <button
               onClick={() => setShowSubscribe(!showSubscribe)}
-              className="text-xs rounded-full border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 px-4 py-1.5 text-slate-700 dark:text-white/80 hover:border-cyan-400/50 hover:bg-slate-200 dark:hover:bg-white/10 transition"
+              className="text-xs rounded-full border border-slate-200 dark:border-white/20 bg-white dark:bg-white/5 px-4 py-1.5 font-medium text-slate-700 dark:text-white/80 hover:border-indigo-300 dark:hover:border-cyan-400/50 hover:bg-indigo-50 dark:hover:bg-white/10 transition shadow-sm dark:shadow-none"
             >
               🔔 Subscribe to Updates
             </button>
           </div>
 
           {/* Overall Status Banner */}
-          <div className={`mt-6 rounded-2xl border p-6 ${getStatusBorderColor(overallStatus)} ${getStatusBgColor(overallStatus)}`}>
+          <div className={`mt-4 rounded-xl border p-5 shadow-sm dark:shadow-none ${getStatusBorderColor(overallStatus)} ${getStatusBgColor(overallStatus)}`}>
             <div className="flex items-center gap-3">
-              <div className={`h-4 w-4 rounded-full ${getStatusDotColor(overallStatus)}`} />
+              <div className={`h-3 w-3 rounded-full ${getStatusDotColor(overallStatus)}`} />
               <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white">
                   {getStatusText(overallStatus)}
                 </h1>
-                <p className="mt-1 text-sm text-slate-600 dark:text-white/70">
+                <p className="mt-0.5 text-xs text-slate-600 dark:text-white/70">
                   Last updated: {new Date().toLocaleString("en-IN", {
                     timeZone: "Asia/Kolkata",
                     dateStyle: "medium",
@@ -227,8 +227,8 @@ export default function StatusPage() {
 
           {/* Subscribe Form */}
           {showSubscribe && (
-            <form onSubmit={handleSubscribe} className="mt-4 rounded-xl border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 p-5">
-              <p className="mb-3 text-sm font-medium text-slate-900 dark:text-white">
+            <form onSubmit={handleSubscribe} className="mt-4 rounded-xl border border-slate-200 dark:border-white/20 bg-white dark:bg-white/5 p-4 shadow-sm dark:shadow-none">
+              <p className="mb-2 text-sm font-semibold text-slate-900 dark:text-white">
                 Get notified about incidents and maintenance
               </p>
               <div className="flex gap-2">
@@ -238,11 +238,11 @@ export default function StatusPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
                   required
-                  className="flex-1 rounded-lg border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 px-4 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/40 focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                  className="flex-1 rounded-lg border border-slate-200 dark:border-white/20 bg-slate-50 dark:bg-white/5 px-4 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/40 focus:border-indigo-400 dark:focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 dark:focus:ring-cyan-400/20"
                 />
                 <button
                   type="submit"
-                  className="rounded-lg bg-cyan-500 px-5 py-2 text-sm font-medium text-slate-900 dark:text-white hover:bg-cyan-400 transition"
+                  className="rounded-lg bg-indigo-600 dark:bg-cyan-500 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 dark:hover:bg-cyan-400 transition shadow-sm dark:shadow-none"
                 >
                   Subscribe
                 </button>
@@ -252,21 +252,21 @@ export default function StatusPage() {
         </section>
 
         {/* SYSTEM COMPONENTS */}
-        <section className="mb-14">
-          <h2 className="mb-6 text-xl font-semibold text-slate-900 dark:text-white">System Components</h2>
-          <div className="space-y-3">
+        <section className="mb-8">
+          <h2 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">System Components</h2>
+          <div className="grid gap-2">
             {systemComponents.map((component) => (
               <div
                 key={component.name}
-                className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4 hover:border-slate-300 dark:hover:border-white/20 transition"
+                className="flex items-center justify-between rounded-lg border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 px-4 py-3 hover:border-indigo-200 dark:hover:border-white/20 transition shadow-sm dark:shadow-none"
               >
                 <div className="flex-1">
                   <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{component.name}</h3>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-white/60">{component.description}</p>
+                  <p className="text-xs text-slate-500 dark:text-white/60">{component.description}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className={`h-2.5 w-2.5 rounded-full ${getStatusDotColor(component.status)}`} />
-                  <span className="text-xs font-medium text-slate-700 dark:text-white/80 capitalize">
+                  <div className={`h-2 w-2 rounded-full ${getStatusDotColor(component.status)}`} />
+                  <span className="text-xs font-semibold text-slate-700 dark:text-white/80 capitalize">
                     {component.status}
                   </span>
                 </div>
@@ -277,23 +277,23 @@ export default function StatusPage() {
 
         {/* SCHEDULED MAINTENANCE */}
         {scheduledMaintenance.length > 0 && (
-          <section className="mb-14">
-            <h2 className="mb-6 text-xl font-semibold text-slate-900 dark:text-white">Scheduled Maintenance</h2>
-            <div className="space-y-4">
+          <section className="mb-8">
+            <h2 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">Scheduled Maintenance</h2>
+            <div className="grid gap-3">
               {scheduledMaintenance.map((maintenance, idx) => (
                 <div
                   key={idx}
-                  className="rounded-xl border border-amber-400/30 bg-amber-500/5 p-5"
+                  className="rounded-lg border border-amber-200 dark:border-amber-400/30 bg-amber-50 dark:bg-amber-500/5 p-4 shadow-sm dark:shadow-none"
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-2xl">🛠️</span>
+                    <span className="text-xl">🛠️</span>
                     <div className="flex-1">
-                      <h3 className="text-base font-semibold text-slate-900 dark:text-white">{maintenance.title}</h3>
-                      <p className="mt-2 text-sm text-slate-600 dark:text-white/70">
-                        <strong>Scheduled:</strong> {maintenance.scheduledFor}
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white">{maintenance.title}</h3>
+                      <p className="mt-1 text-xs text-slate-600 dark:text-white/70">
+                        <strong className="text-slate-800 dark:text-white/90">Scheduled:</strong> {maintenance.scheduledFor}
                       </p>
-                      <p className="mt-1 text-sm text-slate-600 dark:text-white/70">
-                        <strong>Expected Impact:</strong> {maintenance.impact}
+                      <p className="text-xs text-slate-600 dark:text-white/70">
+                        <strong className="text-slate-800 dark:text-white/90">Expected Impact:</strong> {maintenance.impact}
                       </p>
                     </div>
                   </div>
@@ -304,75 +304,75 @@ export default function StatusPage() {
         )}
 
         {/* RECENT INCIDENTS */}
-        <section className="mb-14">
-          <h2 className="mb-6 text-xl font-semibold text-slate-900 dark:text-white">
+        <section className="mb-8">
+          <h2 className="mb-4 text-lg font-bold text-slate-900 dark:text-white flex items-center">
             Recent Incidents
-            <span className="ml-2 text-sm font-normal text-slate-500 dark:text-white/60">(Last 7 days)</span>
+            <span className="ml-2 text-xs font-medium text-slate-500 dark:text-white/60 bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded-full">Last 7 days</span>
           </h2>
 
           {recentIncidents.length === 0 ? (
-            <div className="rounded-xl border border-emerald-400/30 bg-emerald-500/5 p-6 text-center">
-              <span className="text-3xl">✓</span>
-              <p className="mt-3 text-sm font-medium text-slate-900 dark:text-white">No incidents reported</p>
-              <p className="mt-1 text-xs text-slate-500 dark:text-white/60">All systems have been operational for the past 7 days</p>
+            <div className="rounded-lg border border-emerald-200 dark:border-emerald-400/30 bg-emerald-50 dark:bg-emerald-500/5 p-5 text-center shadow-sm dark:shadow-none">
+              <span className="text-2xl text-emerald-600 dark:text-emerald-400">✓</span>
+              <p className="mt-2 text-sm font-bold text-emerald-800 dark:text-white">No incidents reported</p>
+              <p className="text-xs text-emerald-600 dark:text-white/60">All systems have been operational for the past 7 days</p>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="grid gap-4">
               {recentIncidents.map((incident) => (
                 <div
                   key={incident.id}
-                  className={`rounded-xl border p-6 ${incident.severity === "critical"
-                      ? "border-red-400/30 bg-red-500/5"
+                  className={`rounded-lg border p-5 shadow-sm dark:shadow-none ${incident.severity === "critical"
+                      ? "border-red-200 dark:border-red-400/30 bg-red-50 dark:bg-red-500/5"
                       : incident.severity === "major"
-                        ? "border-orange-400/30 bg-orange-500/5"
-                        : "border-yellow-400/30 bg-yellow-500/5"
+                        ? "border-orange-200 dark:border-orange-400/30 bg-orange-50 dark:bg-orange-500/5"
+                        : "border-amber-200 dark:border-yellow-400/30 bg-amber-50 dark:bg-yellow-500/5"
                     }`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 mb-2">
                         <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${incident.severity === "critical"
-                              ? "bg-red-500/20 text-red-300"
+                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${incident.severity === "critical"
+                              ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300"
                               : incident.severity === "major"
-                                ? "bg-orange-500/20 text-orange-300"
-                                : "bg-yellow-500/20 text-yellow-300"
+                                ? "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-300"
+                                : "bg-amber-100 dark:bg-yellow-500/20 text-amber-700 dark:text-yellow-300"
                             }`}
                         >
-                          {incident.severity.toUpperCase()}
+                          {incident.severity}
                         </span>
                         <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${incident.status === "resolved"
-                              ? "bg-emerald-500/20 text-emerald-300"
+                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${incident.status === "resolved"
+                              ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
                               : incident.status === "monitoring"
-                                ? "bg-cyan-500/20 text-cyan-300"
-                                : "bg-amber-500/20 text-amber-300"
+                                ? "bg-indigo-100 dark:bg-cyan-500/20 text-indigo-700 dark:text-cyan-300"
+                                : "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300"
                             }`}
                         >
-                          {incident.status.toUpperCase()}
+                          {incident.status}
                         </span>
                       </div>
-                      <h3 className="mt-3 text-base font-semibold text-slate-900 dark:text-white">{incident.title}</h3>
-                      <p className="mt-1 text-xs text-slate-500 dark:text-white/60">{incident.timestamp}</p>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white">{incident.title}</h3>
+                      <p className="text-xs text-slate-500 dark:text-white/60 mt-0.5">{incident.timestamp}</p>
                     </div>
                   </div>
 
-                  <div className="mt-5 space-y-4 border-t border-slate-200 dark:border-white/10 pt-4">
+                  <div className="mt-4 space-y-3 border-t border-slate-200/60 dark:border-white/10 pt-3">
                     {incident.updates.map((update, idx) => (
                       <div key={idx} className="flex gap-3">
                         <div className="flex flex-col items-center">
-                          <div className="h-2 w-2 rounded-full bg-cyan-400" />
+                          <div className="h-2 w-2 rounded-full bg-indigo-500 dark:bg-cyan-400 mt-1" />
                           {idx < incident.updates.length - 1 && (
-                            <div className="w-px flex-1 bg-white/20 mt-2" />
+                            <div className="w-px flex-1 bg-slate-200 dark:bg-white/20 mt-1" />
                           )}
                         </div>
-                        <div className="flex-1 pb-4">
+                        <div className="flex-1 pb-2">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-semibold text-slate-900 dark:text-white">{update.status}</span>
-                            <span className="text-xs text-white/50">•</span>
-                            <span className="text-xs text-slate-500 dark:text-white/60">{update.time}</span>
+                            <span className="text-xs font-bold text-slate-900 dark:text-white">{update.status}</span>
+                            <span className="text-xs text-slate-300 dark:text-white/30">•</span>
+                            <span className="text-xs font-medium text-slate-500 dark:text-white/60">{update.time}</span>
                           </div>
-                          <p className="mt-1 text-sm text-slate-600 dark:text-white/70">{update.message}</p>
+                          <p className="text-xs text-slate-700 dark:text-white/70 mt-0.5">{update.message}</p>
                         </div>
                       </div>
                     ))}
@@ -384,40 +384,40 @@ export default function StatusPage() {
         </section>
 
         {/* UPTIME HISTORY */}
-        <section className="mb-14">
-          <h2 className="mb-6 text-xl font-semibold text-slate-900 dark:text-white">
+        <section className="mb-8">
+          <h2 className="mb-4 text-lg font-bold text-slate-900 dark:text-white flex items-center">
             Uptime History
-            <span className="ml-2 text-sm font-normal text-slate-500 dark:text-white/60">(Last 90 days)</span>
+            <span className="ml-2 text-xs font-medium text-slate-500 dark:text-white/60 bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded-full">Last 90 days</span>
           </h2>
 
-          <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-6">
-            <div className="mb-6 flex items-center justify-between">
+          <div className="rounded-lg border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 p-5 shadow-sm dark:shadow-none">
+            <div className="mb-4 flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white">{averageUptime}%</p>
-                <p className="mt-1 text-sm text-slate-500 dark:text-white/60">Average uptime</p>
+                <p className="text-2xl font-black text-slate-900 dark:text-white">{averageUptime}%</p>
+                <p className="text-xs font-medium text-slate-500 dark:text-white/60">Average uptime</p>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-bold text-emerald-400">
+                <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">
                   {uptimeData.filter((d) => d.uptime === 100).length}/90
                 </p>
-                <p className="mt-1 text-sm text-slate-500 dark:text-white/60">Days with 100% uptime</p>
+                <p className="text-xs font-medium text-slate-500 dark:text-white/60">Days with 100% uptime</p>
               </div>
             </div>
 
             {/* Uptime Bar Chart */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-white/60">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 dark:text-white/50 uppercase tracking-wider">
                 <span>90 days ago</span>
                 <span>Today</span>
               </div>
-              <div className="flex gap-0.5 h-12 items-end">
+              <div className="flex gap-0.5 h-10 items-end">
                 {uptimeData.map((day, idx) => (
                   <div
                     key={idx}
                     className={`flex-1 rounded-sm transition-all hover:opacity-80 cursor-pointer ${day.uptime === 100
                         ? "bg-emerald-500"
                         : day.uptime >= 99
-                          ? "bg-yellow-500"
+                          ? "bg-amber-500 dark:bg-yellow-500"
                           : day.uptime >= 95
                             ? "bg-orange-500"
                             : "bg-red-500"
@@ -427,21 +427,21 @@ export default function StatusPage() {
                   />
                 ))}
               </div>
-              <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-white/60">
+              <div className="flex items-center gap-3 text-[10px] font-medium text-slate-500 dark:text-white/60 mt-2">
                 <div className="flex items-center gap-1.5">
-                  <div className="h-3 w-3 rounded-sm bg-emerald-500" />
+                  <div className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />
                   <span>100% uptime</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="h-3 w-3 rounded-sm bg-yellow-500" />
+                  <div className="h-2.5 w-2.5 rounded-sm bg-amber-500 dark:bg-yellow-500" />
                   <span>99-99.9%</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="h-3 w-3 rounded-sm bg-orange-500" />
+                  <div className="h-2.5 w-2.5 rounded-sm bg-orange-500" />
                   <span>95-99%</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="h-3 w-3 rounded-sm bg-red-500" />
+                  <div className="h-2.5 w-2.5 rounded-sm bg-red-500" />
                   <span>&lt;95%</span>
                 </div>
               </div>
@@ -450,27 +450,27 @@ export default function StatusPage() {
         </section>
 
         {/* SUPPORT & RESOURCES */}
-        <section className="rounded-2xl border border-slate-200 dark:border-white/10 bg-linear-to-r from-cyan-500/10 to-indigo-500/10 p-8">
-          <h2 className="mb-4 text-xl font-semibold text-slate-900 dark:text-white">Need Help?</h2>
-          <p className="mb-6 text-sm text-slate-600 dark:text-white/70">
-            If you&apos;re experiencing issues not reflected on this page, please contact our support team.
+        <section className="rounded-lg border border-indigo-100 dark:border-white/10 bg-indigo-50/50 dark:bg-white/5 p-6 shadow-sm dark:shadow-none mt-10">
+          <h2 className="mb-2 text-lg font-bold text-slate-900 dark:text-white">Need Help?</h2>
+          <p className="mb-5 text-xs text-slate-600 dark:text-white/70">
+            If you're experiencing issues not reflected on this page, please contact our support team.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
               href="/contact"
-              className="inline-flex items-center rounded-lg bg-cyan-500 px-5 py-2.5 text-sm font-medium text-slate-900 dark:text-white hover:bg-cyan-400"
+              className="inline-flex items-center rounded-lg bg-indigo-600 dark:bg-cyan-500 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700 dark:hover:bg-cyan-400 shadow-sm dark:shadow-none transition-colors"
             >
               Contact Support
             </Link>
             <Link
               href="/docs"
-              className="inline-flex items-center rounded-lg border border-slate-300 dark:border-white/20 px-5 py-2.5 text-sm font-medium text-slate-800 dark:text-white/90 hover:border-white/40 hover:bg-slate-100 dark:hover:bg-white/5"
+              className="inline-flex items-center rounded-lg border border-slate-200 dark:border-white/20 bg-white dark:bg-transparent px-4 py-2 text-xs font-semibold text-slate-800 dark:text-white/90 hover:border-indigo-200 hover:bg-indigo-50 dark:hover:border-white/40 dark:hover:bg-white/5 shadow-sm dark:shadow-none transition-colors"
             >
               View Documentation
             </Link>
             <Link
               href="/trust-center"
-              className="inline-flex items-center rounded-lg border border-slate-300 dark:border-white/20 px-5 py-2.5 text-sm font-medium text-slate-800 dark:text-white/90 hover:border-white/40 hover:bg-slate-100 dark:hover:bg-white/5"
+              className="inline-flex items-center rounded-lg border border-slate-200 dark:border-white/20 bg-white dark:bg-transparent px-4 py-2 text-xs font-semibold text-slate-800 dark:text-white/90 hover:border-indigo-200 hover:bg-indigo-50 dark:hover:border-white/40 dark:hover:bg-white/5 shadow-sm dark:shadow-none transition-colors"
             >
               Trust Center
             </Link>
@@ -478,21 +478,21 @@ export default function StatusPage() {
         </section>
 
         {/* Footer Links */}
-        <section className="mt-14 border-t border-slate-200 dark:border-white/10 pt-8">
-          <div className="flex flex-wrap items-center justify-between gap-4 text-sm">
-            <Link href="/" className="text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white">
+        <section className="mt-10 border-t border-slate-200 dark:border-white/10 pt-6">
+          <div className="flex flex-wrap items-center justify-between gap-4 text-xs font-medium">
+            <Link href="/" className="text-slate-500 dark:text-white/60 hover:text-indigo-600 dark:hover:text-white transition-colors">
               ← Back to BitForge
             </Link>
-            <div className="flex flex-wrap gap-4 text-slate-600 dark:text-white/70">
+            <div className="flex flex-wrap gap-4 text-slate-500 dark:text-white/60">
               <a
-                href="https://github.com/yourusername/Bitforge/issues"
+                href="https://github.com/Swapnil454/BitForge/issues"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-slate-900 dark:hover:text-white"
+                className="hover:text-indigo-600 dark:hover:text-white transition-colors"
               >
                 Report Issue
               </a>
-              <Link href="/about" className="hover:text-slate-900 dark:hover:text-white">
+              <Link href="/about" className="hover:text-indigo-600 dark:hover:text-white transition-colors">
                 About Us
               </Link>
             </div>
@@ -524,15 +524,15 @@ function getStatusText(status: StatusLevel): string {
 function getStatusBorderColor(status: StatusLevel): string {
   switch (status) {
     case "operational":
-      return "border-emerald-400/30";
+      return "border-emerald-200 dark:border-emerald-400/30";
     case "degraded":
-      return "border-yellow-400/30";
+      return "border-amber-200 dark:border-yellow-400/30";
     case "partial":
-      return "border-orange-400/30";
+      return "border-orange-200 dark:border-orange-400/30";
     case "major":
-      return "border-red-400/30";
+      return "border-red-200 dark:border-red-400/30";
     case "maintenance":
-      return "border-cyan-400/30";
+      return "border-indigo-200 dark:border-cyan-400/30";
     default:
       return "border-slate-200 dark:border-white/10";
   }
@@ -541,17 +541,17 @@ function getStatusBorderColor(status: StatusLevel): string {
 function getStatusBgColor(status: StatusLevel): string {
   switch (status) {
     case "operational":
-      return "bg-emerald-500/5";
+      return "bg-emerald-50 dark:bg-emerald-500/5";
     case "degraded":
-      return "bg-yellow-500/5";
+      return "bg-amber-50 dark:bg-yellow-500/5";
     case "partial":
-      return "bg-orange-500/5";
+      return "bg-orange-50 dark:bg-orange-500/5";
     case "major":
-      return "bg-red-500/5";
+      return "bg-red-50 dark:bg-red-500/5";
     case "maintenance":
-      return "bg-cyan-500/5";
+      return "bg-indigo-50 dark:bg-cyan-500/5";
     default:
-      return "bg-slate-100 dark:bg-white/5";
+      return "bg-white dark:bg-white/5";
   }
 }
 
@@ -560,14 +560,14 @@ function getStatusDotColor(status: StatusLevel): string {
     case "operational":
       return "bg-emerald-500";
     case "degraded":
-      return "bg-yellow-500";
+      return "bg-amber-500 dark:bg-yellow-500";
     case "partial":
       return "bg-orange-500";
     case "major":
       return "bg-red-500";
     case "maintenance":
-      return "bg-cyan-500";
+      return "bg-indigo-500 dark:bg-cyan-500";
     default:
-      return "bg-slate-100 dark:bg-white/50";
+      return "bg-slate-300 dark:bg-white/50";
   }
 }

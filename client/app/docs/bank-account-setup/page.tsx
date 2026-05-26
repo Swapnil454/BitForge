@@ -6,15 +6,15 @@ import { Check, Shield, AlertCircle } from "lucide-react";
 
 export default function BankAccountSetupPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-10 px-4">
+    <div className="py-10 px-4 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <nav className="mb-6 text-sm text-slate-500 dark:text-white/60">
-          <Link href="/docs" className="hover:text-cyan-400">
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">
             Documentation
           </Link>
           <span className="mx-2">/</span>
-          <Link href="/docs" className="hover:text-cyan-400">
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">
             Getting Started
           </Link>
           <span className="mx-2">/</span>
@@ -23,7 +23,7 @@ export default function BankAccountSetupPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <span className="inline-block px-3 py-1 mb-4 text-xs font-semibold text-cyan-400 bg-cyan-500/10 rounded-full border border-cyan-500/20">
+          <span className="inline-block px-3 py-1 mb-4 text-xs font-semibold text-indigo-600 dark:text-cyan-400 bg-indigo-50 dark:bg-cyan-500/10 rounded-full border border-indigo-200 dark:border-cyan-500/20">
             Getting Started
           </span>
           <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">
@@ -42,25 +42,25 @@ export default function BankAccountSetupPage() {
           <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-green-400 mt-1 flex-shrink-0" />
+                <Check className="w-5 h-5 text-emerald-500 dark:text-emerald-400 mt-1 flex-shrink-0" />
                 <span className="text-slate-700 dark:text-white/80">
                   <strong className="text-slate-900 dark:text-white">Seller Account:</strong> Registered and verified on Bitforge
                 </span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-green-400 mt-1 flex-shrink-0" />
+                <Check className="w-5 h-5 text-emerald-500 dark:text-emerald-400 mt-1 flex-shrink-0" />
                 <span className="text-slate-700 dark:text-white/80">
                   <strong className="text-slate-900 dark:text-white">Bank Account:</strong> Active savings or current account in your name
                 </span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-green-400 mt-1 flex-shrink-0" />
+                <Check className="w-5 h-5 text-emerald-500 dark:text-emerald-400 mt-1 flex-shrink-0" />
                 <span className="text-slate-700 dark:text-white/80">
                   <strong className="text-slate-900 dark:text-white">Account Details:</strong> Account number, IFSC code, and account holder name
                 </span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-green-400 mt-1 flex-shrink-0" />
+                <Check className="w-5 h-5 text-emerald-500 dark:text-emerald-400 mt-1 flex-shrink-0" />
                 <span className="text-slate-700 dark:text-white/80">
                   <strong className="text-slate-900 dark:text-white">Verification:</strong> Cancelled cheque or bank statement (for verification)
                 </span>
@@ -74,7 +74,7 @@ export default function BankAccountSetupPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">1.</span> Navigate to Bank Settings
           </h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <ol className="space-y-4 text-slate-700 dark:text-white/80">
               <li className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-cyan-500/20 rounded-full text-cyan-400 text-sm font-bold">
@@ -109,7 +109,7 @@ export default function BankAccountSetupPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">2.</span> Add Bank Account Details
           </h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-6">Fill in the following information carefully:</p>
 
             <div className="space-y-6">
@@ -135,7 +135,7 @@ export default function BankAccountSetupPage() {
                 <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Account Type</h3>
                 <p className="text-slate-500 dark:text-white/60 text-sm mb-2">Select account type</p>
                 <div className="flex gap-4 mt-2">
-                  <div className="bg-slate-100 dark:bg-white/5 px-4 py-2 rounded-lg border border-cyan-500/30">
+                  <div className="bg-slate-100 dark:bg-white/5 px-4 py-2 rounded-lg border border-indigo-200 dark:border-cyan-500/30">
                     <span className="text-slate-900 dark:text-white">Savings</span>
                   </div>
                   <div className="bg-slate-100 dark:bg-white/5 px-4 py-2 rounded-lg border border-slate-200 dark:border-white/10">
@@ -167,7 +167,7 @@ export default function BankAccountSetupPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">3.</span> Account Verification
           </h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-6">
               Bitforge uses RazorpayX to verify bank accounts. Verification happens automatically:
             </p>
@@ -223,7 +223,7 @@ export default function BankAccountSetupPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">4.</span> Configure Payout Preferences
           </h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <div className="space-y-6">
               <div>
                 <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Minimum Payout Amount</h3>
@@ -244,7 +244,7 @@ export default function BankAccountSetupPage() {
                 <p className="text-slate-600 dark:text-white/70 text-sm mb-3">Enable automatic payouts when balance reaches threshold:</p>
                 <div className="space-y-3">
                   <label className="flex items-center gap-3">
-                    <input type="checkbox" className="w-4 h-4 accent-cyan-500" disabled />
+                    <input type="checkbox" className="w-4 h-4 accent-indigo-600 dark:accent-cyan-500" disabled />
                     <span className="text-slate-700 dark:text-white/80">Enable auto-payout (coming soon)</span>
                   </label>
                   <p className="text-white/50 text-xs ml-7">
@@ -361,26 +361,26 @@ export default function BankAccountSetupPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <Shield className="w-5 h-5 text-cyan-400" /> Security Best Practices
           </h2>
-          <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-6">
+          <div className="bg-red-50 dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
             <ul className="space-y-3 text-slate-700 dark:text-white/80">
               <li className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+                <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" />
                 <span><strong className="text-slate-900 dark:text-white">Never share:</strong> Bank account details, OTPs, or passwords with anyone</span>
               </li>
               <li className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+                <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" />
                 <span><strong className="text-slate-900 dark:text-white">Only use:</strong> Your own bank account (not friend's or relative's)</span>
               </li>
               <li className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+                <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" />
                 <span><strong className="text-slate-900 dark:text-white">Verify URL:</strong> Always check you're on the official Bitforge domain</span>
               </li>
               <li className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+                <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" />
                 <span><strong className="text-slate-900 dark:text-white">Enable 2FA:</strong> Add two-factor authentication to your account</span>
               </li>
               <li className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+                <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" />
                 <span><strong className="text-slate-900 dark:text-white">Monitor transactions:</strong> Regularly check payout history for unauthorized activity</span>
               </li>
             </ul>
@@ -419,7 +419,7 @@ export default function BankAccountSetupPage() {
         </section>
 
         {/* Support CTA */}
-        <div className="bg-gradient-to-r from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-8 text-center">
+        <div className="bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-cyan-500/10 dark:to-indigo-500/10 shadow-sm border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-8 text-center">
           <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Need Help?</h3>
           <p className="text-slate-600 dark:text-white/70 mb-6">
             Having trouble setting up your bank account? Our support team is here to help.
@@ -456,8 +456,8 @@ function CodeBlock({ code }: { code: string }) {
 
   return (
     <div className="relative group">
-      <pre className="bg-slate-950/50 border border-slate-200 dark:border-white/10 rounded-lg p-4 overflow-x-auto">
-        <code className="text-cyan-300 text-sm font-mono">{code}</code>
+      <pre className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/10 rounded-lg p-4 overflow-x-auto">
+        <code className="text-sm font-mono text-indigo-600 dark:text-cyan-400">{code}</code>
       </pre>
       <button
         onClick={handleCopy}
@@ -483,10 +483,10 @@ function NextStepCard({
   return (
     <Link
       href={href}
-      className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
+      className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-indigo-400/40 dark:hover:border-cyan-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all"
     >
       <div className="text-3xl mb-3">{icon}</div>
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-cyan-300">
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">
         {title}
       </h3>
       <p className="text-slate-500 dark:text-white/60 text-sm group-hover:text-slate-600 dark:group-hover:text-white/70">{description}</p>

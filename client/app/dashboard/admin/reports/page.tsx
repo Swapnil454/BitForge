@@ -1,22 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  ClipboardList, 
   RefreshCw, 
-  FileText, 
-  AlertCircle,
+  Clock, 
+  CheckCircle, 
+  XCircle, 
   X,
-  Clock,
-  CheckCircle,
-  XCircle,
-  ExternalLink,
-  Save,
-  MessageSquare,
-  UserRound,
-  ShieldAlert
+  Inbox,
+  FileText,
+  Download,
+  Paperclip,
+  ChevronDown
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -35,49 +32,107 @@ const formatDate = (dateString?: string) => {
   }).format(new Date(dateString));
 };
 
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case "pending":
-      return <span className="px-2.5 py-1 text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-full flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Pending</span>;
-    case "under_review":
-      return <span className="px-2.5 py-1 text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-full flex items-center gap-1.5"><AlertCircle className="w-3.5 h-3.5" /> Under Review</span>;
-    case "resolved":
-      return <span className="px-2.5 py-1 text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5" /> Resolved</span>;
-    case "dismissed":
-      return <span className="px-2.5 py-1 text-xs font-medium bg-slate-500/10 text-slate-400 border border-slate-500/30 rounded-full flex items-center gap-1.5"><XCircle className="w-3.5 h-3.5" /> Dismissed</span>;
-    default:
-      return <span className="px-2.5 py-1 text-xs font-medium bg-slate-500/10 text-slate-400 border border-slate-500/30 rounded-full">{status}</span>;
-  }
-};
-
 export default function AdminReportsPage() {
   const router = useRouter();
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [selectedReport, setSelectedReport] = useState<any | null>(null);
   
-  // Modal state
+  // Modal/Drawer state
   const [actionStatus, setActionStatus] = useState("pending");
   const [adminNotes, setAdminNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchReports();
-  }, [statusFilter]);
+  // Observer ref for infinite scroll
+  const observerTarget = useRef<HTMLDivElement>(null);
 
-  const fetchReports = async () => {
+  const getOriginalName = (url: string) => {
     try {
-      setLoading(true);
-      const res = await reportAPI.getAllReports({ status: statusFilter, limit: 50 });
-      setReports(res.reports || []);
+      const urlObj = new URL(url);
+      return urlObj.pathname.split('/').pop() || "proof-image";
+    } catch (e) {
+      return url.split('/').pop()?.split('?')[0] || "proof-image";
+    }
+  };
+
+  const handleDownloadImage = async (url: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = getOriginalName(url);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      window.open(url, "_blank");
+    }
+  };
+
+  const fetchReports = async (pageNum: number = 1) => {
+    try {
+      if (pageNum === 1) setLoading(true);
+      else setLoadingMore(true);
+
+      const res = await reportAPI.getAllReports({ 
+        status: statusFilter, 
+        limit: 7,
+        page: pageNum
+      });
+      
+      const newReports = res.reports || [];
+      
+      if (pageNum === 1) {
+        setReports(newReports);
+      } else {
+        setReports(prev => [...prev, ...newReports]);
+      }
+      
+      setHasMore(newReports.length === 7);
+      setPage(pageNum);
     } catch (error) {
       console.error("Error fetching reports:", error);
       toast.error("Failed to fetch reports");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
+
+  useEffect(() => {
+    fetchReports(1);
+  }, [statusFilter]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+          fetchReports(page + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [hasMore, loading, loadingMore, page, statusFilter]);
 
   const openReportModal = (report: any) => {
     setSelectedReport(report);
@@ -85,19 +140,28 @@ export default function AdminReportsPage() {
     setAdminNotes(report.adminNotes || "");
   };
 
-  const handleUpdateStatus = async () => {
+  const handleQuickAction = async (reportId: string, status: string) => {
+    try {
+      await reportAPI.updateReportStatus(reportId, { status });
+      toast.success("Report updated successfully");
+      fetchReports(1);
+    } catch (error) {
+      console.error("Error updating report:", error);
+      toast.error("Failed to update report");
+    }
+  };
+
+  const handleDrawerAction = async (status: string) => {
     if (!selectedReport) return;
-    
     try {
       setSaving(true);
       await reportAPI.updateReportStatus(selectedReport._id, {
-        status: actionStatus,
-        adminNotes: adminNotes
+        status,
+        adminNotes
       });
-      
       toast.success("Report updated successfully");
       setSelectedReport(null);
-      fetchReports(); // Refresh the list
+      fetchReports(1);
     } catch (error) {
       console.error("Error updating report:", error);
       toast.error("Failed to update report");
@@ -106,269 +170,374 @@ export default function AdminReportsPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white selection:bg-cyan-500/30">
-      <div className="fixed top-0 inset-x-0 h-[500px] bg-gradient-to-b from-indigo-900/20 to-transparent pointer-events-none" />
+  const handleSaveNotes = async () => {
+    if (!selectedReport) return;
+    try {
+      setSaving(true);
+      await reportAPI.updateReportStatus(selectedReport._id, {
+        status: selectedReport.status, // preserve current status
+        adminNotes
+      });
+      toast.success("Notes saved successfully");
+      fetchReports();
+    } catch (error) {
+      console.error("Error saving notes:", error);
+      toast.error("Failed to save notes");
+    } finally {
+      setSaving(false);
+    }
+  };
 
-      {/* Header */}
+  const getCount = (status: string) => {
+    if (status === 'all') return reports.length;
+    return reports.filter(r => r.status === status).length;
+  };
+
+  const getSeverityBorder = (type: string) => {
+    const t = (type || "").toLowerCase().replace(/_/g, " ");
+    if (t.includes("account restricted") || t.includes("fraud")) return "border-red-400";
+    if (t.includes("data privacy") || t.includes("abuse")) return "border-amber-400";
+    return "border-blue-400";
+  };
+
+  const getSeverityDot = (type: string) => {
+    const t = (type || "").toLowerCase().replace(/_/g, " ");
+    if (t.includes("account restricted") || t.includes("fraud")) return "bg-red-400";
+    if (t.includes("data privacy") || t.includes("abuse")) return "bg-amber-400";
+    return "bg-blue-400";
+  };
+
+  const renderStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return (
+          <span className="rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+            Pending
+          </span>
+        );
+      case 'under_review':
+        return (
+          <span className="rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+            Under Review
+          </span>
+        );
+      case 'resolved':
+        return (
+          <span className="rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <CheckCircle className="w-3 h-3" />
+            Resolved
+          </span>
+        );
+      case 'dismissed':
+        return (
+          <span className="rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5 bg-gray-100 text-gray-500 border border-gray-200">
+            <XCircle className="w-3 h-3" />
+            Dismissed
+          </span>
+        );
+      default:
+        return (
+          <span className="rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5 bg-gray-100 text-gray-500 border border-gray-200 capitalize">
+            {status.replace("_", " ")}
+          </span>
+        );
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* PAGE HEADER */}
       <PageHeader 
         title="Reports Management"
-        subtitle="Review, track, and resolve user appeals and platform reports."
+        subtitle="Resolve appeals and platform reports"
         backHref="/dashboard/admin"
         backLabel="Dashboard"
-        rightSlot={
-          <button 
-            onClick={fetchReports}
-            disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 rounded-xl hover:bg-indigo-500/20 transition-all shadow-lg shadow-indigo-500/10 disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Refresh Data</span>
-          </button>
-        }
       />
 
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12 space-y-6">
+      <div className="max-w-6xl mx-auto py-4 sm:py-6 px-4 sm:px-6">
         
-        {/* Filters */}
-        <div className="flex overflow-x-auto pb-2 scrollbar-hide gap-2">
-          {["all", "pending", "under_review", "resolved", "dismissed"].map((status) => (
-            <button
-              key={status}
-              onClick={() => setStatusFilter(status)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all border ${
-                statusFilter === status 
-                  ? "bg-indigo-500 border-indigo-400 text-slate-900 dark:text-white shadow-lg shadow-indigo-500/25" 
-                  : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-white/70 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white"
-              }`}
-            >
-              {status.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase())}
-            </button>
-          ))}
+        {/* FILTER PILLS */}
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+          {["all", "pending", "under_review", "resolved", "dismissed"].map(status => {
+            const isActive = statusFilter === status;
+            const count = getCount(status);
+            
+            let countBadgeClass = "bg-gray-100 text-gray-600";
+            if (isActive) {
+              countBadgeClass = "bg-white text-gray-900";
+            } else if (count > 0) {
+              if (status === 'pending') countBadgeClass = "bg-amber-100 text-amber-700";
+              else if (status === 'under_review') countBadgeClass = "bg-blue-100 text-blue-700";
+            }
+
+            return (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={
+                  isActive 
+                    ? "bg-gray-900 text-white rounded-full px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium flex items-center transition-colors whitespace-nowrap shrink-0"
+                    : "bg-white border border-gray-200 text-gray-500 rounded-full px-3 sm:px-4 py-1.5 text-xs sm:text-sm hover:border-gray-400 hover:text-gray-900 transition-colors flex items-center shadow-sm whitespace-nowrap shrink-0"
+                }
+              >
+                <span className="capitalize">{status.replace("_", " ")}</span>
+                <span className={`rounded-full px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-bold ml-1.5 ${countBadgeClass}`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Reports Grid */}
-        {loading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-48 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 animate-pulse" />
-            ))}
-          </div>
-        ) : reports.length === 0 ? (
-          <div className="text-center py-20 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-3xl">
-            <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 mb-4">
-              <ClipboardList className="h-8 w-8 text-indigo-400" />
+        {/* REPORT LIST */}
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100 shadow-sm">
+          {loading ? (
+            <div className="flex justify-center items-center py-16">
+              <RefreshCw className="w-8 h-8 text-gray-300 animate-spin" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No reports found</h3>
-            <p className="text-slate-500 dark:text-white/60 max-w-md mx-auto">
-              There are currently no reports matching the "{statusFilter.replace("_", " ")}" filter.
-            </p>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {reports.map((report) => (
+          ) : reports.length === 0 ? (
+            /* EMPTY STATE */
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <Inbox className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+              <h3 className="text-sm font-medium text-gray-400">No {statusFilter.replace("_", " ")} reports</h3>
+              <p className="text-xs text-gray-300 mt-1">All caught up.</p>
+            </div>
+          ) : (
+            reports.map(report => (
               <div 
                 key={report._id}
-                onClick={() => openReportModal(report)}
-                className="bg-slate-50 dark:bg-[#0a0a0f]/80 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl p-5 hover:border-indigo-500/50 hover:bg-[#0f0f15] transition-all cursor-pointer group shadow-lg hover:shadow-indigo-500/10 flex flex-col h-full relative overflow-hidden"
+                className={`flex flex-wrap sm:flex-nowrap items-start gap-3 sm:gap-4 px-4 sm:px-6 py-4 hover:bg-gray-50 transition-colors duration-150 border-l-4 ${getSeverityBorder(report.issueType)}`}
               >
-                {/* Accent line */}
-                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                {/* 1. SEVERITY INDICATOR */}
+                <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${getSeverityDot(report.issueType)}`} />
                 
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <p className="text-xs text-slate-400 dark:text-white/50 mb-1">{report.reportId}</p>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">{report.reporterEmail}</h3>
+                {/* 2. MAIN CONTENT */}
+                <div className="flex-1 min-w-0">
+                  {/* Primary Row */}
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1">
+                    <span className="text-[11px] sm:text-xs font-mono text-gray-500">{report.reportId}</span>
+                    <span className="text-gray-300 hidden sm:inline">·</span>
+                    <span className="text-sm font-semibold text-gray-900 truncate max-w-full">{report.reporterEmail}</span>
+                    {report.targetName && (
+                      <span className="text-xs sm:text-sm text-gray-500 w-full sm:w-auto truncate">→ {report.targetName}</span>
+                    )}
                   </div>
-                  {getStatusBadge(report.status)}
-                </div>
-
-                <div className="flex-1">
+                  
+                  {/* Secondary Row - Description */}
                   <div className="mb-3">
-                    <span className="inline-block px-2 py-0.5 text-xs font-medium bg-slate-200 dark:bg-white/10 rounded-md text-slate-700 dark:text-white/80">
-                      Issue: {report.issueType.replace("_", " ")}
-                    </span>
+                    <p className="text-sm text-gray-600 line-clamp-1">{report.description}</p>
                   </div>
-                  <p className="text-sm text-slate-500 dark:text-white/60 line-clamp-2">
-                    {report.description}
-                  </p>
+                  
+                  {/* Tertiary Row - Tags & Meta */}
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] sm:text-xs text-gray-500">
+                    <span className="bg-gray-100 text-gray-700 rounded-md px-2 py-1 font-medium capitalize">
+                      {report.issueType.replace(/_/g, " ")}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-gray-400" />
+                      {formatDate(report.createdAt)}
+                    </div>
+                    {report.proofUrls?.length > 0 && (
+                      <div className="flex items-center gap-1.5">
+                        <Paperclip className="w-3.5 h-3.5 text-gray-400" />
+                        {report.proofUrls.length} Proof(s)
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-slate-200 dark:border-white/5 flex items-center justify-between text-xs text-slate-400 dark:text-white/40">
-                  <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {formatDate(report.createdAt)}</span>
-                  {report.proofUrls?.length > 0 && (
-                    <span className="flex items-center gap-1 text-indigo-400 bg-indigo-400/10 px-2 py-0.5 rounded-md">
-                      <FileText className="w-3 h-3" /> {report.proofUrls.length} Proof(s)
-                    </span>
-                  )}
+                {/* 3. RIGHT SECTION (Status & View) */}
+                <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3 w-full sm:w-auto ml-5 sm:ml-4 mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+                  {renderStatusBadge(report.status)}
+                  <button 
+                    onClick={() => openReportModal(report)}
+                    className="text-xs rounded-lg px-3 py-1.5 font-medium border transition-colors bg-white border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm"
+                  >
+                    View Details
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            ))
+          )}
+          
+          {/* Infinite Scroll Target */}
+          {!loading && hasMore && reports.length > 0 && (
+            <div ref={observerTarget} className="w-full py-8 flex items-center justify-center">
+              <RefreshCw className="w-6 h-6 text-gray-400 animate-spin" />
+            </div>
+          )}
+          {!loading && !hasMore && reports.length > 0 && (
+            <div className="w-full py-8 flex items-center justify-center">
+              <span className="text-sm text-gray-500">No more reports to load.</span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Report Details Modal */}
+      {/* REPORT DETAIL DRAWER */}
       <AnimatePresence>
         {selectedReport && (
           <>
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedReport(null)}
-              className="fixed inset-0 z-[60] bg-white dark:bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 bg-black/20 z-40"
             />
+            
+            {/* Drawer */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed top-4 bottom-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-2xl z-[70] bg-slate-50 dark:bg-[#0a0a0f] border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl flex flex-col overflow-hidden"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "tween", duration: 0.3 }}
+              className="fixed right-0 top-0 h-full w-full sm:w-[480px] bg-white shadow-2xl border-l border-gray-200 z-50 flex flex-col"
             >
-              {/* Modal Header */}
-              <div className="shrink-0 p-5 border-b border-slate-200 dark:border-white/10 flex items-center justify-between bg-slate-100 dark:bg-white/5">
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    Report {selectedReport.reportId}
-                  </h2>
-                  <p className="text-xs text-slate-400 dark:text-white/50 mt-1">Submitted on {formatDate(selectedReport.createdAt)}</p>
+              {/* Drawer header */}
+              <div className="flex items-start justify-between px-5 py-4 border-b border-gray-200 shrink-0">
+                <div className="flex flex-col gap-1.5">
+                  <h2 className="text-lg font-semibold text-gray-900 leading-none">{selectedReport.reportId}</h2>
+                  <div className="inline-block scale-90 origin-left">
+                    {renderStatusBadge(selectedReport.status)}
+                  </div>
                 </div>
-                <button
-                  onClick={() => setSelectedReport(null)}
-                  className="p-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white rounded-full transition-colors"
-                >
+                <button onClick={() => setSelectedReport(null)} className="text-gray-400 hover:text-gray-600 -mt-1 p-1">
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Modal Body - Scrollable */}
-              <div className="flex-1 overflow-y-auto p-5 md:p-6 space-y-6 custom-scrollbar">
-                
-                {/* Reporter Info */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
-                    <p className="text-xs text-slate-400 dark:text-white/50 mb-1 flex items-center gap-1.5"><UserRound className="w-3.5 h-3.5" /> Reporter</p>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">{selectedReport.reporterName || "Anonymous"}</p>
-                    <p className="text-xs text-indigo-300 mt-0.5">{selectedReport.reporterEmail}</p>
-                  </div>
-                  <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
-                    <p className="text-xs text-slate-400 dark:text-white/50 mb-1 flex items-center gap-1.5"><AlertCircle className="w-3.5 h-3.5" /> Issue Type</p>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white capitalize">{selectedReport.issueType.replace("_", " ")}</p>
+              {/* Drawer body */}
+              <div className="flex-1 overflow-y-auto">
+                {/* 1. Reporter Info */}
+                <div className="px-5 py-4 border-b border-gray-100">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Reporter Info</h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between items-center gap-4">
+                      <span className="text-gray-500 shrink-0">Email</span>
+                      <span className="font-medium text-gray-900 truncate" title={selectedReport.reporterEmail}>{selectedReport.reporterEmail}</span>
+                    </div>
+                    <div className="flex justify-between items-center gap-4">
+                      <span className="text-gray-500 shrink-0">Name</span>
+                      <span className="font-medium text-gray-900 truncate">{selectedReport.reporterName || "Anonymous"}</span>
+                    </div>
+                    {selectedReport.reporterJoinedDate && (
+                      <div className="flex justify-between items-center gap-4">
+                        <span className="text-gray-500 shrink-0">Joined</span>
+                        <span className="font-medium text-gray-900">{formatDate(selectedReport.reporterJoinedDate)}</span>
+                      </div>
+                    )}
+                    {selectedReport.reportCount !== undefined && (
+                      <div className="flex justify-between items-center gap-4">
+                        <span className="text-gray-500 shrink-0">Total Reports</span>
+                        <span className="font-medium text-gray-900">{selectedReport.reportCount}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Description */}
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-indigo-400" /> Description
-                  </h3>
-                  <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-sm text-slate-700 dark:text-white/80 leading-relaxed whitespace-pre-wrap">
-                    {selectedReport.description}
+                {/* 2. Issue Details */}
+                <div className="px-5 py-4 border-b border-gray-100">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Issue Details</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Issue Type</span>
+                      <p className="text-sm text-gray-900 mt-1 capitalize">{selectedReport.issueType.replace("_", " ")}</p>
+                    </div>
+                    <div>
+                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Submitted</span>
+                      <p className="text-sm text-gray-900 mt-1">{formatDate(selectedReport.createdAt)}</p>
+                    </div>
+                    <div>
+                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Description</span>
+                      <p className="text-sm text-gray-900 mt-1 whitespace-pre-wrap">{selectedReport.description}</p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Proofs */}
-                {selectedReport.proofUrls && selectedReport.proofUrls.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-                      <ExternalLink className="w-4 h-4 text-emerald-400" /> Attached Proofs
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      {selectedReport.proofUrls.map((url: string, index: number) => (
-                        <a
-                          key={index}
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="group relative aspect-video rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-black/50"
+                {/* 3. Proof Files */}
+                {selectedReport.proofUrls?.length > 0 && (
+                  <div className="px-5 py-4 border-b border-gray-100">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Proof Files</h3>
+                    <div className="space-y-2">
+                      {selectedReport.proofUrls.map((url: string, idx: number) => (
+                        <button 
+                          key={idx} 
+                          onClick={() => setLightboxImage(url)}
+                          className="w-full flex items-center text-left gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
                         >
-                          <img src={url} alt={`Proof ${index + 1}`} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                          <div className="absolute inset-0 flex items-center justify-center bg-white dark:bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <ExternalLink className="w-6 h-6 text-slate-900 dark:text-white" />
-                          </div>
-                        </a>
+                          <FileText className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm text-gray-700 flex-1 truncate">Proof_{idx + 1}</span>
+                          <Download 
+                            onClick={(e) => handleDownloadImage(url, e)} 
+                            className="w-4 h-4 text-gray-400 hover:text-gray-900 transition-colors" 
+                          />
+                        </button>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Admin Actions */}
-                <div className="pt-6 border-t border-slate-200 dark:border-white/10">
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                    <Save className="w-4 h-4 text-rose-400" /> Admin Resolution
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-medium text-slate-500 dark:text-white/60 mb-2">Update Status</label>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        {[
-                          { val: "pending", icon: Clock, color: "amber" },
-                          { val: "under_review", icon: AlertCircle, color: "blue" },
-                          { val: "resolved", icon: CheckCircle, color: "emerald" },
-                          { val: "dismissed", icon: XCircle, color: "slate" },
-                        ].map((s) => (
+                {/* 4. Admin Notes */}
+                <div className="px-5 py-4">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Admin Notes</h3>
+                  <div className="flex flex-col gap-2">
+                    <textarea 
+                      value={adminNotes}
+                      onChange={(e) => setAdminNotes(e.target.value)}
+                      placeholder="Add internal notes..."
+                      className="w-full border border-gray-200 rounded-lg p-3 text-sm text-gray-600 resize-none h-24 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                    />
+                    <button 
+                      onClick={handleSaveNotes}
+                      disabled={saving}
+                      className="self-end text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      {saving ? 'Saving...' : 'Save Notes'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* 5. Action Rail at bottom */}
+              <div className="p-4 border-t border-gray-200 shrink-0 bg-gray-50 flex items-center gap-3 relative">
+                <div className="relative flex-1">
+                  <button 
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="w-full text-left text-sm rounded-lg px-3 py-2 border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 font-medium flex items-center justify-between"
+                  >
+                    <span className="capitalize">{actionStatus.replace(/_/g, " ")}</span>
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  </button>
+                  {isDropdownOpen && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-40" 
+                        onClick={() => setIsDropdownOpen(false)}
+                      />
+                      <div className="absolute bottom-full left-0 w-full mb-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden">
+                        {['pending', 'under_review', 'resolved', 'dismissed'].map((status) => (
                           <button
-                            key={s.val}
-                            onClick={() => setActionStatus(s.val)}
-                            className={`flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border text-xs font-medium transition-all ${
-                              actionStatus === s.val
-                                ? `bg-${s.color}-500/20 border-${s.color}-500/50 text-${s.color}-300 shadow-lg shadow-${s.color}-500/10`
-                                : `bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-400 dark:text-white/50 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white`
-                            }`}
+                            key={status}
+                            onClick={() => { setActionStatus(status); setIsDropdownOpen(false); }}
+                            className={`w-full text-left px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-50 ${actionStatus === status ? 'text-gray-900 bg-gray-50' : 'text-gray-600'}`}
                           >
-                            <s.icon className="w-4 h-4" />
-                            {s.val.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase())}
+                            {status.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
                           </button>
                         ))}
                       </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-slate-500 dark:text-white/60 mb-2 flex items-center gap-1">
-                        <MessageSquare className="w-3.5 h-3.5" /> Admin Notes (visible to user)
-                      </label>
-                      <textarea
-                        value={adminNotes}
-                        onChange={(e) => setAdminNotes(e.target.value)}
-                        placeholder="Log your findings, actions taken, or reason for dismissal..."
-                        className="w-full h-32 px-4 py-3 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-900 dark:text-white placeholder-white/30 focus:outline-hidden focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 resize-none transition-all custom-scrollbar"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Audit Trail (if resolved) */}
-                {selectedReport.reviewedBy && (
-                  <div className="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-start gap-3">
-                    <ShieldAlert className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm text-slate-800 dark:text-white/90 font-medium">Previously reviewed by {selectedReport.reviewedBy.name}</p>
-                      <p className="text-xs text-slate-400 dark:text-white/50 mt-1">On {formatDate(selectedReport.reviewedAt)}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Modal Footer */}
-              <div className="shrink-0 p-5 border-t border-slate-200 dark:border-white/10 bg-white dark:bg-black/40 flex justify-end gap-3">
-                <button
-                  onClick={() => setSelectedReport(null)}
-                  disabled={saving}
-                  className="px-5 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleUpdateStatus}
-                  disabled={saving || (actionStatus === selectedReport.status && adminNotes === (selectedReport.adminNotes || ""))}
-                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-900 dark:text-white bg-indigo-600 hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-600/25 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {saving ? (
-                    <><RefreshCw className="w-4 h-4 animate-spin" /> Saving...</>
-                  ) : (
-                    <><Save className="w-4 h-4" /> Save Resolution</>
+                    </>
                   )}
+                </div>
+                <button 
+                  disabled={saving || actionStatus === selectedReport.status}
+                  onClick={() => handleDrawerAction(actionStatus)}
+                  className="text-sm rounded-lg px-6 py-2 font-medium bg-gray-900 text-white hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? 'Updating...' : 'Update Status'}
                 </button>
               </div>
             </motion.div>
@@ -376,6 +545,49 @@ export default function AdminReportsPage() {
         )}
       </AnimatePresence>
 
+      {/* LIGHTBOX MODAL */}
+      <AnimatePresence>
+        {lightboxImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6"
+            onClick={() => setLightboxImage(null)}
+          >
+            <div className="flex flex-col w-full max-w-[700px] gap-3">
+              {/* Action Buttons Above Image */}
+              <div className="flex flex-row gap-2 self-end">
+                <button
+                  onClick={(e) => handleDownloadImage(lightboxImage, e)}
+                  className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-colors"
+                  title="Download"
+                >
+                  <Download className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLightboxImage(null);
+                  }}
+                  className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-colors"
+                  title="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <img 
+                src={lightboxImage} 
+                alt="Proof Image" 
+                className="w-full max-h-[80vh] object-contain rounded-md shadow-2xl bg-black/20" 
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+

@@ -18,6 +18,7 @@ interface BarMetricChartProps<T> {
   barColor?: string;
   emptyIcon?: string;
   emptyText?: string;
+  onActivePayloadChange?: (payload: T | null) => void;
 }
 
 export function BarMetricChart<T extends { month: string }>({
@@ -28,6 +29,7 @@ export function BarMetricChart<T extends { month: string }>({
   barColor = "#6366f1",
   emptyIcon = "",
   emptyText = "No data to display",
+  onActivePayloadChange,
 }: BarMetricChartProps<T>) {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -60,7 +62,18 @@ export function BarMetricChart<T extends { month: string }>({
   return (
     <div style={{ height }} className="focus:outline-none [&_.recharts-wrapper]:outline-none [&_.recharts-surface]:outline-none [&_*]:focus:outline-none">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={displayData} margin={{ top: 8, right: 16, left: 16, bottom: 0 }}>
+        <BarChart 
+          data={displayData} 
+          margin={{ top: 8, right: 16, left: 16, bottom: 0 }}
+          onMouseMove={(state: any) => {
+            if (state && state.isTooltipActive && state.activePayload && state.activePayload.length) {
+              onActivePayloadChange?.(state.activePayload[0].payload);
+            }
+          }}
+          onMouseLeave={() => {
+            onActivePayloadChange?.(null);
+          }}
+        >
           <XAxis
             dataKey="month"
             tick={{ fill: "#a5b4fc", fontSize: 11, fontWeight: 600 }}

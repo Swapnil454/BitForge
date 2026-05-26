@@ -1699,6 +1699,22 @@ export const getAllDisputes = async (req, res) => {
             { $match: matchStage },
             {
               $lookup: {
+                from: "orders",
+                localField: "orderId",
+                foreignField: "_id",
+                as: "order",
+              },
+            },
+            { $unwind: { path: "$order", preserveNullAndEmptyArrays: true } },
+            {
+              $addFields: {
+                sellerId: { $ifNull: ["$sellerId", "$order.sellerId"] },
+                productId: { $ifNull: ["$productId", "$order.productId"] },
+                amount: { $ifNull: ["$amount", "$order.amount"] },
+              }
+            },
+            {
+              $lookup: {
                 from: "users",
                 localField: "buyerId",
                 foreignField: "_id",
@@ -2175,8 +2191,15 @@ export const getDashboardStats = async (req, res) => {
     const orders = await Order.find({ status: "paid" });
     const totalRevenue = orders.reduce((sum, order) => sum + (order.amount || 0), 0);
     
-    // Get platform revenue (commission from all paid orders)
-    const platformRevenue = orders.reduce((sum, order) => sum + (order.platformFee || 0), 0);
+    // Get platform revenue (commission from all paid orders + seller platform fee)
+    const platformRevenue = orders.reduce((sum, order) => {
+      const buyerFee = order.platformFee || 0;
+      // Seller fee is 10% of base price. basePrice = sellerAmount / 0.9
+      const sellerFee = order.sellerAmount ? (order.sellerAmount / 0.9) * 0.1 : 0;
+      return sum + buyerFee + sellerFee;
+    }, 0);
+    
+    const roundedPlatformRevenue = Number(platformRevenue.toFixed(2));
 
     // Get total users count
     const totalUsers = await User.countDocuments();
@@ -2241,8 +2264,20 @@ export const getDashboardStats = async (req, res) => {
             year: { $year: "$createdAt" },
             month: { $month: "$createdAt" }
           },
-          revenue: { $sum: "$platformFee" },
+          buyerRevenue: { $sum: "$platformFee" },
+          sellerAmountSum: { $sum: "$sellerAmount" },
           users: { $addToSet: "$buyerId" }
+        }
+      },
+      {
+        $project: {
+          revenue: {
+            $add: [
+              { $ifNull: ["$buyerRevenue", 0] },
+              { $multiply: [ { $divide: [ { $ifNull: ["$sellerAmountSum", 0] }, 0.9 ] }, 0.1 ] }
+            ]
+          },
+          users: 1
         }
       },
       {
@@ -2254,7 +2289,7 @@ export const getDashboardStats = async (req, res) => {
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const platformAnalytics = monthlyOrders.map(item => ({
       month: `${monthNames[item._id.month - 1]} ${item._id.year}`,
-      revenue: item.revenue || 0,
+      revenue: Number((item.revenue || 0).toFixed(2)),
       users: item.users.length
     }));
 
@@ -2270,13 +2305,16 @@ export const getDashboardStats = async (req, res) => {
       ? ((totalUsers - usersLastMonth) / usersLastMonth * 100).toFixed(1)
       : 0;
 
+    const openDisputes = await Dispute.countDocuments({ status: "open" });
+
     res.json({
       totalRevenue,
-      platformRevenue,
+      platformRevenue: roundedPlatformRevenue,
       totalUsers,
       totalBuyers,
       totalSellers,
       totalProducts,
+      openDisputes,
       userGrowth: parseFloat(userGrowth),
       pendingSellers: pendingSellers.map(s => ({
         id: s._id,

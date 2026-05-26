@@ -5,12 +5,12 @@ import { Check, MessageCircle } from "lucide-react";
 
 export default function ProductChangesPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-10 px-4">
+    <div className="py-10 px-4 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <nav className="mb-6 text-sm text-slate-500 dark:text-white/60">
-          <Link href="/docs" className="hover:text-cyan-400">Documentation</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Documentation</Link>
           <span className="mx-2">/</span>
-          <Link href="/docs" className="hover:text-cyan-400">For Sellers</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">For Sellers</Link>
           <span className="mx-2">/</span>
           <span className="text-slate-900 dark:text-white">Product Changes</span>
         </nav>
@@ -63,7 +63,7 @@ export default function ProductChangesPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">1.</span> How to Submit Changes
           </h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <ol className="space-y-4 text-slate-700 dark:text-white/80">
               <li className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-cyan-500/20 rounded-full text-cyan-400 text-sm font-bold">
@@ -152,7 +152,7 @@ export default function ProductChangesPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">3.</span> Tracking Your Changes
           </h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">View Pending Changes</h3>
             <ol className="space-y-3 text-slate-600 dark:text-white/70 mb-6">
               <li className="flex items-start gap-3">
@@ -205,23 +205,23 @@ export default function ProductChangesPage() {
             <p className="text-slate-700 dark:text-white/80 mb-4">Some changes can be made instantly without approval:</p>
             <ul className="space-y-2 text-slate-600 dark:text-white/70">
               <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <Check className="w-5 h-5 text-emerald-500 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
                 <span>Minor price adjustments (under 10% change)</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <Check className="w-5 h-5 text-emerald-500 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
                 <span>Adding or removing tags/keywords</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <Check className="w-5 h-5 text-emerald-500 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
                 <span>Updating product availability (enable/disable)</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <Check className="w-5 h-5 text-emerald-500 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
                 <span>Fixing typos in description (minor text edits)</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <Check className="w-5 h-5 text-emerald-500 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
                 <span>Updating FAQ or additional information</span>
               </li>
             </ul>
@@ -333,7 +333,7 @@ export default function ProductChangesPage() {
         </section>
 
         {/* Support CTA */}
-        <div className="bg-gradient-to-r from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-8 text-center">
+        <div className="bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-cyan-500/10 dark:to-indigo-500/10 shadow-sm border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-8 text-center">
           <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Need Help with Product Changes?</h3>
           <p className="text-slate-600 dark:text-white/70 mb-6">
             Have questions about the approval process? Our support team is here to help.
@@ -364,10 +364,10 @@ function NextStepCard({
   return (
     <Link
       href={href}
-      className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
+      className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-indigo-400/40 dark:hover:border-cyan-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all"
     >
       <div className="text-3xl mb-3">{icon}</div>
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-cyan-300">
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">
         {title}
       </h3>
       <p className="text-slate-500 dark:text-white/60 text-sm group-hover:text-slate-600 dark:group-hover:text-white/70">{description}</p>

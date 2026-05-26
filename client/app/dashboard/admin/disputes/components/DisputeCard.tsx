@@ -117,10 +117,10 @@ export default function DisputeCard({ dispute, onApprove, onReject, onViewDetail
       </div>
 
       {/* Footer Actions */}
-      <div className="flex items-center justify-end gap-3 pt-2 mt-1">
+      <div className="flex items-center justify-end gap-2 sm:gap-3 pt-2 mt-1">
         <button
           onClick={() => onViewDetails(dispute.id)}
-          className="px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+          className="flex-1 sm:flex-none text-center px-2 sm:px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 text-[10px] sm:text-xs font-bold uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
         >
           Details
         </button>
@@ -129,15 +129,15 @@ export default function DisputeCard({ dispute, onApprove, onReject, onViewDetail
           <>
             <button
               onClick={() => onReject(dispute.id)}
-              className="px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold uppercase tracking-wider hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
+              className="flex-1 sm:flex-none text-center px-2 sm:px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
             >
               Reject
             </button>
             <button
               onClick={() => onApprove(dispute.id)}
-              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
+              className="flex-1 sm:flex-none text-center px-2 sm:px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
             >
-              Approve Refund
+              Approve
             </button>
           </>
         )}

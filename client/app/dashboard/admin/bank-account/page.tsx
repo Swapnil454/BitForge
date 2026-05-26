@@ -153,7 +153,6 @@ export default function AdminBankAccountPage() {
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-200/50 dark:bg-white/[0.04] hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.06] transition-all"
             >
               <MoreVertical className="w-4 h-4" />
             </button>

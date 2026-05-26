@@ -411,7 +411,6 @@ export function UserDirectoryPage({ config }: { config: UserDirectoryConfig }) {
             <div className="sm:hidden relative z-50">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="dropdown-trigger h-9 w-9 flex items-center justify-center rounded-xl bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 transition"
               >
                 <MoreVertical className="h-5 w-5" />
               </button>

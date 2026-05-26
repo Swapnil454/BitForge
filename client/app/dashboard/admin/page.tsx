@@ -68,6 +68,7 @@ interface DashboardStats {
   totalBuyers: number;
   totalSellers: number;
   totalProducts: number;
+  openDisputes?: number;
   userGrowth: number;
   pendingSellers: Array<{ id: string; name: string; email: string; appliedDate: string }>;
   recentTransactions: Array<{ id: string; orderId: string; user: string; productName: string; amount: string; date: string }>;
@@ -80,6 +81,7 @@ export default function AdminDashboard() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [activeMonthPayload, setActiveMonthPayload] = useState<any>(null);
   const socketRef = useRef<Socket | null>(null);
 
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -279,6 +281,32 @@ export default function AdminDashboard() {
     router.push("/login");
   };
 
+  // Dynamic user growth calculation
+  const getDynamicUserGrowth = () => {
+    if (!stats) return 0;
+
+    // Default: if not hovering, show the overall current month user growth from the backend
+    if (!activeMonthPayload || !activeMonthPayload.month) {
+      return stats.userGrowth || 0;
+    }
+
+    const data = stats.platformAnalytics;
+    if (!data || data.length < 2) return stats.userGrowth || 0;
+
+    // If hovering, find the index of the hovered month
+    const currentIdx = data.findIndex((d: any) => d.month === activeMonthPayload.month);
+    
+    if (currentIdx <= 0) return 100; // First month or not found -> assume 100% growth
+
+    const currentUsers = data[currentIdx].users || 0;
+    const prevUsers = data[currentIdx - 1].users || 0;
+
+    if (prevUsers === 0) return currentUsers > 0 ? 100 : 0;
+    return Number((((currentUsers - prevUsers) / prevUsers) * 100).toFixed(1));
+  };
+  
+  const dynamicGrowth = getDynamicUserGrowth();
+
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
       {/* ================= HEADER ================= */}
@@ -328,7 +356,7 @@ export default function AdminDashboard() {
                     className="absolute right-0 mt-3 w-56 rounded-2xl bg-white dark:bg-transparent dark:bg-linear-to-br dark:from-slate-900/95 dark:via-slate-800/95 dark:to-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-indigo-500/20 shadow-2xl shadow-gray-200 dark:shadow-indigo-500/20 overflow-hidden"
                   >
                     <div className="px-4 py-3 border-b border-slate-200 dark:border-white/10 bg-linear-to-r from-indigo-500/10 to-purple-500/10 rounded-t-2xl">
-                      <p className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Menu</p>
+                      <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-300 uppercase tracking-wider">Menu</p>
                     </div>
                     <MenuItem 
                       label="Profile" 
@@ -624,7 +652,11 @@ export default function AdminDashboard() {
 
               {/* Open Disputes */}
               <button onClick={() => router.push("/dashboard/admin/disputes")} className="flex flex-col items-center gap-2.5 group relative md:flex-row md:items-center md:gap-0 md:p-3 md:rounded-2xl md:bg-slate-50/70 md:dark:bg-slate-800/40 md:hover:bg-slate-100 md:dark:hover:bg-slate-800/80 md:border md:border-slate-200/60 md:dark:border-slate-700/50 md:transition-all md:duration-200 md:shadow-sm md:hover:shadow">
-                <div className="absolute -top-1 right-1 sm:right-3 md:hidden bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md z-20">2</div>
+                {(stats?.openDisputes || 0) > 0 && (
+                  <div className="absolute -top-1 right-1 sm:right-3 md:hidden bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md z-20">
+                    {stats?.openDisputes}
+                  </div>
+                )}
                 <div className="w-[52px] h-[52px] sm:w-[56px] sm:h-[56px] md:w-[40px] md:h-[40px] md:shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] group-hover:scale-[1.08] md:group-hover:scale-100 transition-all duration-300 hover-shine overflow-hidden md:mr-3">
                   <span className="anim-wrapper anim-wiggle delay-4 inline-flex relative z-10"><TriangleAlert className="w-[22px] h-[22px] sm:w-6 sm:h-6 md:w-[18px] md:h-[18px] text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                 </div>
@@ -632,7 +664,11 @@ export default function AdminDashboard() {
                 <div className="hidden md:flex flex-col items-start text-left flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
                     <span className="text-[13px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Open Disputes</span>
-                    <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md leading-none">2</span>
+                    {(stats?.openDisputes || 0) > 0 && (
+                      <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md leading-none">
+                        {stats?.openDisputes}
+                      </span>
+                    )}
                   </div>
                   <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Needs attention</span>
                 </div>
@@ -828,9 +864,14 @@ export default function AdminDashboard() {
             <div className="bg-white dark:bg-slate-900 rounded-[28px] border border-slate-100 dark:border-slate-800 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-none p-5 sm:p-6">
               <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2 mb-6">
                 <Users className="w-5 h-5 text-emerald-500" />
-                User Growth ({`${stats?.userGrowth >= 0 ? "+" : ""}${stats?.userGrowth}%`})
+                User Growth ({`${dynamicGrowth >= 0 ? "+" : ""}${dynamicGrowth}%`})
               </h3>
-              <BarMetricChart data={stats.platformAnalytics} dataKey="users" emptyText="No user data" />
+              <BarMetricChart 
+                data={stats.platformAnalytics} 
+                dataKey="users" 
+                emptyText="No user data" 
+                onActivePayloadChange={setActiveMonthPayload} 
+              />
             </div>
           </div>
         </div>

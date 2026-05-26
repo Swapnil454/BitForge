@@ -155,12 +155,11 @@ export default function ProductsManagementPage() {
         backHref="/dashboard/admin"
         backLabel="Dashboard"
         title="Products"
-        subtitle="Manage product approvals and catalog"
+        subtitle="product approvals and catalog"
         rightSlot={
           <div className="relative" ref={headerMenuRef}>
             <button
               onClick={() => setHeaderMenuOpen(!headerMenuOpen)}
-              className="h-11 w-11 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/[0.03] flex items-center justify-center hover:bg-white/[0.08] transition shadow-xl"
             >
               <MoreVertical className="h-5 w-5 text-slate-600 dark:text-white/70" />
             </button>

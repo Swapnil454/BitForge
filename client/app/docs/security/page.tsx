@@ -6,18 +6,18 @@ import { Lock, AlertCircle, CreditCard, Check, Trash2, Key, Lock as LockIcon, Be
 
 export default function SecurityPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-10 px-4">
+    <div className="py-10 px-4 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <nav className="mb-6 text-sm text-slate-500 dark:text-white/60">
-          <Link href="/docs" className="hover:text-cyan-400">Documentation</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Documentation</Link>
           <span className="mx-2">/</span>
-          <Link href="/docs" className="hover:text-cyan-400">Platform Guides</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Platform Guides</Link>
           <span className="mx-2">/</span>
           <span className="text-slate-900 dark:text-white">Security Best Practices</span>
         </nav>
 
         <div className="mb-8">
-          <span className="inline-block px-3 py-1 mb-4 text-xs font-semibold text-cyan-400 bg-cyan-500/10 rounded-full border border-cyan-500/20">
+          <span className="inline-block px-3 py-1 mb-4 text-xs font-semibold text-indigo-600 dark:text-cyan-400 bg-indigo-50 dark:bg-cyan-500/10 rounded-full border border-indigo-200 dark:border-cyan-500/20">
             Platform Guides
           </span>
           <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">Security Best Practices</h1>
@@ -34,17 +34,17 @@ export default function SecurityPage() {
               Security is our top priority at Bitforge. This guide outlines best practices for keeping your account, products, and customer data safe.
             </p>
             <div className="grid md:grid-cols-3 gap-4 mt-6">
-              <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-5 text-center">
+              <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-5 text-center">
                 <Lock className="w-8 h-8 mb-3 text-cyan-400 mx-auto" />
                 <h3 className="text-slate-900 dark:text-white font-semibold mb-2">API Security</h3>
                 <p className="text-slate-500 dark:text-white/60 text-sm">Protect your API keys and tokens</p>
               </div>
-              <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-5 text-center">
+              <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-5 text-center">
                 <CreditCard className="w-8 h-8 mb-3 text-cyan-400 mx-auto" />
                 <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Payment Security</h3>
                 <p className="text-slate-500 dark:text-white/60 text-sm">PCI-compliant payment processing</p>
               </div>
-              <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-5 text-center">
+              <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-5 text-center">
                 <AlertCircle className="w-8 h-8 mb-3 text-cyan-400 mx-auto" />
                 <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Data Protection</h3>
                 <p className="text-slate-500 dark:text-white/60 text-sm">GDPR & data privacy compliance</p>
@@ -58,51 +58,51 @@ export default function SecurityPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">1.</span> API Security
           </h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6 mb-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6 mb-6">
             <h3 className="text-slate-900 dark:text-white font-semibold mb-4">Protect Your API Keys</h3>
             <div className="space-y-4">
               <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg">
                 <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 text-red-400" /> Never Do This
+                  <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400" /> Never Do This
                 </h3>
                 <ul className="space-y-2 text-slate-600 dark:text-white/70 text-sm">
                   <li className="flex items-start gap-2">
-                    <span className="text-red-400">•</span>
+                    <span className="text-red-500 dark:text-red-400">•</span>
                     <span>Commit API keys to Git repositories</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-red-400">•</span>
+                    <span className="text-red-500 dark:text-red-400">•</span>
                     <span>Hard-code keys in frontend JavaScript</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-red-400">•</span>
+                    <span className="text-red-500 dark:text-red-400">•</span>
                     <span>Share keys in Slack, email, or chat</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-red-400">•</span>
+                    <span className="text-red-500 dark:text-red-400">•</span>
                     <span>Use production keys in development</span>
                   </li>
                 </ul>
               </div>
               <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg">
                 <h4 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                  <Check className="w-5 h-5 text-green-400" /> Best Practices
+                  <Check className="w-5 h-5 text-emerald-500 dark:text-emerald-400" /> Best Practices
                 </h4>
                 <ul className="space-y-2 text-slate-600 dark:text-white/70 text-sm">
                   <li className="flex items-start gap-2">
-                    <span className="text-green-400">•</span>
+                    <span className="text-emerald-500 dark:text-emerald-400">•</span>
                     <span>Store keys in environment variables (.env)</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-green-400">•</span>
+                    <span className="text-emerald-500 dark:text-emerald-400">•</span>
                     <span>Use separate keys for development and production</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-green-400">•</span>
+                    <span className="text-emerald-500 dark:text-emerald-400">•</span>
                     <span>Rotate keys every 90 days or after team member leaves</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-green-400">•</span>
+                    <span className="text-emerald-500 dark:text-emerald-400">•</span>
                     <span>Use read-only keys when write access isn't needed</span>
                   </li>
                 </ul>
@@ -131,7 +131,7 @@ echo ".env" >> .gitignore`}
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">2.</span> Authentication & Authorization
           </h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <div className="space-y-4">
               <div>
                 <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
@@ -205,7 +205,7 @@ fetch('http://api.Bitforge.com/products', ...)`}
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">4.</span> Payment Security
           </h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <div className="space-y-4 text-slate-700 dark:text-white/80">
               <p>
                 <strong className="text-slate-900 dark:text-white">We handle PCI compliance for you.</strong> Customer payment information never touches your servers.
@@ -213,7 +213,7 @@ fetch('http://api.Bitforge.com/products', ...)`}
               <div className="grid md:grid-cols-2 gap-4 mt-4">
                 <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg">
                   <h4 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                    <Check className="w-4 h-4 text-green-400" /> We Store
+                    <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400" /> We Store
                   </h4>
                   <ul className="space-y-1 text-slate-600 dark:text-white/70 text-sm">
                     <li>• Credit card numbers (encrypted)</li>
@@ -224,7 +224,7 @@ fetch('http://api.Bitforge.com/products', ...)`}
                 </div>
                 <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg">
                   <h4 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                    <Check className="w-4 h-4 text-green-400" /> You Receive
+                    <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400" /> You Receive
                   </h4>
                   <ul className="space-y-1 text-slate-600 dark:text-white/70 text-sm">
                     <li>• Order confirmation</li>
@@ -276,7 +276,7 @@ fetch('http://api.Bitforge.com/products', ...)`}
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">6.</span> Webhook Security
           </h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">
               Always verify webhook signatures to prevent spoofed events:
             </p>
@@ -341,7 +341,7 @@ if (!verifyWebhook(req.body, req.headers['x-webhook-signature'], secret)) {
         {/* Report Issues */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Report Security Issues</h2>
-          <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-6">
+          <div className="bg-red-50 dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3 flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-red-500" /> Found a Vulnerability?
             </h3>
@@ -389,7 +389,7 @@ if (!verifyWebhook(req.body, req.headers['x-webhook-signature'], secret)) {
         </section>
 
         {/* Support CTA */}
-        <div className="bg-gradient-to-r from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-8 text-center">
+        <div className="bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-cyan-500/10 dark:to-indigo-500/10 shadow-sm border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-8 text-center">
           <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Questions About Security?</h3>
           <p className="text-slate-600 dark:text-white/70 mb-6">
             Our security team is here to help with implementation and compliance questions.
@@ -426,7 +426,7 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
         </button>
       </div>
       <pre className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-xl p-4 overflow-x-auto">
-        <code className="text-sm text-cyan-300">{code}</code>
+        <code className="text-sm text-indigo-600 dark:text-cyan-400">{code}</code>
       </pre>
     </div>
   );
@@ -446,10 +446,10 @@ function NextStepCard({
   return (
     <Link
       href={href}
-      className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
+      className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-indigo-400/40 dark:hover:border-cyan-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all"
     >
-      <div className="text-3xl mb-3 text-cyan-400">{icon}</div>
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-cyan-300">
+      <div className="text-3xl mb-3 text-indigo-600 dark:text-cyan-400">{icon}</div>
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">
         {title}
       </h3>
       <p className="text-slate-500 dark:text-white/60 text-sm group-hover:text-slate-600 dark:group-hover:text-white/70">{description}</p>

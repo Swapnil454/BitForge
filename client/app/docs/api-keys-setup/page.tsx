@@ -18,7 +18,7 @@ export default function APIKeysSetupPage() {
 
       {/* Header */}
       <div className="mb-12">
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-300">
+        <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-indigo-50 dark:bg-cyan-500/10 px-3 py-1 text-xs font-medium text-indigo-600 dark:text-cyan-300">
           <Lock className="w-4 h-4" />
           Getting Started
         </div>
@@ -47,7 +47,7 @@ export default function APIKeysSetupPage() {
                 href="https://razorpay.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-cyan-300 hover:text-cyan-200 underline"
+                className="text-indigo-600 dark:text-cyan-300 hover:text-indigo-700 dark:hover:text-cyan-200 underline transition-colors"
               >
                 razorpay.com
               </a>{" "}
@@ -73,7 +73,7 @@ RAZORPAY_KEY_ID=rzp_test_your_key_id
 RAZORPAY_KEY_SECRET=your_razorpay_key_secret`}
           />
 
-          <div className="mt-6 rounded-lg border border-cyan-500/30 bg-cyan-500/5 p-4">
+          <div className="mt-6 rounded-lg border border-indigo-200 dark:border-cyan-500/30 bg-cyan-500/5 p-4">
             <div className="flex items-start gap-3">
               <span className="text-xl">💡</span>
               <div>
@@ -120,11 +120,11 @@ RAZORPAYX_KEY_ID=rzp_test_your_razorpayx_key
 RAZORPAYX_KEY_SECRET=your_razorpayx_secret`}
           />
 
-          <div className="mt-6 rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
+          <div className="mt-6 rounded-lg border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/5 p-4">
             <div className="flex items-start gap-3">
               <span className="text-xl"></span>
               <div>
-                <p className="mb-2 font-semibold text-yellow-300">Important</p>
+                <p className="mb-2 font-semibold text-amber-700 dark:text-amber-300">Important</p>
                 <p className="text-sm text-slate-600 dark:text-white/70">
                   RazorpayX requires business verification and may take 2-3 days to activate. Use test mode for development.
                 </p>
@@ -139,7 +139,7 @@ RAZORPAYX_KEY_SECRET=your_razorpayx_secret`}
 
           <h3 className="mb-3 text-lg font-semibold text-slate-900 dark:text-white">Step 1: Create Google Cloud Project</h3>
           <ol className="space-y-3 text-slate-600 dark:text-white/70">
-            <li>1. Go to <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="text-cyan-300 hover:text-cyan-200 underline">Google Cloud Console</a></li>
+            <li>1. Go to <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-cyan-300 hover:text-indigo-700 dark:hover:text-cyan-200 underline transition-colors">Google Cloud Console</a></li>
             <li>2. Create a new project or select existing one</li>
             <li>3. Enable <strong>Google+ API</strong></li>
           </ol>
@@ -207,7 +207,7 @@ GITHUB_REDIRECT_URI=http://localhost:5000/auth/github/callback`}
 
           <h3 className="mb-3 text-lg font-semibold text-slate-900 dark:text-white">Setup Steps</h3>
           <ol className="space-y-3 text-slate-600 dark:text-white/70">
-            <li>1. Sign up at <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-cyan-300 hover:text-cyan-200 underline">resend.com</a></li>
+            <li>1. Sign up at <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-cyan-300 hover:text-indigo-700 dark:hover:text-cyan-200 underline transition-colors">resend.com</a></li>
             <li>2. Verify your domain or use Resend's test domain</li>
             <li>3. Go to <strong>API Keys</strong> section</li>
             <li>4. Create a new API key</li>
@@ -243,20 +243,20 @@ node test-api.js`}
           <div className="grid gap-4 sm:grid-cols-2">
             <Link
               href="/docs/bank-account-setup"
-              className="group block rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4 transition-all hover:border-cyan-400/40"
+              className="group block rounded-xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-4 transition-all hover:border-indigo-400/40 dark:hover:border-cyan-400/40"
             >
               <Building className="mb-2 w-6 h-6 text-cyan-400" />
-              <h3 className="mb-1 font-semibold text-slate-900 dark:text-white group-hover:text-cyan-300">
+              <h3 className="mb-1 font-semibold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">
                 Bank Account Setup →
               </h3>
               <p className="text-sm text-slate-500 dark:text-white/60">Configure payout bank accounts</p>
             </Link>
             <Link
               href="/docs/oauth-setup"
-              className="group block rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4 transition-all hover:border-cyan-400/40"
+              className="group block rounded-xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-4 transition-all hover:border-indigo-400/40 dark:hover:border-cyan-400/40"
             >
               <Lock className="mb-2 w-6 h-6 text-cyan-400" />
-              <h3 className="mb-1 font-semibold text-slate-900 dark:text-white group-hover:text-cyan-300">
+              <h3 className="mb-1 font-semibold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">
                 OAuth Detail Guide →
               </h3>
               <p className="text-sm text-slate-500 dark:text-white/60">Deep dive into OAuth configuration</p>
@@ -287,8 +287,8 @@ function CodeBlock({ code }: { code: string }) {
           {copied ? "✓ Copied" : "Copy"}
         </button>
       </div>
-      <pre className="overflow-x-auto rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-black/40 p-4 text-sm">
-        <code className="text-cyan-300">{code}</code>
+      <pre className="overflow-x-auto rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/40 p-4 text-sm">
+        <code className="text-indigo-600 dark:text-cyan-400">{code}</code>
       </pre>
     </div>
   );

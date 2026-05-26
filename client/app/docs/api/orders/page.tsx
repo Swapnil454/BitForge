@@ -5,12 +5,12 @@ import Link from "next/link";
 
 export default function OrdersAPIPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-10 px-4">
+    <div className="py-10 px-4 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <nav className="mb-6 text-sm text-slate-500 dark:text-white/60">
-          <Link href="/docs" className="hover:text-cyan-400">Documentation</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Documentation</Link>
           <span className="mx-2">/</span>
-          <Link href="/docs" className="hover:text-cyan-400">API Reference</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">API Reference</Link>
           <span className="mx-2">/</span>
           <span className="text-slate-900 dark:text-white">Orders API</span>
         </nav>
@@ -43,7 +43,7 @@ export default function OrdersAPIPage() {
         {/* Get User Orders */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">GET /my-orders</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Get all orders (purchases) for authenticated user.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Query Parameters</h3>
@@ -59,19 +59,19 @@ export default function OrdersAPIPage() {
                 </thead>
                 <tbody className="text-slate-500 dark:text-white/60">
                   <tr className="border-b border-slate-200 dark:border-white/5">
-                    <td className="py-3 pr-4"><code className="text-cyan-300">page</code></td>
+                    <td className="py-3 pr-4"><code className="text-indigo-600 dark:text-cyan-400">page</code></td>
                     <td className="py-3 pr-4">number</td>
                     <td className="py-3 pr-4">1</td>
                     <td className="py-3">Page number</td>
                   </tr>
                   <tr className="border-b border-slate-200 dark:border-white/5">
-                    <td className="py-3 pr-4"><code className="text-cyan-300">limit</code></td>
+                    <td className="py-3 pr-4"><code className="text-indigo-600 dark:text-cyan-400">limit</code></td>
                     <td className="py-3 pr-4">number</td>
                     <td className="py-3 pr-4">20</td>
                     <td className="py-3">Items per page (max: 100)</td>
                   </tr>
                   <tr className="border-b border-slate-200 dark:border-white/5">
-                    <td className="py-3 pr-4"><code className="text-cyan-300">status</code></td>
+                    <td className="py-3 pr-4"><code className="text-indigo-600 dark:text-cyan-400">status</code></td>
                     <td className="py-3 pr-4">string</td>
                     <td className="py-3 pr-4">all</td>
                     <td className="py-3">completed, pending, failed</td>
@@ -122,7 +122,7 @@ export default function OrdersAPIPage() {
         {/* Get Seller Sales */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">GET /my-sales</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Get all sales for authenticated seller.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Example Request</h3>
@@ -164,7 +164,7 @@ export default function OrdersAPIPage() {
         {/* Get Single Order */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">GET /:orderId</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Get detailed information about a specific order.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Example Request</h3>
@@ -254,7 +254,7 @@ export default function OrdersAPIPage() {
         </section>
 
         {/* Support CTA */}
-        <div className="bg-gradient-to-r from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-8 text-center">
+        <div className="bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-cyan-500/10 dark:to-indigo-500/10 shadow-sm border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-8 text-center">
           <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Need Help?</h3>
           <p className="text-slate-600 dark:text-white/70 mb-6">
             Having trouble with order integration? Contact our API support team.
@@ -283,8 +283,8 @@ function CodeBlock({ code }: { code: string }) {
 
   return (
     <div className="relative group mb-4">
-      <pre className="bg-slate-950/50 border border-slate-200 dark:border-white/10 rounded-lg p-4 overflow-x-auto">
-        <code className="text-cyan-300 text-sm font-mono">{code}</code>
+      <pre className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/10 rounded-lg p-4 overflow-x-auto">
+        <code className="text-sm font-mono text-indigo-600 dark:text-cyan-400">{code}</code>
       </pre>
       <button
         onClick={handleCopy}
@@ -310,10 +310,10 @@ function NextStepCard({
   return (
     <Link
       href={href}
-      className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
+      className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-indigo-400/40 dark:hover:border-cyan-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all"
     >
       <div className="text-3xl mb-3">{icon}</div>
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-cyan-300">
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">
         {title}
       </h3>
       <p className="text-slate-500 dark:text-white/60 text-sm group-hover:text-slate-600 dark:group-hover:text-white/70">{description}</p>

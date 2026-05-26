@@ -120,7 +120,7 @@ export default function DisputesAnalyticsPage() {
   };
 
   const formatCurrency = (value: number) =>
-    `₹${value.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    `₹${(value || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const getInitials = (name: string) => {
     const parts = name.trim().split(" ");

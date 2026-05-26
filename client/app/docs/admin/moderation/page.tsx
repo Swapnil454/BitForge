@@ -5,12 +5,12 @@ import { Users } from "lucide-react";
 
 export default function AdminModerationPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-10 px-4">
+    <div className="py-10 px-4 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <nav className="mb-6 text-sm text-slate-500 dark:text-white/60">
-          <Link href="/docs" className="hover:text-cyan-400">Documentation</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Documentation</Link>
           <span className="mx-2">/</span>
-          <Link href="/docs" className="hover:text-cyan-400">Admin Guides</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Admin Guides</Link>
           <span className="mx-2">/</span>
           <span className="text-slate-900 dark:text-white">Content Moderation</span>
         </nav>
@@ -51,7 +51,7 @@ export default function AdminModerationPage() {
 
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Prohibited Content</h2>
-          <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-6">
+          <div className="bg-red-50 dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Content that must be removed immediately:</p>
             <ul className="space-y-2 text-slate-600 dark:text-white/70 text-sm list-disc list-inside">
               <li>Pirated or copyrighted material without license</li>
@@ -114,12 +114,12 @@ export default function AdminModerationPage() {
         </section>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          <Link href="/docs/admin/users" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+          <Link href="/docs/admin/users" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
             <Users className="w-5 h-5 mb-3 text-blue-400" />
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">User Management</h3>
             <p className="text-slate-500 dark:text-white/60 text-sm">Manage user accounts</p>
           </Link>
-          <Link href="/docs/admin/products" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+          <Link href="/docs/admin/products" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
             <div className="text-3xl mb-3"></div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Product Approval</h3>
             <p className="text-slate-500 dark:text-white/60 text-sm">Review submissions</p>
