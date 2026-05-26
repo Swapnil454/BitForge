@@ -1,10 +1,10 @@
-
 import "./config/env.js"; // ← MUST be first: loads .env before anything reads process.env
 
 import app from "./app.js";
 import connect from "./connect.js";
 import { initSocket } from "./lib/socket.js";
 import { startPromotionExpiryJob } from "./controllers/promotion.controller.js";
+import { startTicketAutoCloseJob } from "./jobs/autoCloseTickets.js";
 
 const PORT = process.env.PORT || 5000;
 const HOST = "0.0.0.0";
@@ -19,6 +19,7 @@ connect(process.env.MONGO_URI)
             // Initialize Socket.IO on the same HTTP server
             initSocket(server);
             startPromotionExpiryJob();
+            startTicketAutoCloseJob();
         });
 
         server.on('error', (error) => {

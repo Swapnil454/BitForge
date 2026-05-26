@@ -8,6 +8,7 @@ import QueryProvider from "./QueryProvider";
 import BannedModal from "@/app/components/BannedModal";
 import ReactivationModal from "@/app/components/ReactivationModal";
 import PushNotificationManager from "@/app/components/PushNotificationManager";
+import GlobalChatListener from "@/app/components/GlobalChatListener";
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -112,6 +113,7 @@ export default function AppProviders({ children }: AppProvidersProps) {
         {children}
         <PushNotificationManager />
         <ThemeSync />
+        <GlobalChatListener />
       
       {showBannedModal && (
         <BannedModal 

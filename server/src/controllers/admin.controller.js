@@ -813,7 +813,11 @@ export const approveProduct = async (req, res) => {
       "Product Approved! 🎉",
       `Your product "${product.title}" has been approved and is now live on the marketplace`,
       product._id,
-      "Product"
+      "Product",
+      {
+        actionUrl: "/dashboard/seller/products",
+        pushWhenInactiveOnly: false
+      }
     );
   }
 
@@ -827,7 +831,11 @@ export const approveProduct = async (req, res) => {
         "New product available",
         `"${product.title}" is now live. Check it out!`,
         product._id,
-        "Product"
+        "Product",
+        {
+          actionUrl: `/product/${product._id}`,
+          pushWhenInactiveOnly: false
+        }
       );
     }
   } catch (notifyErr) {
@@ -892,7 +900,11 @@ export const rejectProduct = async (req, res) => {
       "Product Rejected",
       `Your product "${product.title}" was rejected. Reasons: ${reasons.join(', ')}`,
       product._id,
-      "Product"
+      "Product",
+      {
+        actionUrl: "/dashboard/seller/products",
+        pushWhenInactiveOnly: false
+      }
     );
   }
 
@@ -954,7 +966,11 @@ export const requestProductChanges = async (req, res) => {
       "Action Required: Changes Requested",
       `We need you to make some updates to "${product.title}" before it can be approved. Reasons: ${reasons.join(', ')}`,
       product._id,
-      "Product"
+      "Product",
+      {
+        actionUrl: "/dashboard/seller/products",
+        pushWhenInactiveOnly: false
+      }
     );
   }
 
@@ -1014,7 +1030,11 @@ export const approveProductChange = async (req, res) => {
         "Product Update Approved ",
         `Your update for "${product.title}" has been approved and is now live`,
         product._id,
-        "Product"
+        "Product",
+        {
+          actionUrl: "/dashboard/seller/products",
+          pushWhenInactiveOnly: false
+        }
       );
 
       // Notify buyers about updated product (broadcast)
@@ -1027,7 +1047,11 @@ export const approveProductChange = async (req, res) => {
             "Product updated",
             `"${product.title}" has new changes. Take a look!`,
             product._id,
-            "Product"
+            "Product",
+            {
+              actionUrl: `/product/${product._id}`,
+              pushWhenInactiveOnly: false
+            }
           );
         }
       } catch (notifyErr) {
@@ -1081,7 +1105,11 @@ export const approveProductChange = async (req, res) => {
           ? `Your product "${product.title}" has been archived. Existing buyers retain access.`
           : `Your product "${product.title}" has been deleted as requested`,
         product._id,
-        "Product"
+        "Product",
+        {
+          actionUrl: "/dashboard/seller/products",
+          pushWhenInactiveOnly: false
+        }
       );
 
       return res.json({ 
@@ -1130,7 +1158,11 @@ export const rejectProductChange = async (req, res) => {
       "Product Change Rejected",
       `Your requested change for "${product.title}" was rejected. Reason: ${reason}`,
       product._id,
-      "Product"
+      "Product",
+      {
+        actionUrl: "/dashboard/seller/products",
+        pushWhenInactiveOnly: false
+      }
     );
 
     res.json({ 

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { MessageCircle, ImageIcon, File, Paperclip as AttachmentIcon, Trash, User } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -34,7 +35,9 @@ interface ConversationListProps {
 
 export default function ConversationList({ conversations, selectedUserId, onSelectConversation, loading, loadingMore, hasMore, onLoadMore }: ConversationListProps) {
   const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isDark = mounted && resolvedTheme === "dark";
 
   const truncatePreview = (text: string, max = 35) => {
     if (!text) return "";

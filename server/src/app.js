@@ -89,9 +89,14 @@ app.post("/api/test", (req, res) => {
     res.json({ message: "Test endpoint working", body: req.body });
 });
 
+import ticketRoutes from "./routes/ticket.routes.js";
+import adminTicketRoutes from "./routes/adminTicket.routes.js";
+
 app.use("/api/auth", authRoutes);
 app.use("/api/oauth", oauthRoutes);
+app.use("/api/admin/tickets", adminTicketRoutes); // Put before /api/admin to not get caught by catch-alls if any
 app.use("/api/admin", adminRoutes);
+app.use("/api/tickets", ticketRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/marketplace", marketplaceRoutes);
 app.use("/api/payments", paymentRoutes);
@@ -104,7 +109,7 @@ app.use("/api/buyer", buyerRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/cart", cartRoutes);
-app.use("/api/chat", chatRoutes);
+app.use("/api/chat", chatRoutes); // Keep for legacy if needed, or remove later
 app.use("/api/contact", contactRoutes);
 app.use("/api/careers", careerRoutes);
 app.use("/api/order-fix", orderFixRoutes);

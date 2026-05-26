@@ -491,7 +491,7 @@ export default function BuyerDashboard() {
                       label="Help Center" 
                       icon={<CircleHelp className="h-4 w-4" />}
                       badge={chatUnreadCount > 0 ? chatUnreadCount : undefined}
-                      onClick={() => { router.push("/dashboard/buyer/help-center"); setProfileOpen(false); }} 
+                      onClick={() => { router.push("/dashboard/support"); setProfileOpen(false); }} 
                     />
                     <MenuItem 
                       label="Submit Report" 
@@ -781,7 +781,7 @@ export default function BuyerDashboard() {
           <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[24px] border border-white dark:border-slate-800 shadow-[0_8px_30px_rgba(15,23,42,0.06)] dark:shadow-none p-5">
             <div className="grid grid-cols-4 gap-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4 lg:gap-5">
 
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/buyer/transactions")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/buyer/transactions")} className="flex flex-col items-center gap-2 group md:flex-row md:items-center md:gap-0 md:p-3 bg-transparent md:bg-slate-50/70 md:dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/60 md:hover:bg-slate-100 md:dark:hover:bg-slate-800/80 rounded-2xl md:border md:border-slate-200/60 md:dark:border-slate-700/50 md:shadow-sm md:hover:shadow md:transition-all md:duration-200 w-full">
                 <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
                   <span className="anim-wrapper anim-flip delay-4 inline-flex relative z-10"><WalletCards className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                 </div>
@@ -792,7 +792,7 @@ export default function BuyerDashboard() {
                 <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Total Spent</span>
               </motion.button>
 
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/buyer/purchases")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/buyer/purchases")} className="flex flex-col items-center gap-2 group md:flex-row md:items-center md:gap-0 md:p-3 bg-transparent md:bg-slate-50/70 md:dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/60 md:hover:bg-slate-100 md:dark:hover:bg-slate-800/80 rounded-2xl md:border md:border-slate-200/60 md:dark:border-slate-700/50 md:shadow-sm md:hover:shadow md:transition-all md:duration-200 w-full">
                 <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
                   <span className="anim-wrapper anim-float delay-5 inline-flex relative z-10"><FolderOpen className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                 </div>
@@ -803,7 +803,7 @@ export default function BuyerDashboard() {
                 <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Purchases</span>
               </motion.button>
 
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/buyer/downloads")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/buyer/downloads")} className="flex flex-col items-center gap-2 group md:flex-row md:items-center md:gap-0 md:p-3 bg-transparent md:bg-slate-50/70 md:dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/60 md:hover:bg-slate-100 md:dark:hover:bg-slate-800/80 rounded-2xl md:border md:border-slate-200/60 md:dark:border-slate-700/50 md:shadow-sm md:hover:shadow md:transition-all md:duration-200 w-full">
                 <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
                   <span className="anim-wrapper anim-bounce delay-6 inline-flex relative z-10"><CloudDownload className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                 </div>
@@ -814,7 +814,7 @@ export default function BuyerDashboard() {
                 <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Downloads</span>
               </motion.button>
 
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/buyer/orders")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/buyer/orders")} className="flex flex-col items-center gap-2 group md:flex-row md:items-center md:gap-0 md:p-3 bg-transparent md:bg-slate-50/70 md:dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/60 md:hover:bg-slate-100 md:dark:hover:bg-slate-800/80 rounded-2xl md:border md:border-slate-200/60 md:dark:border-slate-700/50 md:shadow-sm md:hover:shadow md:transition-all md:duration-200 w-full">
                 <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
                   <span className="anim-wrapper anim-swing delay-7 inline-flex relative z-10"><ClipboardCheck className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                 </div>
@@ -910,7 +910,7 @@ export default function BuyerDashboard() {
           <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[24px] border border-white dark:border-slate-800 shadow-[0_8px_30px_rgba(15,23,42,0.06)] dark:shadow-none p-5">
             <div className="grid grid-cols-4 gap-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4 lg:gap-5">
 
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/buyer/help-center")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/support")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
                 <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
                   <span className="anim-wrapper anim-spin delay-8 inline-flex relative z-10"><CircleHelp className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                 </div>
@@ -932,7 +932,7 @@ export default function BuyerDashboard() {
                 <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">My Tickets</span>
               </motion.button>
 
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/buyer/help-center?tab=messages")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/support?tab=messages")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
                 <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
                   <span className="anim-wrapper anim-pulse delay-4 inline-flex relative z-10"><MessageSquare className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                 </div>

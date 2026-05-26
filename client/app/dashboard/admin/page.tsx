@@ -345,7 +345,6 @@ export default function AdminDashboard() {
                       icon={<CircleHelp className="h-4 w-4" />}
                       badge={chatUnreadCount > 0 ? chatUnreadCount : undefined}
                       onClick={() => {
-                        // Invalidate to reset unread count after viewing
                         cacheInvalidator.invalidateChatUnread();
                         router.push("/dashboard/admin/help-center");
                         setProfileOpen(false);

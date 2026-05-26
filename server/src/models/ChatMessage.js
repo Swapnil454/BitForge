@@ -2,42 +2,48 @@ import mongoose from "mongoose";
 
 const chatMessageSchema = new mongoose.Schema(
   {
+    ticketId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Ticket",
+      required: true,
+    },
+    messageType: {
+      type: String,
+      enum: ["message", "note", "event", "reopen_request"],
+      default: "message",
+    },
     from: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: false, // Could be null for system event messages
     },
     to: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: false, // Could be null for system event messages
     },
     fromRole: {
       type: String,
-      enum: ["buyer", "seller", "admin"],
-      required: true,
+      enum: ["buyer", "seller", "admin", "system"],
+      required: false, // Could be null for system event messages
     },
     toRole: {
       type: String,
       enum: ["buyer", "seller", "admin"],
-      required: true,
+      required: false,
     },
     message: {
       type: String,
-      required: false, // Make it optional since a message could just be an attachment
+      required: false,
       trim: true,
     },
     attachments: [
       {
         url: { type: String, required: true },
-        type: { type: String, required: true }, // e.g., 'image/png', 'application/pdf'
+        type: { type: String, required: true },
         name: { type: String, required: true },
       }
     ],
-    supportTicketId: {
-      type: String,
-      default: null,
-    },
     status: {
       type: String,
       enum: ["active", "deleted", "placeholderDeleted"],
@@ -59,11 +65,12 @@ const chatMessageSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    deliveredAt: { type: Date, default: null },
+    readAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
 
-chatMessageSchema.index({ from: 1, to: 1, createdAt: 1 });
-chatMessageSchema.index({ fromRole: 1, toRole: 1, createdAt: -1 });
+chatMessageSchema.index({ ticketId: 1, createdAt: 1 });
 
 export default mongoose.model("ChatMessage", chatMessageSchema);

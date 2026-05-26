@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import { useTheme } from "next-themes";
 import ConversationList from "./ConversationList";
@@ -36,7 +37,9 @@ export default function SupportSidebar({
   setStatusFilter
 }: SupportSidebarProps) {
   const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isDark = mounted && resolvedTheme === "dark";
 
   return (
     <div
@@ -62,7 +65,7 @@ export default function SupportSidebar({
           <Search className={`w-4 h-4 shrink-0 ${isDark ? "text-white/40" : "text-slate-400"}`} />
           <input
             type="search"
-            name={Math.random().toString(36).substring(7)}
+            name="support-conversations-search"
             autoComplete="nope"
             autoCorrect="off"
             spellCheck="false"

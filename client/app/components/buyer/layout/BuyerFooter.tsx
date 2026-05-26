@@ -27,11 +27,7 @@ const footerLinks = {
 export default function BuyerFooter() {
   const { isAuthenticated, user } = useAuth();
 
-  const helpCenterHref = isAuthenticated
-    ? user?.role === "seller"
-      ? "/dashboard/seller/help-center"
-      : "/dashboard/buyer/help-center"
-    : "/contact";
+  const helpCenterHref = "/dashboard/support";
 
   return (
     <footer className="bg-white dark:bg-[#0A1628] border-t border-gray-100 dark:border-slate-800/60 pt-6 md:pt-12 pb-4 md:pb-6 transition-colors duration-200">

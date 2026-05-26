@@ -177,6 +177,8 @@ export default function PushNotificationManager() {
 
     let unsubscribe = () => {};
     void subscribeToForegroundMessages((payload) => {
+      if (payload.data?.category === "chat") return;
+      
       const actionUrl =
         payload.data?.actionUrl ||
         payload.fcmOptions?.link ||

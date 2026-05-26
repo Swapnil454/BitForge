@@ -172,7 +172,11 @@ const handleApprovedProductUpdate = async (product, req, res, updateData) => {
         "Product Update Request",
         `${req.user.name} requested update for "${product.title}"`,
         product._id,
-        "Product"
+        "Product",
+        {
+          actionUrl: "/dashboard/admin/products",
+          pushWhenInactiveOnly: false
+        }
       );
     }
 
@@ -490,7 +494,11 @@ export const uploadProduct = async (req, res) => {
         "New Product Pending Review",
         `${req.user.name} uploaded "${product.title}" for approval`,
         product._id,
-        "Product"
+        "Product",
+        {
+          actionUrl: "/dashboard/admin/products",
+          pushWhenInactiveOnly: false
+        }
       );
     }
 
@@ -787,7 +795,11 @@ export const deleteProduct = async (req, res) => {
           "Product Deletion Request",
           `${req.user.name} requested deletion for "${product.title}"`,
           product._id,
-          "Product"
+          "Product",
+          {
+            actionUrl: "/dashboard/admin/products",
+            pushWhenInactiveOnly: false
+          }
         );
       }
 
