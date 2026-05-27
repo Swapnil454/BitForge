@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCheck, Filter } from "lucide-react";
+import { CheckCheck, Filter, Bell, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { notificationAPI } from "@/lib/api";
 import { getStoredUser } from "@/lib/cookies";
@@ -17,12 +17,18 @@ interface User {
 }
 
 export default function AdminNotificationsPage() {
+  const ITEMS_PER_PAGE = 15;
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [filter, setFilter] = useState<string>("all");
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const stored = getStoredUser<User>();
@@ -32,22 +38,47 @@ export default function AdminNotificationsPage() {
     }
 
     setUser(stored);
-    void fetchNotifications();
+    void fetchNotifications(1);
   }, [router]);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (page = 1, append = false) => {
     try {
-      setLoading(true);
-      const response = await notificationAPI.getNotifications(100, 0);
-      setNotifications(response.notifications || []);
+      if (page === 1) setLoading(true);
+      else setLoadingMore(true);
+
+      const response = await notificationAPI.getNotifications({
+        page,
+        limit: ITEMS_PER_PAGE,
+      });
+      const incoming = response.notifications || [];
+      setNotifications((prev) => (append ? [...prev, ...incoming] : incoming));
       setUnreadCount(response.unreadCount || 0);
+      setCurrentPage(response.pagination?.page || page);
+      setHasNextPage((response.pagination?.page || page) < (response.pagination?.totalPages || 1));
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
       showError("Failed to load notifications");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
+
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !loadingMore && !loading) {
+          void fetchNotifications(currentPage + 1, true);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, loadingMore, loading, currentPage]);
 
   const filteredNotifications = useMemo(
     () => notifications.filter((item) => (filter === "all" ? true : (item.category || "system") === filter)),
@@ -124,9 +155,9 @@ export default function AdminNotificationsPage() {
                 : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white/65 dark:hover:bg-white/10"
             }`}
           >
-            All: {notifications.length}
+            All
           </button>
-          {Object.entries(categorySummary).map(([key, count]) => (
+          {Object.keys(categorySummary).map((key) => (
             <button
               key={key}
               onClick={() => setFilter(key)}
@@ -136,7 +167,7 @@ export default function AdminNotificationsPage() {
                   : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white/65 dark:hover:bg-white/10"
               }`}
             >
-              {key.replace(/_/g, " ")}: {count}
+              {key.replace(/_/g, " ")}
             </button>
           ))}
         </div>
@@ -176,6 +207,15 @@ export default function AdminNotificationsPage() {
             ))
           )}
         </div>
+
+        {/* Sentinel div for Intersection Observer */}
+        <div ref={sentinelRef} className="h-10 w-full" />
+
+        {loadingMore && (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
+          </div>
+        )}
       </main>
     </div>
   );

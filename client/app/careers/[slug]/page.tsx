@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useParams, notFound } from "next/navigation";
 import api from "@/lib/api";
+import { useAuth } from "@/lib/useAuth";
 
 interface Career {
   _id: string;
@@ -42,6 +43,7 @@ const getCurrencySymbol = (currency: string) => {
 };
 
 export default function JobDetailPage() {
+  const { isAuthenticated } = useAuth();
   const params = useParams();
   const slug = params.slug as string;
   const [career, setCareer] = useState<Career | null>(null);
@@ -152,36 +154,43 @@ export default function JobDetailPage() {
           </div>
 
           <div className="flex items-center gap-4 text-sm">
-            <Link
-              href="/login"
-              className="rounded-lg border border-slate-300 dark:border-white/20 px-3 py-1.5 text-slate-700 dark:text-white/80 hover:border-cyan-400 hover:text-slate-900 dark:hover:text-white"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/register"
-              className="hidden rounded-lg bg-gradient-to-r from-cyan-400 to-indigo-500 px-4 py-1.5 text-sm font-semibold text-black shadow-[0_0_26px_rgba(56,189,248,0.7)] sm:inline-flex"
-            >
-              Join BitForge
-            </Link>
+            {!isAuthenticated ? (
+              <>
+                <Link
+                  href="/login"
+                  className="rounded-lg border border-slate-300 dark:border-white/20 px-3 py-1.5 text-slate-700 dark:text-white/80 hover:border-cyan-400 hover:text-slate-900 dark:hover:text-white"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/register"
+                  className="hidden rounded-lg bg-cyan-600 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-indigo-500 px-4 py-1.5 text-sm font-semibold text-white dark:text-black shadow-md dark:shadow-[0_0_26px_rgba(56,189,248,0.7)] sm:inline-flex hover:bg-cyan-700 dark:hover:bg-transparent transition-colors"
+                >
+                  Join BitForge
+                </Link>
+              </>
+            ) : (
+              <Link
+                href="/dashboard"
+                className="rounded-lg bg-cyan-600 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-indigo-500 px-4 py-1.5 text-sm font-semibold text-white dark:text-black shadow-md dark:shadow-[0_0_26px_rgba(56,189,248,0.7)] hover:bg-cyan-700 dark:hover:bg-transparent transition-colors"
+              >
+                Dashboard
+              </Link>
+            )}
           </div>
         </nav>
       </header>
 
       {/* BACKGROUND GLOW */}
-      <div className="pointer-events-none fixed inset-0 z-0 opacity-70">
+      <div className="pointer-events-none fixed inset-0 z-0 opacity-40 dark:opacity-70">
         <div className="absolute -left-40 top-10 h-80 w-80 rounded-full bg-cyan-500/20 blur-3xl" />
         <div className="absolute bottom-0 right-[-8rem] h-96 w-96 rounded-full bg-indigo-500/25 blur-3xl" />
       </div>
 
-      <div className="relative -mt-8 z-10 mx-auto max-w-5xl px-5 pb-16 pt-24 sm:pt-28 md:pt-32">
+      <div className="relative -mt-8 z-10 mx-auto max-w-5xl px-5 pb-12 pt-20 sm:pt-24 md:pt-28">
         {/* BREADCRUMB */}
         <div className="mb-4 flex items-center gap-2 text-sm text-slate-500 dark:text-white/60">
-          <Link href="/" className="hover:text-cyan-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#05050a]">
-            Home
-          </Link>
-          <span>›</span>
-          <Link href="/careers" className="hover:text-cyan-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#05050a]">
+          <Link href="/careers" className="hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#05050a]">
             Careers
           </Link>
           <span>›</span>
@@ -191,8 +200,8 @@ export default function JobDetailPage() {
         {/* JOB HEADER - Clean design */}
         <div className="mb-8">
           {career.featured && (
-            <div className="mb-3 inline-flex items-center gap-1.5 rounded-md bg-purple-500 px-3 py-1 text-xs font-semibold text-slate-900 dark:text-white">
-              Featured role
+            <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-200/90">
+              ⭐ Featured role
             </div>
           )}
           
@@ -209,27 +218,27 @@ export default function JobDetailPage() {
               <span className="font-medium text-slate-600 dark:text-white/70">Location:</span>
               <span className="text-slate-900 dark:text-white">{career.location}</span>
             </div>
-            <div className="h-4 w-px bg-white/20"></div>
+            <div className="h-4 w-px bg-slate-200 dark:bg-white/20"></div>
             <div className="flex items-center gap-2 text-sm">
               <span className="font-medium text-slate-600 dark:text-white/70">Team:</span>
               <span className="text-slate-900 dark:text-white">{career.department}</span>
             </div>
-            <div className="h-4 w-px bg-white/20"></div>
+            <div className="h-4 w-px bg-slate-200 dark:bg-white/20"></div>
             <div className="flex items-center gap-2 text-sm">
               <span className="font-medium text-slate-600 dark:text-white/70">Type:</span>
               <span className="text-slate-900 dark:text-white">{career.employmentType}</span>
             </div>
-            <div className="h-4 w-px bg-white/20"></div>
+            <div className="h-4 w-px bg-slate-200 dark:bg-white/20"></div>
             <div className="flex items-center gap-2 text-sm">
               <span className="font-medium text-slate-600 dark:text-white/70">Experience:</span>
               <span className="text-slate-900 dark:text-white">{career.experience}</span>
             </div>
             {career.salary?.min && career.salary?.max && (
               <>
-                <div className="h-4 w-px bg-white/20"></div>
+                <div className="h-4 w-px bg-slate-200 dark:bg-white/20"></div>
                 <div className="flex items-center gap-2 text-sm">
                   <span className="font-medium text-slate-600 dark:text-white/70">Salary range:</span>
-                  <span className="text-emerald-300 font-semibold">
+                  <span className="text-emerald-600 dark:text-emerald-300 font-semibold">
                     {getCurrencySymbol(career.salary.currency)} {career.salary.min.toLocaleString()} - {career.salary.max.toLocaleString()} per year (CTC)
                   </span>
                 </div>
@@ -241,7 +250,7 @@ export default function JobDetailPage() {
           <div className="flex flex-wrap gap-3">
             <button
               onClick={handleApply}
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-r from-cyan-500 to-indigo-500 px-8 py-3.5 text-base font-semibold text-slate-900 dark:text-white hover:shadow-lg hover:shadow-cyan-500/30 transition-all hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#05050a]"
+              className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-indigo-500 px-8 py-3.5 text-base font-semibold text-white dark:text-black shadow-md dark:shadow-[0_0_26px_rgba(56,189,248,0.7)] hover:bg-cyan-700 dark:hover:bg-transparent transition-all hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#05050a]"
             >
               <span>Apply Now</span>
               <span>→</span>
@@ -256,7 +265,7 @@ export default function JobDetailPage() {
                   alert("Link copied to clipboard!");
                 }
               }}
-              className="inline-flex items-center gap-2 rounded-lg bg-slate-100 dark:bg-white/5 px-6 py-3.5 text-sm font-medium text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#05050a]"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 px-6 py-3.5 text-sm font-medium text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/10 shadow-sm dark:shadow-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#05050a]"
             >
               <span>Share</span>
             </button>
@@ -264,7 +273,7 @@ export default function JobDetailPage() {
         </div>
 
         {/* Divider */}
-        <div className="mb-8 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+        <div className="mb-8 h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-white/20 to-transparent"></div>
 
         {/* JOB DETAILS */}
         <div className="space-y-8">
@@ -287,7 +296,7 @@ export default function JobDetailPage() {
               <ul className="space-y-2">
                 {career.responsibilities.map((item, idx) => (
                   <li key={idx} className="flex items-start gap-3 text-slate-800 dark:text-white/90 leading-relaxed">
-                    <span className="mt-2 h-2 w-2 rounded-full bg-gray-200 shrink-0" />
+                    <span className="mt-2 h-2 w-2 rounded-full bg-slate-300 dark:bg-gray-200 shrink-0" />
                     <span className="text-base">{item}</span>
                   </li>
                 ))}
@@ -304,7 +313,7 @@ export default function JobDetailPage() {
               <ul className="space-y-2">
                 {career.requirements.map((item, idx) => (
                   <li key={idx} className="flex items-start gap-3 text-slate-800 dark:text-white/90 leading-relaxed">
-                    <span className="mt-2 h-2 w-2 rounded-full bg-gray-200 shrink-0" />
+                    <span className="mt-2 h-2 w-2 rounded-full bg-slate-300 dark:bg-gray-200 shrink-0" />
                     <span className="text-base">{item}</span>
                   </li>
                 ))}
@@ -321,7 +330,7 @@ export default function JobDetailPage() {
               <ul className="space-y-2">
                 {career.niceToHave.map((item, idx) => (
                   <li key={idx} className="flex items-start gap-3 text-slate-700 dark:text-white/80 leading-relaxed">
-                    <span className="mt-2 h-2 w-2 rounded-full bg-gray-200 shrink-0" />
+                    <span className="mt-2 h-2 w-2 rounded-full bg-slate-300 dark:bg-gray-200 shrink-0" />
                     <span className="text-base">{item}</span>
                   </li>
                 ))}
@@ -338,7 +347,7 @@ export default function JobDetailPage() {
               <div className="grid sm:grid-cols-2 gap-3">
                 {career.benefits.map((item, idx) => (
                   <div key={idx} className="flex items-start gap-3">
-                    <span className="mt-2 h-2 w-2 rounded-full bg-gray-200 shrink-0" />
+                    <span className="mt-2 h-2 w-2 rounded-full bg-slate-300 dark:bg-gray-200 shrink-0" />
                     <span className="text-slate-800 dark:text-white/90 text-base leading-relaxed">{item}</span>
                   </div>
                 ))}
@@ -371,7 +380,7 @@ export default function JobDetailPage() {
                   <Link
                     key={job._id}
                     href={`/careers/${generateSlug(job.title)}`}
-                    className="block rounded-lg bg-slate-100 dark:bg-white/5 p-4 hover:bg-cyan-500/10 transition-all group border border-white/15 hover:border-cyan-400 hover:-translate-y-0.5"
+                    className="block rounded-lg bg-white dark:bg-white/5 p-4 hover:bg-slate-50 dark:hover:bg-cyan-500/10 transition-all group border border-slate-200 dark:border-white/15 hover:border-cyan-400 shadow-sm dark:shadow-none hover:-translate-y-0.5"
                   >
                     <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-1 group-hover:text-cyan-300 transition-colors">
                       {job.title}
@@ -388,7 +397,7 @@ export default function JobDetailPage() {
           )}
 
           {/* APPLY CTA */}
-          <section className="mt-10 pt-8 border-t border-white/15 text-center">
+          <section className="mt-10 pt-8 border-t border-slate-200 dark:border-white/15 text-center">
             <div className="max-w-2xl mx-auto">
               <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Interested in This Position?</h2>
               <p className="text-slate-700 dark:text-white/80 text-base mb-3">
@@ -400,7 +409,7 @@ export default function JobDetailPage() {
               </p>
               <button
                 onClick={handleApply}
-                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 dark:border-white/10 bg-gradient-to-r from-cyan-500 to-indigo-500 px-10 py-3.5 text-base font-semibold text-slate-900 dark:text-white hover:shadow-xl hover:shadow-cyan-500/30 transition-all hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#05050a]"
+                className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 dark:bg-gradient-to-r dark:from-cyan-400 dark:to-indigo-500 px-10 py-3.5 text-base font-semibold text-white dark:text-black shadow-md dark:shadow-[0_0_26px_rgba(56,189,248,0.7)] hover:bg-cyan-700 dark:hover:bg-transparent transition-all hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#05050a]"
               >
                 <span>Submit Application</span>
                 <span>→</span>
@@ -410,7 +419,7 @@ export default function JobDetailPage() {
                   Have questions?{" "}
                   <a
                     href="mailto:careers@bitforge.in"
-                    className="text-cyan-400 hover:text-cyan-300 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#05050a]"
+                    className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#05050a]"
                   >
                     Contact us at careers@bitforge.in
                   </a>
@@ -424,7 +433,7 @@ export default function JobDetailPage() {
         <div className="mt-10">
           <Link
             href="/careers"
-            className="inline-flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#05050a]"
+            className="inline-flex items-center gap-2 text-sm text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#05050a]"
           >
             <span>←</span>
             <span>View all openings</span>

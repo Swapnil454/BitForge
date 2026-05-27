@@ -119,16 +119,18 @@ export default function BuyerDashboard() {
     setTheme(newTheme);
     setProfileOpen(false);
     
-    userAPI.updatePreferences({ theme: newTheme }).then((res) => {
-      const userStr = getCookie("user");
-      if (userStr && userStr !== '""') {
-        try {
-          const userObj = JSON.parse(userStr as string);
-          userObj.preferences = res.preferences || { theme: newTheme };
-          setCookie("user", JSON.stringify(userObj), 7);
-        } catch(e) {}
-      }
-    }).catch(() => {
+    // Optimistically update cookie to prevent racing on refresh
+    const userStr = getCookie("user");
+    if (userStr && userStr !== '""') {
+      try {
+        const userObj = JSON.parse(userStr as string);
+        if (!userObj.preferences) userObj.preferences = {};
+        userObj.preferences.theme = newTheme;
+        setCookie("user", JSON.stringify(userObj), 7);
+      } catch(e) {}
+    }
+
+    userAPI.updatePreferences({ theme: newTheme }).catch(() => {
       toast.error("Failed to sync theme preference", { id: "theme-sync-error" });
     });
   };
@@ -183,6 +185,18 @@ export default function BuyerDashboard() {
   useEffect(() => {
     if (!user) return;
 
+    const applyUserUpdate = (fresh: any) => {
+      setUser(fresh);
+      setCookie("user", JSON.stringify(fresh), 7);
+      if (typeof localStorage !== "undefined") {
+        localStorage.setItem("user", JSON.stringify(fresh));
+      }
+      const newTheme = fresh.preferences?.theme || fresh.theme;
+      if (newTheme) {
+        setTheme(newTheme);
+      }
+    };
+
     const syncProfile = async () => {
       try {
         const fresh = await userAPI.getCurrentUser();
@@ -192,11 +206,7 @@ export default function BuyerDashboard() {
           router.push("/register");
           return;
         }
-        setUser(fresh);
-        setCookie("user", JSON.stringify(fresh), 7);
-        if (typeof localStorage !== "undefined") {
-          localStorage.setItem("user", JSON.stringify(fresh));
-        }
+        applyUserUpdate(fresh);
       } catch (err) {
         console.error("Failed to sync user profile", err);
         if (err instanceof Error && err.message.includes("401")) {
@@ -504,9 +514,29 @@ export default function BuyerDashboard() {
                       onClick={() => { router.push("/dashboard/buyer/reports"); setProfileOpen(false); }} 
                     />
                     {mounted && (() => {
-                      let nextTheme = resolvedTheme === "dark" ? "light" : "dark";
-                      let label = resolvedTheme === "dark" ? "Light Mode" : "Dark Mode";
-                      let icon = resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />;
+                      let nextTheme = "light";
+                      let label = "Light Mode";
+                      let icon = <Sun className="h-4 w-4" />;
+
+                      if (theme === "light") {
+                        nextTheme = "dark";
+                        label = "Dark Mode";
+                        icon = <Moon className="h-4 w-4" />;
+                      } else if (theme === "dark") {
+                        nextTheme = "system";
+                        label = "System Theme";
+                        icon = <Monitor className="h-4 w-4" />;
+                      } else {
+                        if (resolvedTheme === "dark") {
+                          nextTheme = "light";
+                          label = "Light Mode";
+                          icon = <Sun className="h-4 w-4" />;
+                        } else {
+                          nextTheme = "dark";
+                          label = "Dark Mode";
+                          icon = <Moon className="h-4 w-4" />;
+                        }
+                      }
 
                       return (
                         <MenuItem 
@@ -1018,7 +1048,7 @@ export default function BuyerDashboard() {
 function BuyerDashboardSkeleton() {
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-28 md:pb-8">
-      <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800">
+      <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto h-16 px-4 flex items-center justify-between">
           <div className="h-6 w-32 bg-slate-200 dark:bg-slate-800 rounded-full animate-pulse" />
           <div className="flex items-center gap-3">
@@ -1029,33 +1059,43 @@ function BuyerDashboardSkeleton() {
         </div>
       </header>
 
-      <section className="max-w-7xl mx-auto px-4 py-6 space-y-8">
-        <div className="h-28 rounded-3xl bg-slate-200 dark:bg-slate-800 animate-pulse" />
+      <section className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+        <div className="h-32 md:h-40 rounded-3xl bg-slate-200 dark:bg-slate-800 animate-pulse flex flex-col justify-center px-8">
+          <div className="h-8 w-1/3 bg-slate-300 dark:bg-slate-700 rounded-full mb-4 animate-pulse" />
+          <div className="h-4 w-1/2 bg-slate-300 dark:bg-slate-700 rounded-full animate-pulse" />
+        </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-[28px] border border-slate-100 dark:border-slate-800 p-6">
-          <div className="grid grid-cols-4 gap-4">
+        <div className="bg-white dark:bg-slate-900 rounded-[28px] border border-slate-100 dark:border-slate-800 p-6 shadow-sm">
+          <div className="h-5 w-40 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse mb-6" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex flex-col items-center gap-2">
-                <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse" />
-                <div className="h-3 w-16 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse" />
+              <div key={i} className="flex flex-col items-center gap-3">
+                <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
+                <div className="h-3 w-20 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse" />
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-[28px] border border-slate-100 dark:border-slate-800 p-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="bg-white dark:bg-slate-900 rounded-[28px] border border-slate-100 dark:border-slate-800 p-6 shadow-sm">
+          <div className="flex justify-between items-center mb-6">
+            <div className="h-5 w-48 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse" />
+            <div className="h-5 w-24 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse mb-3" />
-                <div className="h-3 w-20 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse mb-2" />
-                <div className="h-6 w-16 bg-slate-200 dark:bg-slate-700 rounded-full animate-pulse" />
+              <div key={i} className="flex flex-col border border-slate-100 dark:border-slate-800 rounded-2xl p-4">
+                <div className="w-full h-32 rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse mb-4" />
+                <div className="h-4 w-3/4 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse mb-2" />
+                <div className="h-3 w-1/2 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse mb-6" />
+                <div className="flex justify-between items-center mt-auto">
+                  <div className="h-5 w-16 bg-slate-200 dark:bg-slate-700 rounded-full animate-pulse" />
+                  <div className="h-8 w-20 bg-slate-200 dark:bg-slate-700 rounded-full animate-pulse" />
+                </div>
               </div>
             ))}
           </div>
         </div>
-
-        <div className="bg-white dark:bg-slate-900 rounded-[28px] border border-slate-100 dark:border-slate-800 p-6 h-64 animate-pulse" />
       </section>
     </main>
   );

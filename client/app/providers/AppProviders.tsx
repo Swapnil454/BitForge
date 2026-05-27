@@ -143,8 +143,9 @@ function ThemeSync() {
       if (!userStr || userStr === '""') return;
       const user = JSON.parse(userStr);
 
-      if (user?.preferences?.theme) {
-        setTheme(user.preferences.theme);
+      const theme = user?.preferences?.theme || user?.theme;
+      if (theme) {
+        setTheme(theme);
       }
     } catch (e) {
       // ignore

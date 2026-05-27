@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
+import { useAuth } from "@/lib/useAuth";
 
 interface Career {
   _id: string;
@@ -32,6 +33,7 @@ interface Career {
 export default function CareersPage() {
   const [careers, setCareers] = useState<Career[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     fetchCareers();
@@ -71,29 +73,40 @@ export default function CareersPage() {
           </div>
 
           <div className="flex items-center gap-4 text-sm">
-            <Link
-              href="/login"
-              className="rounded-lg border border-slate-300 dark:border-white/20 px-3 py-1.5 text-slate-700 dark:text-white/80 hover:border-cyan-400 hover:text-slate-900 dark:hover:text-white"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/register"
-              className="hidden rounded-lg bg-linear-to-r from-cyan-400 to-indigo-500 px-4 py-1.5 text-sm font-semibold text-black shadow-[0_0_26px_rgba(56,189,248,0.7)] sm:inline-flex"
-            >
-              Join BitForge
-            </Link>
+            {!isAuthenticated ? (
+              <>
+                <Link
+                  href="/login"
+                  className="rounded-lg border border-slate-300 dark:border-white/20 px-3 py-1.5 text-slate-700 dark:text-white/80 hover:border-cyan-400 hover:text-slate-900 dark:hover:text-white"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/register"
+                  className="hidden rounded-lg bg-cyan-600 dark:bg-linear-to-r dark:from-cyan-400 dark:to-indigo-500 px-4 py-1.5 text-sm font-semibold text-white dark:text-black shadow-md dark:shadow-[0_0_26px_rgba(56,189,248,0.7)] hover:bg-cyan-700 dark:hover:bg-transparent sm:inline-flex"
+                >
+                  Join BitForge
+                </Link>
+              </>
+            ) : (
+              <Link
+                href="/dashboard"
+                className="rounded-lg bg-cyan-600 dark:bg-linear-to-r dark:from-cyan-400 dark:to-indigo-500 px-4 py-1.5 text-sm font-semibold text-white dark:text-black shadow-md dark:shadow-[0_0_26px_rgba(56,189,248,0.7)] hover:bg-cyan-700 dark:hover:bg-transparent"
+              >
+                Dashboard
+              </Link>
+            )}
           </div>
         </nav>
       </header>
 
       {/* BACKGROUND GLOW */}
-      <div className="pointer-events-none fixed inset-0 z-0 opacity-70">
+      <div className="pointer-events-none fixed inset-0 z-0 opacity-40 dark:opacity-70">
         <div className="absolute -left-40 top-10 h-80 w-80 rounded-full bg-cyan-500/20 blur-3xl" />
         <div className="absolute bottom-0 right-[-8rem] h-96 w-96 rounded-full bg-indigo-500/25 blur-3xl" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-6xl px-5 pb-20 pt-24 sm:pt-28 md:pt-32 md:pb-28">
+      <div className="relative z-10 mx-auto max-w-6xl px-5 pb-12 pt-20 sm:pt-24 md:pt-28 md:pb-16">
         {/* HERO */}
         <section className="max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300/80">
@@ -115,18 +128,18 @@ export default function CareersPage() {
             We're small, opinionated, and shipping fast.
           </p>
 
-          <div className="mt-6 flex flex-wrap items-center gap-3 text-xs text-white/55">
-            <span className="rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 font-medium text-emerald-200/90">
+          <div className="mt-6 flex flex-wrap items-center gap-3 text-xs text-slate-600 dark:text-white/55">
+            <span className="rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 font-medium text-emerald-600 dark:text-emerald-200/90">
               Remote-first · India time zone friendly
             </span>
-            <span className="rounded-full border border-white/15 bg-slate-100 dark:bg-white/5 px-3 py-1">
+            <span className="rounded-full border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 px-3 py-1 shadow-sm dark:shadow-none">
               Early-stage, well-funded product company
             </span>
           </div>
         </section>
 
         {/* OPEN ROLES (LATEST TWO ONLY) */}
-        <section className="mt-14 border-t border-slate-200 dark:border-white/10 pt-10">
+        <section className="mt-10 border-t border-slate-200 dark:border-white/10 pt-8">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-xl font-semibold sm:text-2xl">Latest Open Roles</h2>
@@ -148,7 +161,7 @@ export default function CareersPage() {
             <div className="mt-6 text-center py-12 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
               <div className="text-4xl mb-4">💼</div>
               <p className="text-slate-500 dark:text-white/60 mb-2">No open positions at the moment.</p>
-              <p className="text-white/50 text-sm">
+              <p className="text-slate-400 dark:text-white/50 text-sm">
                 Check back soon or reach out at careers@bitforge.in.
               </p>
             </div>
@@ -165,18 +178,18 @@ export default function CareersPage() {
                     <Link
                       key={career._id}
                       href={`/careers/${slug}`}
-                      className="block rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-4 hover:bg-white/[0.07] transition-colors group"
+                      className="block rounded-2xl border border-slate-200 dark:border-white/12 bg-white dark:bg-white/5 p-4 hover:bg-slate-50 dark:hover:bg-white/[0.07] transition-colors group shadow-sm dark:shadow-none"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <h3 className="text-sm font-semibold group-hover:text-cyan-300 transition-colors">
+                          <h3 className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">
                             {career.title}
                           </h3>
                           <p className="mt-1 text-[11px] text-slate-500 dark:text-white/60">
                             {career.location} · {career.department}
                           </p>
                         </div>
-                        <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-medium text-emerald-200/90 whitespace-nowrap">
+                        <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-200/90 whitespace-nowrap">
                           {career.featured ? "⭐ Featured" : "Open"}
                         </span>
                       </div>
@@ -186,14 +199,14 @@ export default function CareersPage() {
                       {career.requirements && career.requirements.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-slate-500 dark:text-white/60">
                           {career.requirements.slice(0, 3).map((req, idx) => (
-                            <span key={idx} className="rounded-full bg-white dark:bg-black/40 px-2.5 py-1">
+                            <span key={idx} className="rounded-full bg-slate-100 dark:bg-black/40 px-2.5 py-1">
                               {req.length > 30 ? req.substring(0, 30) + "..." : req}
                             </span>
                           ))}
                         </div>
                       )}
                       <div className="mt-4 flex items-center justify-between text-xs">
-                        <span className="text-white/55">
+                        <span className="text-slate-600 dark:text-white/55">
                           {career.employmentType}
                           {career.salary?.min && career.salary?.max && (
                             <>
@@ -202,7 +215,7 @@ export default function CareersPage() {
                             </>
                           )}
                         </span>
-                        <span className="text-cyan-300 group-hover:text-cyan-200 flex items-center gap-1">
+                        <span className="text-cyan-600 dark:text-cyan-300 group-hover:text-cyan-700 dark:group-hover:text-cyan-200 flex items-center gap-1">
                           View details
                           <span className="group-hover:translate-x-1 transition-transform">→</span>
                         </span>
@@ -215,7 +228,7 @@ export default function CareersPage() {
               <div className="mt-8 flex justify-center">
                 <Link
                   href="/careers/openings"
-                  className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-black shadow-[0_0_20px_rgba(56,189,248,0.5)] hover:bg-cyan-50 transition-colors"
+                  className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 dark:bg-white px-5 py-2.5 text-sm font-semibold text-white dark:text-black shadow-md dark:shadow-[0_0_20px_rgba(56,189,248,0.5)] hover:bg-cyan-700 dark:hover:bg-cyan-50 transition-colors"
                 >
                   <span>See all openings</span>
                   <span>→</span>
@@ -233,7 +246,7 @@ export default function CareersPage() {
         </section>
 
         {/* WHY WORK HERE */}
-        <section className="mt-12 grid gap-10 md:grid-cols-[1.1fr,0.9fr] md:items-start">
+        <section className="mt-10 grid gap-8 md:grid-cols-[1.1fr,0.9fr] md:items-start">
           <div>
             <h2 className="text-xl font-semibold sm:text-2xl">Why work at BitForge</h2>
             <p className="mt-3 text-sm text-slate-600 dark:text-white/70 sm:text-base">
@@ -242,28 +255,28 @@ export default function CareersPage() {
               buyers and sellers, and you will see the impact of your decisions in real-time.
             </p>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-4">
+              <div className="rounded-2xl border border-slate-200 dark:border-white/12 bg-white dark:bg-white/5 p-4 shadow-sm dark:shadow-none">
                 <h3 className="text-sm font-semibold">Ownership from day one</h3>
                 <p className="mt-2 text-xs text-slate-600 dark:text-white/70">
                   Small, senior teams with clear problem areas. You&apos;ll own meaningful pieces of
                   product from week one and work directly with founders.
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-4">
+              <div className="rounded-2xl border border-slate-200 dark:border-white/12 bg-white dark:bg-white/5 p-4 shadow-sm dark:shadow-none">
                 <h3 className="text-sm font-semibold">Product-first culture</h3>
                 <p className="mt-2 text-xs text-slate-600 dark:text-white/70">
                   We ship fast, talk to customers weekly, and measure ourselves against real
                   adoption, not vanity metrics.
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-4">
+              <div className="rounded-2xl border border-slate-200 dark:border-white/12 bg-white dark:bg-white/5 p-4 shadow-sm dark:shadow-none">
                 <h3 className="text-sm font-semibold">Remote, but not alone</h3>
                 <p className="mt-2 text-xs text-slate-600 dark:text-white/70">
                   Remote-first with structured rituals — virtual standups, deep work blocks, and
                   quarterly in-person meetups for strategy and team-building.
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-4">
+              <div className="rounded-2xl border border-slate-200 dark:border-white/12 bg-white dark:bg-white/5 p-4 shadow-sm dark:shadow-none">
                 <h3 className="text-sm font-semibold">Real impact, no bureaucracy</h3>
                 <p className="mt-2 text-xs text-slate-600 dark:text-white/70">
                   Minimal layers and lean processes. If you see a better way to serve customers,
@@ -273,15 +286,15 @@ export default function CareersPage() {
             </div>
           </div>
 
-          <div className="space-y-4 rounded-2xl border border-cyan-500/25 bg-gradient-to-b from-cyan-500/10 to-indigo-500/10 p-5">
-            <h3 className="text-sm font-semibold text-cyan-100">How we work</h3>
-            <ul className="space-y-2 text-xs text-white/75">
+          <div className="space-y-4 rounded-2xl border border-cyan-500/25 bg-gradient-to-b from-cyan-500/5 dark:from-cyan-500/10 to-indigo-500/5 dark:to-indigo-500/10 p-5 shadow-sm dark:shadow-none">
+            <h3 className="text-sm font-semibold text-cyan-800 dark:text-cyan-100">How we work</h3>
+            <ul className="space-y-2 text-xs text-slate-700 dark:text-white/75">
               <li>• Remote-first with core collaboration hours overlapping IST.</li>
               <li>• Product releases every 2 weeks, with clear owners and post-launch reviews.</li>
               <li>• Transparent roadmap and metrics; everyone sees what we&apos;re building and why.</li>
               <li>• Strong documentation culture — decisions live in docs, not just meetings.</li>
             </ul>
-            <div className="pt-2 text-[11px] text-white/55">
+            <div className="pt-2 text-[11px] text-slate-600 dark:text-white/55">
               We hire across India and select global locations for roles where time zone overlap
               is critical.
             </div>
@@ -289,28 +302,28 @@ export default function CareersPage() {
         </section>
 
         {/* TEAMS */}
-        <section className="mt-14 border-t border-slate-200 dark:border-white/10 pt-10">
+        <section className="mt-10 border-t border-slate-200 dark:border-white/10 pt-8">
           <h2 className="text-xl font-semibold sm:text-2xl">Teams at BitForge</h2>
           <p className="mt-3 max-w-2xl text-sm text-slate-600 dark:text-white/70 sm:text-base">
             We bring together people from product, engineering, design, operations, and customer
             success — all focused on making digital commerce feel simple and trustworthy.
           </p>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
-            <div className="rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-4">
+            <div className="rounded-2xl border border-slate-200 dark:border-white/12 bg-white dark:bg-white/5 p-4 shadow-sm dark:shadow-none">
               <h3 className="text-sm font-semibold">Product &amp; Engineering</h3>
               <p className="mt-2 text-xs text-slate-600 dark:text-white/70">
                 Build the marketplace, payments, and trust tooling that power creators and buyers
                 globally.
               </p>
             </div>
-            <div className="rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-4">
+            <div className="rounded-2xl border border-slate-200 dark:border-white/12 bg-white dark:bg-white/5 p-4 shadow-sm dark:shadow-none">
               <h3 className="text-sm font-semibold">Design &amp; Research</h3>
               <p className="mt-2 text-xs text-slate-600 dark:text-white/70">
                 Craft interfaces that make complex financial flows feel simple, transparent, and
                 safe.
               </p>
             </div>
-            <div className="rounded-2xl border border-white/12 bg-slate-100 dark:bg-white/5 p-4">
+            <div className="rounded-2xl border border-slate-200 dark:border-white/12 bg-white dark:bg-white/5 p-4 shadow-sm dark:shadow-none">
               <h3 className="text-sm font-semibold">Operations &amp; Customer Experience</h3>
               <p className="mt-2 text-xs text-slate-600 dark:text-white/70">
                 Ensure payouts, compliance, and customer support run like clockwork for every
@@ -321,11 +334,11 @@ export default function CareersPage() {
         </section>
 
         {/* CTA */}
-        <section className="mt-14 border-t border-slate-200 dark:border-white/10 pt-10">
-          <div className="flex flex-col gap-4 rounded-2xl border border-cyan-500/40 bg-gradient-to-r from-cyan-500/15 to-indigo-500/15 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <section className="mt-10 border-t border-slate-200 dark:border-white/10 pt-8">
+          <div className="flex flex-col gap-4 rounded-2xl border border-cyan-500/40 bg-gradient-to-r from-cyan-500/5 dark:from-cyan-500/15 to-indigo-500/5 dark:to-indigo-500/15 p-5 sm:flex-row sm:items-center sm:justify-between shadow-sm dark:shadow-none">
             <div>
-              <h2 className="text-lg font-semibold sm:text-xl">Ready to build what powers creators?</h2>
-              <p className="mt-2 text-sm text-white/75">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white sm:text-xl">Ready to build what powers creators?</h2>
+              <p className="mt-2 text-sm text-slate-700 dark:text-white/75">
                 Tell us about the hardest problem you&apos;ve solved and why you want to work on
                 digital commerce. We read every message.
               </p>
@@ -333,7 +346,7 @@ export default function CareersPage() {
             <div className="flex flex-col gap-3 text-sm sm:items-end">
               <Link
                 href="mailto:careers@bittforge.in?subject=Joining%20BitForge"
-                className="inline-flex items-center justify-center rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black shadow-[0_0_26px_rgba(56,189,248,0.6)] hover:bg-cyan-50"
+                className="inline-flex items-center justify-center rounded-xl bg-cyan-600 dark:bg-white px-4 py-2 text-sm font-semibold text-white dark:text-black shadow-md dark:shadow-[0_0_26px_rgba(56,189,248,0.6)] hover:bg-cyan-700 dark:hover:bg-cyan-50"
               >
                 Email the hiring team →
               </Link>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCheck, Bell, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -17,13 +17,27 @@ interface User {
 }
 
 export default function SellerNotificationsPage() {
-  const ITEMS_PER_PAGE = 20;
+  const ITEMS_PER_PAGE = 15;
   const [user, setUser] = useState<User | null>(null);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [filter, setFilter] = useState<string>("all");
+
+  const filteredNotifications = useMemo(
+    () => notifications.filter((item) => (filter === "all" ? true : (item.category || "system") === filter)),
+    [filter, notifications]
+  );
+
+  const categorySummary = useMemo(() => {
+    return notifications.reduce<Record<string, number>>((acc, item) => {
+      const key = item.category || "system";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+  }, [notifications]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalNotifications, setTotalNotifications] = useState(0);
@@ -143,6 +157,32 @@ export default function SellerNotificationsPage() {
       />
 
       <div className="mx-auto mt-8 max-w-5xl px-4 sm:px-6">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 mb-6">
+          <button
+            onClick={() => setFilter("all")}
+            className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition ${
+              filter === "all"
+                ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+                : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white/65 dark:hover:bg-white/10"
+            }`}
+          >
+            All
+          </button>
+          {Object.keys(categorySummary).map((key) => (
+            <button
+              key={key}
+              onClick={() => setFilter(key)}
+              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                filter === key
+                  ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+                  : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white/65 dark:hover:bg-white/10"
+              }`}
+            >
+              {key.replace(/_/g, " ")}
+            </button>
+          ))}
+        </div>
+
         {notifications.length > 0 && unreadCount > 0 && (
           <div className="mb-6">
             <button
@@ -165,7 +205,7 @@ export default function SellerNotificationsPage() {
               />
             ))}
           </div>
-        ) : notifications.length === 0 ? (
+        ) : filteredNotifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center max-w-md mx-auto py-16 sm:py-24 px-4">
             {/* Animated floating empty state icon */}
             <motion.div
@@ -192,7 +232,7 @@ export default function SellerNotificationsPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {notifications.map((notification) => (
+            {filteredNotifications.map((notification) => (
               <NotificationCard
                 key={notification._id}
                 notification={notification}

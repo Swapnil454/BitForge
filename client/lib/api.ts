@@ -117,6 +117,7 @@ export const authAPI = {
     }
 };
 
+
 // Admin API functions
 export const adminAPI = {
     getDashboardStats: async () => {
@@ -962,6 +963,11 @@ export const promotionAPI = {
 
 // User API functions
 export const userAPI = {
+    updatePreferences: async (payload: { theme?: string, browserPushEnabled?: boolean }) => {
+        const response = await api.patch('/users/preferences', payload);
+        return response.data;
+    },
+
     getCurrentUser: async () => {
         const response = await api.get('/users/profile');
         return response.data;
@@ -1033,11 +1039,6 @@ export const userAPI = {
         const response = await api.post('/users/reactivate-account', { email, otp });
         return response.data;
     },
-
-    updatePreferences: async (preferences: { theme: string }) => {
-        const response = await api.patch('/users/preferences', preferences);
-        return response.data;
-    }
 };
 
 // Report API functions

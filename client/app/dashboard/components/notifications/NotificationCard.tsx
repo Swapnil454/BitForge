@@ -36,14 +36,9 @@ export default function NotificationCard({
     >
       <div className={`flex items-start ${compact ? "gap-2.5" : "gap-3.5"}`}>
         <div className="flex shrink-0 items-center gap-2">
-          <div className={`flex items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/5 ${compact ? "h-9 w-9" : "h-11 w-11"}`}>
-            <Image src={sourceLogo} alt={sourceName} width={28} height={28} className={`${compact ? "h-5 w-5" : "h-7 w-7"} object-contain`} />
+          <div className={`flex items-center justify-center rounded-2xl border border-slate-200 shadow-sm dark:border-white/10 dark:bg-white/5 ${compact ? "h-9 w-9" : "h-11 w-11"} ${meta.accent} bg-slate-50`}>
+            {meta.icon(compact ? "h-4 w-4" : "h-5 w-5")}
           </div>
-          {!compact && (
-            <div className={`hidden h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/5 md:flex ${meta.accent}`}>
-              {meta.icon("h-5 w-5")}
-            </div>
-          )}
         </div>
 
         <div className="min-w-0 flex-1">

@@ -479,7 +479,7 @@ export default function AdminCareersPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
-      <header className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-white/10 bg-white/80 dark:bg-[#05050a]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-slate-300 dark:border-white/10 bg-white dark:bg-[#05050a] backdrop-blur-xl">
         <div className="relative mx-auto flex h-14 sm:h-16 max-w-6xl items-center justify-between px-3 sm:px-6">
           <div className="flex items-center gap-4 z-10">
             <Link
@@ -523,9 +523,9 @@ export default function AdminCareersPage() {
       <main className="px-3 py-4 sm:px-6 sm:py-6">
         <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5 pb-12">
           {stats && (
-            <section className="rounded-2xl border border-slate-200/60 bg-white p-2 shadow-sm dark:border-white/5 dark:bg-white/5 sm:p-4 lg:px-8">
+            <section className="rounded-2xl border border-slate-300 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-[#0b0b12] sm:p-4 lg:px-8">
               <div className="flex w-full overflow-x-auto pb-1 sm:pb-0 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                <div className="flex sm:min-w-max flex-1 items-center justify-between divide-x divide-slate-200 dark:divide-white/10">
+                <div className="flex sm:min-w-max flex-1 items-center justify-between divide-x divide-slate-300 dark:divide-white/10">
                   {[
                     { label: "Total", value: careers.length },
                     { label: "Published", value: getStatusCount("published") },
@@ -534,10 +534,10 @@ export default function AdminCareersPage() {
                     { label: "New", value: newTodayCount },
                   ].map((item, idx) => (
                     <div key={item.label} className={`px-2 sm:px-6 text-center ${idx === 0 ? "pl-0" : ""} ${idx === 4 ? "pr-0" : ""}`}>
-                      <p className="whitespace-nowrap text-[9px] font-medium uppercase tracking-wider text-slate-500 dark:text-white/50 sm:text-[11px]">
+                      <p className="whitespace-nowrap text-[9px] font-bold uppercase tracking-wider text-slate-600 dark:text-white/70 sm:text-[11px]">
                         {item.label}
                       </p>
-                      <p className="mt-0 sm:mt-0.5 text-base font-light tracking-tight text-slate-900 dark:text-white sm:mt-1 sm:text-2xl">
+                      <p className="mt-0 sm:mt-0.5 text-base font-semibold tracking-tight text-slate-900 dark:text-white sm:mt-1 sm:text-2xl">
                         {item.value}
                       </p>
                     </div>
@@ -547,27 +547,27 @@ export default function AdminCareersPage() {
             </section>
           )}
 
-          <section className="rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-white/5 dark:bg-white/5 overflow-hidden">
+          <section className="rounded-2xl border border-slate-300 bg-white shadow-sm dark:border-white/10 dark:bg-[#0b0b12] overflow-hidden">
             {/* Search and Primary Filters */}
-            <div className="border-b border-slate-200/60 p-3 dark:border-white/5 flex items-center justify-between gap-3 sm:px-4">
+            <div className="border-b border-slate-300 p-3 dark:border-white/10 flex items-center justify-between gap-3 sm:px-4">
               <div className="relative w-full max-w-3xl flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 sm:h-4 sm:w-4" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 sm:h-4 sm:w-4" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search roles, keywords..."
-                  className="w-full rounded-full border border-slate-200/60 bg-slate-50 py-1.5 pl-9 pr-3 text-[13px] text-slate-900 placeholder:text-slate-400 transition focus:border-slate-300 focus:outline-none focus:ring-4 focus:ring-slate-100 dark:border-white/10 dark:bg-[#0b0b12] dark:text-white dark:focus:ring-white/5 sm:py-2 sm:pl-10 sm:pr-4 sm:text-sm"
+                  className="w-full rounded-full border border-slate-300 bg-slate-50 py-1.5 pl-9 pr-3 text-[13px] text-slate-900 placeholder:text-slate-500 transition focus:border-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-100 dark:border-white/20 dark:bg-[#13131a] dark:text-white dark:focus:ring-white/10 sm:py-2 sm:pl-10 sm:pr-4 sm:text-sm"
                 />
               </div>
               <div className="flex shrink-0 items-center">
                 <button
                   type="button"
                   onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium transition sm:px-4 sm:py-2 sm:text-xs ${
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition sm:px-4 sm:py-2 sm:text-xs ${
                     showAdvancedFilters
                       ? "border-cyan-600 bg-cyan-600 text-white dark:border-cyan-500 dark:bg-cyan-500 dark:text-white"
-                      : "border-slate-200/60 bg-white text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10"
+                      : "border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-white/20 dark:bg-[#13131a] dark:text-white/80 dark:hover:bg-white/10"
                   }`}
                 >
                   <Filter className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
@@ -660,7 +660,7 @@ export default function AdminCareersPage() {
             )}
 
             {/* Segmented Tabs for Quick Views */}
-            <div className="flex items-center gap-6 overflow-x-auto px-4 pt-1 pb-0 scrollbar-hide text-sm font-medium">
+            <div className="flex items-center gap-6 overflow-x-auto px-4 pt-1 pb-0 scrollbar-hide text-sm font-semibold">
               {[
                 { id: "all", label: "All Roles", count: careers.length, active: filterStatus === "all" && filterFeatured === "all" },
                 { id: "published", label: "Published", count: getStatusCount("published"), active: filterStatus === "published" },
@@ -679,11 +679,11 @@ export default function AdminCareersPage() {
                   className={`relative whitespace-nowrap px-1 py-3 text-sm transition-colors ${
                     tab.active
                       ? "text-slate-900 dark:text-white"
-                      : "text-slate-500 hover:text-slate-700 dark:text-white/60 dark:hover:text-white/90"
+                      : "text-slate-600 hover:text-slate-900 dark:text-white/70 dark:hover:text-white"
                   }`}
                 >
                   {tab.label}
-                  <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500 dark:bg-white/10 dark:text-white/60">
+                  <span className="ml-2 rounded-full bg-slate-200 px-2 py-0.5 text-[10px] text-slate-700 dark:bg-white/20 dark:text-white/80">
                     {tab.count}
                   </span>
                   {tab.active && (
@@ -695,7 +695,7 @@ export default function AdminCareersPage() {
           </section>
 
           {filteredCareers.length > 0 && (
-            <section id="jobs-toolbar" className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/80 dark:bg-white/5 px-3 sm:px-4 py-2 sm:py-3">
+            <section id="jobs-toolbar" className="rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-[#0b0b12] px-3 sm:px-4 py-2 sm:py-3">
               <div className="flex items-center justify-between gap-3 overflow-x-auto scrollbar-hide">
                 <div className="flex items-center gap-2 sm:gap-3 text-xs text-slate-600 dark:text-white/70 shrink-0">
                   <label className="flex items-center gap-1.5 sm:gap-2">

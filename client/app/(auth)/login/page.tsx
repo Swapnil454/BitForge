@@ -4,6 +4,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Suspense, useState, useEffect, useRef } from "react";
+import { useTheme } from "next-themes";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, ChevronDown } from "lucide-react";
 import { FaGoogle, FaGithub } from "react-icons/fa";
@@ -40,6 +41,7 @@ function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = searchParams?.get("next") || null;
+  const { setTheme } = useTheme();
 
   const [showPassword, setShowPassword] = useState(false);
   const [loginMethod, setLoginMethod] = useState<"email" | "phone">("email");
@@ -126,6 +128,10 @@ function LoginPageContent() {
 
       setCookie("token", response.token, 7);
       setCookie("user", JSON.stringify(response.user), 7);
+      
+      if (response.user.theme) {
+        setTheme(response.user.theme);
+      }
 
       const role = response.user.role || "buyer";
       setUserRole(role);
