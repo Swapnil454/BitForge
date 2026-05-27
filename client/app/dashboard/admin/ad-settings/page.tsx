@@ -8,7 +8,7 @@ import { showError, showSuccess } from "@/lib/toast";
 import { formatPromotionCurrency, getPromotionErrorMessage, type PromotionSettings } from "@/lib/promotions";
 
 const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/35 shadow-sm";
+  "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/35 shadow-sm";
 
 export default function AdSettingsPage() {
   const router = useRouter();
@@ -164,10 +164,10 @@ export default function AdSettingsPage() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 mt-6 sm:mt-8">
+      <div className="max-w-7xl mx-auto px-4 mt-4 sm:mt-8">
         
         {/* Configuration Summary Strip */}
-        <div className="flex overflow-x-auto gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 sm:flex-wrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] mb-8">
+        <div className="flex overflow-x-auto gap-2.5 sm:gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 sm:flex-wrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] mb-6 sm:mb-8">
           <SummaryPill label="Max Ads" value={marketplaceHeroMaxAds} />
           <SummaryPill label="Duration" value={`${defaultDurationDays} days`} />
           <SummaryPill label="Min Price" value={formatPromotionCurrency(minimumPrice)} />
@@ -175,10 +175,10 @@ export default function AdSettingsPage() {
           <SummaryPill label="Rotation" value={autoRotate ? "Enabled" : "Disabled"} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 sm:gap-8 items-start">
           
           {/* Left Column: Settings Cards */}
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-4 sm:gap-6">
             
             {/* 1. Hero Inventory */}
             <Card title="Hero Inventory" description="Control how many ads are visible in the marketplace hero.">
@@ -277,7 +277,7 @@ export default function AdSettingsPage() {
           </div>
 
           {/* Right Column: Preview & Validation */}
-          <div className="sticky top-28 flex flex-col gap-6">
+          <div className="sticky top-28 flex flex-col gap-4 sm:gap-6">
             
             {/* Marketplace Preview */}
             <div className="rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#13131a] overflow-hidden">
@@ -377,18 +377,18 @@ export default function AdSettingsPage() {
 
 function SummaryPill({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="flex items-center gap-3 shrink-0 bg-white dark:bg-[#13131a] rounded-full border border-slate-200 dark:border-white/10 px-4 py-2 shadow-sm">
-      <span className="text-[10px] font-bold text-slate-400 dark:text-white/40 uppercase tracking-widest">{label}</span>
-      <span className="text-sm font-black text-slate-900 dark:text-white">{value}</span>
+    <div className="flex items-center gap-2 sm:gap-3 shrink-0 bg-white dark:bg-[#13131a] rounded-full border border-slate-200 dark:border-white/10 px-3 py-1.5 sm:px-4 sm:py-2 shadow-sm">
+      <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-white/40 uppercase tracking-widest">{label}</span>
+      <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">{value}</span>
     </div>
   );
 }
 
 function Card({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-7 shadow-sm dark:border-white/10 dark:bg-[#13131a]">
-      <h2 className="text-lg font-black text-slate-900 dark:text-white">{title}</h2>
-      <p className="mt-1 mb-6 text-sm text-slate-500 dark:text-white/60">{description}</p>
+    <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-4 sm:p-7 shadow-sm dark:border-white/10 dark:bg-[#13131a]">
+      <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">{title}</h2>
+      <p className="mt-1 mb-4 sm:mb-6 text-xs sm:text-sm text-slate-500 dark:text-white/60">{description}</p>
       {children}
     </div>
   );
@@ -397,7 +397,7 @@ function Card({ title, description, children }: { title: string; description: st
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">{label}</span>
+      <span className="mb-1.5 sm:mb-2 block text-xs sm:text-sm font-bold text-slate-700 dark:text-white/80">{label}</span>
       {children}
     </label>
   );

@@ -148,7 +148,7 @@ export default function AdminBankAccountPage() {
         backHref="/dashboard/admin"
         backLabel="Back"
         title="Bank Accounts"
-        subtitle="Manage commission & payout accounts"
+        subtitle="Commission & payout accounts"
         rightSlot={
           <div className="relative" ref={menuRef}>
             <button

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import DynamicHeader from "@/app/components/DynamicHeader";
 import { BackButton } from "./BackButton";
+import { Lock, Shield, Check } from "lucide-react";
 
 export const metadata = {
   title: "Trust Center | BitForge",
@@ -26,22 +27,17 @@ export default async function TrustCenterPage() {
       <div className="relative z-10 mx-auto max-w-6xl px-5 pb-20 pt-16 sm:pt-20 md:pb-28">
 
         {/* HERO */}
-        <section className="mb-12 max-w-4xl pt-4">
-          <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-emerald-300/80 bg-indigo-50 dark:bg-transparent px-3 py-1 rounded-full dark:px-0 dark:py-0">
-              Trust Center
-            </p>
-            <span className="text-xs text-slate-500 dark:text-white/50 border border-slate-200 dark:border-white/10 rounded-full px-3 py-1">
-              Last Updated: {lastUpdatedDate}
-            </span>
-          </div>
-          <h1 className="text-3xl font-black tracking-tight leading-tight sm:text-4xl md:text-5xl text-slate-900 dark:text-white">
+        <section className="mb-6 max-w-4xl pt-2">
+          <h1 className="text-3xl font-black tracking-tight leading-tight sm:text-4xl md:text-5xl text-slate-900 dark:text-white mb-1">
             Security, privacy, and compliance
             <span className="mt-1 block bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500 bg-clip-text text-transparent leading-tight pb-0.5 dark:from-cyan-400 dark:via-sky-400 dark:to-indigo-400">
               built into everything we do
             </span>
           </h1>
-          <p className="mt-4 max-w-3xl text-sm text-slate-600 dark:text-white/70 sm:text-base leading-relaxed">
+          <p className="text-[10px] text-slate-500 dark:text-white/60 mb-3">
+            <strong className="text-slate-700 dark:text-white/80">Last Updated:</strong> {lastUpdatedDate}
+          </p>
+          <p className="text-sm text-slate-600 dark:text-white/70 sm:text-base leading-relaxed max-w-3xl">
             BitForge is committed to maintaining the highest standards of security, privacy, and platform
             integrity. This Trust Center provides transparency into our security practices, compliance
             posture, and ongoing efforts to protect our community.
@@ -49,10 +45,10 @@ export default async function TrustCenterPage() {
         </section>
 
         {/* TRUST PILLARS */}
-        <section className="mb-14 grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-emerald-200 dark:border-emerald-400/30 bg-emerald-50 dark:bg-gradient-to-b dark:from-emerald-500/10 dark:to-cyan-500/10 p-5 shadow-sm">
+        <section className="mb-8 grid gap-4 md:grid-cols-3">
+          <div className="rounded-2xl border border-emerald-200 dark:border-emerald-400/30 bg-emerald-50 dark:bg-transparent dark:bg-gradient-to-b dark:from-emerald-500/10 dark:to-cyan-500/10 p-5 shadow-sm">
             <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-500/20">
-              <span className="text-xl">🔒</span>
+              <Lock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" strokeWidth={2.5} />
             </div>
             <h3 className="mb-2 text-base font-bold text-slate-900 dark:text-white">Security First</h3>
             <p className="text-xs text-slate-600 dark:text-white/70 leading-relaxed">
@@ -61,9 +57,9 @@ export default async function TrustCenterPage() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-cyan-200 dark:border-cyan-400/30 bg-cyan-50 dark:bg-gradient-to-b dark:from-cyan-500/10 dark:to-indigo-500/10 p-5 shadow-sm">
+          <div className="rounded-2xl border border-cyan-200 dark:border-cyan-400/30 bg-cyan-50 dark:bg-transparent dark:bg-gradient-to-b dark:from-cyan-500/10 dark:to-indigo-500/10 p-5 shadow-sm">
             <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-100 dark:bg-cyan-500/20">
-              <span className="text-xl">🛡️</span>
+              <Shield className="h-5 w-5 text-cyan-600 dark:text-cyan-400" strokeWidth={2.5} />
             </div>
             <h3 className="mb-2 text-base font-bold text-slate-900 dark:text-white">Privacy by Design</h3>
             <p className="text-xs text-slate-600 dark:text-white/70 leading-relaxed">
@@ -72,9 +68,9 @@ export default async function TrustCenterPage() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-indigo-200 dark:border-indigo-400/30 bg-indigo-50 dark:bg-gradient-to-b dark:from-indigo-500/10 dark:to-purple-500/10 p-5 shadow-sm">
+          <div className="rounded-2xl border border-indigo-200 dark:border-indigo-400/30 bg-indigo-50 dark:bg-transparent dark:bg-gradient-to-b dark:from-indigo-500/10 dark:to-purple-500/10 p-5 shadow-sm">
             <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-500/20">
-              <span className="text-xl">✓</span>
+              <Check className="h-5 w-5 text-indigo-600 dark:text-indigo-400" strokeWidth={3} />
             </div>
             <h3 className="mb-2 text-base font-bold text-slate-900 dark:text-white">Regulatory Compliance</h3>
             <p className="text-xs text-slate-600 dark:text-white/70 leading-relaxed">
@@ -85,7 +81,7 @@ export default async function TrustCenterPage() {
         </section>
 
         {/* NAVIGATION */}
-        <section className="mb-12 rounded-2xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 p-5 sm:p-7 shadow-sm">
+        <section className="mb-6 rounded-2xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 p-4 sm:p-6 shadow-sm">
           <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-white/60">
             Quick Navigation
           </h2>
@@ -103,7 +99,7 @@ export default async function TrustCenterPage() {
         </section>
 
         {/* CONTENT */}
-        <div className="space-y-14">
+        <div className="space-y-10">
 
           {/* Security & Infrastructure */}
           <section id="security" className="border-t border-slate-200 dark:border-white/10 pt-10 scroll-mt-28">

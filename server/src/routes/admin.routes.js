@@ -4,6 +4,7 @@ import {
   approveSeller,
   rejectSeller,
   approveProduct,
+  pendingProduct,
   getPendingProducts,
   getProductStats,
   getAllProducts,
@@ -109,6 +110,7 @@ router.get("/products/report", getProductReport);
 router.put("/products/:id/edit", editProductByAdmin);
 router.delete("/products/:id/delete", deleteProductByAdmin);
 router.post("/products/:id/approve", approveProduct);
+router.post("/products/:id/pending", pendingProduct);
 router.post("/products/:id/reject", rejectProduct);
 router.post("/products/:id/request-changes", requestProductChanges);
 

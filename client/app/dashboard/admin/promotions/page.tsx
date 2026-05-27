@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import InfiniteScroll from "react-infinite-scroll-component";
 import { Eye, PauseCircle, PlayCircle, ReceiptText, Settings2, ChevronDown, ChevronRight, Image as ImageIcon } from "lucide-react";
 import PageHeader from "../../buyer/transactions/components/PageHeader";
 import { promotionAPI } from "@/lib/api";
@@ -42,6 +43,8 @@ export default function AdminPromotionsPage() {
     revenuePipeline: 0
   });
   const [isArchivedExpanded, setIsArchivedExpanded] = useState(false);
+  const [visibleLiveCount, setVisibleLiveCount] = useState(10);
+  const [visibleArchivedCount, setVisibleArchivedCount] = useState(10);
 
   const fetchPromotions = useCallback(async (status: "ALL" | PromotionStatus = activeTab) => {
     try {
@@ -108,7 +111,7 @@ export default function AdminPromotionsPage() {
         }
       />
 
-      <section className="mx-auto flex max-w-7xl flex-col gap-4 sm:gap-6 px-4 py-4 sm:py-8">
+      <section className="mx-auto flex max-w-7xl flex-col gap-3 sm:gap-6 px-4 py-3 sm:py-8">
         {/* Metrics Strip */}
         <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:gap-4 w-full">
           <div className="flex-1 bg-white dark:bg-[#13131a] rounded-xl border border-slate-200 dark:border-white/10 p-2.5 sm:p-5 flex items-center justify-between border-l-4 border-l-violet-500 shadow-sm gap-2">
@@ -160,10 +163,10 @@ export default function AdminPromotionsPage() {
             </p>
           </div>
         ) : (
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-4 sm:gap-8">
             
             {/* Needs Action */}
-            <div className="flex flex-col gap-4 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-white/10 p-4 sm:p-5 rounded-3xl shadow-sm">
+            <div className="flex flex-col gap-3 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-white/10 p-3 sm:p-5 rounded-2xl sm:rounded-3xl shadow-sm">
               <h3 className="text-xs font-black uppercase tracking-widest text-amber-600 dark:text-amber-500 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                 Needs Action
@@ -176,27 +179,45 @@ export default function AdminPromotionsPage() {
             </div>
 
             {/* Live & Paused */}
-            <div className="flex flex-col gap-4 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-white/10 p-4 sm:p-5 rounded-3xl shadow-sm">
+            <div className="flex flex-col gap-3 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-white/10 p-3 sm:p-5 rounded-2xl sm:rounded-3xl shadow-sm">
               <h3 className="text-xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-500 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 Live & Paused
                 <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-[10px]">{swimlanes.live.length}</span>
               </h3>
               <div className="flex flex-col gap-3">
-                {swimlanes.live.map(p => <PromotionRow key={p._id} promotion={p} router={router} handlePause={handlePause} handleResume={handleResume} />)}
+                <InfiniteScroll
+                  dataLength={Math.min(swimlanes.live.length, visibleLiveCount)}
+                  next={() => setVisibleLiveCount(prev => prev + 10)}
+                  hasMore={visibleLiveCount < swimlanes.live.length}
+                  loader={<div className="text-center text-xs text-slate-500 py-2">Loading more...</div>}
+                  className="flex flex-col gap-3"
+                  style={{ overflow: "visible" }}
+                >
+                  {swimlanes.live.slice(0, visibleLiveCount).map(p => <PromotionRow key={p._id} promotion={p} router={router} handlePause={handlePause} handleResume={handleResume} />)}
+                </InfiniteScroll>
                 {swimlanes.live.length === 0 && <div className="text-sm text-slate-500 p-4 border border-dashed border-slate-200 dark:border-white/10 rounded-xl text-center">No active or paused promotions in this view.</div>}
               </div>
             </div>
 
             {/* Archived */}
-            <div className="flex flex-col gap-4 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-white/10 p-4 sm:p-5 rounded-3xl shadow-sm">
+            <div className="flex flex-col gap-3 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-white/10 p-3 sm:p-5 rounded-2xl sm:rounded-3xl shadow-sm">
               <button onClick={() => setIsArchivedExpanded(!isArchivedExpanded)} className="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-2 hover:text-slate-700 dark:hover:text-white/80 transition">
                 {isArchivedExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                 Archived ({swimlanes.archived.length})
               </button>
               {isArchivedExpanded && (
                 <div className="flex flex-col gap-3">
-                  {swimlanes.archived.map(p => <PromotionRow key={p._id} promotion={p} router={router} handlePause={handlePause} handleResume={handleResume} />)}
+                  <InfiniteScroll
+                    dataLength={Math.min(swimlanes.archived.length, visibleArchivedCount)}
+                    next={() => setVisibleArchivedCount(prev => prev + 10)}
+                    hasMore={visibleArchivedCount < swimlanes.archived.length}
+                    loader={<div className="text-center text-xs text-slate-500 py-2">Loading more...</div>}
+                    className="flex flex-col gap-3"
+                    style={{ overflow: "visible" }}
+                  >
+                    {swimlanes.archived.slice(0, visibleArchivedCount).map(p => <PromotionRow key={p._id} promotion={p} router={router} handlePause={handlePause} handleResume={handleResume} />)}
+                  </InfiniteScroll>
                   {swimlanes.archived.length === 0 && <div className="text-sm text-slate-500 p-4 border border-dashed border-slate-200 dark:border-white/10 rounded-xl text-center">No archived promotions in this view.</div>}
                 </div>
               )}

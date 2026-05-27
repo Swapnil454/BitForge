@@ -45,7 +45,7 @@ export default function PayoutsAPIPage() {
         {/* Get Payout Balance */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">GET /balance</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Get current payout balance and earnings breakdown for authenticated seller.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Example Request</h3>
@@ -80,7 +80,7 @@ export default function PayoutsAPIPage() {
         {/* Request Payout */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">POST /request</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Request a payout to registered bank account.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Request Body</h3>
@@ -157,7 +157,7 @@ export default function PayoutsAPIPage() {
         {/* Get Payout History */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">GET /history</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Get paginated list of all payout transactions.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Query Parameters</h3>
@@ -235,7 +235,7 @@ export default function PayoutsAPIPage() {
         {/* Get Single Payout */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">GET /:payoutId</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Get detailed information about a specific payout.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Example Request</h3>
@@ -271,7 +271,7 @@ export default function PayoutsAPIPage() {
         {/* Cancel Payout */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">POST /:payoutId/cancel</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Cancel a pending payout request (only if status is "processing").</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Example Request</h3>

@@ -37,7 +37,7 @@ export default function ApprovedChangesPage() {
         {/* Access History */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Viewing Approved Changes</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <h3 className="text-slate-900 dark:text-white font-semibold mb-4">Two Ways to Access:</h3>
             <div className="space-y-4">
               <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg">
@@ -122,7 +122,7 @@ export default function ApprovedChangesPage() {
         {/* Example */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Example Change Record</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <div className="bg-slate-100 dark:bg-white/5 p-5 rounded-lg space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-slate-900 dark:text-white font-semibold">React Master Course - Price Update</h3>

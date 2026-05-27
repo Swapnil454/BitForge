@@ -68,7 +68,7 @@ export default function AuthenticationAPIPage() {
         {/* Register User */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">POST /register</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Register a new user with email and password.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Request Body</h3>
@@ -182,7 +182,7 @@ export default function AuthenticationAPIPage() {
         {/* Login */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">POST /login</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Login with email and password to receive a JWT token.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Request Body</h3>
@@ -268,7 +268,7 @@ export default function AuthenticationAPIPage() {
         {/* Get Current User */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">GET /me</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Get the currently authenticated user's profile.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Headers</h3>
@@ -331,7 +331,7 @@ export default function AuthenticationAPIPage() {
         {/* OAuth Google */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">GET /google</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Initiate Google OAuth 2.0 authentication flow.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Usage</h3>
@@ -375,7 +375,7 @@ export default function AuthenticationAPIPage() {
         {/* OAuth GitHub */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">GET /github</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Initiate GitHub OAuth 2.0 authentication flow.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Usage</h3>
@@ -391,7 +391,7 @@ export default function AuthenticationAPIPage() {
         {/* Logout */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">POST /logout</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Logout user and invalidate session/token.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Headers</h3>
@@ -418,7 +418,7 @@ export default function AuthenticationAPIPage() {
         {/* Refresh Token */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">POST /refresh</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Refresh an expired JWT token using a refresh token.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Request Body</h3>

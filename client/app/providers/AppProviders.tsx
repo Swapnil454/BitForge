@@ -92,14 +92,19 @@ export default function AppProviders({ children }: AppProvidersProps) {
     window.location.reload();
   };
 
-  // Force dark theme on landing and authentication pages
-  const isDarkOnlyRoute = 
-    pathname === "/" || 
-    pathname?.startsWith("/login") || 
-    pathname?.startsWith("/register") || 
-    pathname?.startsWith("/forgot-password") ||
-    pathname?.startsWith("/reset-password") ||
-    pathname?.startsWith("/verify");
+  // Check authentication status to force dark theme for unauthenticated users
+  const isClient = typeof window !== "undefined";
+  let isAuthenticated = false;
+  if (isClient) {
+    try {
+      const userStr = getCookie("user");
+      isAuthenticated = !!userStr && userStr !== '""';
+    } catch (e) {
+      isAuthenticated = false;
+    }
+  }
+
+  const forcedTheme = !isAuthenticated ? "dark" : undefined;
 
   return (
     <ThemeProvider 
@@ -107,7 +112,7 @@ export default function AppProviders({ children }: AppProvidersProps) {
       defaultTheme="system" 
       enableSystem={true}
       disableTransitionOnChange
-      forcedTheme={isDarkOnlyRoute ? "dark" : undefined}
+      forcedTheme={forcedTheme}
     >
       <QueryProvider>
         {children}

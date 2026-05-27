@@ -27,19 +27,14 @@ export default async function TermsAndConditionsPage() {
 
       <div className="relative z-10 mx-auto max-w-4xl px-5 pb-20 pt-16 sm:pt-20 md:pb-28">
         {/* HERO HEADER */}
-        <section className="mb-8 border-b border-slate-200 dark:border-white/10 pb-6 pt-4">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300/80 mb-4 inline-block bg-indigo-50 dark:bg-transparent px-3 py-1 rounded-full dark:px-0 dark:py-0">
-            Legal
-          </p>
-          <h1 className="text-3xl font-black tracking-tight leading-tight sm:text-4xl md:text-[42px] text-slate-900 dark:text-white">
+        <section className="mb-6 border-b border-slate-200 dark:border-white/10 pb-6 pt-2">
+          <h1 className="text-3xl font-black tracking-tight leading-tight sm:text-4xl md:text-[42px] text-slate-900 dark:text-white mb-1">
             Terms &amp; Conditions
           </h1>
-          <p className="mt-4 text-sm text-slate-500 dark:text-white/60">
-            <strong className="text-slate-700 dark:text-white/80">Effective Date:</strong> {effectiveDate}
-            <span className="mx-3">·</span>
+          <p className="text-[10px] text-slate-500 dark:text-white/60 mb-3">
             <strong className="text-slate-700 dark:text-white/80">Last Updated:</strong> {lastUpdatedDate}
           </p>
-          <p className="mt-3 text-sm text-slate-600 dark:text-white/70 leading-relaxed max-w-2xl">
+          <p className="text-sm text-slate-600 dark:text-white/70 leading-relaxed max-w-2xl">
             These Terms and Conditions (&quot;Terms&quot;) govern your access to and use of the BitForge
             platform, including our website, services, and applications (collectively, the
             &quot;Platform&quot;). By accessing or using the Platform, you agree to be bound by these Terms.
@@ -47,7 +42,7 @@ export default async function TermsAndConditionsPage() {
         </section>
 
         {/* TABLE OF CONTENTS */}
-        <section className="mb-8 rounded-2xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 p-5 sm:p-7 shadow-sm">
+        <section className="mb-6 rounded-2xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 p-4 sm:p-6 shadow-sm">
           <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-white/60">
             Table of Contents
           </h2>
@@ -73,7 +68,7 @@ export default async function TermsAndConditionsPage() {
         </section>
 
         {/* CONTENT */}
-        <div className="space-y-8 text-sm text-slate-600 dark:text-white/70">
+        <div className="space-y-6 text-sm text-slate-600 dark:text-white/70">
 
           {/* 1. Acceptance */}
           <section id="acceptance" className="scroll-mt-28">

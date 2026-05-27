@@ -7,10 +7,10 @@ import { userAPI } from "@/lib/api";
 import { getStoredUser, setCookie, clearAuthStorage } from "@/lib/cookies";
 import toast from "react-hot-toast";
 import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
-import { 
-  UserRound, 
-  ShieldCheck, 
-  Trash2, 
+import {
+  UserRound,
+  ShieldCheck,
+  Trash2,
   ChevronRight,
   Info,
   Mail,
@@ -37,11 +37,11 @@ function SettingsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams?.get("tab");
-  
+
   const [activeTab, setActiveTab] = useState<"main" | "profile" | "security" | "account">(
     (tabParam as "main" | "profile" | "security" | "account") || "main"
   );
-  
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -117,7 +117,7 @@ function SettingsContent() {
       }
 
       const response = await userAPI.updateProfile(formData);
-      
+
       if (response.user) {
         const storedUser = getStoredUser();
         const updatedUser = { ...storedUser, ...response.user };
@@ -262,10 +262,10 @@ function SettingsContent() {
   if (loading || !user) {
     return (
       <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
-        <PageHeader 
-          title="Settings" 
-          subtitle="Manage your account preferences" 
-          backHref="/dashboard/buyer" 
+        <PageHeader
+          title="Settings"
+          subtitle="Manage your account preferences"
+          backHref="/dashboard/buyer"
         />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 md:py-8 space-y-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -297,26 +297,26 @@ function SettingsContent() {
     router.push("/dashboard/buyer/settings?tab=main");
   };
 
-  const title = activeTab === "main" 
-    ? "Settings" 
+  const title = activeTab === "main"
+    ? "Settings"
     : menuItems.find(m => m.id === activeTab)?.label || "Settings";
 
-  const subtitle = activeTab === "main" 
-    ? "Manage your account preferences and security" 
+  const subtitle = activeTab === "main"
+    ? "Account preferences and security"
     : "";
 
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
-      <PageHeader 
-        title={title} 
-        subtitle={subtitle} 
+      <PageHeader
+        title={title}
+        subtitle={subtitle}
         backHref={activeTab === "main" ? "/dashboard/buyer" : "/dashboard/buyer/settings?tab=main"}
         onBack={handleHeaderBack}
       />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-28 md:py-8">
         <AnimatePresence mode="wait">
-          
+
           {/* ================= MAIN LIST VIEW ================= */}
           {activeTab === "main" && (
             <motion.div
@@ -337,11 +337,10 @@ function SettingsContent() {
                       router.push(`/dashboard/buyer/settings?tab=${item.id}`);
                     }
                   }}
-                  className={`w-full flex items-center gap-4 p-4 md:p-5 rounded-2xl transition-all duration-300 text-left group border backdrop-blur-sm shadow-lg ${
-                    item.isDanger
+                  className={`w-full flex items-center gap-4 p-4 md:p-5 rounded-2xl transition-all duration-300 text-left group border backdrop-blur-sm shadow-lg ${item.isDanger
                       ? "bg-red-500/5 hover:bg-red-500/10 border-red-500/20 hover:border-red-500/40 hover:shadow-red-500/10"
                       : "bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 hover:shadow-indigo-500/5"
-                  }`}
+                    }`}
                 >
                   <div className={`grid place-items-center transition-transform group-hover:scale-110 shrink-0 ${item.color}`}>
                     <item.icon className="w-[26px] h-[26px]" />
@@ -454,7 +453,7 @@ function SettingsContent() {
 
                     <div className="flex items-center justify-end gap-4 pt-4 border-t border-slate-100 dark:border-white/10 mt-2">
                       <button
-                         onClick={() => {
+                        onClick={() => {
                           setIsEditingProfile(false);
                           setName(user.name);
                           setProfilePic(null);
@@ -600,13 +599,13 @@ function SettingsContent() {
                 {securityTab === "reset" && (
                   <div className="max-w-xl space-y-4 md:space-y-5">
                     <button onClick={() => setSecurityTab("menu")} className="text-sm text-slate-500 hover:text-slate-900 dark:text-white/60 dark:hover:text-white mb-2 md:mb-4 inline-flex items-center gap-1.5 transition-colors font-medium">
-                     <ChevronLeft className="w-4 h-4" /> Back
+                      <ChevronLeft className="w-4 h-4" /> Back
                     </button>
-                    
+
                     {!showOtpField ? (
                       <div className="space-y-4 sm:space-y-5 bg-slate-100 dark:bg-white/5 p-5 md:p-6 rounded-2xl border border-slate-200 dark:border-white/10 text-center">
                         <div className="w-12 h-12 md:w-16 md:h-16 bg-indigo-500/20 text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-4">
-                           <Mail className="w-6 h-6 md:w-8 md:h-8" />
+                          <Mail className="w-6 h-6 md:w-8 md:h-8" />
                         </div>
                         <p className="text-slate-700 dark:text-white/80 leading-relaxed text-base md:text-lg">
                           We will send a 6-digit verification code to <br className="hidden md:block" /><strong className="text-slate-900 dark:text-white">{user.email}</strong>.
@@ -705,7 +704,7 @@ function SettingsContent() {
                   <div className="p-5 sm:p-6 rounded-2xl border border-red-200/60 dark:border-red-500/30 bg-red-50/30 dark:bg-red-500/5">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                       <div className="w-12 h-12 sm:w-14 sm:h-14 bg-red-100/80 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center shrink-0">
-                         <ShieldAlert className="w-6 h-6 sm:w-7 sm:h-7" />
+                        <ShieldAlert className="w-6 h-6 sm:w-7 sm:h-7" />
                       </div>
                       <div>
                         <h3 className="font-bold text-slate-900 dark:text-red-300 text-lg mb-1">Delete Account</h3>
@@ -762,7 +761,7 @@ function SettingsContent() {
 
         </AnimatePresence>
       </div>
-      
+
       <MobileBottomNav />
     </main>
   );

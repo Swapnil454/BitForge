@@ -144,6 +144,8 @@ export const getPendingProducts = async (req, res) => {
                 uploadedAt: '$createdAt',
                 createdAt: 1,
                 status: 1,
+                reviewSeverity: 1,
+                reviewFlags: 1,
                 'seller.name': 1,
                 'seller.email': 1,
                 'seller.emailVerified': '$seller.isVerified',
@@ -760,6 +762,47 @@ export const deleteProductByAdmin = async (req, res) => {
     console.error("Error deleting product by admin:", error);
     res.status(500).json({ message: "Failed to delete product" });
   }
+};
+
+// Set product to pending
+export const pendingProduct = async (req, res) => {
+  const { id } = req.params;
+  const { adminNote } = req.body;
+
+  const product = await Product.findByIdAndUpdate(id, {
+    status: "pending",
+    rejectionReason: null,
+  }, { new: true });
+
+  if (product && product.sellerId) {
+    // Write audit log
+    const logData = {
+      productId: product._id,
+      productTitle: product.title,
+      adminId: req.user._id,
+      adminEmail: req.user.email,
+      action: 'pending',
+      adminNote,
+      sellerId: product.sellerId,
+      timestamp: new Date()
+    };
+    writeModerationLog(logData);
+
+    await createNotification(
+      product.sellerId,
+      "product_under_review",
+      "Product Under Review",
+      `Your product "${product.title}" has been moved back to pending status for review.`,
+      product._id,
+      "Product",
+      {
+        actionUrl: "/dashboard/seller/products",
+        pushWhenInactiveOnly: false
+      }
+    );
+  }
+
+  res.json({ message: "Product status set to pending" });
 };
 
 // Approve product

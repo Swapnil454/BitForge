@@ -33,7 +33,7 @@ export default function AdminPayoutsPage() {
             </p>
             <div className="grid md:grid-cols-3 gap-4 mt-4">
               <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-3xl mb-2">💵</div>
+                <div className="text-3xl mb-2">Account preferences and security</div>
                 <p className="text-slate-900 dark:text-white font-semibold">Review Requests</p>
                 <p className="text-slate-500 dark:text-white/60 text-sm">Approve or hold payouts</p>
               </div>
@@ -164,7 +164,6 @@ export default function AdminPayoutsPage() {
             <p className="text-slate-500 dark:text-white/60 text-sm">How payouts work for sellers</p>
           </Link>
           <Link href="/docs/api/payouts" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3">🔌</div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Payouts API</h3>
             <p className="text-slate-500 dark:text-white/60 text-sm">API reference documentation</p>
           </Link>

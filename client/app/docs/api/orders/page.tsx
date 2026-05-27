@@ -43,7 +43,7 @@ export default function OrdersAPIPage() {
         {/* Get User Orders */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">GET /my-orders</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Get all orders (purchases) for authenticated user.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Query Parameters</h3>
@@ -122,7 +122,7 @@ export default function OrdersAPIPage() {
         {/* Get Seller Sales */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">GET /my-sales</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Get all sales for authenticated seller.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Example Request</h3>
@@ -164,7 +164,7 @@ export default function OrdersAPIPage() {
         {/* Get Single Order */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">GET /:orderId</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Get detailed information about a specific order.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Example Request</h3>

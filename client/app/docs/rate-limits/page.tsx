@@ -100,7 +100,7 @@ export default function RateLimitsPage() {
         {/* Headers */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Rate Limit Headers</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Every API response includes rate limit information in headers:</p>
             <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-lg p-4 space-y-2 text-sm font-mono">
               <div className="flex justify-between">

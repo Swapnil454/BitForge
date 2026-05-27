@@ -63,7 +63,7 @@ export default function ProductChangesPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">1.</span> How to Submit Changes
           </h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <ol className="space-y-4 text-slate-700 dark:text-white/80">
               <li className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-cyan-500/20 rounded-full text-cyan-400 text-sm font-bold">
@@ -152,7 +152,7 @@ export default function ProductChangesPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">3.</span> Tracking Your Changes
           </h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">View Pending Changes</h3>
             <ol className="space-y-3 text-slate-600 dark:text-white/70 mb-6">
               <li className="flex items-start gap-3">

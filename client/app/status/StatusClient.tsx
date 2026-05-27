@@ -32,9 +32,6 @@ type UptimeDay = {
 };
 
 export default function StatusPage() {
-  const [showSubscribe, setShowSubscribe] = useState(false);
-  const [email, setEmail] = useState("");
-
   // System Status
   const overallStatus: StatusLevel = "operational";
 
@@ -144,14 +141,6 @@ export default function StatusPage() {
     uptimeData.reduce((sum, day) => sum + day.uptime, 0) / uptimeData.length
   ).toFixed(2);
 
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Implement subscription logic
-    alert(`Subscription feature coming soon! We'll notify ${email} of any status changes.`);
-    setEmail("");
-    setShowSubscribe(false);
-  };
-
   return (
     <main className="relative min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white overflow-x-hidden">
       {/* HEADER */}
@@ -194,16 +183,10 @@ export default function StatusPage() {
       <div className="relative z-10 mx-auto max-w-5xl px-4 pb-12 pt-24 sm:pt-28">
         {/* HERO */}
         <section className="mb-8">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="mb-2">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300/80">
               System Status
             </p>
-            <button
-              onClick={() => setShowSubscribe(!showSubscribe)}
-              className="text-xs rounded-full border border-slate-200 dark:border-white/20 bg-white dark:bg-white/5 px-4 py-1.5 font-medium text-slate-700 dark:text-white/80 hover:border-indigo-300 dark:hover:border-cyan-400/50 hover:bg-indigo-50 dark:hover:bg-white/10 transition shadow-sm dark:shadow-none"
-            >
-              🔔 Subscribe to Updates
-            </button>
           </div>
 
           {/* Overall Status Banner */}
@@ -224,31 +207,6 @@ export default function StatusPage() {
               </div>
             </div>
           </div>
-
-          {/* Subscribe Form */}
-          {showSubscribe && (
-            <form onSubmit={handleSubscribe} className="mt-4 rounded-xl border border-slate-200 dark:border-white/20 bg-white dark:bg-white/5 p-4 shadow-sm dark:shadow-none">
-              <p className="mb-2 text-sm font-semibold text-slate-900 dark:text-white">
-                Get notified about incidents and maintenance
-              </p>
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  required
-                  className="flex-1 rounded-lg border border-slate-200 dark:border-white/20 bg-slate-50 dark:bg-white/5 px-4 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:text-white/40 focus:border-indigo-400 dark:focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 dark:focus:ring-cyan-400/20"
-                />
-                <button
-                  type="submit"
-                  className="rounded-lg bg-indigo-600 dark:bg-cyan-500 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 dark:hover:bg-cyan-400 transition shadow-sm dark:shadow-none"
-                >
-                  Subscribe
-                </button>
-              </div>
-            </form>
-          )}
         </section>
 
         {/* SYSTEM COMPONENTS */}

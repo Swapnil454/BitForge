@@ -53,7 +53,7 @@ export default function AdminSettingsPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Fee Configuration</h2>
           <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Platform Commission:</h3>
-            <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 p-4 rounded-lg">
+            <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 p-4 rounded-lg">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-slate-900 dark:text-white">Seller Commission Rate:</span>
                 <span className="text-cyan-400 font-bold">10%</span>
@@ -133,7 +133,7 @@ export default function AdminSettingsPage() {
 
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Security Settings</h2>
-          <div className="bg-red-50 dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
+          <div className="bg-red-50 dark:bg-transparent dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Configure Security:</h3>
             <ul className="space-y-2 text-slate-600 dark:text-white/70 text-sm list-disc list-inside">
               <li>Two-factor authentication (2FA) requirement</li>

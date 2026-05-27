@@ -211,35 +211,35 @@ export default function AdminReportsPage() {
     switch (status) {
       case 'pending':
         return (
-          <span className="rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200">
+          <span className="rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
             Pending
           </span>
         );
       case 'under_review':
         return (
-          <span className="rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200">
+          <span className="rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5 bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
             Under Review
           </span>
         );
       case 'resolved':
         return (
-          <span className="rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span className="rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
             <CheckCircle className="w-3 h-3" />
             Resolved
           </span>
         );
       case 'dismissed':
         return (
-          <span className="rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5 bg-gray-100 text-gray-500 border border-gray-200">
+          <span className="rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5 bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-white/10">
             <XCircle className="w-3 h-3" />
             Dismissed
           </span>
         );
       default:
         return (
-          <span className="rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5 bg-gray-100 text-gray-500 border border-gray-200 capitalize">
+          <span className="rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5 bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-white/10 capitalize">
             {status.replace("_", " ")}
           </span>
         );
@@ -247,7 +247,7 @@ export default function AdminReportsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#05050a]">
       {/* PAGE HEADER */}
       <PageHeader 
         title="Reports Management"
@@ -264,12 +264,12 @@ export default function AdminReportsPage() {
             const isActive = statusFilter === status;
             const count = getCount(status);
             
-            let countBadgeClass = "bg-gray-100 text-gray-600";
+            let countBadgeClass = "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400";
             if (isActive) {
-              countBadgeClass = "bg-white text-gray-900";
+              countBadgeClass = "bg-white dark:bg-[#1a1a24] text-gray-900 dark:text-white";
             } else if (count > 0) {
-              if (status === 'pending') countBadgeClass = "bg-amber-100 text-amber-700";
-              else if (status === 'under_review') countBadgeClass = "bg-blue-100 text-blue-700";
+              if (status === 'pending') countBadgeClass = "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400";
+              else if (status === 'under_review') countBadgeClass = "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400";
             }
 
             return (
@@ -278,8 +278,8 @@ export default function AdminReportsPage() {
                 onClick={() => setStatusFilter(status)}
                 className={
                   isActive 
-                    ? "bg-gray-900 text-white rounded-full px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium flex items-center transition-colors whitespace-nowrap shrink-0"
-                    : "bg-white border border-gray-200 text-gray-500 rounded-full px-3 sm:px-4 py-1.5 text-xs sm:text-sm hover:border-gray-400 hover:text-gray-900 transition-colors flex items-center shadow-sm whitespace-nowrap shrink-0"
+                    ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium flex items-center transition-colors whitespace-nowrap shrink-0"
+                    : "bg-white dark:bg-transparent border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 rounded-full px-3 sm:px-4 py-1.5 text-xs sm:text-sm hover:border-gray-400 dark:hover:border-white/30 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center shadow-sm whitespace-nowrap shrink-0"
                 }
               >
                 <span className="capitalize">{status.replace("_", " ")}</span>
@@ -292,23 +292,23 @@ export default function AdminReportsPage() {
         </div>
 
         {/* REPORT LIST */}
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100 shadow-sm">
+        <div className="bg-white dark:bg-[#13131a] border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden divide-y divide-gray-100 dark:divide-white/5 shadow-sm">
           {loading ? (
             <div className="flex justify-center items-center py-16">
-              <RefreshCw className="w-8 h-8 text-gray-300 animate-spin" />
+              <RefreshCw className="w-8 h-8 text-gray-300 dark:text-gray-600 animate-spin" />
             </div>
           ) : reports.length === 0 ? (
             /* EMPTY STATE */
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Inbox className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-              <h3 className="text-sm font-medium text-gray-400">No {statusFilter.replace("_", " ")} reports</h3>
-              <p className="text-xs text-gray-300 mt-1">All caught up.</p>
+              <Inbox className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
+              <h3 className="text-sm font-medium text-gray-400 dark:text-gray-500">No {statusFilter.replace("_", " ")} reports</h3>
+              <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">All caught up.</p>
             </div>
           ) : (
             reports.map(report => (
               <div 
                 key={report._id}
-                className={`flex flex-wrap sm:flex-nowrap items-start gap-3 sm:gap-4 px-4 sm:px-6 py-4 hover:bg-gray-50 transition-colors duration-150 border-l-4 ${getSeverityBorder(report.issueType)}`}
+                className={`flex flex-wrap sm:flex-nowrap items-start gap-3 sm:gap-4 px-4 sm:px-6 py-4 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors duration-150 border-l-4 ${getSeverityBorder(report.issueType)}`}
               >
                 {/* 1. SEVERITY INDICATOR */}
                 <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${getSeverityDot(report.issueType)}`} />
@@ -317,22 +317,22 @@ export default function AdminReportsPage() {
                 <div className="flex-1 min-w-0">
                   {/* Primary Row */}
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1">
-                    <span className="text-[11px] sm:text-xs font-mono text-gray-500">{report.reportId}</span>
-                    <span className="text-gray-300 hidden sm:inline">·</span>
-                    <span className="text-sm font-semibold text-gray-900 truncate max-w-full">{report.reporterEmail}</span>
+                    <span className="text-[11px] sm:text-xs font-mono text-gray-500 dark:text-gray-400">{report.reportId}</span>
+                    <span className="text-gray-300 dark:text-gray-600 hidden sm:inline">·</span>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-full">{report.reporterEmail}</span>
                     {report.targetName && (
-                      <span className="text-xs sm:text-sm text-gray-500 w-full sm:w-auto truncate">→ {report.targetName}</span>
+                      <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 w-full sm:w-auto truncate">→ {report.targetName}</span>
                     )}
                   </div>
                   
                   {/* Secondary Row - Description */}
                   <div className="mb-3">
-                    <p className="text-sm text-gray-600 line-clamp-1">{report.description}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">{report.description}</p>
                   </div>
                   
                   {/* Tertiary Row - Tags & Meta */}
-                  <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] sm:text-xs text-gray-500">
-                    <span className="bg-gray-100 text-gray-700 rounded-md px-2 py-1 font-medium capitalize">
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
+                    <span className="bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 rounded-md px-2 py-1 font-medium capitalize">
                       {report.issueType.replace(/_/g, " ")}
                     </span>
                     <div className="flex items-center gap-1.5">
@@ -349,11 +349,11 @@ export default function AdminReportsPage() {
                 </div>
 
                 {/* 3. RIGHT SECTION (Status & View) */}
-                <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3 w-full sm:w-auto ml-5 sm:ml-4 mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+                <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3 w-full sm:w-auto ml-5 sm:ml-4 mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-gray-100 dark:border-white/5">
                   {renderStatusBadge(report.status)}
                   <button 
                     onClick={() => openReportModal(report)}
-                    className="text-xs rounded-lg px-3 py-1.5 font-medium border transition-colors bg-white border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm"
+                    className="text-xs rounded-lg px-3 py-1.5 font-medium border transition-colors bg-white dark:bg-transparent border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 shadow-sm"
                   >
                     View Details
                   </button>
@@ -386,7 +386,7 @@ export default function AdminReportsPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedReport(null)}
-              className="fixed inset-0 bg-black/20 z-40"
+              className="fixed inset-0 bg-black/20 z-[998]"
             />
             
             {/* Drawer */}
@@ -395,17 +395,17 @@ export default function AdminReportsPage() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "tween", duration: 0.3 }}
-              className="fixed right-0 top-0 h-full w-full sm:w-[480px] bg-white shadow-2xl border-l border-gray-200 z-50 flex flex-col"
+              className="fixed right-0 top-0 h-full w-full sm:w-[480px] bg-white dark:bg-[#13131a] shadow-2xl border-l border-gray-200 dark:border-white/10 z-[999] flex flex-col pb-safe"
             >
               {/* Drawer header */}
-              <div className="flex items-start justify-between px-5 py-4 border-b border-gray-200 shrink-0">
+              <div className="flex items-start justify-between px-5 py-4 border-b border-gray-200 dark:border-white/10 shrink-0">
                 <div className="flex flex-col gap-1.5">
-                  <h2 className="text-lg font-semibold text-gray-900 leading-none">{selectedReport.reportId}</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white leading-none">{selectedReport.reportId}</h2>
                   <div className="inline-block scale-90 origin-left">
                     {renderStatusBadge(selectedReport.status)}
                   </div>
                 </div>
-                <button onClick={() => setSelectedReport(null)} className="text-gray-400 hover:text-gray-600 -mt-1 p-1">
+                <button onClick={() => setSelectedReport(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 -mt-1 p-1">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -413,67 +413,67 @@ export default function AdminReportsPage() {
               {/* Drawer body */}
               <div className="flex-1 overflow-y-auto">
                 {/* 1. Reporter Info */}
-                <div className="px-5 py-4 border-b border-gray-100">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Reporter Info</h3>
+                <div className="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Reporter Info</h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between items-center gap-4">
-                      <span className="text-gray-500 shrink-0">Email</span>
-                      <span className="font-medium text-gray-900 truncate" title={selectedReport.reporterEmail}>{selectedReport.reporterEmail}</span>
+                      <span className="text-gray-500 dark:text-gray-400 shrink-0">Email</span>
+                      <span className="font-medium text-gray-900 dark:text-white truncate" title={selectedReport.reporterEmail}>{selectedReport.reporterEmail}</span>
                     </div>
                     <div className="flex justify-between items-center gap-4">
-                      <span className="text-gray-500 shrink-0">Name</span>
-                      <span className="font-medium text-gray-900 truncate">{selectedReport.reporterName || "Anonymous"}</span>
+                      <span className="text-gray-500 dark:text-gray-400 shrink-0">Name</span>
+                      <span className="font-medium text-gray-900 dark:text-white truncate">{selectedReport.reporterName || "Anonymous"}</span>
                     </div>
                     {selectedReport.reporterJoinedDate && (
                       <div className="flex justify-between items-center gap-4">
-                        <span className="text-gray-500 shrink-0">Joined</span>
-                        <span className="font-medium text-gray-900">{formatDate(selectedReport.reporterJoinedDate)}</span>
+                        <span className="text-gray-500 dark:text-gray-400 shrink-0">Joined</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{formatDate(selectedReport.reporterJoinedDate)}</span>
                       </div>
                     )}
                     {selectedReport.reportCount !== undefined && (
                       <div className="flex justify-between items-center gap-4">
-                        <span className="text-gray-500 shrink-0">Total Reports</span>
-                        <span className="font-medium text-gray-900">{selectedReport.reportCount}</span>
+                        <span className="text-gray-500 dark:text-gray-400 shrink-0">Total Reports</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{selectedReport.reportCount}</span>
                       </div>
                     )}
                   </div>
                 </div>
 
                 {/* 2. Issue Details */}
-                <div className="px-5 py-4 border-b border-gray-100">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Issue Details</h3>
+                <div className="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Issue Details</h3>
                   <div className="space-y-4">
                     <div>
-                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Issue Type</span>
-                      <p className="text-sm text-gray-900 mt-1 capitalize">{selectedReport.issueType.replace("_", " ")}</p>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Issue Type</span>
+                      <p className="text-sm text-gray-900 dark:text-white mt-1 capitalize">{selectedReport.issueType.replace("_", " ")}</p>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Submitted</span>
-                      <p className="text-sm text-gray-900 mt-1">{formatDate(selectedReport.createdAt)}</p>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Submitted</span>
+                      <p className="text-sm text-gray-900 dark:text-white mt-1">{formatDate(selectedReport.createdAt)}</p>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Description</span>
-                      <p className="text-sm text-gray-900 mt-1 whitespace-pre-wrap">{selectedReport.description}</p>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Description</span>
+                      <p className="text-sm text-gray-900 dark:text-white mt-1 whitespace-pre-wrap">{selectedReport.description}</p>
                     </div>
                   </div>
                 </div>
 
                 {/* 3. Proof Files */}
                 {selectedReport.proofUrls?.length > 0 && (
-                  <div className="px-5 py-4 border-b border-gray-100">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Proof Files</h3>
+                  <div className="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Proof Files</h3>
                     <div className="space-y-2">
                       {selectedReport.proofUrls.map((url: string, idx: number) => (
                         <button 
                           key={idx} 
                           onClick={() => setLightboxImage(url)}
-                          className="w-full flex items-center text-left gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                          className="w-full flex items-center text-left gap-3 p-3 rounded-lg border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors"
                         >
                           <FileText className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm text-gray-700 flex-1 truncate">Proof_{idx + 1}</span>
+                          <span className="text-sm text-gray-700 dark:text-gray-300 flex-1 truncate">Proof_{idx + 1}</span>
                           <Download 
                             onClick={(e) => handleDownloadImage(url, e)} 
-                            className="w-4 h-4 text-gray-400 hover:text-gray-900 transition-colors" 
+                            className="w-4 h-4 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors" 
                           />
                         </button>
                       ))}
@@ -483,18 +483,18 @@ export default function AdminReportsPage() {
 
                 {/* 4. Admin Notes */}
                 <div className="px-5 py-4">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Admin Notes</h3>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Admin Notes</h3>
                   <div className="flex flex-col gap-2">
                     <textarea 
                       value={adminNotes}
                       onChange={(e) => setAdminNotes(e.target.value)}
                       placeholder="Add internal notes..."
-                      className="w-full border border-gray-200 rounded-lg p-3 text-sm text-gray-600 resize-none h-24 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                      className="w-full border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0b0b12] rounded-lg p-3 text-sm text-gray-600 dark:text-gray-300 resize-none h-24 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/20"
                     />
                     <button 
                       onClick={handleSaveNotes}
                       disabled={saving}
-                      className="self-end text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition-colors"
+                      className="self-end text-xs bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-600 dark:text-white px-3 py-1.5 rounded-lg transition-colors"
                     >
                       {saving ? 'Saving...' : 'Save Notes'}
                     </button>
@@ -503,11 +503,11 @@ export default function AdminReportsPage() {
               </div>
 
               {/* 5. Action Rail at bottom */}
-              <div className="p-4 border-t border-gray-200 shrink-0 bg-gray-50 flex items-center gap-3 relative">
+              <div className="p-4 border-t border-gray-200 dark:border-white/10 shrink-0 bg-gray-50 dark:bg-[#05050a] flex items-center gap-3 relative">
                 <div className="relative flex-1">
                   <button 
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="w-full text-left text-sm rounded-lg px-3 py-2 border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 font-medium flex items-center justify-between"
+                    className="w-full text-left text-sm rounded-lg px-3 py-2 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#13131a] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/[0.02] focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/20 font-medium flex items-center justify-between"
                   >
                     <span className="capitalize">{actionStatus.replace(/_/g, " ")}</span>
                     <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -518,12 +518,12 @@ export default function AdminReportsPage() {
                         className="fixed inset-0 z-40" 
                         onClick={() => setIsDropdownOpen(false)}
                       />
-                      <div className="absolute bottom-full left-0 w-full mb-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden">
+                      <div className="absolute bottom-full left-0 w-full mb-1 bg-white dark:bg-[#13131a] border border-gray-200 dark:border-white/10 rounded-lg shadow-lg z-50 overflow-hidden">
                         {['pending', 'under_review', 'resolved', 'dismissed'].map((status) => (
                           <button
                             key={status}
                             onClick={() => { setActionStatus(status); setIsDropdownOpen(false); }}
-                            className={`w-full text-left px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-50 ${actionStatus === status ? 'text-gray-900 bg-gray-50' : 'text-gray-600'}`}
+                            className={`w-full text-left px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-50 dark:hover:bg-white/5 ${actionStatus === status ? 'text-gray-900 dark:text-white bg-gray-50 dark:bg-white/5' : 'text-gray-600 dark:text-gray-400'}`}
                           >
                             {status.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
                           </button>
@@ -535,7 +535,7 @@ export default function AdminReportsPage() {
                 <button 
                   disabled={saving || actionStatus === selectedReport.status}
                   onClick={() => handleDrawerAction(actionStatus)}
-                  className="text-sm rounded-lg px-6 py-2 font-medium bg-gray-900 text-white hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="text-sm rounded-lg px-6 py-2 font-medium bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saving ? 'Updating...' : 'Update Status'}
                 </button>

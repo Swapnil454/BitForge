@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ModerationProduct } from "@/types/moderation";
 
 export const CHANGE_REQUEST_REASONS = [
@@ -39,8 +40,6 @@ export default function RequestChangesModal({
     }
   }, [isOpen]);
 
-  if (!isOpen || !product) return null;
-
   const handleToggleReason = (reason: string) => {
     setSelectedReasons((prev) =>
       prev.includes(reason)
@@ -52,8 +51,23 @@ export default function RequestChangesModal({
   const isSubmitDisabled = selectedReasons.length === 0;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm">
-      <div className="bg-white dark:bg-[#16161e] border border-amber-200 dark:border-amber-500/20 rounded-3xl w-full max-w-xl shadow-2xl flex flex-col">
+    <AnimatePresence>
+      {isOpen && product && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm z-[1100]"
+          />
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "tween", duration: 0.3 }}
+            className="fixed inset-y-0 right-0 h-[100dvh] w-full sm:w-[500px] max-w-full bg-white dark:bg-[#16161e] shadow-2xl border-l border-amber-200 dark:border-amber-500/20 z-[1200] flex flex-col"
+          >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-white/5">
           <div>
@@ -66,7 +80,7 @@ export default function RequestChangesModal({
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 overflow-y-auto space-y-6">
           <div className="space-y-3">
             <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Select issues to fix <span className="text-red-500">*</span></h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -108,7 +122,7 @@ export default function RequestChangesModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-end gap-3 bg-slate-50 dark:bg-[#16161e] rounded-b-3xl">
+        <div className="p-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-end gap-3 bg-slate-50 dark:bg-[#16161e] mt-auto pb-8 sm:pb-4">
           <button
             onClick={onClose}
             className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-white/60 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
@@ -130,7 +144,9 @@ export default function RequestChangesModal({
             )}
           </div>
         </div>
-      </div>
-    </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }

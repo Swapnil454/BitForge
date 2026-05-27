@@ -317,10 +317,10 @@ export default function DocsPage() {
         <div className="absolute bottom-0 -right-32 h-96 w-96 rounded-full bg-indigo-500/25 blur-3xl" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-5 pb-20 pt-8 sm:pt-10 md:pt-12 md:pb-28">
+      <div className="relative z-10 mx-auto max-w-7xl px-5 pb-20 pt-4 sm:pt-6 md:pt-8 md:pb-28">
         {/* HERO */}
-        <section className="mb-16 mt-2 max-w-4xl sm:mt-4">
-          <p className="inline-block text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300/80 bg-indigo-50 dark:bg-transparent px-3 py-1 rounded-full dark:px-0 dark:py-0">
+        <section className="mb-16 mt-0 max-w-4xl">
+          <p className="inline-block text-xl font-bold uppercase tracking-[0.1em] text-black dark:text-white bg-indigo-50 dark:bg-transparent px-3 py-1 rounded-full dark:px-0 dark:py-0">
             Documentation
           </p>
           <h1 className="mt-4 text-3xl font-black tracking-tight leading-tight sm:text-4xl md:text-5xl">
@@ -437,7 +437,7 @@ export default function DocsPage() {
             <div className="grid gap-4 md:grid-cols-3">
               <Link
                 href="/docs/quick-start"
-                className="group rounded-2xl border border-emerald-200 dark:border-emerald-400/30 bg-emerald-50 dark:bg-gradient-to-b dark:from-emerald-500/10 dark:to-cyan-500/10 p-6 transition-all hover:border-emerald-300 dark:hover:border-emerald-400/50 hover:shadow-lg dark:hover:shadow-emerald-500/10 shadow-sm"
+                className="group rounded-2xl border border-emerald-200 dark:border-emerald-400/30 bg-emerald-50 dark:bg-transparent dark:bg-gradient-to-b dark:from-emerald-500/10 dark:to-cyan-500/10 p-6 transition-all hover:border-emerald-300 dark:hover:border-emerald-400/50 hover:shadow-lg dark:hover:shadow-emerald-500/10 shadow-sm"
               >
                 <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-white">
                   <IconWrapper icon="🚀" />
@@ -453,7 +453,7 @@ export default function DocsPage() {
 
               <Link
                 href="/docs/api-keys-setup"
-                className="group rounded-2xl border border-cyan-200 dark:border-cyan-400/30 bg-cyan-50 dark:bg-gradient-to-b dark:from-cyan-500/10 dark:to-indigo-500/10 p-6 transition-all hover:border-cyan-300 dark:hover:border-cyan-400/50 hover:shadow-lg dark:hover:shadow-cyan-500/10 shadow-sm"
+                className="group rounded-2xl border border-cyan-200 dark:border-cyan-400/30 bg-cyan-50 dark:bg-transparent dark:bg-gradient-to-b dark:from-cyan-500/10 dark:to-indigo-500/10 p-6 transition-all hover:border-cyan-300 dark:hover:border-cyan-400/50 hover:shadow-lg dark:hover:shadow-cyan-500/10 shadow-sm"
               >
                 <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-white">
                   <IconWrapper icon="🔑" />
@@ -469,7 +469,7 @@ export default function DocsPage() {
 
               <Link
                 href="/docs/bank-account-setup"
-                className="group rounded-2xl border border-indigo-200 dark:border-indigo-400/30 bg-indigo-50 dark:bg-gradient-to-b dark:from-indigo-500/10 dark:to-purple-500/10 p-6 transition-all hover:border-indigo-300 dark:hover:border-indigo-400/50 hover:shadow-lg dark:hover:shadow-indigo-500/10 shadow-sm"
+                className="group rounded-2xl border border-indigo-200 dark:border-indigo-400/30 bg-indigo-50 dark:bg-transparent dark:bg-gradient-to-b dark:from-indigo-500/10 dark:to-purple-500/10 p-6 transition-all hover:border-indigo-300 dark:hover:border-indigo-400/50 hover:shadow-lg dark:hover:shadow-indigo-500/10 shadow-sm"
               >
                 <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-white">
                   <IconWrapper icon="🏦" />

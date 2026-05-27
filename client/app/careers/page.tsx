@@ -108,8 +108,8 @@ export default function CareersPage() {
         </nav>
       </header>
 
-      {/* BACKGROUND GLOW */}
-      <div className="pointer-events-none fixed inset-0 z-0 opacity-40 dark:opacity-70">
+      {/* BACKGROUND GLOW — dark mode only */}
+      <div className="pointer-events-none fixed inset-0 z-0 opacity-40 dark:opacity-70 hidden dark:block">
         <div className="absolute -left-40 top-10 h-80 w-80 rounded-full bg-cyan-500/20 blur-3xl" />
         <div className="absolute bottom-0 right-[-8rem] h-96 w-96 rounded-full bg-indigo-500/25 blur-3xl" />
       </div>
@@ -117,29 +117,22 @@ export default function CareersPage() {
       <div className="relative z-10 mx-auto max-w-6xl px-5 pb-12 pt-20 sm:pt-24 md:pt-28 md:pb-16">
         {/* HERO */}
         <section className="max-w-3xl">
-          <div className="flex items-center gap-4 flex-wrap mb-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-300/80 bg-emerald-50 dark:bg-transparent px-3 py-1 rounded-full dark:px-0 dark:py-0">
-              Careers
-            </p>
-            <p className="text-xs text-slate-500 dark:text-white/60">
-              <strong className="text-slate-700 dark:text-white/80">Effective Date:</strong> {effectiveDate}
-              <span className="mx-3">·</span>
-              <strong className="text-slate-700 dark:text-white/80">Last Updated:</strong> {lastUpdated}
-            </p>
-          </div>
-          <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl md:text-[40px]">
+          <h1 className="text-3xl font-bold leading-tight sm:text-4xl md:text-[40px] mb-1">
             Build the operating system
             <span className="mt-1 block bg-linear-to-r from-cyan-400 via-sky-400 to-indigo-400 bg-clip-text text-transparent leading-tight pb-0.5">
               for modern digital commerce
             </span>
           </h1>
-          <p className="mt-4 max-w-2xl text-sm text-slate-600 dark:text-white/70 sm:text-base">
+          <p className="text-[10px] text-slate-500 dark:text-white/60 mb-3">
+            <strong className="text-slate-700 dark:text-white/80">Last Updated:</strong> {lastUpdated}
+          </p>
+          <p className="text-sm text-slate-600 dark:text-white/70 sm:text-base max-w-2xl">
             BitForge is where product, engineering, and operations teams come together to
             reinvent how digital products are launched, sold, and supported. Join a fast-moving,
             remote-first team that ships globally and obsesses over customer trust.
           </p>
 
-          <p className="mt-4 text-sm italic text-slate-500 dark:text-white/60">
+          <p className="mt-3 text-sm italic text-slate-500 dark:text-white/60">
             We're small, opinionated, and shipping fast.
           </p>
 
@@ -163,9 +156,7 @@ export default function CareersPage() {
                 you can browse all openings on the next page.
               </p>
             </div>
-            <p className="text-xs text-emerald-300/90">
-              No matching role? Write to us at careers@bitforge.in with your portfolio.
-            </p>
+            
           </div>
 
           {loading ? (
@@ -174,9 +165,8 @@ export default function CareersPage() {
             </div>
           ) : careers.length === 0 ? (
             <div className="mt-6 text-center py-12 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
-              <div className="text-4xl mb-4">💼</div>
               <p className="text-slate-500 dark:text-white/60 mb-2">No open positions at the moment.</p>
-              <p className="text-slate-400 dark:text-white/50 text-sm">
+              <p className="text-gray-950 dark:text-white/50 text-sm">
                 Check back soon or reach out at careers@bitforge.in.
               </p>
             </div>
@@ -256,7 +246,7 @@ export default function CareersPage() {
             Don&apos;t see a role that matches you? We&apos;re always happy to hear from exceptional
             people across product, engineering, design, and operations. Share your portfolio and a
             short note about what you&apos;d like to work on at
-            <span className="ml-1 font-medium text-cyan-200">careers@bitforge.in</span>.
+            <Link href="mailto:careers@bittforge.in?subject=Joining%20BitForge" className="ml-1 font-bold  text-shadow-sky-950">careers@bitforge.in</Link>.
           </div>
         </section>
 

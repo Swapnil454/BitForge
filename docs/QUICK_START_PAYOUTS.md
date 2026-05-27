@@ -78,7 +78,7 @@ POST /api/admin/payouts/:id/approve
 
 ---
 
-## 💵 Commission Breakdown
+## Account preferences and security Commission Breakdown
 
 | Amount | Commission (10%) | GST (18%) | You Keep | Seller Gets |
 |--------|------------------|-----------|----------|-------------|

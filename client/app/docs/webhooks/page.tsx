@@ -33,7 +33,7 @@ export default function WebhooksPage() {
             <p className="text-slate-700 dark:text-white/80 mb-4">
               Webhooks allow your application to receive real-time notifications when events occur on Bitforge. Instead of polling our API, webhooks push data to your endpoint automatically.
             </p>
-            <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-indigo-200 dark:border-cyan-500/30 rounded-lg p-4">
+            <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-indigo-200 dark:border-cyan-500/30 rounded-lg p-4">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Base Webhook URL</h3>
               <div className="font-mono text-indigo-600 dark:text-cyan-400 text-sm">https://api.Bitforge.com/webhooks</div>
             </div>
@@ -45,7 +45,7 @@ export default function WebhooksPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Event Types</h2>
           <div className="space-y-4">
             {/* Payment Events */}
-            <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-3 flex items-center gap-2">
                 <DollarSign className="w-5 h-5" /> Payment Events
               </h3>
@@ -66,7 +66,7 @@ export default function WebhooksPage() {
             </div>
 
             {/* Order Events */}
-            <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-3 flex items-center gap-2">
                 <span className="text-xl"></span> Order Events
               </h3>
@@ -87,7 +87,7 @@ export default function WebhooksPage() {
             </div>
 
             {/* Payout Events */}
-            <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-3 flex items-center gap-2">
                 <span className="text-xl"></span> Payout Events
               </h3>
@@ -108,7 +108,7 @@ export default function WebhooksPage() {
             </div>
 
             {/* Product Events */}
-            <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-3 flex items-center gap-2">
                 <ShoppingCart className="w-5 h-5" /> Product Events
               </h3>
@@ -163,7 +163,7 @@ export default function WebhooksPage() {
         {/* Setup */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Setup Webhooks</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <ol className="space-y-4 text-slate-700 dark:text-white/80">
               <li className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-cyan-500/20 rounded-full text-cyan-400 text-sm font-bold">
@@ -307,7 +307,7 @@ app.post('/webhooks', (req, res) => {
         {/* Testing */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Testing Webhooks</h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Test webhooks using our CLI or dashboard:</p>
             <CodeBlock
               code={`# Install Bitforge CLI

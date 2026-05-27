@@ -264,7 +264,7 @@ export default function AdminTicketCenter() {
   const selectedTicket = tickets.find((t) => t._id === selectedTicketId);
 
   return (
-    <div className={`h-[calc(100vh-12px)] w-full flex overflow-hidden rounded-xl border shadow-sm ${isDark ? "bg-[#0b1016] border-white/10" : "bg-white border-slate-200"}`}>
+    <div className={`flex-1 w-full flex overflow-hidden rounded-xl border shadow-sm ${isDark ? "bg-[#0b1016] border-white/10" : "bg-white border-slate-200"}`}>
       <TicketSidebar
         tickets={filteredTickets}
         selectedTicketId={selectedTicketId}

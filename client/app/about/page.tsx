@@ -28,23 +28,16 @@ export default async function AboutPage() {
       {/* Content */}
       <div className="relative z-10 mx-auto max-w-6xl px-4 pt-16 sm:pt-20 pb-12 md:px-6 md:pb-16 lg:pb-24">
         {/* Hero */}
-        <section className="mb-10 md:mb-16 text-center sm:text-left max-w-4xl pt-4">
-          <div className="flex items-center gap-4 flex-wrap mb-4">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300/80 bg-indigo-50 dark:bg-transparent px-3 py-1 rounded-full dark:px-0 dark:py-0">
-              About us
-            </p>
-            <p className="text-xs text-slate-500 dark:text-white/60">
-              <strong className="text-slate-700 dark:text-white/80">Effective Date:</strong> {effectiveDate}
-              <span className="mx-3">·</span>
-              <strong className="text-slate-700 dark:text-white/80">Last Updated:</strong> {lastUpdatedDate}
-            </p>
-          </div>
-          <h1 className="text-4xl font-black tracking-tight leading-[1.1] sm:text-5xl md:text-6xl text-slate-900 dark:text-white mb-6">
+        <section className="mb-10 md:mb-16 text-left max-w-4xl pt-4">
+          <h1 className="text-4xl font-black tracking-tight leading-[1.1] sm:text-5xl md:text-6xl text-slate-900 dark:text-white mb-2">
             Built for digital product teams{" "}
             <span className="block mt-2 bg-linear-to-r from-indigo-600 to-cyan-500 dark:from-cyan-400 dark:to-indigo-400 bg-clip-text text-transparent">
               The operating system for modern commerce
             </span>
           </h1>
+          <p className="text-[10px] text-slate-500 dark:text-white/60 mb-6">
+            <strong className="text-slate-700 dark:text-white/80">Last Updated:</strong> {lastUpdatedDate}
+          </p>
           <div className="flex flex-col gap-4 text-base text-slate-600 dark:text-white/70 sm:text-lg leading-relaxed max-w-3xl mx-auto sm:mx-0">
             <p>
               BitForge is a focused digital marketplace where creators ship downloads, licenses, and
@@ -62,13 +55,13 @@ export default async function AboutPage() {
         </section>
 
         {/* Snapshot */}
-        <section className="mb-16 grid gap-6 sm:grid-cols-3">
+        <section className="mb-12 md:mb-16 grid gap-5 sm:grid-cols-3">
           {[
             { title: "What we do", content: "We provide a full-stack marketplace for digital products: discovery, secure payments, automated payouts, license delivery, and post-purchase support routing." },
             { title: "Who we serve", content: "Individual creators, small studios, and niche SaaS teams who want to sell themes, templates, code, design assets, educational content, and access-based products without building a custom payments stack." },
             { title: "Where we operate", content: "India-first and global-ready. BitForge is designed around local payment methods, UPI-first experiences, and scalable payouts while supporting international buyers via trusted payment partners." }
           ].map((item, i) => (
-            <div key={i} className="rounded-3xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 p-6 sm:p-8 shadow-sm hover:shadow-md transition-shadow">
+            <div key={i} className="rounded-3xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
               <h2 className="text-xs font-bold uppercase tracking-wide text-indigo-600 dark:text-white/60 mb-3">
                 {item.title}
               </h2>
@@ -80,7 +73,7 @@ export default async function AboutPage() {
         </section>
 
         {/* Vision & principles */}
-        <section className="mb-16 grid gap-8 rounded-3xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 p-6 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] sm:p-10 shadow-sm">
+        <section className="mb-12 md:mb-16 grid gap-6 rounded-3xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 p-6 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] sm:p-8 shadow-sm">
           <div className="pr-0 sm:pr-8">
             <h2 className="text-2xl font-black sm:text-3xl text-slate-900 dark:text-white mb-5">Our vision</h2>
             <p className="mt-4 text-sm text-slate-600 dark:text-white/70 sm:text-base leading-relaxed">
@@ -111,7 +104,7 @@ export default async function AboutPage() {
         </section>
 
         {/* Story + Problem */}
-        <section className="mb-20 grid gap-10 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-center">
+        <section className="mb-14 md:mb-20 grid gap-8 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-center">
           <div className="pr-4 md:pr-8">
             <h2 className="text-2xl font-black sm:text-3xl text-slate-900 dark:text-white mb-2">Our story</h2>
             <p className="text-sm italic font-medium text-indigo-600 dark:text-white/55 mb-5">
@@ -131,7 +124,7 @@ export default async function AboutPage() {
             </p>
           </div>
 
-          <div className="space-y-6 rounded-3xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 p-6 shadow-sm sm:p-8">
+          <div className="space-y-5 rounded-3xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 p-6 shadow-sm sm:p-8">
             <h3 className="text-xs font-bold uppercase tracking-wide text-indigo-600 dark:text-white/60">
               The problem we solve
             </h3>
@@ -150,10 +143,10 @@ export default async function AboutPage() {
         </section>
 
         {/* How it works */}
-        <section className="mb-20 rounded-3xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-gradient-to-br dark:from-white/5 dark:to-white/[0.03] p-6 sm:p-10 shadow-sm relative overflow-hidden">
+        <section className="mb-14 md:mb-20 rounded-3xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-transparent dark:bg-gradient-to-br dark:from-white/5 dark:to-white/[0.03] p-6 sm:p-8 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-indigo-50 dark:bg-white/5 rounded-full blur-3xl pointer-events-none hidden sm:block" />
           
-          <div className="mb-10 flex flex-col gap-3 relative z-10 max-w-2xl mx-auto text-center sm:text-left sm:mx-0">
+          <div className="mb-10 flex flex-col gap-3 relative z-10 max-w-2xl text-left">
             <h2 className="text-2xl font-black sm:text-3xl text-slate-900 dark:text-white">How BitForge works</h2>
             <p className="max-w-3xl text-[13px] text-slate-600 dark:text-white/65 sm:text-base leading-relaxed">
               Under the hood, BitForge stitches together product catalog, entitlement, payments,
@@ -193,7 +186,7 @@ export default async function AboutPage() {
         </section>
 
         {/* Trust & compliance */}
-        <section className="mb-24 grid gap-10 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] items-center">
+        <section className="mb-16 md:mb-24 grid gap-8 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] items-center">
           <div className="order-2 md:order-1 pr-0 sm:pr-6">
             <h2 className="text-2xl font-black sm:text-3xl text-slate-900 dark:text-white mb-4">Trust, security & payouts</h2>
             <p className="mt-4 text-sm text-slate-600 dark:text-white/70 sm:text-base leading-relaxed">
@@ -231,8 +224,8 @@ export default async function AboutPage() {
         </section>
 
         {/* Platform pillars / enterprise readiness */}
-        <section className="mb-24">
-          <div className="mb-12 text-center max-w-2xl mx-auto">
+        <section className="mb-16 md:mb-24">
+          <div className="mb-12 text-left max-w-2xl">
             <h2 className="text-2xl font-black sm:text-4xl text-slate-900 dark:text-white mb-4">Platform pillars</h2>
             <p className="text-sm text-slate-600 dark:text-white/65 sm:text-base leading-relaxed">
               BitForge is designed to feel familiar to individual creators on day one and
@@ -255,8 +248,8 @@ export default async function AboutPage() {
                 content: "From the first download to thousands of orders, BitForge focuses on predictable flows rather than bespoke integrations, so teams can grow without rewriting their commerce stack."
               }
             ].map((pillar, i) => (
-              <div key={i} className="rounded-3xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 p-6 sm:p-8 text-center shadow-sm hover:-translate-y-1 transition-transform duration-300">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-white/10 flex items-center justify-center mx-auto mb-6 text-indigo-600 dark:text-white">
+              <div key={i} className="rounded-3xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 p-6 sm:p-8 text-left shadow-sm hover:-translate-y-1 transition-transform duration-300">
+                <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-white/10 flex items-center justify-center mb-6 text-indigo-600 dark:text-white">
                   <span className="font-black text-2xl">{i+1}</span>
                 </div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3">{pillar.title}</h3>
@@ -269,7 +262,7 @@ export default async function AboutPage() {
         </section>
 
         {/* Call to action */}
-        <section className="relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-gradient-to-br dark:from-cyan-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 p-8 text-center sm:p-14 shadow-xl shadow-indigo-100 dark:shadow-none">
+        <section className="relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-[#05050a] dark:bg-gradient-to-br dark:from-cyan-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 p-8 text-left sm:text-center sm:p-12 shadow-xl shadow-indigo-100 dark:shadow-none">
           {/* Light mode specific background decorations */}
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-cyan-50/50 via-indigo-50/50 to-purple-50/50 dark:hidden" />
           
@@ -281,7 +274,7 @@ export default async function AboutPage() {
               Create a BitForge account, publish your first product, and start collecting payments
               with an experience that feels enterprise‑grade but stays creator‑friendly.
             </p>
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-5">
+            <div className="flex flex-col items-start sm:items-center justify-start sm:justify-center gap-4 sm:flex-row sm:gap-5">
               <Link
                 href="/register?role=seller"
                 className="inline-flex rounded-xl bg-linear-to-r from-indigo-600 to-cyan-600 dark:from-cyan-400 dark:to-indigo-500 px-8 py-4 text-sm font-bold text-white dark:text-black shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-shadow w-full sm:w-auto justify-center"

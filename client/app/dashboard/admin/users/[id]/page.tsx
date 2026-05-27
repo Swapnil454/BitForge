@@ -254,7 +254,7 @@ export default function AdminUserProfilePage() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-4 sm:space-y-6">
 
         {/* ── Profile Card ── */}
         <motion.div
@@ -265,10 +265,10 @@ export default function AdminUserProfilePage() {
           {/* Top accent bar */}
           <div className={`h-1.5 w-full ${isSuspended ? "bg-amber-500" : isDeleted ? "bg-rose-500" : "bg-gradient-to-r from-indigo-500 to-violet-500"}`} />
           
-          <div className="p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+          <div className="p-3 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
             {/* Avatar */}
             <div
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl font-black shrink-0 shadow-lg"
+              className="w-12 h-12 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-xl sm:text-3xl font-black shrink-0 shadow-lg"
               style={{ backgroundColor: avatarStyle.bg, color: avatarStyle.text }}
             >
               {user.name[0]?.toUpperCase()}
@@ -277,7 +277,7 @@ export default function AdminUserProfilePage() {
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-1">
-                <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white truncate">{user.name}</h1>
+                <h1 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white truncate">{user.name}</h1>
                 {user.isVerified && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">
                     <BadgeCheck className="w-3 h-3" /> Verified
@@ -294,10 +294,10 @@ export default function AdminUserProfilePage() {
                   </span>
                 )}
               </div>
-              <p className="text-slate-500 dark:text-white/50 flex items-center gap-1.5 mb-3">
-                <Mail className="w-4 h-4" />{user.email}
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-white/50 flex items-center gap-1.5 mb-2 sm:mb-3">
+                <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4" />{user.email}
               </p>
-              <div className="flex flex-wrap gap-4 text-xs text-slate-500 dark:text-white/40">
+              <div className="flex flex-wrap gap-2 sm:gap-4 text-[10px] sm:text-xs text-slate-500 dark:text-white/40">
                 <span className="flex items-center gap-1"><User className="w-3.5 h-3.5" /> Role: <strong className="text-slate-700 dark:text-white/70 capitalize">{user.role}</strong></span>
                 <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Joined: <strong className="text-slate-700 dark:text-white/70">{new Date(user.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</strong></span>
                 <span className="flex items-center gap-1"><Activity className="w-3.5 h-3.5" /> Last seen: <strong className="text-slate-700 dark:text-white/70">{timeSince(user.lastActiveAt || user.updatedAt)}</strong></span>
@@ -339,13 +339,13 @@ export default function AdminUserProfilePage() {
                   iconColor: "text-rose-500",
                 }]),
           ].map((s) => (
-            <div key={s.label} className={`bg-gradient-to-br ${s.color} rounded-2xl border border-white/50 dark:border-white/10 p-4 sm:p-5 flex items-center gap-3 sm:gap-4`}>
-              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white dark:bg-white/10 flex items-center justify-center shrink-0 shadow-sm`}>
-                <s.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${s.iconColor}`} />
+            <div key={s.label} className={`bg-gradient-to-br ${s.color} rounded-xl sm:rounded-2xl border border-white/50 dark:border-white/10 p-3 sm:p-5 flex items-center gap-2 sm:gap-4`}>
+              <div className={`w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white dark:bg-white/10 flex items-center justify-center shrink-0 shadow-sm`}>
+                <s.icon className={`w-3.5 h-3.5 sm:w-5 sm:h-5 ${s.iconColor}`} />
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] sm:text-xs text-slate-500 dark:text-white/50 font-medium mb-0.5 truncate">{s.label}</p>
-                <p className="text-lg sm:text-xl font-black text-slate-900 dark:text-white truncate">{s.value}</p>
+                <p className="text-[9px] sm:text-xs text-slate-500 dark:text-white/50 font-medium mb-0.5 truncate">{s.label}</p>
+                <p className="text-sm sm:text-xl font-black text-slate-900 dark:text-white truncate">{s.value}</p>
               </div>
             </div>
           ))}
@@ -361,7 +361,7 @@ export default function AdminUserProfilePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.12 }}
-            className="bg-white dark:bg-[#12121a] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm p-6"
+            className="bg-white dark:bg-[#12121a] rounded-xl sm:rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm p-4 sm:p-6"
           >
             <div className="flex items-center gap-3 mb-4">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isSuspended ? "bg-amber-100 dark:bg-amber-500/20" : "bg-emerald-100 dark:bg-emerald-500/20"}`}>
@@ -388,7 +388,7 @@ export default function AdminUserProfilePage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setConfirmDialog(isSuspended ? "unsuspend" : "suspend")}
-                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                    className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                       isSuspended
                         ? "bg-emerald-500 hover:bg-emerald-600 text-white"
                         : "border border-amber-400 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10"
@@ -398,7 +398,7 @@ export default function AdminUserProfilePage() {
                   </button>
                   <button
                     onClick={() => setConfirmDialog("delete")}
-                    className="px-4 py-2 rounded-xl text-sm font-semibold border border-rose-400 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
+                    className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold border border-rose-400 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
                   >
                     Delete
                   </button>
@@ -428,42 +428,38 @@ export default function AdminUserProfilePage() {
             </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d0d14]">
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-white/30">Order ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-white/30">Product</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-white/30">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-white/30">Status</th>
-                  <th className="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-white/30">Amount</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                {txLoading ? (
+          <div className="overflow-x-auto relative min-h-[200px]">
+            {txLoading ? (
+              <div className="absolute inset-0 flex items-center justify-center py-16">
+                <div className="w-8 h-8 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+              </div>
+            ) : transactions.length === 0 ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center py-16 text-center px-4 w-full h-full left-0 right-0">
+                <div className="w-12 h-12 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-3">
+                  <ShoppingBag className="w-5 h-5 text-slate-400 dark:text-white/20" />
+                </div>
+                <p className="text-sm text-slate-400 dark:text-white/30 font-medium">No transactions yet</p>
+              </div>
+            ) : (
+              <table className="w-full text-left border-collapse min-w-max sm:min-w-[800px]">
+                <thead className="bg-slate-50 dark:bg-[#0a0a14] border-b border-slate-200 dark:border-white/10 sticky top-0 z-0">
                   <tr>
-                    <td colSpan={5} className="py-16 text-center">
-                      <div className="w-8 h-8 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mx-auto" />
-                    </td>
+                    <th className="px-4 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-white/30">Order ID</th>
+                    <th className="px-4 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-white/30">Product</th>
+                    <th className="px-4 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-white/30">Date</th>
+                    <th className="px-4 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-white/30">Status</th>
+                    <th className="px-4 py-3 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-white/30 text-right">Amount</th>
                   </tr>
-                ) : transactions.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-16 text-center">
-                      <div className="w-12 h-12 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <ShoppingBag className="w-5 h-5 text-slate-400 dark:text-white/20" />
-                      </div>
-                      <p className="text-sm text-slate-400 dark:text-white/30 font-medium">No transactions yet</p>
-                    </td>
-                  </tr>
-                ) : (
-                  transactions.map((tx) => (
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                  {transactions.map((tx) => (
                     <tr key={tx._id} className="hover:bg-slate-50 dark:hover:bg-[#16161e] transition-colors">
-                      <td className="px-6 py-3">
+                      <td className="px-4 py-3">
                         <span className="text-xs font-mono text-slate-500 dark:text-white/40">
                           {tx.orderId || tx.razorpayOrderId?.slice(-8) || tx._id.slice(-8)}
                         </span>
                       </td>
-                      <td className="px-6 py-3">
+                      <td className="px-4 py-3">
                         <p className="text-sm font-medium text-slate-800 dark:text-white/80 truncate max-w-[200px]">
                           {tx.productName || "—"}
                         </p>
@@ -473,21 +469,21 @@ export default function AdminUserProfilePage() {
                           </p>
                         )}
                       </td>
-                      <td className="px-6 py-3">
+                      <td className="px-4 py-3">
                         <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-white/40">
                           <Clock className="w-3 h-3" />
                           {new Date(tx.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                         </div>
                       </td>
-                      <td className="px-6 py-3">{statusBadge(tx.status)}</td>
-                      <td className="px-6 py-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                      <td className="px-4 py-3">{statusBadge(tx.status)}</td>
+                      <td className="px-4 py-3 text-right font-mono font-bold text-slate-900 dark:text-white">
                         ₹{(tx.amount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
 
           {/* Pagination */}

@@ -29,24 +29,17 @@ export default async function ContactPage() {
       {/* Content */}
       <div className="relative z-10 mx-auto max-w-6xl px-4 pt-16 sm:pt-20 pb-12 md:px-6 md:pb-16 lg:pb-24">
         {/* Hero */}
-        <section className="mb-10 md:mb-16 text-center sm:text-left max-w-4xl pt-4">
-          <div className="flex items-center gap-4 flex-wrap mb-4">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300/80 bg-indigo-50 dark:bg-transparent px-3 py-1 rounded-full dark:px-0 dark:py-0">
-              Contact
-            </p>
-            <p className="text-xs text-slate-500 dark:text-white/60">
-              <strong className="text-slate-700 dark:text-white/80">Effective Date:</strong> {effectiveDate}
-              <span className="mx-3">·</span>
-              <strong className="text-slate-700 dark:text-white/80">Last Updated:</strong> {lastUpdatedDate}
-            </p>
-          </div>
-          <h1 className="text-4xl font-black tracking-tight leading-[1.1] sm:text-5xl md:text-6xl text-slate-900 dark:text-white mb-6">
+        <section className="mb-10 md:mb-14 text-left max-w-4xl pt-4">
+          <h1 className="text-4xl font-black tracking-tight leading-[1.1] sm:text-5xl md:text-6xl text-slate-900 dark:text-white mb-2">
             Talk to the BitForge team{" "}
             <span className="block mt-2 bg-linear-to-r from-indigo-600 to-cyan-500 dark:from-cyan-400 dark:to-indigo-400 bg-clip-text text-transparent">
               Support, sales and partnership enquiries
             </span>
           </h1>
-          <p className="mt-4 max-w-2xl text-base text-slate-600 dark:text-white/70 sm:text-lg leading-relaxed mx-auto sm:mx-0">
+          <p className="text-[10px] text-slate-500 dark:text-white/60 mb-6">
+            <strong className="text-slate-700 dark:text-white/80">Last Updated:</strong> {lastUpdatedDate}
+          </p>
+          <p className="max-w-2xl text-base text-slate-600 dark:text-white/70 sm:text-lg leading-relaxed">
             Whether you are a creator selling your first product, a team consolidating your
             digital commerce stack, or a buyer who needs help with an order, we are here to help.
             Choose the most relevant option below and we will route your request to the right
@@ -55,9 +48,9 @@ export default async function ContactPage() {
         </section>
 
         {/* Primary contact options */}
-        <section className="mb-16 grid gap-8 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <section className="mb-12 md:mb-16 grid gap-6 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           {/* Form */}
-          <div className="rounded-3xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 p-6 sm:p-10 shadow-sm">
+          <div className="rounded-3xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 p-5 sm:p-8 shadow-sm">
             <h2 className="text-xl font-bold sm:text-2xl text-slate-900 dark:text-white mb-3">Send us a message</h2>
             <p className="mb-8 text-sm text-slate-600 dark:text-white/65 leading-relaxed">
               Share a few details about what you need help with. Our team typically responds
@@ -69,7 +62,7 @@ export default async function ContactPage() {
           </div>
 
           {/* Direct channels */}
-          <aside className="space-y-8 rounded-3xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-black/50 p-6 sm:p-10 shadow-sm">
+          <aside className="space-y-6 rounded-3xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-black/50 p-5 sm:p-8 shadow-sm">
             <div>
               <h2 className="text-base font-bold text-slate-900 dark:text-white mb-2">Support</h2>
               <p className="text-sm text-slate-600 dark:text-white/65 leading-relaxed">
@@ -120,11 +113,11 @@ export default async function ContactPage() {
         </section>
 
         {/* Regional info / footer meta */}
-        <section className="mt-8 rounded-3xl border border-slate-200/60 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-6 sm:p-10 shadow-sm relative overflow-hidden">
+        <section className="mt-8 rounded-3xl border border-slate-200/60 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-5 sm:p-8 shadow-sm relative overflow-hidden">
           <h2 className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-white/60 mb-6">
             Company & regional information
           </h2>
-          <div className="grid gap-8 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2">
             <div className="space-y-3">
               <p className="text-base font-bold text-slate-900 dark:text-white/90">BitForge Platform</p>
               <p className="text-sm text-slate-600 dark:text-white/70 leading-relaxed">India-first, remote-friendly team focused on digital product commerce.</p>

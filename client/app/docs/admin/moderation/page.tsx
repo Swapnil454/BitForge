@@ -51,7 +51,7 @@ export default function AdminModerationPage() {
 
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Prohibited Content</h2>
-          <div className="bg-red-50 dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
+          <div className="bg-red-50 dark:bg-transparent dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Content that must be removed immediately:</p>
             <ul className="space-y-2 text-slate-600 dark:text-white/70 text-sm list-disc list-inside">
               <li>Pirated or copyrighted material without license</li>

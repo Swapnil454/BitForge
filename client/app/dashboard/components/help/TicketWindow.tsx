@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { formatDistanceToNow, format } from "date-fns";
+import React, { useState, useRef, useEffect } from "react";
+import { formatDistanceToNow, format, isToday, isYesterday, isSameYear, isSameDay } from "date-fns";
 import { useTheme } from "next-themes";
 import { Paperclip, Send, X, ChevronLeft, MoreVertical, FileIcon, Tag, Clock, AlertCircle, Download, ChevronDown, Check, Smile } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -23,6 +23,14 @@ function TickIcon({ status }: { status: 'sending' | 'failed' | 'sent' | 'deliver
   return null;
 }
 
+function formatDateSeparator(dateStr: string | number | Date) {
+  const date = new Date(dateStr);
+  if (isToday(date)) return "TODAY";
+  if (isYesterday(date)) return "YESTERDAY";
+  if (isSameYear(date, new Date())) return format(date, "MMMM d").toUpperCase();
+  return format(date, "MMMM yyyy").toUpperCase();
+}
+
 export default function TicketWindow({
   ticket,
   messages,
@@ -39,6 +47,11 @@ export default function TicketWindow({
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const isDark = mounted && resolvedTheme === "dark";
+
+  const [visibleCount, setVisibleCount] = useState(10);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const prevTotalMessagesRef = useRef(0);
+  const isFetchingMoreRef = useRef(false);
 
   const [inputText, setInputText] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -71,8 +84,53 @@ export default function TicketWindow({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (messages.length === 0) return;
+
+    // Reset visible count when a different ticket is selected
+    if (prevTotalMessagesRef.current === 0) {
+      // Initial load of messages for a ticket
+      messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+    } else if (messages.length > prevTotalMessagesRef.current) {
+      // A new message arrived or was sent
+      // Only increment visibleCount if we were already showing the end of the list
+      setVisibleCount(prev => prev + (messages.length - prevTotalMessagesRef.current));
+      
+      // Allow DOM to update then scroll smoothly
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 50);
+    }
+    
+    prevTotalMessagesRef.current = messages.length;
+  }, [messages.length]);
+
+  // Reset when ticket changes
+  useEffect(() => {
+    setVisibleCount(10);
+    prevTotalMessagesRef.current = 0;
+  }, [ticket?._id]);
+
+  const handleScroll = () => {
+    if (!scrollContainerRef.current || isFetchingMoreRef.current) return;
+    
+    if (scrollContainerRef.current.scrollTop < 100 && visibleCount < messages.length) {
+      isFetchingMoreRef.current = true;
+      const container = scrollContainerRef.current;
+      const prevScrollHeight = container.scrollHeight;
+      const prevScrollTop = container.scrollTop;
+      
+      setVisibleCount(prev => Math.min(prev + 10, messages.length));
+      
+      // Adjust scroll position after render so we don't jump to top
+      setTimeout(() => {
+        if (scrollContainerRef.current) {
+          const newScrollHeight = scrollContainerRef.current.scrollHeight;
+          scrollContainerRef.current.scrollTop = newScrollHeight - prevScrollHeight + prevScrollTop;
+          isFetchingMoreRef.current = false;
+        }
+      }, 0);
+    }
+  };
 
   const handleEmojiClick = (emojiData: any) => {
     setInputText(prev => prev + emojiData.emoji);
@@ -500,140 +558,163 @@ export default function TicketWindow({
       </div>
 
       {/* Messages Area */}
-      <div className={`flex-1 overflow-y-auto p-4 flex flex-col gap-4 ${isDark ? "bg-[#0b1016]" : "bg-[#efeae2]"}`}>
+      <div 
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className={`flex-1 overflow-y-auto p-4 flex flex-col gap-4 ${isDark ? "bg-[#0b1016]" : "bg-[#efeae2]"}`}
+      >
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
             <span className="loading loading-spinner loading-md"></span>
           </div>
         ) : (
-          messages.map((msg: any) => {
-            if (msg.messageType === 'event') {
-              return (
-                <div key={msg._id} className="flex justify-center my-2">
-                  <div className={`text-xs px-3 py-1 rounded-full ${isDark ? "bg-white/10 text-white/60" : "bg-black/5 text-slate-500"}`}>
-                    {msg.message}
+          <>
+            {messages.slice(-visibleCount).map((msg: any, index: number, arr: any[]) => {
+              const prevMsg = index > 0 ? arr[index - 1] : null;
+              const showDateSeparator = !prevMsg || !isSameDay(new Date(msg.createdAt || Date.now()), new Date(prevMsg.createdAt || Date.now()));
+
+              let messageContent = null;
+
+              if (msg.messageType === 'event') {
+                messageContent = (
+                  <div className="flex justify-center my-2">
+                    <div className={`text-xs px-3 py-1 rounded-full ${isDark ? "bg-white/10 text-white/60" : "bg-black/5 text-slate-500"}`}>
+                      {msg.message}
+                    </div>
                   </div>
-                </div>
-              );
-            }
-
-            const isSenderAdmin = msg.fromRole === "admin";
-            const isInternalNote = msg.messageType === 'note';
-            
-            // If viewer is admin, admin messages are on right. If viewer is user, user messages are on right.
-            const isMe = isAdmin ? isSenderAdmin : !isSenderAdmin;
-            
-            const currentUserId = isAdmin ? adminId : userId;
-            let messageStatus: 'sending' | 'failed' | 'sent' | 'delivered' | 'read' = 'sent';
-            if (msg.isSending) messageStatus = 'sending';
-            else if (msg.isFailed) messageStatus = 'failed';
-            else if (!msg.deliveredAt) messageStatus = 'sent';
-            else if (!msg.readBy?.some((id: any) => String(id) !== String(currentUserId))) messageStatus = 'delivered';
-            else messageStatus = 'read';
-
-            return (
-              <div key={msg.localId || msg._id} className={`flex flex-col max-w-[80%] ${isMe ? "self-end" : "self-start"}`}>
-                {!isMe && (
-                  <span className={`text-[10px] mb-1 ${isMe ? "mr-1 text-right" : "ml-1 text-left"} ${isDark ? "text-white/40" : "text-slate-500"}`}>
-                    {isSenderAdmin ? "Support Agent" : (msg.from?.name || "User")}
-                  </span>
-                )}
-
-                <div className={`px-3 py-1.5 rounded-2xl shadow-sm relative ${
-                  isInternalNote 
-                    ? (isDark ? "bg-amber-900/40 text-amber-100 border border-amber-700/50" : "bg-amber-100 text-amber-900 border border-amber-200")
-                    : isMe 
-                      ? (isDark ? "bg-[#005C4B] text-white rounded-tr-none" : "bg-[#d9fdd3] text-slate-900 rounded-tr-none")
-                      : (isDark ? "bg-[#202C33] text-white rounded-tl-none" : "bg-white text-slate-900 rounded-tl-none")
-                }`}>
-                  {isInternalNote && (
-                    <div className="flex items-center gap-1 mb-1 text-[10px] font-bold uppercase tracking-wider opacity-70">
-                      <AlertCircle className="w-3 h-3" /> Internal Note
-                    </div>
-                  )}
-                  {msg.messageType === 'reopen_request' && (
-                    <div className={`flex items-center gap-1 mb-1 text-[10px] font-bold uppercase tracking-wider ${isDark ? "text-cyan-400" : "text-cyan-600"}`}>
-                      <AlertCircle className="w-3 h-3" /> Reopen Request
-                    </div>
-                  )}
-
-                  <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
-                    {msg.messageType === 'reopen_request' && !isAdmin 
-                      ? "You requested to reopen this ticket." 
-                      : msg.message}
-                  </p>
-                  
-                  {msg.messageType === 'reopen_request' && !isAdmin && ticket.status === 'closed' && (
-                    <div className="mt-1 text-right">
-                      <button 
-                        onClick={() => {
-                          handleCancelReopen().then(() => window.location.reload());
-                        }}
-                        className={`text-[10px] uppercase font-bold tracking-wider hover:underline transition-colors ${
-                          isDark ? "text-red-400 hover:text-red-300" : "text-red-600 hover:text-red-700"
-                        }`}
-                      >
-                        Delete Request
-                      </button>
-                    </div>
-                  )}
-                  {msg.messageType === 'reopen_request' && isAdmin && ticket.status === 'closed' && (
-                    <div className="mt-3 border-t border-current/10 pt-2 flex gap-2">
-                      <button 
-                        onClick={() => handleStatusChange('open')}
-                        disabled={statusUpdating}
-                        className={`flex-1 py-1.5 rounded text-xs font-semibold transition-colors ${
-                          isDark ? "bg-[#202C33] text-cyan-400 hover:bg-[#2A3942]" : "bg-white text-cyan-700 hover:bg-slate-50"
-                        }`}
-                      >
-                        {statusUpdating ? "..." : "Approve"}
-                      </button>
-                      <button 
-                        onClick={handleRejectReopen}
-                        disabled={statusUpdating}
-                        className={`flex-1 py-1.5 rounded text-xs font-semibold transition-colors ${
-                          isDark ? "bg-[#202C33] text-red-400 hover:bg-red-500/10" : "bg-white text-red-600 hover:bg-red-50"
-                        }`}
-                      >
-                        {statusUpdating ? "..." : "Reject"}
-                      </button>
-                    </div>
-                  )}
-                  
-                  {msg.attachments?.length > 0 && (
-                    <div className="mt-2 flex flex-col gap-1.5">
-                      {msg.attachments.map((att: any, i: number) => (
-                        att.type.startsWith("image/") ? (
-                          <img 
-                            key={i} 
-                            src={att.url} 
-                            alt="Attachment" 
-                            className="max-w-[200px] rounded-lg cursor-pointer" 
-                            onClick={() => setPreviewImage({ url: att.url, name: att.name || "image" })} 
-                          />
-                        ) : (
-                          <a key={i} href={att.url} target="_blank" rel="noreferrer" className={`flex items-center gap-2 text-xs p-2 rounded-lg max-w-full w-max ${isDark ? "bg-black/20" : "bg-black/5"}`}>
-                            <FileIcon className="w-4 h-4 shrink-0" /> <span className="max-w-[150px] truncate">{att.name}</span>
-                          </a>
-                        )
-                      ))}
-                    </div>
-                  )}
-                </div>
+                );
+              } else {
+                const isSenderAdmin = msg.fromRole === "admin";
+                const isInternalNote = msg.messageType === 'note';
                 
-                <div className={`text-[10px] mt-0.5 flex items-center gap-1 ${isMe ? "self-end justify-end" : "self-start"} ${isDark ? "text-white/40" : "text-slate-500"}`}>
-                  {format(new Date(msg.createdAt || Date.now()), "h:mm a")}
-                  {isMe && <TickIcon status={messageStatus} />}
-                </div>
-              </div>
-            );
-          })
+                const isMe = isAdmin ? isSenderAdmin : !isSenderAdmin;
+                
+                const currentUserId = isAdmin ? adminId : userId;
+                let messageStatus: 'sending' | 'failed' | 'sent' | 'delivered' | 'read' = 'sent';
+                if (msg.isSending) messageStatus = 'sending';
+                else if (msg.isFailed) messageStatus = 'failed';
+                else if (!msg.deliveredAt) messageStatus = 'sent';
+                else if (!msg.readBy?.some((id: any) => String(id) !== String(currentUserId))) messageStatus = 'delivered';
+                else messageStatus = 'read';
+
+                messageContent = (
+                  <div className={`flex flex-col max-w-[80%] ${isMe ? "self-end" : "self-start"}`}>
+                    {!isMe && (
+                      <span className={`text-[10px] mb-1 ${isMe ? "mr-1 text-right" : "ml-1 text-left"} ${isDark ? "text-white/40" : "text-slate-500"}`}>
+                        {isSenderAdmin ? "Support Agent" : (msg.from?.name || "User")}
+                      </span>
+                    )}
+
+                    <div className={`px-3 py-1.5 rounded-2xl shadow-sm relative ${
+                      isInternalNote 
+                        ? (isDark ? "bg-amber-900/40 text-amber-100 border border-amber-700/50" : "bg-amber-100 text-amber-900 border border-amber-200")
+                        : isMe 
+                          ? (isDark ? "bg-[#005C4B] text-white rounded-tr-none" : "bg-[#d9fdd3] text-slate-900 rounded-tr-none")
+                          : (isDark ? "bg-[#202C33] text-white rounded-tl-none" : "bg-white text-slate-900 rounded-tl-none")
+                    }`}>
+                      {isInternalNote && (
+                        <div className="flex items-center gap-1 mb-1 text-[10px] font-bold uppercase tracking-wider opacity-70">
+                          <AlertCircle className="w-3 h-3" /> Internal Note
+                        </div>
+                      )}
+                      {msg.messageType === 'reopen_request' && (
+                        <div className={`flex items-center gap-1 mb-1 text-[10px] font-bold uppercase tracking-wider ${isDark ? "text-cyan-400" : "text-cyan-600"}`}>
+                          <AlertCircle className="w-3 h-3" /> Reopen Request
+                        </div>
+                      )}
+
+                      <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+                        {msg.messageType === 'reopen_request' && !isAdmin 
+                          ? "You requested to reopen this ticket." 
+                          : msg.message}
+                      </p>
+                      
+                      {msg.messageType === 'reopen_request' && !isAdmin && ticket.status === 'closed' && (
+                        <div className="mt-1 text-right">
+                          <button 
+                            onClick={() => {
+                              handleCancelReopen().then(() => window.location.reload());
+                            }}
+                            className={`text-[10px] uppercase font-bold tracking-wider hover:underline transition-colors ${
+                              isDark ? "text-red-400 hover:text-red-300" : "text-red-600 hover:text-red-700"
+                            }`}
+                          >
+                            Delete Request
+                          </button>
+                        </div>
+                      )}
+                      {msg.messageType === 'reopen_request' && isAdmin && ticket.status === 'closed' && (
+                        <div className="mt-3 border-t border-current/10 pt-2 flex gap-2">
+                          <button 
+                            onClick={() => handleStatusChange('open')}
+                            disabled={statusUpdating}
+                            className={`flex-1 py-1.5 rounded text-xs font-semibold transition-colors ${
+                              isDark ? "bg-[#202C33] text-cyan-400 hover:bg-[#2A3942]" : "bg-white text-cyan-700 hover:bg-slate-50"
+                            }`}
+                          >
+                            {statusUpdating ? "..." : "Approve"}
+                          </button>
+                          <button 
+                            onClick={handleRejectReopen}
+                            disabled={statusUpdating}
+                            className={`flex-1 py-1.5 rounded text-xs font-semibold transition-colors ${
+                              isDark ? "bg-[#202C33] text-red-400 hover:bg-red-500/10" : "bg-white text-red-600 hover:bg-red-50"
+                            }`}
+                          >
+                            {statusUpdating ? "..." : "Reject"}
+                          </button>
+                        </div>
+                      )}
+                      
+                      {msg.attachments?.length > 0 && (
+                        <div className="mt-2 flex flex-col gap-1.5">
+                          {msg.attachments.map((att: any, i: number) => (
+                            att.type.startsWith("image/") ? (
+                              <img 
+                                key={i} 
+                                src={att.url} 
+                                alt="Attachment" 
+                                className="max-w-[200px] rounded-lg cursor-pointer" 
+                                onClick={() => setPreviewImage({ url: att.url, name: att.name || "image" })} 
+                              />
+                            ) : (
+                              <a key={i} href={att.url} target="_blank" rel="noreferrer" className={`flex items-center gap-2 text-xs p-2 rounded-lg max-w-full w-max ${isDark ? "bg-black/20" : "bg-black/5"}`}>
+                                <FileIcon className="w-4 h-4 shrink-0" /> <span className="max-w-[150px] truncate">{att.name}</span>
+                              </a>
+                            )
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className={`text-[10px] mt-0.5 flex items-center gap-1 ${isMe ? "self-end justify-end" : "self-start"} ${isDark ? "text-white/40" : "text-slate-500"}`}>
+                      {format(new Date(msg.createdAt || Date.now()), "h:mm a")}
+                      {isMe && <TickIcon status={messageStatus} />}
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <React.Fragment key={msg.localId || msg._id}>
+                  {showDateSeparator && (
+                    <div className="flex justify-center my-3">
+                      <div className={`text-[10px] font-bold px-3 py-1 rounded-full shadow-sm tracking-wide ${isDark ? "bg-[#202C33] text-white/60" : "bg-white text-slate-500 border border-slate-200"}`}>
+                        {formatDateSeparator(msg.createdAt || Date.now())}
+                      </div>
+                    </div>
+                  )}
+                  {messageContent}
+                </React.Fragment>
+              );
+            })}
+          </>
         )}
-      <div ref={messagesEndRef} />
+        <div ref={messagesEndRef} className="shrink-0 h-1" />
       </div>
 
       {/* Input Area */}
-      <div className={`flex flex-col border-t shrink-0 ${isDark ? "bg-[#202C33] border-white/10" : "bg-slate-50 border-slate-200"}`}>
+      <div className={`flex flex-col border-t shrink-0 pb-safe ${isDark ? "bg-[#202C33] border-white/10" : "bg-slate-50 border-slate-200"}`}>
         {(ticket.status === 'closed' || serverClosed) ? (
           <div className="p-4 flex flex-col items-center justify-center text-center">
             <p className={`text-sm mb-3 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
@@ -754,7 +835,7 @@ export default function TicketWindow({
                   handleSendMessage(e);
                 }
               }}
-              placeholder={isNote ? "Type an internal note (only visible to admins)..." : "Type a message..."}
+              placeholder={isNote ? "Only visible to admins..." : "Type a message..."}
               className={`flex-1 bg-transparent border-none focus:outline-none text-[14px] py-2.5 px-3 resize-none max-h-[150px] overflow-y-auto min-h-[24px] ${
                 isDark ? "text-white placeholder:text-white/40" : "text-slate-900 placeholder:text-slate-500"
               } ${isNote ? "ml-3" : ""}`}

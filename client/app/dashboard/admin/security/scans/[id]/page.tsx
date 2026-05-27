@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminAPI } from "@/lib/api";
 import { useParams, useRouter } from "next/navigation";
-import { ShieldAlert, AlertTriangle, ExternalLink, CheckCircle2, RefreshCw, XCircle, FileWarning, Loader2, UserCheck } from "lucide-react";
+import { ShieldAlert, AlertTriangle, ExternalLink, CheckCircle2, RefreshCw, XCircle, FileWarning, Loader2, UserCheck, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { ScanReportPayload } from "@/lib/types/security";
 import toast from "react-hot-toast";
@@ -93,32 +93,48 @@ export default function ScanReportPage() {
   const isScanning = scan.scanStatus === "SCANNING";
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <Link href="/dashboard/admin/security" className="text-sm font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors mb-2 inline-block">
-            ← Back to Security Dashboard
-          </Link>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Threat Intelligence Report</h1>
-          <p className="text-sm text-slate-500 mt-1">Detailed analysis for product: <span className="font-bold text-slate-700 dark:text-white/80">{scan.title}</span></p>
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-20">
+      <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-white/10 bg-white/90 dark:bg-[#0b0b12]/95 backdrop-blur-xl">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="h-12 sm:h-14 flex items-center justify-between gap-4">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-semibold text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white transition-colors shrink-0 z-10"
+            >
+              <ChevronLeft className="w-4 h-4 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Back to Security</span>
+              <span className="inline sm:hidden">Back</span>
+            </button>
+
+            <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white absolute left-1/2 -translate-x-1/2 truncate max-w-[120px] sm:max-w-none">
+              Threat Intelligence
+            </h1>
+          </div>
         </div>
-        
-        <div className="flex items-center gap-3">
-          {isScanning ? (
-            <span className="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border bg-indigo-500/10 text-indigo-500 border-indigo-500/20">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" /> SCANNING
-            </span>
-          ) : (
-            <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border ${
-              isMalicious ? "bg-red-500/10 text-red-500 border-red-500/20" : 
-              scan.scanStatus === "CLEAN" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
-              "bg-amber-500/10 text-amber-500 border-amber-500/20"
-            }`}>
-              {scan.scanStatus.replace("_", " ")}
-            </span>
-          )}
+      </header>
+
+      <main className="max-w-5xl mx-auto px-3 sm:px-6 py-3 sm:py-6 space-y-3 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
+          <div>
+            <h2 className="text-base sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-snug">{scan.title}</h2>
+          </div>
+          
+          <div className="flex items-center gap-3 shrink-0">
+            {isScanning ? (
+              <span className="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border bg-indigo-500/10 text-indigo-500 border-indigo-500/20 shadow-sm">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" /> SCANNING
+              </span>
+            ) : (
+              <span className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border shadow-sm ${
+                isMalicious ? "bg-red-500/10 text-red-500 border-red-500/20" : 
+                scan.scanStatus === "CLEAN" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
+                "bg-amber-500/10 text-amber-500 border-amber-500/20"
+              }`}>
+                {scan.scanStatus?.replace("_", " ") || "UNKNOWN"}
+              </span>
+            )}
+          </div>
         </div>
-      </div>
 
       {isStale && !isScanning && scan.scanStatus !== 'PENDING' && (
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex gap-3 text-amber-600 dark:text-amber-400">
@@ -130,30 +146,30 @@ export default function ScanReportPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 space-y-6">
-          <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-2xl p-6">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5 text-slate-400" /> Analysis Results
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
+        <div className="md:col-span-2 space-y-3 sm:space-y-6">
+          <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5">
+            <h2 className="text-sm sm:text-base font-bold mb-3 sm:mb-4 flex items-center gap-2">
+              <ShieldAlert className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" /> Analysis Results
             </h2>
             
             {scan.malwareScanDetails ? (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/[0.05]">
-                  <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Malicious</p>
-                  <p className="text-3xl font-black text-red-500">{scan.malwareScanDetails.malicious_count}</p>
+              <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                <div className="p-2.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/[0.05]">
+                  <p className="text-[10px] sm:text-xs uppercase font-bold text-slate-500 mb-0.5 sm:mb-1">Malicious</p>
+                  <p className="text-xl sm:text-2xl font-black text-red-500">{scan.malwareScanDetails.malicious_count}</p>
                 </div>
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/[0.05]">
-                  <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Suspicious</p>
-                  <p className="text-3xl font-black text-amber-500">{scan.malwareScanDetails.suspicious_count}</p>
+                <div className="p-2.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/[0.05]">
+                  <p className="text-[10px] sm:text-xs uppercase font-bold text-slate-500 mb-0.5 sm:mb-1">Suspicious</p>
+                  <p className="text-xl sm:text-2xl font-black text-amber-500">{scan.malwareScanDetails.suspicious_count}</p>
                 </div>
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/[0.05]">
-                  <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Undetected</p>
-                  <p className="text-3xl font-black text-slate-600 dark:text-white/60">{scan.malwareScanDetails.undetected_count}</p>
+                <div className="p-2.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/[0.05]">
+                  <p className="text-[10px] sm:text-xs uppercase font-bold text-slate-500 mb-0.5 sm:mb-1">Undetected</p>
+                  <p className="text-xl sm:text-2xl font-black text-slate-600 dark:text-white/60">{scan.malwareScanDetails.undetected_count}</p>
                 </div>
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/[0.05]">
-                  <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Engines Used</p>
-                  <p className="text-3xl font-black text-indigo-500">{scan.malwareScanDetails.total_engines || 0}</p>
+                <div className="p-2.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/[0.05]">
+                  <p className="text-[10px] sm:text-xs uppercase font-bold text-slate-500 mb-0.5 sm:mb-1">Engines Used</p>
+                  <p className="text-xl sm:text-2xl font-black text-indigo-500">{scan.malwareScanDetails.total_engines || 0}</p>
                 </div>
               </div>
             ) : (
@@ -163,80 +179,81 @@ export default function ScanReportPage() {
             )}
             
             {scan.virusTotalLink && (
-              <div className="mt-6 pt-6 border-t border-slate-100 dark:border-white/[0.05]">
+              <div className="mt-3 sm:mt-5 pt-3 sm:pt-5 border-t border-slate-100 dark:border-white/[0.05]">
                 <a href={scan.virusTotalLink} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 transition-colors rounded-lg text-sm font-bold">
-                  <ExternalLink className="w-4 h-4" /> View Full VirusTotal Report
+                  className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 transition-colors rounded-lg text-xs sm:text-sm font-bold w-full sm:w-auto justify-center">
+                  <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> View Full VirusTotal Report
                 </a>
               </div>
             )}
           </div>
 
-          <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-2xl p-6">
-             <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <UserCheck className="w-5 h-5 text-slate-400" /> Seller Information
+          <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5">
+             <h2 className="text-sm sm:text-base font-bold mb-2 sm:mb-4 flex items-center gap-2">
+              <UserCheck className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" /> Seller Information
             </h2>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-white/[0.02]">
-                <span className="text-sm text-slate-500">Name</span>
-                <span className="text-sm font-bold">{scan.sellerId.name}</span>
+            <div className="space-y-1.5 sm:space-y-3">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-1.5 sm:py-2 border-b border-slate-50 dark:border-white/[0.02] gap-0.5 sm:gap-0">
+                <span className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wide">Name</span>
+                <span className="text-xs sm:text-sm font-bold">{scan.sellerId.name}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-white/[0.02]">
-                <span className="text-sm text-slate-500">Email</span>
-                <span className="text-sm font-bold">{scan.sellerId.email}</span>
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-1.5 sm:py-2 border-b border-slate-50 dark:border-white/[0.02] gap-0.5 sm:gap-0">
+                <span className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wide">Email</span>
+                <span className="text-xs sm:text-sm font-bold break-all">{scan.sellerId.email}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* The Action Rail */}
-        <div className="space-y-4">
-          <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-2xl p-6 relative overflow-hidden">
+        <div className="space-y-3 sm:space-y-4">
+          <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-white/10 rounded-xl sm:rounded-2xl p-3 sm:p-5 relative overflow-hidden">
             {isScanning && (
               <div className="absolute inset-0 bg-white/50 dark:bg-black/50 z-10 flex items-center justify-center backdrop-blur-sm">
-                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold">
-                  <Loader2 className="w-5 h-5 animate-spin" /> Scanning...
+                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold text-xs sm:text-sm">
+                  <Loader2 className="w-3.5 h-3.5 sm:w-5 sm:h-5 animate-spin" /> Scanning...
                 </div>
               </div>
             )}
             
-            <h3 className="font-bold text-sm uppercase tracking-wider text-slate-500 mb-4">Admin Actions</h3>
+            <h3 className="font-bold text-[10px] sm:text-xs uppercase tracking-wider text-slate-500 mb-2.5 sm:mb-4">Admin Actions</h3>
             
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <button 
                 onClick={() => actionMutation.mutate({ type: 'remove' })}
                 disabled={actionMutation.isPending}
-                className="w-full flex justify-between items-center px-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl transition-colors font-bold text-sm disabled:opacity-50">
-                <span className="flex items-center gap-2"><XCircle className="w-4 h-4" /> Remove Product</span>
+                className="w-full flex justify-between items-center px-3 sm:px-4 py-2 sm:py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-lg sm:rounded-xl transition-colors font-bold text-[11px] sm:text-xs disabled:opacity-50">
+                <span className="flex items-center gap-1.5 sm:gap-2"><XCircle className="w-3.5 h-3.5" /> Remove Product</span>
               </button>
               
               <button 
                 onClick={() => actionMutation.mutate({ type: 'notify' })}
                 disabled={!!scan.sellerNotifiedAt || actionMutation.isPending} 
-                className="w-full flex justify-between items-center px-4 py-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-xl transition-colors font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                <span className="flex items-center gap-2"><FileWarning className="w-4 h-4" /> {scan.sellerNotifiedAt ? "Seller Notified" : "Notify Seller"}</span>
+                className="w-full flex justify-between items-center px-3 sm:px-4 py-2 sm:py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-lg sm:rounded-xl transition-colors font-bold text-[11px] sm:text-xs disabled:opacity-50 disabled:cursor-not-allowed">
+                <span className="flex items-center gap-1.5 sm:gap-2"><FileWarning className="w-3.5 h-3.5" /> {scan.sellerNotifiedAt ? "Seller Notified" : "Notify Seller"}</span>
               </button>
 
               <button 
                 onClick={() => actionMutation.mutate({ type: 'whitelist' })}
                 disabled={actionMutation.isPending}
-                className="w-full flex justify-between items-center px-4 py-3 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl transition-colors font-bold text-sm disabled:opacity-50">
-                <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Mark as Clean</span>
+                className="w-full flex justify-between items-center px-3 sm:px-4 py-2 sm:py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-lg sm:rounded-xl transition-colors font-bold text-[11px] sm:text-xs disabled:opacity-50">
+                <span className="flex items-center gap-1.5 sm:gap-2"><CheckCircle2 className="w-3.5 h-3.5" /> Mark as Clean</span>
               </button>
               
-              <div className="my-4 border-t border-slate-100 dark:border-white/[0.05]" />
+              <div className="my-2.5 sm:my-4 border-t border-slate-100 dark:border-white/[0.05]" />
 
               <button 
                 onClick={() => actionMutation.mutate({ type: 'rescan' })}
                 disabled={actionMutation.isPending}
-                className="w-full flex justify-between items-center px-4 py-3 bg-slate-100 dark:bg-white/[0.05] hover:bg-slate-200 dark:hover:bg-white/[0.1] text-slate-700 dark:text-white rounded-xl transition-colors font-bold text-sm disabled:opacity-50">
-                <span className="flex items-center gap-2"><RefreshCw className={`w-4 h-4 ${actionMutation.isPending && actionMutation.variables?.type === 'rescan' ? 'animate-spin' : ''}`} /> Force Re-scan</span>
+                className="w-full flex justify-between items-center px-3 sm:px-4 py-2 sm:py-2.5 bg-slate-100 dark:bg-white/[0.05] hover:bg-slate-200 dark:hover:bg-white/[0.1] text-slate-700 dark:text-white rounded-lg sm:rounded-xl transition-colors font-bold text-[11px] sm:text-xs disabled:opacity-50">
+                <span className="flex items-center gap-1.5 sm:gap-2"><RefreshCw className={`w-3.5 h-3.5 ${actionMutation.isPending && actionMutation.variables?.type === 'rescan' ? 'animate-spin' : ''}`} /> Force Re-scan</span>
               </button>
             </div>
-            <p className="text-[10px] text-slate-400 mt-4 text-center">Actions are tracked in the moderation audit log.</p>
+            <p className="text-[9px] sm:text-[10px] text-slate-400 mt-2.5 sm:mt-4 text-center">Actions are tracked in the moderation audit log.</p>
           </div>
         </div>
       </div>
+    </main>
     </div>
   );
 }

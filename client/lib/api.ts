@@ -175,6 +175,11 @@ export const adminAPI = {
         const response = await api.post(`/admin/products/${id}/approve`, { adminNote });
         return response.data;
     },
+
+    pendingProduct: async (id: string, adminNote?: string) => {
+        const response = await api.post(`/admin/products/${id}/pending`, { adminNote });
+        return response.data;
+    },
     
     rejectProduct: async (id: string, reasons: string[], adminNote?: string) => {
         const response = await api.post(`/admin/products/${id}/reject`, { reasons, adminNote });

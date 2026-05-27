@@ -58,7 +58,7 @@ export default function SecurityPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">1.</span> API Security
           </h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6 mb-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6 mb-6">
             <h3 className="text-slate-900 dark:text-white font-semibold mb-4">Protect Your API Keys</h3>
             <div className="space-y-4">
               <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg">
@@ -131,7 +131,7 @@ echo ".env" >> .gitignore`}
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">2.</span> Authentication & Authorization
           </h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <div className="space-y-4">
               <div>
                 <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
@@ -205,7 +205,7 @@ fetch('http://api.Bitforge.com/products', ...)`}
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">4.</span> Payment Security
           </h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <div className="space-y-4 text-slate-700 dark:text-white/80">
               <p>
                 <strong className="text-slate-900 dark:text-white">We handle PCI compliance for you.</strong> Customer payment information never touches your servers.
@@ -276,7 +276,7 @@ fetch('http://api.Bitforge.com/products', ...)`}
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
             <span className="text-cyan-400">6.</span> Webhook Security
           </h2>
-          <div className="bg-indigo-50/50 dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">
               Always verify webhook signatures to prevent spoofed events:
             </p>
@@ -341,7 +341,7 @@ if (!verifyWebhook(req.body, req.headers['x-webhook-signature'], secret)) {
         {/* Report Issues */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Report Security Issues</h2>
-          <div className="bg-red-50 dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
+          <div className="bg-red-50 dark:bg-transparent dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3 flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-red-500" /> Found a Vulnerability?
             </h3>

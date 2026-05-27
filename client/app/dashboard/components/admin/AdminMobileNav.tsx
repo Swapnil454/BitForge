@@ -8,6 +8,14 @@ import { motion } from "framer-motion";
 export default function AdminMobileNav() {
   const pathname = usePathname();
 
+  // Hide the mobile navbar on specific pages where it overlaps with form actions
+  if (
+    pathname === "/dashboard/admin/bank-account/add" ||
+    (pathname?.startsWith("/dashboard/admin/help-center/") && pathname !== "/dashboard/admin/help-center")
+  ) {
+    return null;
+  }
+
   const navItems = [
     { label: "Home", href: "/dashboard/admin", icon: Home },
     { label: "Products", href: "/dashboard/admin/products", icon: FolderOpen },
@@ -45,7 +53,7 @@ export default function AdminMobileNav() {
         <div className="w-16 flex items-center justify-center h-full relative">
           <Link 
             href="/dashboard/admin/promotions"
-            className={`absolute -top-7 flex flex-col items-center justify-center w-16 h-16 active:scale-95 transition-all ${pathname?.startsWith("/dashboard/admin/promotions") ? "scale-110 drop-shadow-[0_4px_10px_rgba(79,70,229,0.4)]" : "drop-shadow-lg hover:scale-105"}`}
+            className={`absolute -top-5 flex flex-col items-center justify-center w-12 h-12 active:scale-95 transition-all ${pathname?.startsWith("/dashboard/admin/promotions") ? "scale-110 drop-shadow-[0_4px_10px_rgba(79,70,229,0.4)]" : "drop-shadow-lg hover:scale-105"}`}
           >
             <img src="/promotion_logo.png" alt="Promotions" className="w-full h-full object-contain drop-shadow-sm" />
           </Link>

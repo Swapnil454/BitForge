@@ -29,7 +29,7 @@ export default function UploadSolutionsPage() {
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Common Upload Errors</h2>
           <div className="space-y-4">
-            <div className="bg-red-50 dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
+            <div className="bg-red-50 dark:bg-transparent dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-3 flex items-center gap-2">
                 <AlertCircle className="w-5 h-5" /> Error: File Too Large
               </h3>
@@ -58,7 +58,7 @@ export default function UploadSolutionsPage() {
               </div>
             </div>
 
-            <div className="bg-red-50 dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
+            <div className="bg-red-50 dark:bg-transparent dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-3 flex items-center gap-2">
                 <span className="text-xl"></span> Error: Unsupported File Type
               </h3>
@@ -95,7 +95,7 @@ export default function UploadSolutionsPage() {
               </div>
             </div>
 
-            <div className="bg-red-50 dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
+            <div className="bg-red-50 dark:bg-transparent dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-3 flex items-center gap-2">
                 <span className="text-xl">🔄</span> Error: Upload Interrupted
               </h3>
