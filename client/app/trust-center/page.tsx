@@ -7,7 +7,12 @@ export const metadata = {
   description: "Learn how BitForge protects your data, ensures platform security, and maintains trust through transparency and compliance.",
 };
 
-export default function TrustCenterPage() {
+import { getGlobalLegalDates } from "@/lib/getGlobalSettings";
+
+export default async function TrustCenterPage() {
+  const dates = await getGlobalLegalDates("trust-center");
+  const lastUpdatedDate = dates?.legalLastUpdatedDate || "Feb 7, 2026";
+
   return (
     <main className="relative min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white overflow-x-hidden">
       <DynamicHeader title="Trust Center" />
@@ -27,7 +32,7 @@ export default function TrustCenterPage() {
               Trust Center
             </p>
             <span className="text-xs text-slate-500 dark:text-white/50 border border-slate-200 dark:border-white/10 rounded-full px-3 py-1">
-              Last Updated: Feb 7, 2026
+              Last Updated: {lastUpdatedDate}
             </span>
           </div>
           <h1 className="text-3xl font-black tracking-tight leading-tight sm:text-4xl md:text-5xl text-slate-900 dark:text-white">
@@ -615,7 +620,7 @@ export default function TrustCenterPage() {
           {/* Last Updated */}
           <section className="border-t border-slate-200 dark:border-white/10 pt-8">
             <p className="text-xs text-slate-500 dark:text-white/60">
-              <strong>Trust Center Last Updated:</strong> February 7, 2026
+              <strong>Trust Center Last Updated:</strong> {lastUpdatedDate}
             </p>
             <p className="mt-2 text-xs text-slate-500 dark:text-white/60 leading-relaxed">
               This page is updated regularly as we improve our security posture and introduce new trust

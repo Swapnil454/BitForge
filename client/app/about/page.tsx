@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import DynamicHeader from "@/app/components/DynamicHeader";
 import Image from "next/image";
+import { getGlobalLegalDates } from "@/lib/getGlobalSettings";
 
 export const metadata: Metadata = {
   title: "About BitForge | Digital Product Marketplace",
@@ -9,7 +10,11 @@ export const metadata: Metadata = {
     "Learn how BitForge helps creators launch, manage, and scale digital products while giving buyers a secure, frictionless checkout and instant access experience.",
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const dates = await getGlobalLegalDates("about");
+  const effectiveDate = dates?.legalEffectiveDate || "January 1, 2026";
+  const lastUpdatedDate = dates?.legalLastUpdatedDate || "February 1, 2026";
+
   return (
     <main className="relative min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white overflow-x-hidden">
       {/* Subtle background glow to match landing aesthetics - Dark mode only */}
@@ -24,9 +29,16 @@ export default function AboutPage() {
       <div className="relative z-10 mx-auto max-w-6xl px-4 pt-16 sm:pt-20 pb-12 md:px-6 md:pb-16 lg:pb-24">
         {/* Hero */}
         <section className="mb-10 md:mb-16 text-center sm:text-left max-w-4xl pt-4">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300/80 mb-4 inline-block bg-indigo-50 dark:bg-transparent px-3 py-1 rounded-full dark:px-0 dark:py-0">
-            About us
-          </p>
+          <div className="flex items-center gap-4 flex-wrap mb-4">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-cyan-300/80 bg-indigo-50 dark:bg-transparent px-3 py-1 rounded-full dark:px-0 dark:py-0">
+              About us
+            </p>
+            <p className="text-xs text-slate-500 dark:text-white/60">
+              <strong className="text-slate-700 dark:text-white/80">Effective Date:</strong> {effectiveDate}
+              <span className="mx-3">·</span>
+              <strong className="text-slate-700 dark:text-white/80">Last Updated:</strong> {lastUpdatedDate}
+            </p>
+          </div>
           <h1 className="text-4xl font-black tracking-tight leading-[1.1] sm:text-5xl md:text-6xl text-slate-900 dark:text-white mb-6">
             Built for digital product teams{" "}
             <span className="block mt-2 bg-linear-to-r from-indigo-600 to-cyan-500 dark:from-cyan-400 dark:to-indigo-400 bg-clip-text text-transparent">

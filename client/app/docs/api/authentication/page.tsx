@@ -136,6 +136,11 @@ export default function AuthenticationAPIPage() {
       "email": "swapnil@example.com",
       "role": "seller",
       "isVerified": false,
+      "preferences": {
+        "theme": "system",
+        "emailNotifications": true
+      },
+      "fcmToken": "cRx1...",
       "createdAt": "2024-01-15T10:30:00.000Z"
     },
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -230,7 +235,12 @@ export default function AuthenticationAPIPage() {
       "name": "Swapnil Shelke",
       "email": "swapnil@example.com",
       "role": "seller",
-      "isVerified": true
+      "isVerified": true,
+      "preferences": {
+        "theme": "dark",
+        "emailNotifications": true
+      },
+      "fcmToken": "cRx1..."
     },
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "expiresIn": "7d"
@@ -292,6 +302,11 @@ export default function AuthenticationAPIPage() {
         "totalEarnings": 75000,
         "productsListed": 25
       },
+      "preferences": {
+        "theme": "dark",
+        "emailNotifications": true
+      },
+      "fcmToken": "cRx1...",
       "createdAt": "2024-01-15T10:30:00.000Z"
     }
   }

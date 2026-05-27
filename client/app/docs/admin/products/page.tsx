@@ -106,6 +106,20 @@ export default function AdminProductsPage() {
           </div>
         </section>
 
+        <section className="mb-10">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Promotions Oversight</h2>
+          <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <p className="text-slate-700 dark:text-white/80 mb-4">
+              Administrators have visibility into the coupon codes (promotions) that sellers generate for their products. This oversight ensures that the discount system is not abused.
+            </p>
+            <ul className="space-y-2 text-slate-600 dark:text-white/70 text-sm list-disc list-inside">
+              <li>Review active promotion codes.</li>
+              <li>Monitor usage limits and discount values (percentage/fixed).</li>
+              <li>Invalidate suspicious promotions that violate platform policies.</li>
+            </ul>
+          </div>
+        </section>
+
         <div className="grid sm:grid-cols-2 gap-4">
           <Link href="/docs/product-management" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
             <div className="text-3xl mb-3"></div>

@@ -24,6 +24,7 @@ const docsSections = [
     icon: Briefcase,
     items: [
       { title: "Product Management", href: "/docs/product-management" },
+      { title: "Promotions & Coupons", href: "/docs/promotions" },
       { title: "Payout System", href: "/docs/payout-system" },
       { title: "Product Changes", href: "/docs/product-changes" },
       { title: "Upload Solutions", href: "/docs/upload-solutions" },
@@ -48,6 +49,7 @@ const docsSections = [
     items: [
       { title: "Admin Payout Guide", href: "/docs/admin/payouts" },
       { title: "Product Management", href: "/docs/admin/products" },
+      { title: "Careers Management", href: "/docs/admin/careers" },
       { title: "User Management", href: "/docs/admin/users" },
       { title: "Analytics", href: "/docs/admin/analytics" },
       { title: "Content Moderation", href: "/docs/admin/moderation" },
@@ -58,6 +60,8 @@ const docsSections = [
     title: "Platform Guides",
     icon: BookOpen,
     items: [
+      { title: "UI & Theming", href: "/docs/ui-theming" },
+      { title: "Push Notifications", href: "/docs/push-notifications" },
       { title: "Security Best Practices", href: "/docs/security" },
       { title: "Rate Limits", href: "/docs/rate-limits" },
       { title: "Testing Guide", href: "/docs/testing" },

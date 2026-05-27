@@ -2,8 +2,20 @@
 
 import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
 import { ShieldCheck, Eye, Scale, AlertTriangle, Wallet, Lock, HelpCircle, FileText } from "lucide-react";
+import { useState, useEffect } from "react";
+import api from "@/lib/api";
 
 export default function SellerTermsPage() {
+  const [lastUpdated, setLastUpdated] = useState("May 26, 2026");
+
+  useEffect(() => {
+    api.get("/settings/legal-dates?pageId=seller-terms").then(res => {
+      if (res.data?.success && res.data?.data?.legalLastUpdatedDate) {
+        setLastUpdated(res.data.data.legalLastUpdatedDate);
+      }
+    }).catch(err => console.error("Failed to fetch dates", err));
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A101D] text-slate-900 dark:text-white pb-20">
       <PageHeader 
@@ -21,7 +33,7 @@ export default function SellerTermsPage() {
             Understanding content security, preview generation, and platform responsibilities. By uploading content, you agree to these terms.
           </p>
           <p className="text-xs text-slate-400 dark:text-slate-500 mt-4 font-medium uppercase tracking-wider">
-            Last updated: May 26, 2026
+            Last updated: {lastUpdated}
           </p>
         </div>
 

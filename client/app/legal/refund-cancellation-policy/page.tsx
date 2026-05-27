@@ -1,13 +1,18 @@
 import Link from "next/link";
 import DynamicHeader from "@/app/components/DynamicHeader";
 import { BackButton } from "./BackButton";
+import { getGlobalLegalDates } from "@/lib/getGlobalSettings";
 
 export const metadata = {
   title: "Refund & Cancellation Policy | BitForge",
   description: "Refund and Cancellation Policy for digital products on BitForge marketplace.",
 };
 
-export default function RefundCancellationPolicyPage() {
+export default async function RefundCancellationPolicyPage() {
+  const dates = await getGlobalLegalDates("refund-cancellation-policy");
+  const effectiveDate = dates?.legalEffectiveDate || "January 1, 2026";
+  const lastUpdatedDate = dates?.legalLastUpdatedDate || "February 1, 2026";
+
   return (
     <main className="relative min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white overflow-x-hidden">
       <DynamicHeader title="Refund Policy" />
@@ -29,9 +34,9 @@ export default function RefundCancellationPolicyPage() {
             Refund &amp; Cancellation Policy
           </h1>
           <p className="mt-4 text-sm text-slate-500 dark:text-white/60">
-            <strong className="text-slate-700 dark:text-white/80">Effective Date:</strong> January 1, 2026
+            <strong className="text-slate-700 dark:text-white/80">Effective Date:</strong> {effectiveDate}
             <span className="mx-3">·</span>
-            <strong className="text-slate-700 dark:text-white/80">Last Updated:</strong> February 1, 2026
+            <strong className="text-slate-700 dark:text-white/80">Last Updated:</strong> {lastUpdatedDate}
           </p>
           <p className="mt-3 text-sm text-slate-600 dark:text-white/70 leading-relaxed max-w-2xl">
             This Refund &amp; Cancellation Policy outlines the terms and conditions for refunds,

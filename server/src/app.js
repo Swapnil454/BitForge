@@ -28,7 +28,7 @@ import reviewRoutes from "./routes/review.routes.js";
 import sellerProfileRoutes from "./routes/sellerProfile.routes.js";
 import reportRoutes from "./routes/report.routes.js";
 import promotionRoutes from "./routes/promotions.routes.js";
-
+import settingsRoutes from "./routes/settings.routes.js";
 const app = express();
 
 // Trust proxy so OAuth callbacks use correct HTTPS URL on Render
@@ -117,6 +117,5 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/sellers", sellerProfileRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/promotions", promotionRoutes);
-
-
+app.use("/api/settings", settingsRoutes);
 export default app;

@@ -64,6 +64,7 @@ export default function AdminAnalyticsPage() {
                 <li>Platform fee revenue (commission)</li>
                 <li>Month-over-month growth</li>
                 <li>Average order value</li>
+                <li><strong className="text-slate-800 dark:text-white/90">Promotions Impact:</strong> Total discount volume applied via coupons.</li>
               </ul>
             </div>
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">

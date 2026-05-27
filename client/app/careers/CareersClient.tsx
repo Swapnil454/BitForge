@@ -34,17 +34,9 @@ export default function CareersPage() {
   const [careers, setCareers] = useState<Career[]>([]);
   const [loading, setLoading] = useState(true);
   const { isAuthenticated } = useAuth();
-  const [effectiveDate, setEffectiveDate] = useState("January 1, 2026");
-  const [lastUpdated, setLastUpdated] = useState("February 1, 2026");
 
   useEffect(() => {
     fetchCareers();
-    api.get("/settings/legal-dates?pageId=careers").then(res => {
-      if (res.data?.success && res.data?.data) {
-        setEffectiveDate(res.data.data.legalEffectiveDate || "January 1, 2026");
-        setLastUpdated(res.data.data.legalLastUpdatedDate || "February 1, 2026");
-      }
-    }).catch(err => console.error("Failed to fetch dates", err));
   }, []);
 
   const fetchCareers = async () => {
@@ -117,16 +109,9 @@ export default function CareersPage() {
       <div className="relative z-10 mx-auto max-w-6xl px-5 pb-12 pt-20 sm:pt-24 md:pt-28 md:pb-16">
         {/* HERO */}
         <section className="max-w-3xl">
-          <div className="flex items-center gap-4 flex-wrap mb-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-300/80 bg-emerald-50 dark:bg-transparent px-3 py-1 rounded-full dark:px-0 dark:py-0">
-              Careers
-            </p>
-            <p className="text-xs text-slate-500 dark:text-white/60">
-              <strong className="text-slate-700 dark:text-white/80">Effective Date:</strong> {effectiveDate}
-              <span className="mx-3">·</span>
-              <strong className="text-slate-700 dark:text-white/80">Last Updated:</strong> {lastUpdated}
-            </p>
-          </div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300/80">
+            Careers
+          </p>
           <h1 className="mt-3 text-3xl font-bold leading-tight sm:text-4xl md:text-[40px]">
             Build the operating system
             <span className="mt-1 block bg-linear-to-r from-cyan-400 via-sky-400 to-indigo-400 bg-clip-text text-transparent leading-tight pb-0.5">

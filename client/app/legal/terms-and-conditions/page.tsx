@@ -7,7 +7,13 @@ export const metadata = {
   description: "Terms and Conditions governing the use of BitForge digital marketplace platform.",
 };
 
-export default function TermsAndConditionsPage() {
+import { getGlobalLegalDates } from "@/lib/getGlobalSettings";
+
+export default async function TermsAndConditionsPage() {
+  const dates = await getGlobalLegalDates("terms-and-conditions");
+  const effectiveDate = dates?.legalEffectiveDate || "January 1, 2026";
+  const lastUpdatedDate = dates?.legalLastUpdatedDate || "February 1, 2026";
+
   return (
     <main className="relative min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white overflow-x-hidden">
       {/* HEADER */}
@@ -29,9 +35,9 @@ export default function TermsAndConditionsPage() {
             Terms &amp; Conditions
           </h1>
           <p className="mt-4 text-sm text-slate-500 dark:text-white/60">
-            <strong className="text-slate-700 dark:text-white/80">Effective Date:</strong> January 1, 2026
+            <strong className="text-slate-700 dark:text-white/80">Effective Date:</strong> {effectiveDate}
             <span className="mx-3">·</span>
-            <strong className="text-slate-700 dark:text-white/80">Last Updated:</strong> February 1, 2026
+            <strong className="text-slate-700 dark:text-white/80">Last Updated:</strong> {lastUpdatedDate}
           </p>
           <p className="mt-3 text-sm text-slate-600 dark:text-white/70 leading-relaxed max-w-2xl">
             These Terms and Conditions (&quot;Terms&quot;) govern your access to and use of the BitForge

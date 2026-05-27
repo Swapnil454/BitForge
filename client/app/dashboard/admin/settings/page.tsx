@@ -249,6 +249,7 @@ function SettingsContent() {
     { id: "profile", label: "Profile", desc: "Personal Information", icon: UserRound, color: "text-indigo-400", bg: "bg-indigo-500/10" },
     { id: "security", label: "Security", desc: "Password & authentication", icon: ShieldCheck, color: "text-purple-400", bg: "bg-purple-500/10" },
     { id: "/about", label: "About Us", desc: "Our company and mission", icon: Info, color: "text-blue-400", bg: "bg-blue-400/10", isExternal: true },
+    { id: "/dashboard/admin/settings/legal-pages", label: "Legal Pages Dates", desc: "Manage global policy dates", icon: FileText, color: "text-amber-400", bg: "bg-amber-400/10", isExternal: true },
     { id: "/contact", label: "Contact Support", desc: "Get help with your account", icon: Mail, color: "text-sky-400", bg: "bg-sky-400/10", isExternal: true },
     { id: "/legal/terms-and-conditions", label: "Terms & Conditions", desc: "Rules and guidelines", icon: FileText, color: "text-cyan-400", bg: "bg-cyan-400/10", isExternal: true },
     { id: "/legal/privacy-policy", label: "Privacy Policy", desc: "How we handle your data", icon: ShieldAlert, color: "text-teal-400", bg: "bg-teal-400/10", isExternal: true },

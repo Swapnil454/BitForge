@@ -91,6 +91,28 @@ export default function AdminSettingsPage() {
                 <span className="text-slate-900 dark:text-white">Maintenance Mode</span>
                 <input type="checkbox" />
               </label>
+              <label className="flex items-center justify-between p-3 bg-slate-100 dark:bg-white/5 rounded-lg cursor-pointer">
+                <div>
+                  <span className="block text-slate-900 dark:text-white">Global Push Notifications</span>
+                  <span className="block text-xs text-slate-500 dark:text-white/50">Allow sending FCM broadcasts to all users</span>
+                </div>
+                <input type="checkbox" defaultChecked />
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section className="mb-10">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">UI & Preferences</h2>
+          <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Theming Engine:</h3>
+            <p className="text-slate-700 dark:text-white/80 mb-4">
+              The platform supports a robust Light and Dark mode toggle. User preferences are saved instantly to the database (<code>preferences.theme</code>) ensuring the chosen theme persists across sessions and devices.
+            </p>
+            <div className="p-3 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 rounded">
+              <p className="text-indigo-700 dark:text-indigo-300 text-sm">
+                <strong>Note:</strong> The Glassmorphism UI components automatically adapt their opacities and borders based on the active theme to ensure optimal accessibility.
+              </p>
             </div>
           </div>
         </section>

@@ -405,6 +405,21 @@ export default function ProductsAPIPage() {
           </div>
         </section>
 
+        {/* Promotions Integration */}
+        <section>
+          <h2 className="mb-4 text-2xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <span className="text-pink-500">🎁</span> Promotions Integration
+          </h2>
+          <p className="mb-4 text-slate-600 dark:text-white/70">
+            Products may have active promotions (coupons) linked to them. The Products API typically returns the base price, but the actual discounted price can be validated at checkout using the Orders API. 
+          </p>
+          <div className="rounded-lg border border-indigo-200 dark:border-cyan-500/30 bg-cyan-500/5 p-4">
+            <p className="text-sm text-slate-600 dark:text-white/70">
+              <strong className="text-cyan-600 dark:text-cyan-300">Coupons:</strong> Discounts are applied when creating an order by passing a valid <code>couponCode</code> in the request payload to the Orders API.
+            </p>
+          </div>
+        </section>
+
         {/* Related APIs */}
         <section>
           <h2 className="mb-6 text-2xl font-semibold text-slate-900 dark:text-white">Related APIs</h2>

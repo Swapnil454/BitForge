@@ -3,12 +3,18 @@
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export function BackButton() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const [mounted, setMounted] = useState(false);
 
-  if (isAuthenticated) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (mounted && isAuthenticated) {
     return (
       <button
         onClick={() => router.back()}

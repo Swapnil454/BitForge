@@ -7,7 +7,13 @@ export const metadata = {
   description: "Privacy Policy explaining how BitForge collects, uses, and protects your personal information.",
 };
 
-export default function PrivacyPolicyPage() {
+import { getGlobalLegalDates } from "@/lib/getGlobalSettings";
+
+export default async function PrivacyPolicyPage() {
+  const dates = await getGlobalLegalDates("privacy-policy");
+  const effectiveDate = dates?.legalEffectiveDate || "January 1, 2026";
+  const lastUpdatedDate = dates?.legalLastUpdatedDate || "February 1, 2026";
+
   return (
     <main className="relative min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white overflow-x-hidden">
       <DynamicHeader title="Privacy Policy" />
@@ -29,9 +35,9 @@ export default function PrivacyPolicyPage() {
             Privacy Policy
           </h1>
           <p className="mt-4 text-sm text-slate-500 dark:text-white/60">
-            <strong className="text-slate-700 dark:text-white/80">Effective Date:</strong> January 1, 2026
+            <strong className="text-slate-700 dark:text-white/80">Effective Date:</strong> {effectiveDate}
             <span className="mx-3">·</span>
-            <strong className="text-slate-700 dark:text-white/80">Last Updated:</strong> February 1, 2026 (Platform launch &amp; payment integration update)
+            <strong className="text-slate-700 dark:text-white/80">Last Updated:</strong> {lastUpdatedDate}
           </p>
           <p className="mt-3 text-sm text-slate-600 dark:text-white/70 leading-relaxed max-w-2xl">
             At BitForge, we respect your privacy and are committed to protecting your personal information.

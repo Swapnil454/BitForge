@@ -273,6 +273,36 @@ export default function ProductManagementPage() {
           </ul>
         </section>
 
+        {/* Promotions */}
+        <section>
+          <h2 className="mb-4 text-2xl font-semibold text-slate-900 dark:text-white">Promotions & Discounts</h2>
+          <p className="mb-4 text-slate-600 dark:text-white/70">
+            Boost sales by creating custom discount codes (coupons) for your products:
+          </p>
+          <ul className="space-y-2 text-slate-600 dark:text-white/70">
+            <li className="flex items-start gap-3">
+              <span className="text-pink-500 mt-0.5 flex-shrink-0">🎟️</span>
+              <span><strong>Percentage Off:</strong> Offer a flat percentage discount (e.g., 20% off) on specific products.</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-pink-500 mt-0.5 flex-shrink-0">💰</span>
+              <span><strong>Fixed Amount:</strong> Offer a specific monetary discount (e.g., $5 off).</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-pink-500 mt-0.5 flex-shrink-0">⏳</span>
+              <span><strong>Time-Limited:</strong> Set start and expiration dates for your promotions.</span>
+            </li>
+          </ul>
+          <div className="mt-4">
+            <Link
+              href="/docs/promotions"
+              className="inline-flex items-center text-sm font-medium text-indigo-600 dark:text-cyan-400 hover:text-indigo-700 dark:hover:text-cyan-300 transition-colors"
+            >
+              Read the full Promotions Guide →
+            </Link>
+          </div>
+        </section>
+
         {/* Next Steps */}
         <section>
           <h2 className="mb-6 text-2xl font-semibold text-slate-900 dark:text-white">Next Steps</h2>

@@ -24,6 +24,10 @@ import {
   Key,
   Building,
   Code,
+  Gift,
+  Building2,
+  Bell,
+  Palette,
 } from "lucide-react";
 import { BackButton } from "./BackButton";
 
@@ -49,6 +53,10 @@ const iconMap: Record<string, React.ReactNode> = {
   "🔑": <Key className="w-5 h-5" />,
   "🏦": <Building className="w-5 h-5" />,
   "👨‍💻": <Code className="w-5 h-5" />,
+  "🎁": <Gift className="w-5 h-5" />,
+  "🏢": <Building2 className="w-5 h-5" />,
+  "🔔": <Bell className="w-5 h-5" />,
+  "🎨": <Palette className="w-5 h-5" />,
 };
 
 const IconWrapper = ({ icon }: { icon: string | React.ReactNode }) => {
@@ -96,6 +104,12 @@ const allDocs = {
       description: "Track and implement approved product modifications in your dashboard.",
       icon: "",
       href: "/docs/approved-changes",
+    },
+    {
+      title: "Promotions & Coupons",
+      description: "Create discount codes, set usage limits, and boost your product sales.",
+      icon: "🎁",
+      href: "/docs/promotions",
     },
   ],
   developers: [
@@ -173,6 +187,12 @@ const allDocs = {
       icon: "⚙️",
       href: "/docs/admin/settings",
     },
+    {
+      title: "Careers Management",
+      description: "Create job postings, manage applications, and grow your BitForge team.",
+      icon: "🏢",
+      href: "/docs/admin/careers",
+    },
   ],
   platform: [
     {
@@ -198,6 +218,18 @@ const allDocs = {
       description: "Common issues, debugging tips, and error resolution.",
       icon: "🔧",
       href: "/docs/troubleshooting",
+    },
+    {
+      title: "Push Notifications",
+      description: "Setup FCM tokens, manage user opt-ins, and broadcast messages.",
+      icon: "🔔",
+      href: "/docs/push-notifications",
+    },
+    {
+      title: "UI & Theming",
+      description: "Learn about Dark/Light mode toggles, persistent preferences, and Glassmorphism.",
+      icon: "🎨",
+      href: "/docs/ui-theming",
     },
   ],
 };

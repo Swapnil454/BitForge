@@ -318,6 +318,29 @@ node scripts/createTestUsers.js`}
           </ol>
         </section>
 
+        {/* Step 8: Explore New Features */}
+        <section className="mb-12">
+          <h2 className="mb-4 flex items-center gap-3 text-2xl font-semibold text-slate-900 dark:text-white">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 dark:bg-cyan-500/20 text-sm font-bold text-indigo-600 dark:text-cyan-300">
+              8
+            </span>
+            Explore UI & Features
+          </h2>
+          <p className="mb-4 text-slate-600 dark:text-white/70">
+            Once running, take a moment to explore some of the latest built-in features:
+          </p>
+          <ul className="space-y-2 text-slate-600 dark:text-white/70">
+            <li className="flex items-start gap-3">
+              <span className="text-cyan-400 mt-0.5 flex-shrink-0">🎨</span>
+              <span><strong>Theming:</strong> Toggle between Light and Dark mode using the button in the top navigation. Your preference is saved to your account.</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-cyan-400 mt-0.5 flex-shrink-0">🔔</span>
+              <span><strong>Push Notifications:</strong> Allow notifications when prompted by your browser to test FCM push messages sent by the admin.</span>
+            </li>
+          </ul>
+        </section>
+
         {/* Next Steps */}
         <section className="mb-12">
           <h2 className="mb-6 text-2xl font-semibold text-slate-900 dark:text-white">Next Steps</h2>
