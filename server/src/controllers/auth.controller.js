@@ -19,6 +19,7 @@ const buildAuthUser = (user) => ({
   accountStatus: user.accountStatus,
   approvalStatus: user.approvalStatus,
   isApproved: user.isApproved,
+  theme: user.preferences?.theme || "system",
 });
 
 // Temporary storage for pending user registrations

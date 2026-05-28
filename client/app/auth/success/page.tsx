@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect } from "react";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { clearAuthStorage, setCookie } from "@/lib/cookies";
@@ -9,6 +10,7 @@ import { clearAuthStorage, setCookie } from "@/lib/cookies";
 function AuthSuccessPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { setTheme } = useTheme();
 
   const getDefaultRouteForUser = (user: any) => {
     const role = user?.role || "buyer";
@@ -53,11 +55,16 @@ function AuthSuccessPageContent() {
           isVerified: tokenData.isVerified,
           approvalStatus: tokenData.approvalStatus,
           isApproved: tokenData.isApproved,
+          theme: tokenData.theme || 'system',
         };
         
         // Store token and user data
         setCookie("token", token, 7);
         setCookie("user", JSON.stringify(user), 7);
+        
+        if (tokenData.theme) {
+          setTheme(tokenData.theme);
+        }
         
         toast.success("Successfully logged in!");
         router.push(getDefaultRouteForUser(user));

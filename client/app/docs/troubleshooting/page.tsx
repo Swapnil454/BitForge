@@ -1,22 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { Upload, CreditCard, MessageCircle, Rocket, AlertCircle } from "lucide-react";
+import { Upload, CreditCard, MessageCircle, Rocket, AlertCircle, Key, Zap, Mail } from "lucide-react";
 
 export default function TroubleshootingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-10 px-4">
+    <div className="py-10 px-4 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <nav className="mb-6 text-sm text-slate-500 dark:text-white/60">
-          <Link href="/docs" className="hover:text-cyan-400">Documentation</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Documentation</Link>
           <span className="mx-2">/</span>
-          <Link href="/docs" className="hover:text-cyan-400">Platform Guides</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Platform Guides</Link>
           <span className="mx-2">/</span>
           <span className="text-slate-900 dark:text-white">Troubleshooting</span>
         </nav>
 
         <div className="mb-8">
-          <span className="inline-block px-3 py-1 mb-4 text-xs font-semibold text-cyan-400 bg-cyan-500/10 rounded-full border border-cyan-500/20">
+          <span className="inline-block px-3 py-1 mb-4 text-xs font-semibold text-indigo-600 dark:text-cyan-400 bg-indigo-50 dark:bg-cyan-500/10 rounded-full border border-indigo-200 dark:border-cyan-500/20">
             Platform Guides
           </span>
           <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">Troubleshooting</h1>
@@ -32,7 +32,7 @@ export default function TroubleshootingPage() {
             {/* API Keys */}
             <details className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 cursor-pointer group">
               <summary className="text-slate-900 dark:text-white font-semibold list-none cursor-pointer flex items-center gap-2">
-                <span className="text-xl">🔑</span> API Authentication Errors (401 Unauthorized)
+                <Key className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> API Authentication Errors (401 Unauthorized)
               </summary>
               <div className="mt-4 space-y-3 text-slate-600 dark:text-white/70 text-sm">
                 <p><strong className="text-slate-900 dark:text-white">Symptom:</strong> Getting 401 errors when calling API endpoints.</p>
@@ -46,7 +46,7 @@ export default function TroubleshootingPage() {
                 <p><strong className="text-slate-900 dark:text-white">Solutions:</strong></p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Verify API key: Dashboard → API Settings → Keys</li>
-                  <li>Use correct format: <code className="text-cyan-300">Authorization: Bearer YOUR_API_KEY</code></li>
+                  <li>Use correct format: <code className="text-indigo-600 dark:text-cyan-400">Authorization: Bearer YOUR_API_KEY</code></li>
                   <li>Regenerate key if compromised</li>
                   <li>Implement token refresh for OAuth</li>
                 </ul>
@@ -152,7 +152,7 @@ export default function TroubleshootingPage() {
             {/* API Rate Limits */}
             <details className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 cursor-pointer group">
               <summary className="text-slate-900 dark:text-white font-semibold list-none cursor-pointer flex items-center gap-2">
-                <span className="text-xl">⚡</span> Rate Limit Exceeded (429 Error)
+                <Zap className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Rate Limit Exceeded (429 Error)
               </summary>
               <div className="mt-4 space-y-3 text-slate-600 dark:text-white/70 text-sm">
                 <p><strong className="text-slate-900 dark:text-white">Symptom:</strong> Getting 429 "Too Many Requests" errors.</p>
@@ -189,37 +189,37 @@ export default function TroubleshootingPage() {
                 </thead>
                 <tbody className="text-slate-600 dark:text-white/70 text-sm">
                   <tr className="border-t border-slate-200 dark:border-white/10">
-                    <td className="p-4 font-mono text-cyan-400">400</td>
+                    <td className="p-4 font-mono text-indigo-600 dark:text-cyan-400">400</td>
                     <td className="p-4">Bad Request</td>
                     <td className="p-4">Invalid parameters or malformed JSON</td>
                   </tr>
                   <tr className="border-t border-slate-200 dark:border-white/10">
-                    <td className="p-4 font-mono text-cyan-400">401</td>
+                    <td className="p-4 font-mono text-indigo-600 dark:text-cyan-400">401</td>
                     <td className="p-4">Unauthorized</td>
                     <td className="p-4">Invalid or missing API key</td>
                   </tr>
                   <tr className="border-t border-slate-200 dark:border-white/10">
-                    <td className="p-4 font-mono text-cyan-400">403</td>
+                    <td className="p-4 font-mono text-indigo-600 dark:text-cyan-400">403</td>
                     <td className="p-4">Forbidden</td>
                     <td className="p-4">Insufficient permissions</td>
                   </tr>
                   <tr className="border-t border-slate-200 dark:border-white/10">
-                    <td className="p-4 font-mono text-cyan-400">404</td>
+                    <td className="p-4 font-mono text-indigo-600 dark:text-cyan-400">404</td>
                     <td className="p-4">Not Found</td>
                     <td className="p-4">Resource doesn't exist</td>
                   </tr>
                   <tr className="border-t border-slate-200 dark:border-white/10">
-                    <td className="p-4 font-mono text-cyan-400">429</td>
+                    <td className="p-4 font-mono text-indigo-600 dark:text-cyan-400">429</td>
                     <td className="p-4">Too Many Requests</td>
                     <td className="p-4">Rate limit exceeded</td>
                   </tr>
                   <tr className="border-t border-slate-200 dark:border-white/10">
-                    <td className="p-4 font-mono text-cyan-400">500</td>
+                    <td className="p-4 font-mono text-indigo-600 dark:text-cyan-400">500</td>
                     <td className="p-4">Internal Server Error</td>
                     <td className="p-4">Server-side issue (contact support)</td>
                   </tr>
                   <tr className="border-t border-slate-200 dark:border-white/10">
-                    <td className="p-4 font-mono text-cyan-400">503</td>
+                    <td className="p-4 font-mono text-indigo-600 dark:text-cyan-400">503</td>
                     <td className="p-4">Service Unavailable</td>
                     <td className="p-4">Maintenance or temporary outage</td>
                   </tr>
@@ -232,7 +232,7 @@ export default function TroubleshootingPage() {
         {/* Debug Mode */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Enable Debug Mode</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">
               Get detailed error information by enabling debug mode during development:
             </p>
@@ -243,7 +243,7 @@ headers: {
 }`}</code></pre>
             </div>
             <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-              <p className="text-yellow-200 text-sm flex items-start gap-2">
+              <p className="text-yellow-700 dark:text-yellow-200 text-sm flex items-start gap-2">
                 <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                 <span><strong>Warning:</strong> Never enable debug mode in production. It may expose sensitive information.</span>
               </p>
@@ -254,11 +254,11 @@ headers: {
         {/* Contact Support */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Still Need Help?</h2>
-          <div className="bg-gradient-to-r from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-6">
+          <div className="bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-cyan-500/10 dark:to-indigo-500/10 shadow-sm border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">If you're still experiencing issues, contact our support team:</p>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg">
-                <h3 className="text-slate-900 dark:text-white font-semibold mb-2">📧 Email Support</h3>
+                <h3 className="text-slate-900 dark:text-white font-semibold mb-2"><Mail className="w-5 h-5 inline-block mr-2 text-indigo-500 dark:text-cyan-400" /> Email Support</h3>
                 <p className="text-cyan-300 text-sm">support@bittforge.in</p>
                 <p className="text-slate-500 dark:text-white/60 text-xs mt-2">Response within 24 hours</p>
               </div>
@@ -275,24 +275,24 @@ headers: {
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Related Resources</h2>
           <div className="grid sm:grid-cols-2 gap-4">
-            <Link href="/docs/quick-start" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+            <Link href="/docs/quick-start" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-indigo-400/40 dark:hover:border-cyan-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
               <Rocket className="w-8 h-8 mb-3 text-cyan-400" />
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-cyan-300">Quick Start</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">Quick Start</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">Get started with Bitforge</p>
             </Link>
-            <Link href="/docs/api-keys-setup" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
-              <div className="text-3xl mb-3">🔑</div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-cyan-300">API Keys</h3>
+            <Link href="/docs/api-keys-setup" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-indigo-400/40 dark:hover:border-cyan-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
+              <div className="text-3xl mb-3"><Key className="w-8 h-8 text-indigo-500 dark:text-cyan-400" /></div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">API Keys</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">Setup authentication</p>
             </Link>
-            <Link href="/docs/security" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+            <Link href="/docs/security" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-indigo-400/40 dark:hover:border-cyan-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
               <AlertCircle className="w-8 h-8 mb-3 text-cyan-400" />
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-cyan-300">Security</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">Security</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">Best practices guide</p>
             </Link>
-            <Link href="/contact" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+            <Link href="/contact" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-indigo-400/40 dark:hover:border-cyan-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
               <MessageCircle className="w-8 h-8 mb-3 text-cyan-400" />
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-cyan-300">Contact</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">Contact</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">Get help from support</p>
             </Link>
           </div>

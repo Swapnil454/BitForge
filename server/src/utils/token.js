@@ -13,8 +13,9 @@ export const generateToken = (user) => {
     accountStatus: user.accountStatus,
     approvalStatus: user.approvalStatus,
     isApproved: user.isApproved,
+    theme: user.preferences?.theme || "system",
   };
-  
+
   return jwt.sign(payload, process.env.JWT_SECRET, {
     expiresIn: "7d", // 7 days
   });

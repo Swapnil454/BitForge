@@ -78,11 +78,11 @@ export default function MobileBottomNav() {
         <div className="w-16 flex items-center justify-center h-full relative">
           <button 
             onClick={() => { setMobileSearchOpen(false); router.push("/marketplace"); }}
-            className={`absolute -top-6 flex flex-col items-center justify-center w-[60px] h-[60px] active:scale-95 transition-all ${(pathname === "/marketplace" && !isMobileSearchOpen) ? "scale-110 drop-shadow-[0_4px_10px_rgba(79,70,229,0.4)]" : "drop-shadow-md hover:scale-105"}`}
+            className={`absolute -top-7 flex flex-col items-center justify-center w-16 h-16 active:scale-95 transition-all ${(pathname === "/marketplace" && !isMobileSearchOpen) ? "scale-110 drop-shadow-[0_4px_10px_rgba(79,70,229,0.4)]" : "drop-shadow-lg hover:scale-105"}`}
           >
-            <img src="/marketPlace_Logo.png" alt="Market" className="w-14 h-14 object-contain" />
+            <img src="/marketPlace_Logo.png" alt="Market" className="w-full h-full object-contain drop-shadow-sm" />
           </button>
-          <span className={`text-[10px] absolute bottom-3 transition-colors ${(pathname === "/marketplace" && !isMobileSearchOpen) ? "font-semibold text-indigo-600 dark:text-indigo-400" : "font-medium text-slate-500 dark:text-slate-400"}`}>Market</span>
+          <span className={`text-[10px] absolute bottom-[15px] transition-colors ${(pathname === "/marketplace" && !isMobileSearchOpen) ? "font-semibold text-indigo-600 dark:text-indigo-400" : "font-medium text-slate-500 dark:text-slate-400"}`}>Market</span>
         </div>
 
         <button onClick={() => { setMobileSearchOpen(false); router.push(user?.role === "seller" ? "/dashboard/seller/products" : "/dashboard/buyer/orders"); }} className="flex flex-col items-center justify-center w-16 h-full gap-1 group relative">

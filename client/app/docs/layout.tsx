@@ -24,6 +24,7 @@ const docsSections = [
     icon: Briefcase,
     items: [
       { title: "Product Management", href: "/docs/product-management" },
+      { title: "Promotions & Coupons", href: "/docs/promotions" },
       { title: "Payout System", href: "/docs/payout-system" },
       { title: "Product Changes", href: "/docs/product-changes" },
       { title: "Upload Solutions", href: "/docs/upload-solutions" },
@@ -48,6 +49,7 @@ const docsSections = [
     items: [
       { title: "Admin Payout Guide", href: "/docs/admin/payouts" },
       { title: "Product Management", href: "/docs/admin/products" },
+      { title: "Careers Management", href: "/docs/admin/careers" },
       { title: "User Management", href: "/docs/admin/users" },
       { title: "Analytics", href: "/docs/admin/analytics" },
       { title: "Content Moderation", href: "/docs/admin/moderation" },
@@ -58,6 +60,8 @@ const docsSections = [
     title: "Platform Guides",
     icon: BookOpen,
     items: [
+      { title: "UI & Theming", href: "/docs/ui-theming" },
+      { title: "Push Notifications", href: "/docs/push-notifications" },
       { title: "Security Best Practices", href: "/docs/security" },
       { title: "Rate Limits", href: "/docs/rate-limits" },
       { title: "Testing Guide", href: "/docs/testing" },
@@ -124,7 +128,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                 <span className="hidden sm:inline text-sm font-medium">Back</span>
               </button>
 
-              <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-lg sm:text-2xl font-bold tracking-tight bg-linear-to-r from-fuchsia-500 via-violet-500 to-indigo-500 dark:from-fuchsia-300 dark:via-violet-300 dark:to-indigo-300 bg-clip-text text-transparent">
+              <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-lg sm:text-2xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 to-cyan-500 dark:from-cyan-400 dark:via-sky-400 dark:to-indigo-400 bg-clip-text text-transparent">
                 {currentHeaderTitle}
               </h1>
 
@@ -205,7 +209,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                   placeholder="Search docs..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-white/5 px-3 py-2 pl-9 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                  className="w-full rounded-lg border border-slate-200/60 dark:border-white/20 bg-white dark:bg-white/5 px-3 py-2 pl-9 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-indigo-400/50 dark:focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 dark:focus:ring-cyan-400/20 shadow-sm"
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/40">
 
@@ -242,8 +246,8 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                             className={`
                               block rounded-lg px-3 py-2 text-sm transition-all
                               ${isActive(item.href)
-                                ? "bg-cyan-500/10 text-cyan-300 font-medium"
-                                : "text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
+                                ? "bg-indigo-50 dark:bg-cyan-500/10 text-indigo-600 dark:text-cyan-300 font-medium"
+                                : "text-slate-600 dark:text-white/70 hover:bg-indigo-50/50 dark:hover:bg-white/5 hover:text-indigo-600 dark:hover:text-white"
                               }
                             `}
                           >
@@ -266,7 +270,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                     <p className="text-sm text-slate-500 dark:text-white/50">No results found</p>
                     <button
                       onClick={() => setSearchQuery("")}
-                      className="mt-2 text-xs text-cyan-400 hover:text-cyan-300"
+                      className="mt-2 text-xs text-indigo-600 dark:text-cyan-400 hover:text-indigo-700 dark:hover:text-cyan-300 transition-colors"
                     >
                       Clear search
                     </button>
@@ -282,7 +286,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                   <li>
                     <Link
                       href="/contact"
-                      className="block rounded-lg px-3 py-2 text-sm text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
+                      className="block rounded-lg px-3 py-2 text-sm text-slate-600 dark:text-white/70 hover:bg-indigo-50/50 dark:hover:bg-white/5 hover:text-indigo-600 dark:hover:text-white"
                     >
                       Contact Support
                     </Link>
@@ -290,7 +294,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                   <li>
                     <Link
                       href="/trust-center"
-                      className="block rounded-lg px-3 py-2 text-sm text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
+                      className="block rounded-lg px-3 py-2 text-sm text-slate-600 dark:text-white/70 hover:bg-indigo-50/50 dark:hover:bg-white/5 hover:text-indigo-600 dark:hover:text-white"
                     >
                       Trust Center
                     </Link>
@@ -298,7 +302,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                   <li>
                     <Link
                       href="/status"
-                      className="block rounded-lg px-3 py-2 text-sm text-slate-600 dark:text-white/70 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
+                      className="block rounded-lg px-3 py-2 text-sm text-slate-600 dark:text-white/70 hover:bg-indigo-50/50 dark:hover:bg-white/5 hover:text-indigo-600 dark:hover:text-white"
                     >
                       System Status
                     </Link>

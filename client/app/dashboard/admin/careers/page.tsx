@@ -479,7 +479,7 @@ export default function AdminCareersPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
-      <header className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-white/10 bg-white/80 dark:bg-[#05050a]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-slate-300 dark:border-white/10 bg-white dark:bg-[#05050a] backdrop-blur-xl">
         <div className="relative mx-auto flex h-14 sm:h-16 max-w-6xl items-center justify-between px-3 sm:px-6">
           <div className="flex items-center gap-4 z-10">
             <Link
@@ -523,9 +523,9 @@ export default function AdminCareersPage() {
       <main className="px-3 py-4 sm:px-6 sm:py-6">
         <div className="mx-auto max-w-6xl space-y-4 sm:space-y-5 pb-12">
           {stats && (
-            <section className="rounded-2xl border border-slate-200/60 bg-white p-3 shadow-sm dark:border-white/5 dark:bg-white/5 sm:p-4 lg:px-8">
+            <section className="rounded-2xl border border-slate-300 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-[#0b0b12] sm:p-4 lg:px-8">
               <div className="flex w-full overflow-x-auto pb-1 sm:pb-0 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                <div className="flex min-w-max flex-1 items-center justify-between divide-x divide-slate-200 dark:divide-white/10">
+                <div className="flex sm:min-w-max flex-1 items-center justify-between divide-x divide-slate-300 dark:divide-white/10">
                   {[
                     { label: "Total", value: careers.length },
                     { label: "Published", value: getStatusCount("published") },
@@ -533,11 +533,11 @@ export default function AdminCareersPage() {
                     { label: "Featured", value: featuredCount },
                     { label: "New", value: newTodayCount },
                   ].map((item, idx) => (
-                    <div key={item.label} className={`px-4 text-center sm:px-6 ${idx === 0 ? "pl-0" : ""} ${idx === 4 ? "pr-0" : ""}`}>
-                      <p className="whitespace-nowrap text-[9px] font-medium uppercase tracking-wider text-slate-500 dark:text-white/50 sm:text-[11px]">
+                    <div key={item.label} className={`px-2 sm:px-6 text-center ${idx === 0 ? "pl-0" : ""} ${idx === 4 ? "pr-0" : ""}`}>
+                      <p className="whitespace-nowrap text-[9px] font-bold uppercase tracking-wider text-slate-600 dark:text-white/70 sm:text-[11px]">
                         {item.label}
                       </p>
-                      <p className="mt-0.5 text-xl font-light tracking-tight text-slate-900 dark:text-white sm:mt-1 sm:text-2xl">
+                      <p className="mt-0 sm:mt-0.5 text-base font-semibold tracking-tight text-slate-900 dark:text-white sm:mt-1 sm:text-2xl">
                         {item.value}
                       </p>
                     </div>
@@ -547,27 +547,27 @@ export default function AdminCareersPage() {
             </section>
           )}
 
-          <section className="rounded-2xl border border-slate-200/60 bg-white shadow-sm dark:border-white/5 dark:bg-white/5 overflow-hidden">
+          <section className="rounded-2xl border border-slate-300 bg-white shadow-sm dark:border-white/10 dark:bg-[#0b0b12] overflow-hidden">
             {/* Search and Primary Filters */}
-            <div className="border-b border-slate-200/60 p-3 dark:border-white/5 flex items-center justify-between gap-3 sm:px-4">
+            <div className="border-b border-slate-300 p-3 dark:border-white/10 flex items-center justify-between gap-3 sm:px-4">
               <div className="relative w-full max-w-3xl flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 sm:h-4 sm:w-4" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 sm:h-4 sm:w-4" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search roles, keywords..."
-                  className="w-full rounded-full border border-slate-200/60 bg-slate-50 py-1.5 pl-9 pr-3 text-[13px] text-slate-900 placeholder:text-slate-400 transition focus:border-slate-300 focus:outline-none focus:ring-4 focus:ring-slate-100 dark:border-white/10 dark:bg-[#0b0b12] dark:text-white dark:focus:ring-white/5 sm:py-2 sm:pl-10 sm:pr-4 sm:text-sm"
+                  className="w-full rounded-full border border-slate-300 bg-slate-50 py-1.5 pl-9 pr-3 text-[13px] text-slate-900 placeholder:text-slate-500 transition focus:border-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-100 dark:border-white/20 dark:bg-[#13131a] dark:text-white dark:focus:ring-white/10 sm:py-2 sm:pl-10 sm:pr-4 sm:text-sm"
                 />
               </div>
               <div className="flex shrink-0 items-center">
                 <button
                   type="button"
                   onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-medium transition sm:px-4 sm:py-2 sm:text-xs ${
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition sm:px-4 sm:py-2 sm:text-xs ${
                     showAdvancedFilters
                       ? "border-cyan-600 bg-cyan-600 text-white dark:border-cyan-500 dark:bg-cyan-500 dark:text-white"
-                      : "border-slate-200/60 bg-white text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10"
+                      : "border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-white/20 dark:bg-[#13131a] dark:text-white/80 dark:hover:bg-white/10"
                   }`}
                 >
                   <Filter className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
@@ -660,7 +660,7 @@ export default function AdminCareersPage() {
             )}
 
             {/* Segmented Tabs for Quick Views */}
-            <div className="flex items-center gap-6 overflow-x-auto px-4 pt-1 pb-0 scrollbar-hide text-sm font-medium">
+            <div className="flex items-center gap-6 overflow-x-auto px-4 pt-1 pb-0 scrollbar-hide text-sm font-semibold">
               {[
                 { id: "all", label: "All Roles", count: careers.length, active: filterStatus === "all" && filterFeatured === "all" },
                 { id: "published", label: "Published", count: getStatusCount("published"), active: filterStatus === "published" },
@@ -679,11 +679,11 @@ export default function AdminCareersPage() {
                   className={`relative whitespace-nowrap px-1 py-3 text-sm transition-colors ${
                     tab.active
                       ? "text-slate-900 dark:text-white"
-                      : "text-slate-500 hover:text-slate-700 dark:text-white/60 dark:hover:text-white/90"
+                      : "text-slate-600 hover:text-slate-900 dark:text-white/70 dark:hover:text-white"
                   }`}
                 >
                   {tab.label}
-                  <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500 dark:bg-white/10 dark:text-white/60">
+                  <span className="ml-2 rounded-full bg-slate-200 px-2 py-0.5 text-[10px] text-slate-700 dark:bg-white/20 dark:text-white/80">
                     {tab.count}
                   </span>
                   {tab.active && (
@@ -695,38 +695,38 @@ export default function AdminCareersPage() {
           </section>
 
           {filteredCareers.length > 0 && (
-            <section id="jobs-toolbar" className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/80 dark:bg-white/5 px-4 py-3">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 dark:text-white/70">
-                  <label className="flex items-center gap-2">
+            <section id="jobs-toolbar" className="rounded-2xl border border-slate-300 dark:border-white/10 bg-white dark:bg-[#0b0b12] px-3 sm:px-4 py-2 sm:py-3">
+              <div className="flex items-center justify-between gap-3 overflow-x-auto scrollbar-hide">
+                <div className="flex items-center gap-2 sm:gap-3 text-xs text-slate-600 dark:text-white/70 shrink-0">
+                  <label className="flex items-center gap-1.5 sm:gap-2">
                     <input
                       type="checkbox"
-                      className="h-4 w-4"
+                      className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 dark:border-white/10 dark:bg-white/5 dark:checked:bg-white"
                       checked={isAllSelected}
                       onChange={toggleSelectAll}
                     />
-                    Select all
+                    <span className="whitespace-nowrap">Select all</span>
                   </label>
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500 dark:bg-white/10 dark:text-white/60">
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] sm:text-[11px] text-slate-500 dark:bg-white/10 dark:text-white/60 whitespace-nowrap">
                     {filteredCareers.length} results
                   </span>
                   {selectedIds.length > 0 && (
-                    <span className="rounded-full bg-cyan-50 px-2 py-0.5 text-[11px] text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-300">
+                    <span className="rounded-full bg-cyan-50 px-2 py-0.5 text-[10px] sm:text-[11px] text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-300 whitespace-nowrap">
                       {selectedIds.length} selected
                     </span>
                   )}
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   <div className="relative">
                     <button
                       type="button"
                       onClick={() => setIsBulkMenuOpen((prev) => !prev)}
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-white/70"
+                      className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-white/70 whitespace-nowrap"
                     >
                       {getBulkActionLabel(bulkAction)}
                     </button>
                     {isBulkMenuOpen && (
-                      <div className="absolute right-0 top-full mt-2 w-44 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#05050a] py-1 shadow-xl z-20">
+                      <div className="absolute right-0 sm:left-auto top-full mt-2 w-44 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#05050a] py-1 shadow-xl z-20">
                         {["publish", "draft", "feature", "unfeature", "close", "delete"].map((action) => (
                           <button
                             key={action}
@@ -747,7 +747,7 @@ export default function AdminCareersPage() {
                   </div>
                   <button
                     onClick={handleBulkAction}
-                    className="rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500 px-3 py-1.5 text-xs font-semibold text-slate-900 transition-opacity hover:opacity-90 disabled:opacity-40"
+                    className="rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500 px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-semibold text-slate-900 transition-opacity hover:opacity-90 disabled:opacity-40 whitespace-nowrap"
                     disabled={selectedIds.length === 0}
                   >
                     Apply
@@ -822,159 +822,165 @@ export default function AdminCareersPage() {
                   onClick={() => setActiveCareer(career)}
                   className="group relative flex cursor-pointer flex-col gap-4 rounded-2xl border border-slate-200/60 bg-white p-5 transition hover:border-slate-300 hover:shadow-sm dark:border-white/5 dark:bg-white/5 dark:hover:border-white/10 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <div className="flex flex-1 items-start gap-4 min-w-0">
-                    <div className="pt-1">
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 dark:border-white/10 dark:bg-white/5 dark:checked:bg-white"
-                        checked={selectedIds.includes(career._id)}
-                        onClick={(event) => event.stopPropagation()}
-                        onChange={() => toggleSelect(career._id)}
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2.5">
-                        <h3 className="truncate text-base font-semibold tracking-tight text-slate-900 dark:text-white">
-                          {career.title}
-                        </h3>
-                        <span className={`flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium tracking-wide uppercase ${
-                          career.status === "published" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400" :
-                          career.status === "draft" ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400" :
-                          "bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-white/60"
-                        }`}>
-                          {career.status === "published" && <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
-                          {career.status}
-                        </span>
-                        {career.featured && (
-                          <span className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-medium tracking-wide uppercase text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400">
-                            <Sparkles className="h-3 w-3" /> Featured
-                          </span>
-                        )}
-                        {career.status === "published" && (career.openings ?? 0) <= 1 && (
-                          <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-medium tracking-wide uppercase text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">
-                            Closing Soon
-                          </span>
-                        )}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full">
+                    <div className="flex flex-1 items-start gap-3 min-w-0">
+                      <div className="pt-1">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 dark:border-white/10 dark:bg-white/5 dark:checked:bg-white"
+                          checked={selectedIds.includes(career._id)}
+                          onClick={(event) => event.stopPropagation()}
+                          onChange={() => toggleSelect(career._id)}
+                        />
                       </div>
-
-                      <div className="mt-1 flex items-center gap-2 text-sm text-slate-500 dark:text-white/50">
-                        <span className="truncate">{career.department}</span>
-                        <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-white/20" />
-                        <span className="truncate">{career.location}</span>
-                        <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-white/20" />
-                        <span className="truncate">{career.employmentType}</span>
-                        {career.salary?.min && career.salary?.max && (
-                          <>
-                            <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-white/20" />
-                            <span className="truncate">{formatSalaryAdmin(career.salary)}</span>
-                          </>
-                        )}
-                      </div>
-                      
-                      <div className="mt-3 flex items-center gap-4 text-[11px] text-slate-400 dark:text-white/40">
-                        {career.createdAt && <span>Added {formatDate(career.createdAt)}</span>}
-                        {career.updatedAt && <span>Updated {formatRelativeDays(career.updatedAt)}</span>}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 pl-8 sm:pl-0">
-                    <Link
-                      href={`/careers/${generateSlug(career.title)}`}
-                      onClick={(event) => event.stopPropagation()}
-                      className="hidden items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white sm:flex transition"
-                    >
-                      Preview
-                      <ArrowUpRight className="h-3.5 w-3.5" />
-                    </Link>
-                    <button
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setEditingCareer(career);
-                        setIsModalOpen(true);
-                      }}
-                      className="inline-flex items-center rounded-full border border-slate-200/60 bg-white px-4 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 dark:border-white/10 dark:bg-[#0b0b12] dark:text-white/80 dark:hover:bg-white/5"
-                    >
-                      Edit
-                    </button>
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setOpenMenuId((prev) => (prev === career._id ? null : career._id));
-                        }}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white transition"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </button>
-                      {openMenuId === career._id && (
-                        <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-44 rounded-xl border border-slate-200/60 bg-white py-1 shadow-xl z-20 dark:border-white/10 dark:bg-[#0b0b12]">
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              setEditingCareer(career);
-                              setIsModalOpen(true);
-                              setOpenMenuId(null);
-                            }}
-                            className="block w-full px-3 py-1.5 text-left text-xs text-slate-800 hover:bg-slate-100 dark:text-white/90 dark:hover:bg-white/10"
-                          >
-                            Edit job
-                          </button>
-                          {career.status === "draft" && (
-                            <button
-                              type="button"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                handleStatusChange(career._id, "published");
-                                setOpenMenuId(null);
-                              }}
-                              className="block w-full px-3 py-1.5 text-left text-xs text-slate-800 dark:text-white/90 hover:bg-slate-100 dark:hover:bg-white/10"
-                            >
-                              Publish job
-                            </button>
-                          )}
-                          {career.status === "published" && (
-                            <button
-                              type="button"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                handleStatusChange(career._id, "closed");
-                                setOpenMenuId(null);
-                              }}
-                              className="block w-full px-3 py-1.5 text-left text-xs text-slate-800 dark:text-white/90 hover:bg-slate-100 dark:hover:bg-white/10"
-                            >
-                              Close role
-                            </button>
-                          )}
-                          {career.status === "closed" && (
-                            <button
-                              type="button"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                handleStatusChange(career._id, "published");
-                                setOpenMenuId(null);
-                              }}
-                              className="block w-full px-3 py-1.5 text-left text-xs text-slate-800 dark:text-white/90 hover:bg-slate-100 dark:hover:bg-white/10"
-                            >
-                              Reopen (publish)
-                            </button>
-                          )}
-                          <div className="my-1 h-px bg-slate-200 dark:bg-white/10" />
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              handleDelete(career._id);
-                              setOpenMenuId(null);
-                            }}
-                            className="block w-full px-3 py-1.5 text-left text-xs text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10"
-                          >
-                            Delete job
-                          </button>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                          <h3 className="break-words text-sm sm:text-base font-semibold tracking-tight text-slate-900 dark:text-white max-w-full">
+                            {career.title}
+                          </h3>
+                          <div className="flex flex-wrap items-center gap-2 shrink-0">
+                            <span className={`flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium tracking-wide uppercase ${
+                              career.status === "published" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400" :
+                              career.status === "draft" ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400" :
+                              "bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-white/60"
+                            }`}>
+                              {career.status === "published" && <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+                              {career.status}
+                            </span>
+                            {career.featured && (
+                              <span className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-medium tracking-wide uppercase text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400">
+                                <Sparkles className="h-3 w-3" /> Featured
+                              </span>
+                            )}
+                            {career.status === "published" && (career.openings ?? 0) <= 1 && (
+                              <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-medium tracking-wide uppercase text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">
+                                Closing Soon
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      )}
+
+                        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm text-slate-500 dark:text-white/50">
+                          <span>{career.department}</span>
+                          <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-white/20 hidden sm:block" />
+                          <span>{career.location}</span>
+                          <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-white/20 hidden sm:block" />
+                          <span>{career.employmentType}</span>
+                          {career.salary?.min && career.salary?.max && (
+                            <>
+                              <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-white/20 hidden sm:block" />
+                              <span className="font-medium text-slate-600 dark:text-white/70">{formatSalaryAdmin(career.salary)}</span>
+                            </>
+                          )}
+                        </div>
+                      
+                        <div className="mt-3 flex items-center gap-4 text-[11px] text-slate-400 dark:text-white/40">
+                          {career.createdAt && <span>Added {formatDate(career.createdAt)}</span>}
+                          {career.updatedAt && <span>Updated {formatRelativeDays(career.updatedAt)}</span>}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between sm:justify-start w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t border-slate-100 sm:border-0 dark:border-white/5 pl-7 sm:pl-0">
+                      <Link
+                        href={`/careers/${generateSlug(career.title)}`}
+                        onClick={(event) => event.stopPropagation()}
+                        className="hidden items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white sm:flex transition"
+                      >
+                        Preview
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                      </Link>
+                      <div className="flex items-center gap-2 ml-auto sm:ml-0">
+                        <button
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setEditingCareer(career);
+                            setIsModalOpen(true);
+                          }}
+                          className="inline-flex items-center rounded-full border border-slate-200/60 bg-white px-4 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-900 dark:border-white/10 dark:bg-[#0b0b12] dark:text-white/80 dark:hover:bg-white/5"
+                        >
+                          Edit
+                        </button>
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpenMenuId((prev) => (prev === career._id ? null : career._id));
+                            }}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white transition"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </button>
+                          {openMenuId === career._id && (
+                            <div className="absolute right-0 top-full mt-2 w-44 rounded-xl border border-slate-200/60 bg-white py-1 shadow-xl z-20 dark:border-white/10 dark:bg-[#0b0b12]">
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  setEditingCareer(career);
+                                  setIsModalOpen(true);
+                                  setOpenMenuId(null);
+                                }}
+                                className="block w-full px-3 py-1.5 text-left text-xs text-slate-800 hover:bg-slate-100 dark:text-white/90 dark:hover:bg-white/10"
+                              >
+                                Edit job
+                              </button>
+                              {career.status === "draft" && (
+                                <button
+                                  type="button"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleStatusChange(career._id, "published");
+                                    setOpenMenuId(null);
+                                  }}
+                                  className="block w-full px-3 py-1.5 text-left text-xs text-slate-800 dark:text-white/90 hover:bg-slate-100 dark:hover:bg-white/10"
+                                >
+                                  Publish job
+                                </button>
+                              )}
+                              {career.status === "published" && (
+                                <button
+                                  type="button"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleStatusChange(career._id, "closed");
+                                    setOpenMenuId(null);
+                                  }}
+                                  className="block w-full px-3 py-1.5 text-left text-xs text-slate-800 dark:text-white/90 hover:bg-slate-100 dark:hover:bg-white/10"
+                                >
+                                  Close role
+                                </button>
+                              )}
+                              {career.status === "closed" && (
+                                <button
+                                  type="button"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleStatusChange(career._id, "published");
+                                    setOpenMenuId(null);
+                                  }}
+                                  className="block w-full px-3 py-1.5 text-left text-xs text-slate-800 dark:text-white/90 hover:bg-slate-100 dark:hover:bg-white/10"
+                                >
+                                  Reopen (publish)
+                                </button>
+                              )}
+                              <div className="my-1 h-px bg-slate-200 dark:bg-white/10" />
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  handleDelete(career._id);
+                                  setOpenMenuId(null);
+                                }}
+                                className="block w-full px-3 py-1.5 text-left text-xs text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10"
+                              >
+                                Delete job
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1112,13 +1118,27 @@ export default function AdminCareersPage() {
         </div>
       )}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm transition-opacity dark:bg-black/60 sm:p-6">
-          <div className="relative flex max-h-[90vh] w-full max-w-5xl flex-col rounded-3xl border border-slate-200/80 bg-white shadow-2xl dark:border-white/10 dark:bg-[#05050a]">
+        <div
+          className="fixed inset-0 z-[100] bg-slate-900/20 backdrop-blur-sm transition-opacity dark:bg-black/40 flex justify-end"
+          onClick={() => {
+            setIsModalOpen(false);
+            setEditingCareer(null);
+          }}
+        >
+          <aside
+            className="relative flex h-full w-full sm:max-w-xl md:max-w-2xl lg:max-w-3xl flex-col border-l border-slate-200/80 bg-white shadow-2xl transition-transform duration-300 dark:border-white/10 dark:bg-[#05050a]"
+            onClick={(event) => event.stopPropagation()}
+          >
             {/* Header */}
-            <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-white/5">
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-                {editingCareer ? `Edit: ${editingCareer.title}` : "Create New Job"}
-              </h2>
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-4 sm:px-6 dark:border-white/5">
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-white/50 mb-1">
+                  {editingCareer ? "Edit Role" : "New Role"}
+                </p>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                  {editingCareer ? editingCareer.title : "Create Job Opening"}
+                </h2>
+              </div>
               <button
                 onClick={() => {
                   setIsModalOpen(false);
@@ -1147,7 +1167,7 @@ export default function AdminCareersPage() {
                 }}
               />
             </div>
-          </div>
+          </aside>
         </div>
       )}
 

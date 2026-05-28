@@ -37,4 +37,6 @@ export interface ModerationProduct {
   uploadedAt: string
   seller: SellerTrust
   history: ModerationEvent[]
+  reviewSeverity?: 'high' | 'medium' | 'low'
+  reviewFlags?: string[]
 }

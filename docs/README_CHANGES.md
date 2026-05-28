@@ -8,7 +8,7 @@ Your Bitforge platform now supports **manual payouts** with automatic commission
 
 ##  What Has Been Done
 
-### 🔧 Technical Changes
+###  Technical Changes
 
 1. **Updated Payout Model**
    - Added financial breakdown fields (commission, GST, net amount)
@@ -198,7 +198,7 @@ Complete instructions in `MANUAL_PAYOUT_SYSTEM.md`
 
 ---
 
-## 🧪 Testing Checklist
+##  Testing Checklist
 
 Before going to production:
 

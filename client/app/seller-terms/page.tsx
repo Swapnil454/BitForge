@@ -2,8 +2,20 @@
 
 import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
 import { ShieldCheck, Eye, Scale, AlertTriangle, Wallet, Lock, HelpCircle, FileText } from "lucide-react";
+import { useState, useEffect } from "react";
+import api from "@/lib/api";
 
 export default function SellerTermsPage() {
+  const [lastUpdated, setLastUpdated] = useState("May 26, 2026");
+
+  useEffect(() => {
+    api.get("/settings/legal-dates?pageId=seller-terms").then(res => {
+      if (res.data?.success && res.data?.data?.legalLastUpdatedDate) {
+        setLastUpdated(res.data.data.legalLastUpdatedDate);
+      }
+    }).catch(err => console.error("Failed to fetch dates", err));
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0A101D] text-slate-900 dark:text-white pb-20">
       <PageHeader 
@@ -14,17 +26,14 @@ export default function SellerTermsPage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-10">
         {/* Intro */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-2xl mb-4">
-            <FileText className="w-8 h-8" />
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">
+          <h1 className="text-xl md:text-3xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">
             Seller Guidelines & Policies
           </h1>
           <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto text-sm sm:text-base">
             Understanding content security, preview generation, and platform responsibilities. By uploading content, you agree to these terms.
           </p>
           <p className="text-xs text-slate-400 dark:text-slate-500 mt-4 font-medium uppercase tracking-wider">
-            Last updated: February 11, 2026
+            Last updated: {lastUpdated}
           </p>
         </div>
 
@@ -180,7 +189,7 @@ export default function SellerTermsPage() {
           </section>
 
           {/* Grid Layout for remaining sections */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
             {/* Revenue & Payouts */}
             <section className="bg-white dark:bg-[#12141c]/80 border border-slate-200 dark:border-white/5 rounded-2xl p-6 sm:p-8 shadow-sm">
               <div className="flex items-center gap-3 mb-5">
@@ -191,16 +200,16 @@ export default function SellerTermsPage() {
                   Revenue & Payouts
                 </h2>
               </div>
-              <ul className="space-y-3">
+              <ul className="space-y-4">
                 {[
-                  { title: "Platform Fee", desc: "The platform charges a commission on each sale." },
-                  { title: "Payout Schedule", desc: "Earnings are transferred to your bank account as scheduled." },
-                  { title: "Minimum Payout", desc: "A minimum balance threshold may apply." },
-                  { title: "Tax Responsibility", desc: "Sellers are responsible for reporting and paying taxes." }
+                  { title: "Platform Commission", desc: "BitForge charges a flat 10% commission on each successful sale." },
+                  { title: "Your Earnings", desc: "You retain 90% of the total sale price, which is added directly to your balance." },
+                  { title: "Example Calculation", desc: "For a ₹10 product, a 10% platform fee (₹1) is deducted, and you earn ₹9." },
+                  { title: "Payout Schedule", desc: "Earnings are automatically settled to your registered bank account via RazorpayX." }
                 ].map((item, i) => (
-                  <li key={i} className="flex flex-col text-sm text-slate-600 dark:text-slate-400">
-                    <strong className="text-slate-900 dark:text-slate-200">{item.title}</strong>
-                    <span>{item.desc}</span>
+                  <li key={i} className="flex flex-col text-sm text-slate-600 dark:text-slate-400 border-l-2 border-amber-500/30 pl-3">
+                    <strong className="text-slate-900 dark:text-slate-200 block mb-1 text-[15px]">{item.title}</strong>
+                    <span className="leading-relaxed">{item.desc}</span>
                   </li>
                 ))}
               </ul>

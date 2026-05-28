@@ -1,15 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { Eye, BarChart3, ShieldCheck, RefreshCcw, Package, Calendar, Inbox } from "lucide-react";
 
 export default function ApprovedChangesPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-10 px-4">
+    <div className="py-10 px-4 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <nav className="mb-6 text-sm text-slate-500 dark:text-white/60">
-          <Link href="/docs" className="hover:text-cyan-400">Documentation</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Documentation</Link>
           <span className="mx-2">/</span>
-          <Link href="/docs" className="hover:text-cyan-400">For Sellers</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">For Sellers</Link>
           <span className="mx-2">/</span>
           <span className="text-slate-900 dark:text-white">Approved Changes</span>
         </nav>
@@ -37,7 +38,7 @@ export default function ApprovedChangesPage() {
         {/* Access History */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Viewing Approved Changes</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <h3 className="text-slate-900 dark:text-white font-semibold mb-4">Two Ways to Access:</h3>
             <div className="space-y-4">
               <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg">
@@ -95,7 +96,7 @@ export default function ApprovedChangesPage() {
             </div>
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-3 flex items-center gap-2">
-                <span className="text-xl">📅</span> Timestamps & Approval
+                <Calendar className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Timestamps & Approval
               </h3>
               <ul className="space-y-2 text-slate-600 dark:text-white/70 text-sm">
                 <li className="flex items-start gap-2">
@@ -122,11 +123,11 @@ export default function ApprovedChangesPage() {
         {/* Example */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Example Change Record</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <div className="bg-slate-100 dark:bg-white/5 p-5 rounded-lg space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-slate-900 dark:text-white font-semibold">React Master Course - Price Update</h3>
-                <span className="px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">Approved</span>
+                <span className="px-3 py-1 bg-green-500/20 text-emerald-500 dark:text-emerald-400 text-xs rounded-full">Approved</span>
               </div>
               <div className="grid md:grid-cols-2 gap-4 text-sm">
                 <div>
@@ -180,7 +181,7 @@ export default function ApprovedChangesPage() {
             </div>
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">📥</span> Export Records
+                <Inbox className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Export Records
               </h3>
               <p className="text-slate-500 dark:text-white/60 text-sm mb-3">
                 Export your change history for record-keeping:
@@ -198,18 +199,18 @@ export default function ApprovedChangesPage() {
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Why Track Changes?</h2>
           <div className="grid md:grid-cols-3 gap-4">
-            <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3"></div>
+            <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-5 text-center">
+              <div className="text-3xl mb-3"><Eye className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Transparency</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">Full audit trail of product modifications</p>
             </div>
-            <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3"></div>
+            <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-5 text-center">
+              <div className="text-3xl mb-3"><BarChart3 className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Analytics</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">Understand product evolution over time</p>
             </div>
-            <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3"></div>
+            <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-5 text-center">
+              <div className="text-3xl mb-3"><ShieldCheck className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Compliance</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">Proof of approval for audits</p>
             </div>
@@ -218,14 +219,14 @@ export default function ApprovedChangesPage() {
 
         {/* Related */}
         <div className="grid sm:grid-cols-2 gap-4">
-          <Link href="/docs/product-changes" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3"></div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-cyan-300">Product Changes</h3>
+          <Link href="/docs/product-changes" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-indigo-400/40 dark:hover:border-cyan-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
+            <div className="text-3xl mb-3"><RefreshCcw className="w-8 h-8 text-indigo-500 dark:text-cyan-400" /></div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">Product Changes</h3>
             <p className="text-slate-500 dark:text-white/60 text-sm">How to submit changes</p>
           </Link>
-          <Link href="/docs/product-management" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3"></div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-cyan-300">Product Management</h3>
+          <Link href="/docs/product-management" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-indigo-400/40 dark:hover:border-cyan-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
+            <div className="text-3xl mb-3"><Package className="w-8 h-8 text-indigo-500 dark:text-cyan-400" /></div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">Product Management</h3>
             <p className="text-slate-500 dark:text-white/60 text-sm">Complete management guide</p>
           </Link>
         </div>

@@ -184,8 +184,8 @@ export default function TableOfContents() {
             ${heading.level === 3 ? "pl-5 text-[11px]" : "pl-3"}
             ${
               activeId === heading.id
-                ? "text-cyan-400 font-semibold border-cyan-400 bg-cyan-500/10"
-                : "text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 border-transparent hover:border-slate-300 dark:hover:border-white/20"
+                ? "text-indigo-600 dark:text-cyan-400 font-semibold border-indigo-600 dark:border-cyan-400 bg-indigo-50 dark:bg-cyan-500/10"
+                : "text-slate-500 dark:text-white/60 hover:text-indigo-600 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 border-transparent hover:border-slate-300 dark:hover:border-white/20"
             }
           `}
         >

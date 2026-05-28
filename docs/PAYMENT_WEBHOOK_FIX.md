@@ -1,4 +1,4 @@
-# 🔧 Payment & Webhook Issues - Complete Fix
+#  Payment & Webhook Issues - Complete Fix
 
 ##  Current Problems
 

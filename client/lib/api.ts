@@ -117,6 +117,7 @@ export const authAPI = {
     }
 };
 
+
 // Admin API functions
 export const adminAPI = {
     getDashboardStats: async () => {
@@ -172,6 +173,11 @@ export const adminAPI = {
     
     approveProduct: async (id: string, adminNote?: string) => {
         const response = await api.post(`/admin/products/${id}/approve`, { adminNote });
+        return response.data;
+    },
+
+    pendingProduct: async (id: string, adminNote?: string) => {
+        const response = await api.post(`/admin/products/${id}/pending`, { adminNote });
         return response.data;
     },
     
@@ -895,6 +901,11 @@ export const promotionAPI = {
         return response.data;
     },
 
+    rejectPromotionPayment: async (id: string, payload: { rejectedReason: string; adminNote?: string }) => {
+        const response = await api.patch(`/admin/promotions/${id}/reject-payment`, payload);
+        return response.data;
+    },
+
     pausePromotion: async (id: string, payload?: { adminNote?: string }) => {
         const response = await api.patch(`/admin/promotions/${id}/pause`, payload || {});
         return response.data;
@@ -962,6 +973,11 @@ export const promotionAPI = {
 
 // User API functions
 export const userAPI = {
+    updatePreferences: async (payload: { theme?: string, browserPushEnabled?: boolean }) => {
+        const response = await api.patch('/users/preferences', payload);
+        return response.data;
+    },
+
     getCurrentUser: async () => {
         const response = await api.get('/users/profile');
         return response.data;
@@ -1033,11 +1049,6 @@ export const userAPI = {
         const response = await api.post('/users/reactivate-account', { email, otp });
         return response.data;
     },
-
-    updatePreferences: async (preferences: { theme: string }) => {
-        const response = await api.patch('/users/preferences', preferences);
-        return response.data;
-    }
 };
 
 // Report API functions

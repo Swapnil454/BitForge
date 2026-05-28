@@ -98,7 +98,7 @@ You'll see a **review submission form** with:
 
 ### Seller Response:
 - Seller can reply to your review
-- Response appears below your review with 💬 icon
+- Response appears below your review with  icon
 - You'll receive a notification when seller responds
 
 ### Community Interaction:
@@ -168,7 +168,7 @@ You'll see a **review submission form** with:
    │                                      │
    │ Great product! Worth every penny.   │
    │                                      │
-   │ 💬 Seller Response:                 │
+   │  Seller Response:                 │
    │    Thank you for your review!       │
    │                                      │
    │ 👍 5 people found this helpful      │

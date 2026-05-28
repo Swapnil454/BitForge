@@ -144,6 +144,8 @@ export const getPendingProducts = async (req, res) => {
                 uploadedAt: '$createdAt',
                 createdAt: 1,
                 status: 1,
+                reviewSeverity: 1,
+                reviewFlags: 1,
                 'seller.name': 1,
                 'seller.email': 1,
                 'seller.emailVerified': '$seller.isVerified',
@@ -762,6 +764,47 @@ export const deleteProductByAdmin = async (req, res) => {
   }
 };
 
+// Set product to pending
+export const pendingProduct = async (req, res) => {
+  const { id } = req.params;
+  const { adminNote } = req.body;
+
+  const product = await Product.findByIdAndUpdate(id, {
+    status: "pending",
+    rejectionReason: null,
+  }, { new: true });
+
+  if (product && product.sellerId) {
+    // Write audit log
+    const logData = {
+      productId: product._id,
+      productTitle: product.title,
+      adminId: req.user._id,
+      adminEmail: req.user.email,
+      action: 'pending',
+      adminNote,
+      sellerId: product.sellerId,
+      timestamp: new Date()
+    };
+    writeModerationLog(logData);
+
+    await createNotification(
+      product.sellerId,
+      "product_under_review",
+      "Product Under Review",
+      `Your product "${product.title}" has been moved back to pending status for review.`,
+      product._id,
+      "Product",
+      {
+        actionUrl: "/dashboard/seller/products",
+        pushWhenInactiveOnly: false
+      }
+    );
+  }
+
+  res.json({ message: "Product status set to pending" });
+};
+
 // Approve product
 export const approveProduct = async (req, res) => {
   const { id } = req.params;
@@ -813,7 +856,11 @@ export const approveProduct = async (req, res) => {
       "Product Approved! 🎉",
       `Your product "${product.title}" has been approved and is now live on the marketplace`,
       product._id,
-      "Product"
+      "Product",
+      {
+        actionUrl: "/dashboard/seller/products",
+        pushWhenInactiveOnly: false
+      }
     );
   }
 
@@ -827,7 +874,11 @@ export const approveProduct = async (req, res) => {
         "New product available",
         `"${product.title}" is now live. Check it out!`,
         product._id,
-        "Product"
+        "Product",
+        {
+          actionUrl: `/product/${product._id}`,
+          pushWhenInactiveOnly: false
+        }
       );
     }
   } catch (notifyErr) {
@@ -892,7 +943,11 @@ export const rejectProduct = async (req, res) => {
       "Product Rejected",
       `Your product "${product.title}" was rejected. Reasons: ${reasons.join(', ')}`,
       product._id,
-      "Product"
+      "Product",
+      {
+        actionUrl: "/dashboard/seller/products",
+        pushWhenInactiveOnly: false
+      }
     );
   }
 
@@ -954,7 +1009,11 @@ export const requestProductChanges = async (req, res) => {
       "Action Required: Changes Requested",
       `We need you to make some updates to "${product.title}" before it can be approved. Reasons: ${reasons.join(', ')}`,
       product._id,
-      "Product"
+      "Product",
+      {
+        actionUrl: "/dashboard/seller/products",
+        pushWhenInactiveOnly: false
+      }
     );
   }
 
@@ -1014,7 +1073,11 @@ export const approveProductChange = async (req, res) => {
         "Product Update Approved ",
         `Your update for "${product.title}" has been approved and is now live`,
         product._id,
-        "Product"
+        "Product",
+        {
+          actionUrl: "/dashboard/seller/products",
+          pushWhenInactiveOnly: false
+        }
       );
 
       // Notify buyers about updated product (broadcast)
@@ -1027,7 +1090,11 @@ export const approveProductChange = async (req, res) => {
             "Product updated",
             `"${product.title}" has new changes. Take a look!`,
             product._id,
-            "Product"
+            "Product",
+            {
+              actionUrl: `/product/${product._id}`,
+              pushWhenInactiveOnly: false
+            }
           );
         }
       } catch (notifyErr) {
@@ -1081,7 +1148,11 @@ export const approveProductChange = async (req, res) => {
           ? `Your product "${product.title}" has been archived. Existing buyers retain access.`
           : `Your product "${product.title}" has been deleted as requested`,
         product._id,
-        "Product"
+        "Product",
+        {
+          actionUrl: "/dashboard/seller/products",
+          pushWhenInactiveOnly: false
+        }
       );
 
       return res.json({ 
@@ -1130,7 +1201,11 @@ export const rejectProductChange = async (req, res) => {
       "Product Change Rejected",
       `Your requested change for "${product.title}" was rejected. Reason: ${reason}`,
       product._id,
-      "Product"
+      "Product",
+      {
+        actionUrl: "/dashboard/seller/products",
+        pushWhenInactiveOnly: false
+      }
     );
 
     res.json({ 
@@ -1667,6 +1742,22 @@ export const getAllDisputes = async (req, res) => {
             { $match: matchStage },
             {
               $lookup: {
+                from: "orders",
+                localField: "orderId",
+                foreignField: "_id",
+                as: "order",
+              },
+            },
+            { $unwind: { path: "$order", preserveNullAndEmptyArrays: true } },
+            {
+              $addFields: {
+                sellerId: { $ifNull: ["$sellerId", "$order.sellerId"] },
+                productId: { $ifNull: ["$productId", "$order.productId"] },
+                amount: { $ifNull: ["$amount", "$order.amount"] },
+              }
+            },
+            {
+              $lookup: {
                 from: "users",
                 localField: "buyerId",
                 foreignField: "_id",
@@ -2143,8 +2234,15 @@ export const getDashboardStats = async (req, res) => {
     const orders = await Order.find({ status: "paid" });
     const totalRevenue = orders.reduce((sum, order) => sum + (order.amount || 0), 0);
     
-    // Get platform revenue (commission from all paid orders)
-    const platformRevenue = orders.reduce((sum, order) => sum + (order.platformFee || 0), 0);
+    // Get platform revenue (commission from all paid orders + seller platform fee)
+    const platformRevenue = orders.reduce((sum, order) => {
+      const buyerFee = order.platformFee || 0;
+      // Seller fee is 10% of base price. basePrice = sellerAmount / 0.9
+      const sellerFee = order.sellerAmount ? (order.sellerAmount / 0.9) * 0.1 : 0;
+      return sum + buyerFee + sellerFee;
+    }, 0);
+    
+    const roundedPlatformRevenue = Number(platformRevenue.toFixed(2));
 
     // Get total users count
     const totalUsers = await User.countDocuments();
@@ -2209,8 +2307,20 @@ export const getDashboardStats = async (req, res) => {
             year: { $year: "$createdAt" },
             month: { $month: "$createdAt" }
           },
-          revenue: { $sum: "$platformFee" },
+          buyerRevenue: { $sum: "$platformFee" },
+          sellerAmountSum: { $sum: "$sellerAmount" },
           users: { $addToSet: "$buyerId" }
+        }
+      },
+      {
+        $project: {
+          revenue: {
+            $add: [
+              { $ifNull: ["$buyerRevenue", 0] },
+              { $multiply: [ { $divide: [ { $ifNull: ["$sellerAmountSum", 0] }, 0.9 ] }, 0.1 ] }
+            ]
+          },
+          users: 1
         }
       },
       {
@@ -2222,7 +2332,7 @@ export const getDashboardStats = async (req, res) => {
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const platformAnalytics = monthlyOrders.map(item => ({
       month: `${monthNames[item._id.month - 1]} ${item._id.year}`,
-      revenue: item.revenue || 0,
+      revenue: Number((item.revenue || 0).toFixed(2)),
       users: item.users.length
     }));
 
@@ -2238,13 +2348,16 @@ export const getDashboardStats = async (req, res) => {
       ? ((totalUsers - usersLastMonth) / usersLastMonth * 100).toFixed(1)
       : 0;
 
+    const openDisputes = await Dispute.countDocuments({ status: "open" });
+
     res.json({
       totalRevenue,
-      platformRevenue,
+      platformRevenue: roundedPlatformRevenue,
       totalUsers,
       totalBuyers,
       totalSellers,
       totalProducts,
+      openDisputes,
       userGrowth: parseFloat(userGrowth),
       pendingSellers: pendingSellers.map(s => ({
         id: s._id,

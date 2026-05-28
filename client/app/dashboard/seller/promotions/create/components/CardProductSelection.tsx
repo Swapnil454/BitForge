@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { usePromotionFormStore, ProductMeta } from '../store';
 import { SectionCard } from './SectionCard';
-import { Megaphone, CheckCircle2, ChevronDown, Check } from 'lucide-react';
+import { Megaphone, CheckCircle2, ChevronDown, Check, AlertCircle } from 'lucide-react';
 import { productAPI } from "@/lib/api";
 import { showError } from "@/lib/toast";
 
@@ -29,23 +29,26 @@ export function CardProductSelection() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const fetchProducts = async () => {
+    try {
+      setProductLoadingState('loading');
+      const data = await productAPI.getMyProducts();
+      const approvedProducts = (data || []).filter(
+        (p: any) => p.status === "approved" && p.changeRequest === "none" && !p.isDeleted
+      );
+      setProducts(approvedProducts);
+      setProductLoadingState('success');
+    } catch {
+      showError("Failed to load your products");
+      setProductLoadingState('error');
+    }
+  };
+
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setProductLoadingState('loading');
-        const data = await productAPI.getMyProducts();
-        const approvedProducts = (data || []).filter(
-          (p: any) => p.status === "approved" && p.changeRequest === "none" && !p.isDeleted
-        );
-        setProducts(approvedProducts);
-        setProductLoadingState('success');
-      } catch {
-        showError("Failed to load your products");
-        setProductLoadingState('error');
-      }
-    };
-    fetchProducts();
-  }, [setProductLoadingState]);
+    if (productLoadingState === 'idle') {
+      fetchProducts();
+    }
+  }, [productLoadingState, setProductLoadingState]);
 
   const handleSelect = (id: string) => {
     const p = products.find(p => p._id === id);
@@ -71,6 +74,19 @@ export function CardProductSelection() {
         <div className="h-24 animate-pulse rounded-2xl bg-slate-100 dark:bg-white/5" />
       )}
 
+      {productLoadingState === 'error' && (
+        <div className="rounded-3xl border border-dashed border-red-300 px-6 py-8 text-center bg-red-50 dark:border-red-500/30 dark:bg-red-500/10">
+          <AlertCircle className="mx-auto h-8 w-8 text-red-500 mb-3" />
+          <h3 className="text-lg font-bold text-red-700 dark:text-red-400">Failed to load products</h3>
+          <button 
+            onClick={() => setProductLoadingState('idle')} // This will trigger re-render and re-fetch if we update the useEffect dependency or just do a manual fetch
+            className="mt-4 px-4 py-2 bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300 rounded-lg font-semibold hover:bg-red-200 transition"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {productLoadingState === 'success' && products.length === 0 && (
         <div className="rounded-3xl border border-dashed border-slate-300 px-6 py-14 text-center dark:border-white/15">
           <Megaphone className="mx-auto h-10 w-10 text-cyan-400" />
@@ -84,7 +100,7 @@ export function CardProductSelection() {
         </div>
       )}
 
-      {productLoadingState === 'success' && products.length > 0 && isEditing && (
+      {productLoadingState === 'success' && products.length > 0 && (isEditing || !selectedProduct) && (
         <div className="space-y-4">
           <label className="block text-sm font-bold text-slate-900 dark:text-white">
             Choose an approved product

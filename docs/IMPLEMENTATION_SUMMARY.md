@@ -175,7 +175,7 @@ Both pages include:
 
 ---
 
-## 🧪 Testing
+##  Testing
 
 ### Test Bank Account Details:
 ```

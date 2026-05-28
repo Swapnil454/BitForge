@@ -100,7 +100,7 @@ POST   /api/reviews/:reviewId/response - Seller adds response
 - **Rating Distribution Chart** - Visual bar chart of star ratings
 - **Review Submission Form** - Star selector + comment textarea
 - **Existing Reviews Display** - Buyer avatars, ratings, comments
-- **Seller Response Display** - Shows seller replies with 💬 icon
+- **Seller Response Display** - Shows seller replies with  icon
 - **Purchase Verification** - Only shows form if buyer purchased product
 - **Real-Time Updates** - Fetches fresh reviews after submission
 

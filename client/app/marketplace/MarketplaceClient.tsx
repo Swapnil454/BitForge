@@ -182,7 +182,7 @@ function HomeView({
     return (
       <>
         <HeroSkeleton />
-        <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mt-10">
+        <div className="w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 mt-10">
           <GridSkeleton />
         </div>
       </>
@@ -212,7 +212,7 @@ function HomeView({
       })}
 
       {/* "See All" CTA */}
-      <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mb-8 flex flex-col items-center gap-2">
+      <div className="w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 mb-8 flex flex-col items-center gap-2">
         <p className="text-sm text-gray-400 dark:text-slate-500">Showing a curated selection from our catalogue</p>
         <button
           onClick={() => router.push("/marketplace?collection=All")}
@@ -383,14 +383,14 @@ export default function MarketplaceClient() {
         {/* Global Hero Ads and Category Pills */}
         {!searchQuery && <HeroAds />}
         {!searchQuery && (
-          <div className="mt-3 sm:mt-4 mb-3 sm:mb-5 relative z-10">
+          <div className="mt-0 mb-1 sm:mb-2 relative z-10">
             <CategoryPills products={homeProducts} />
           </div>
         )}
 
         {/* Grid view: search / category / collection / all */}
         {isGridView ? (
-          <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 py-6">
+          <div className="relative z-10 w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 py-6">
             <InfiniteProductGrid
                 title={gridTitle()}
                 subtitle={gridSubtitle()}

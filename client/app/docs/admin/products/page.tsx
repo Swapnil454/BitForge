@@ -1,16 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { Shield } from "lucide-react";
+import { Shield, Package } from "lucide-react";
 
 export default function AdminProductsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-10 px-4">
+    <div className="py-10 px-4 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <nav className="mb-6 text-sm text-slate-500 dark:text-white/60">
-          <Link href="/docs" className="hover:text-cyan-400">Documentation</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Documentation</Link>
           <span className="mx-2">/</span>
-          <Link href="/docs" className="hover:text-cyan-400">Admin Guides</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Admin Guides</Link>
           <span className="mx-2">/</span>
           <span className="text-slate-900 dark:text-white">Product Management</span>
         </nav>
@@ -106,13 +106,27 @@ export default function AdminProductsPage() {
           </div>
         </section>
 
+        <section className="mb-10">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Promotions Oversight</h2>
+          <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <p className="text-slate-700 dark:text-white/80 mb-4">
+              Administrators have visibility into the coupon codes (promotions) that sellers generate for their products. This oversight ensures that the discount system is not abused.
+            </p>
+            <ul className="space-y-2 text-slate-600 dark:text-white/70 text-sm list-disc list-inside">
+              <li>Review active promotion codes.</li>
+              <li>Monitor usage limits and discount values (percentage/fixed).</li>
+              <li>Invalidate suspicious promotions that violate platform policies.</li>
+            </ul>
+          </div>
+        </section>
+
         <div className="grid sm:grid-cols-2 gap-4">
-          <Link href="/docs/product-management" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3"></div>
+          <Link href="/docs/product-management" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
+            <div className="text-3xl mb-3"><Package className="w-8 h-8 text-indigo-500 dark:text-cyan-400" /></div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Product Management</h3>
             <p className="text-slate-500 dark:text-white/60 text-sm">Seller product guide</p>
           </Link>
-          <Link href="/docs/admin/moderation" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+          <Link href="/docs/admin/moderation" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
             <Shield className="w-5 h-5 mb-3 text-purple-400" />
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Moderation</h3>
             <p className="text-slate-500 dark:text-white/60 text-sm">Content moderation policies</p>

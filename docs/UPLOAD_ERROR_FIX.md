@@ -1,4 +1,4 @@
-# 🔧 Product Upload 400 Error - Fix Summary
+#  Product Upload 400 Error - Fix Summary
 
 ##  What Was Wrong?
 
@@ -193,7 +193,7 @@ fileUrl: String, // Cloudinary secure_url
 
 ---
 
-## 🧪 Testing the Fix
+##  Testing the Fix
 
 ### 1. Test Form Validation
 ```bash

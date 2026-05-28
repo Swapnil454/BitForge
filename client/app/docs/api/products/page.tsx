@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Radio, ShoppingCart, Check } from "lucide-react";
+import { Radio, ShoppingCart, Check, Gift } from "lucide-react";
 
 export default function ProductsAPIPage() {
   return (
@@ -47,7 +47,7 @@ export default function ProductsAPIPage() {
             code={`Authorization: Bearer <your_jwt_token>`}
           />
 
-          <div className="mt-4 rounded-lg border border-cyan-500/30 bg-cyan-500/5 p-4">
+          <div className="mt-4 rounded-lg border border-indigo-200 dark:border-cyan-500/30 bg-cyan-500/5 p-4">
             <p className="text-sm text-slate-600 dark:text-white/70">
               <strong className="text-cyan-300">Get Token:</strong> Login at <code>/auth/login</code> to receive JWT token
             </p>
@@ -69,9 +69,9 @@ export default function ProductsAPIPage() {
             Retrieve a paginated list of products. Supports filtering by category, price range, and search query.
           </p>
 
-          <div className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4 mb-4">
+          <div className="rounded-lg border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-4 mb-4">
             <div className="flex items-center gap-3">
-              <span className="rounded-md bg-emerald-500/20 px-2 py-1 text-xs font-semibold text-emerald-300">
+              <span className="rounded-md bg-emerald-500/20 px-2 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
                 GET
               </span>
               <code className="text-sm text-slate-900 dark:text-white">/products</code>
@@ -167,9 +167,9 @@ export default function ProductsAPIPage() {
             Retrieve detailed information about a specific product.
           </p>
 
-          <div className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4 mb-4">
+          <div className="rounded-lg border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-4 mb-4">
             <div className="flex items-center gap-3">
-              <span className="rounded-md bg-emerald-500/20 px-2 py-1 text-xs font-semibold text-emerald-300">
+              <span className="rounded-md bg-emerald-500/20 px-2 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
                 GET
               </span>
               <code className="text-sm text-slate-900 dark:text-white">/products/:productId</code>
@@ -222,9 +222,9 @@ export default function ProductsAPIPage() {
             Upload a new product. Requires seller role.
           </p>
 
-          <div className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4 mb-4">
+          <div className="rounded-lg border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-4 mb-4">
             <div className="flex items-center gap-3">
-              <span className="rounded-md bg-cyan-500/20 px-2 py-1 text-xs font-semibold text-cyan-300">
+              <span className="rounded-md bg-indigo-100 dark:bg-cyan-500/20 px-2 py-1 text-xs font-semibold text-indigo-600 dark:text-cyan-300">
                 POST
               </span>
               <code className="text-sm text-slate-900 dark:text-white">/products</code>
@@ -283,9 +283,9 @@ export default function ProductsAPIPage() {
             Update an existing product. Requires seller role and ownership.
           </p>
 
-          <div className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4 mb-4">
+          <div className="rounded-lg border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-4 mb-4">
             <div className="flex items-center gap-3">
-              <span className="rounded-md bg-yellow-500/20 px-2 py-1 text-xs font-semibold text-yellow-300">
+              <span className="rounded-md bg-yellow-500/20 px-2 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
                 PUT
               </span>
               <code className="text-sm text-slate-900 dark:text-white">/products/:productId</code>
@@ -304,9 +304,9 @@ export default function ProductsAPIPage() {
   }'`}
           />
 
-          <div className="mt-4 rounded-lg border border-yellow-500/30 bg-yellow-500/5 p-4">
+          <div className="mt-4 rounded-lg border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/5 p-4">
             <p className="text-sm text-slate-600 dark:text-white/70">
-              <strong className="text-yellow-300">Note:</strong> Updates to approved products go through pending changes workflow and require admin approval.
+              <strong className="text-amber-700 dark:text-amber-300">Note:</strong> Updates to approved products go through pending changes workflow and require admin approval.
             </p>
           </div>
         </section>
@@ -318,7 +318,7 @@ export default function ProductsAPIPage() {
             Request product deletion. Requires admin approval.
           </p>
 
-          <div className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4 mb-4">
+          <div className="rounded-lg border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-4 mb-4">
             <div className="flex items-center gap-3">
               <span className="rounded-md bg-red-500/20 px-2 py-1 text-xs font-semibold text-red-300">
                 DELETE
@@ -352,7 +352,7 @@ export default function ProductsAPIPage() {
           </p>
 
           <div className="space-y-3">
-            <div className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4">
+            <div className="rounded-lg border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-4">
               <div className="mb-2 flex items-center gap-3">
                 <span className="rounded-md bg-red-500/20 px-2 py-1 text-xs font-semibold text-red-300">
                   400
@@ -369,7 +369,7 @@ export default function ProductsAPIPage() {
               />
             </div>
 
-            <div className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4">
+            <div className="rounded-lg border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-4">
               <div className="mb-2 flex items-center gap-3">
                 <span className="rounded-md bg-red-500/20 px-2 py-1 text-xs font-semibold text-red-300">
                   401
@@ -386,7 +386,7 @@ export default function ProductsAPIPage() {
               />
             </div>
 
-            <div className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4">
+            <div className="rounded-lg border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-4">
               <div className="mb-2 flex items-center gap-3">
                 <span className="rounded-md bg-red-500/20 px-2 py-1 text-xs font-semibold text-red-300">
                   404
@@ -405,26 +405,41 @@ export default function ProductsAPIPage() {
           </div>
         </section>
 
+        {/* Promotions Integration */}
+        <section>
+          <h2 className="mb-4 text-2xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <span className="text-pink-500"><Gift className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></span> Promotions Integration
+          </h2>
+          <p className="mb-4 text-slate-600 dark:text-white/70">
+            Products may have active promotions (coupons) linked to them. The Products API typically returns the base price, but the actual discounted price can be validated at checkout using the Orders API. 
+          </p>
+          <div className="rounded-lg border border-indigo-200 dark:border-cyan-500/30 bg-cyan-500/5 p-4">
+            <p className="text-sm text-slate-600 dark:text-white/70">
+              <strong className="text-cyan-600 dark:text-cyan-300">Coupons:</strong> Discounts are applied when creating an order by passing a valid <code>couponCode</code> in the request payload to the Orders API.
+            </p>
+          </div>
+        </section>
+
         {/* Related APIs */}
         <section>
           <h2 className="mb-6 text-2xl font-semibold text-slate-900 dark:text-white">Related APIs</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <Link
               href="/docs/api/payouts"
-              className="group block rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4 transition-all hover:border-cyan-400/40"
+              className="group block rounded-xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-4 transition-all hover:border-indigo-400/40 dark:hover:border-cyan-400/40"
             >
               <div className="mb-2 text-2xl"></div>
-              <h3 className="mb-1 font-semibold text-slate-900 dark:text-white group-hover:text-cyan-300">
+              <h3 className="mb-1 font-semibold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">
                 Payouts API →
               </h3>
               <p className="text-sm text-slate-500 dark:text-white/60">Manage seller payouts</p>
             </Link>
             <Link
               href="/docs/api/orders"
-              className="group block rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 p-4 transition-all hover:border-cyan-400/40"
+              className="group block rounded-xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-4 transition-all hover:border-indigo-400/40 dark:hover:border-cyan-400/40"
             >
               <ShoppingCart className="w-5 h-5 mb-2 text-yellow-400" />
-              <h3 className="mb-1 font-semibold text-slate-900 dark:text-white group-hover:text-cyan-300">
+              <h3 className="mb-1 font-semibold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">
                 Orders API →
               </h3>
               <p className="text-sm text-slate-500 dark:text-white/60">Track purchases and orders</p>
@@ -448,7 +463,7 @@ function CodeBlock({ code, language, title }: { code: string; language?: string;
   return (
     <div className="group relative">
       {title && (
-        <div className="border-b border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 px-4 py-2 text-xs font-medium text-slate-600 dark:text-white/70">
+        <div className="border-b border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm px-4 py-2 text-xs font-medium text-slate-600 dark:text-white/70">
           {title}
         </div>
       )}
@@ -460,8 +475,8 @@ function CodeBlock({ code, language, title }: { code: string; language?: string;
           {copied ? "✓ Copied" : "Copy"}
         </button>
       </div>
-      <pre className="overflow-x-auto rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-black/40 p-4 text-sm">
-        <code className="text-cyan-300">{code}</code>
+      <pre className="overflow-x-auto rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/40 p-4 text-sm">
+        <code className="text-indigo-600 dark:text-cyan-400">{code}</code>
       </pre>
     </div>
   );

@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { ArrowUpRight, ChevronLeft, ChevronRight, Copy, Edit2, MoreVertical } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight, Copy, Edit2, MoreVertical, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { adminAPI } from "@/lib/api";
 
 interface Seller {
@@ -210,11 +211,6 @@ export default function ProductDetailsPage() {
       return;
     }
 
-    if (selectedStatus === "pending") {
-      toast.error("Pending status cannot be set from this screen");
-      return;
-    }
-
     if (selectedStatus === "rejected" && !statusReason.trim()) {
       toast.error("Rejection reason is required");
       return;
@@ -224,6 +220,8 @@ export default function ProductDetailsPage() {
     try {
       if (selectedStatus === "approved") {
         await adminAPI.approveProduct(product._id);
+      } else if (selectedStatus === "pending") {
+        await adminAPI.pendingProduct(product._id, statusReason.trim() || undefined);
       } else {
         await adminAPI.rejectProduct(product._id, [statusReason.trim()]);
       }
@@ -317,29 +315,28 @@ export default function ProductDetailsPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f] text-slate-900 dark:text-white pb-20">
       <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-white/10 bg-white/90 dark:bg-[#0b0b12]/95 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-            <div className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-white/70 sm:justify-start">
+          <div className="flex items-center justify-between gap-3 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+            <div className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-white/70 sm:justify-start shrink-0">
               <button
                 onClick={() => router.back()}
                 className="inline-flex items-center gap-1 text-slate-600 hover:text-slate-900 dark:text-white/70 dark:hover:text-white transition"
               >
                 <ChevronLeft className="w-5 h-5" />
-                <span className="text-sm font-medium">Back</span>
+                <span className="hidden sm:inline text-sm font-medium">Back</span>
               </button>
-              
             </div>
 
-            <div className="text-center sm:justify-self-center">
-              <h1 className="text-lg sm:text-xl font-bold tracking-tight">{product.title}</h1>
-              <p className="text-xs text-slate-500 dark:text-white/55">
+            <div className="text-center sm:justify-self-center min-w-0 flex-1">
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight truncate">{product.title}</h1>
+              <p className="text-xs text-slate-500 dark:text-white/55 truncate">
                 {product.category} · Created {formatDate(product.createdAt)}
               </p>
             </div>
 
-            <div className="flex items-center gap-2 sm:justify-self-end">
+            <div className="flex items-center gap-2 sm:justify-self-end shrink-0">
               <button
                 onClick={openEditModal}
-                className="h-9 px-4 inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-white/20 transition text-xs font-semibold uppercase tracking-wider"
+                className="hidden sm:inline-flex h-9 px-4 items-center gap-2 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-white/20 transition text-xs font-semibold uppercase tracking-wider"
               >
                 <Edit2 className="w-3 h-3" />
                 Edit
@@ -354,6 +351,15 @@ export default function ProductDetailsPage() {
                 </button>
                 {headerMenuOpen && (
                   <div className="absolute right-0 mt-2 w-44 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#14141c] shadow-xl p-1 z-50">
+                    <button
+                      onClick={() => {
+                        setHeaderMenuOpen(false);
+                        openEditModal();
+                      }}
+                      className="sm:hidden w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 dark:text-white/80 hover:bg-slate-50 dark:hover:bg-white/5"
+                    >
+                      Edit Product
+                    </button>
                     <button
                       onClick={() => {
                         setHeaderMenuOpen(false);
@@ -662,133 +668,191 @@ export default function ProductDetailsPage() {
           </aside>
         </div>
 
-        {showEditModal && (
-          <div className="fixed inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/10 shadow-2xl rounded-xl max-w-2xl w-full p-8">
-              <h2 className="text-2xl font-bold mb-6">Edit Product</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Product Title</label>
-                  <input
-                    type="text"
-                    value={editFormData.title}
-                    onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
-                    placeholder="Enter product title"
-                  />
+        <AnimatePresence>
+          {showEditModal && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowEditModal(false)}
+                className="fixed inset-0 bg-black/20 dark:bg-black/50 backdrop-blur-sm z-[900]"
+              />
+              
+              {/* Drawer */}
+              <motion.div
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ type: "tween", duration: 0.3 }}
+                className="fixed inset-y-0 right-0 h-[100dvh] w-full sm:w-[480px] bg-white dark:bg-[#16161e] shadow-2xl border-l border-slate-200 dark:border-white/10 z-[1000] flex flex-col"
+              >
+                {/* Drawer header */}
+                <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-white/10 shrink-0">
+                  <h2 className="text-lg font-bold">Edit Product</h2>
+                  <button onClick={() => setShowEditModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1">
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Description</label>
-                  <textarea
-                    value={editFormData.description}
-                    onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                    rows={4}
-                    className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none resize-none"
-                    placeholder="Enter product description"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Price (₹)</label>
-                    <input
-                      type="number"
-                      value={editFormData.price}
-                      onChange={(e) => setEditFormData({ ...editFormData, price: Number(e.target.value) })}
-                      className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Discount (%)</label>
-                    <input
-                      type="number"
-                      value={editFormData.discount}
-                      onChange={(e) => setEditFormData({ ...editFormData, discount: Number(e.target.value) })}
-                      className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Edit Reason *</label>
-                  <textarea
-                    value={editFormData.editReason}
-                    onChange={(e) => setEditFormData({ ...editFormData, editReason: e.target.value })}
-                    rows={3}
-                    className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none resize-none"
-                    placeholder="Explain why you're editing this product (required)"
-                  />
-                </div>
-              </div>
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={handleEditProduct}
-                  disabled={processing}
-                  className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {processing ? "Saving..." : "Save Changes"}
-                </button>
-                <button
-                  onClick={() => setShowEditModal(false)}
-                  disabled={processing}
-                  className="flex-1 px-6 py-3 bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white rounded-lg font-semibold"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
-        {showDeleteModal && (
-          <div className="fixed inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/10 shadow-2xl rounded-xl max-w-md w-full p-8">
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-rose-600">Delete Product</h2>
-                <p className="text-slate-500 dark:text-white/60 mt-2">This action cannot be undone.</p>
-              </div>
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Type "{product.title}" to confirm
-                  </label>
-                  <input
-                    type="text"
-                    value={deleteConfirmText}
-                    onChange={(e) => setDeleteConfirmText(e.target.value)}
-                    className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-rose-500 focus:outline-none"
-                  />
+                {/* Drawer body */}
+                <div className="flex-1 overflow-y-auto p-5">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Product Title</label>
+                      <input
+                        type="text"
+                        value={editFormData.title}
+                        onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                        className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
+                        placeholder="Enter product title"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Description</label>
+                      <textarea
+                        value={editFormData.description}
+                        onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                        rows={4}
+                        className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none resize-none"
+                        placeholder="Enter product description"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Price (₹)</label>
+                        <input
+                          type="number"
+                          value={editFormData.price}
+                          onChange={(e) => setEditFormData({ ...editFormData, price: Number(e.target.value) })}
+                          className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Discount (%)</label>
+                        <input
+                          type="number"
+                          value={editFormData.discount}
+                          onChange={(e) => setEditFormData({ ...editFormData, discount: Number(e.target.value) })}
+                          className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Edit Reason *</label>
+                      <textarea
+                        value={editFormData.editReason}
+                        onChange={(e) => setEditFormData({ ...editFormData, editReason: e.target.value })}
+                        rows={3}
+                        className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none resize-none"
+                        placeholder="Explain why you're editing this product (required)"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Delete Reason *</label>
-                  <textarea
-                    value={deleteReason}
-                    onChange={(e) => setDeleteReason(e.target.value)}
-                    rows={4}
-                    className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-rose-500 focus:outline-none resize-none"
-                    placeholder="Explain why you're deleting this product (minimum 5 characters)"
-                  />
+
+                {/* Drawer Footer */}
+                <div className="p-5 pb-8 sm:pb-5 border-t border-slate-200 dark:border-white/10 shrink-0 bg-slate-50 dark:bg-[#16161e] flex gap-3">
+                  <button
+                    onClick={() => setShowEditModal(false)}
+                    disabled={processing}
+                    className="flex-1 px-4 py-2.5 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-slate-900 dark:text-white rounded-lg font-semibold text-sm transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleEditProduct}
+                    disabled={processing}
+                    className="flex-[2] px-4 py-2.5 bg-slate-900 dark:bg-cyan-600 hover:bg-slate-800 dark:hover:bg-cyan-700 text-white rounded-lg font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {processing ? "Saving..." : "Save Changes"}
+                  </button>
                 </div>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={handleDeleteProduct}
-                  disabled={processing}
-                  className="flex-1 px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {processing ? "Deleting..." : "Delete Product"}
-                </button>
-                <button
-                  onClick={() => setShowDeleteModal(false)}
-                  disabled={processing}
-                  className="flex-1 px-6 py-3 bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white rounded-lg font-semibold"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {showDeleteModal && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowDeleteModal(false)}
+                className="fixed inset-0 bg-black/20 dark:bg-black/50 backdrop-blur-sm z-[900]"
+              />
+              
+              {/* Drawer */}
+              <motion.div
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ type: "tween", duration: 0.3 }}
+                className="fixed inset-y-0 right-0 h-[100dvh] w-full sm:w-[480px] bg-white dark:bg-[#16161e] shadow-2xl border-l border-slate-200 dark:border-white/10 z-[1000] flex flex-col"
+              >
+                {/* Drawer header */}
+                <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-white/10 shrink-0">
+                  <h2 className="text-lg font-bold text-rose-600">Delete Product</h2>
+                  <button onClick={() => setShowDeleteModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Drawer body */}
+                <div className="flex-1 overflow-y-auto p-5">
+                  <p className="text-sm text-slate-500 dark:text-white/60 mb-6">This action cannot be undone.</p>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Type "{product.title}" to confirm
+                      </label>
+                      <input
+                        type="text"
+                        value={deleteConfirmText}
+                        onChange={(e) => setDeleteConfirmText(e.target.value)}
+                        className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-rose-500 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Delete Reason *</label>
+                      <textarea
+                        value={deleteReason}
+                        onChange={(e) => setDeleteReason(e.target.value)}
+                        rows={4}
+                        className="w-full px-4 py-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white focus:border-rose-500 focus:outline-none resize-none"
+                        placeholder="Explain why you're deleting this product (minimum 5 characters)"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Drawer Footer */}
+                <div className="p-5 pb-8 sm:pb-5 border-t border-slate-200 dark:border-white/10 shrink-0 bg-slate-50 dark:bg-[#16161e] flex gap-3">
+                  <button
+                    onClick={() => setShowDeleteModal(false)}
+                    disabled={processing}
+                    className="flex-1 px-4 py-2.5 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-slate-900 dark:text-white rounded-lg font-semibold text-sm transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeleteProduct}
+                    disabled={processing}
+                    className="flex-[2] px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {processing ? "Deleting..." : "Delete Product"}
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );

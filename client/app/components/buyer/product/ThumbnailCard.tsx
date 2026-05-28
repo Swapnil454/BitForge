@@ -9,16 +9,16 @@ export default function ThumbnailCard({ product }: { product: ProductType }) {
   return (
     <div
       onClick={() => router.push(`/marketplace/${product._id}`)}
-      className="w-[120px] sm:w-[140px] md:w-[160px] flex-shrink-0 cursor-pointer group flex flex-col gap-1.5"
+      className="w-[160px] sm:w-[200px] md:w-[240px] lg:w-[280px] flex-shrink-0 cursor-pointer group/card flex flex-col gap-1.5"
       title={product.title}
     >
       {/* ── Thumbnail ── */}
-      <div className="w-full aspect-square relative flex items-center justify-center overflow-hidden rounded-xl bg-[#F7F7F7] dark:bg-[#0A101D] group-hover:shadow-md transition-shadow duration-300">
+      <div className="w-full h-[120px] sm:h-[140px] md:h-[160px] relative flex items-center justify-center overflow-hidden rounded-sm bg-[#F7F7F7] dark:bg-[#0A101D] group-hover/card:shadow-sm transition-shadow duration-300">
         {product.thumbnailUrl ? (
           <img
             src={product.thumbnailUrl}
             alt={product.title}
-            className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal group-hover:scale-105 transition-transform duration-400 p-2"
+            className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal group-hover/card:scale-105 transition-transform duration-400 p-2"
           />
         ) : (
           <div className="w-full h-full bg-gray-100 dark:bg-[#0A101D] flex flex-col items-center justify-center text-center p-2">
@@ -29,11 +29,11 @@ export default function ThumbnailCard({ product }: { product: ProductType }) {
 
       {/* ── Info (Minimal) ── */}
       <div className="px-0.5 flex flex-col gap-0.5">
-        <h4 className="text-[11px] sm:text-xs font-semibold text-gray-800 dark:text-slate-200 line-clamp-2 leading-snug group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+        <h4 className="text-xs sm:text-[13px] font-medium text-[#007185] dark:text-[#52a6b8] line-clamp-2 leading-snug group-hover/card:text-[#c7511f] dark:group-hover/card:text-[#e47911] transition-colors">
           {product.title}
         </h4>
         <div className="flex items-center gap-1.5">
-          <span className="font-extrabold text-xs sm:text-sm text-gray-900 dark:text-white">
+          <span className="font-semibold text-[13px] sm:text-[15px] text-[#B12704] dark:text-[#f48570]">
             ₹{product.price.toLocaleString()}
           </span>
         </div>

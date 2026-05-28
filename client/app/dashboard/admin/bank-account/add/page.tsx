@@ -98,29 +98,29 @@ export default function AdminAddBankAccountPage() {
         backHref="/dashboard/admin/bank-account"
         backLabel="Bank Accounts"
         title="Add Bank Account"
-        subtitle="Add secure commission payout account"
+        subtitle="Commission payout account"
       />
 
-      <section className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 py-2 sm:py-8">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="w-full"
         >
-          <div className="mb-6 sm:mb-8">
-            <h2 className="text-xl font-bold flex items-center gap-2 text-slate-900 dark:text-white">
-              <Landmark className="w-6 h-6 text-cyan-500" />
+          <div className="mb-4 sm:mb-8 text-center flex flex-col items-center">
+            <h2 className="text-base sm:text-xl font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+              <Landmark className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-500" />
               Bank Details
             </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
+            <p className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-zinc-400 max-w-sm">
               Please ensure all details match your official bank records to avoid payout delays.
             </p>
           </div>
 
           <div>
-            <form id="bank-form" onSubmit={handleSubmit} className="grid sm:grid-cols-2 gap-6">
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Account Holder Name</label>
+            <form id="bank-form" onSubmit={handleSubmit} className="grid sm:grid-cols-2 gap-3 sm:gap-6">
+              <div className="space-y-1 sm:col-span-2">
+                <label className="text-[9px] sm:text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Account Holder Name</label>
                 <div className="relative">
                   <input
                     name="accountHolderName"
@@ -128,14 +128,14 @@ export default function AdminAddBankAccountPage() {
                     onChange={handleInputChange}
                     placeholder="e.g. John Doe"
                     required
-                    className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-11"
+                    className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-9 sm:pl-11"
                   />
-                  <ShieldCheck className="w-5 h-5 text-slate-400 dark:text-zinc-500 absolute left-3.5 top-3" />
+                  <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 dark:text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Account Number</label>
+              <div className="space-y-1">
+                <label className="text-[9px] sm:text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Account Number</label>
                 <div className="relative">
                   <input
                     name="accountNumber"
@@ -144,27 +144,27 @@ export default function AdminAddBankAccountPage() {
                     placeholder="Enter account number"
                     required
                     type={showAccountNumberInput ? "text" : "password"}
-                    className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-11 pr-12 font-mono tracking-widest"
+                    className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-9 sm:pl-11 pr-9 sm:pr-12 font-mono tracking-widest"
                   />
-                  <CreditCard className="w-5 h-5 text-slate-400 dark:text-zinc-500 absolute left-3.5 top-3" />
+                  <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 dark:text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
                   <button
                     type="button"
                     onClick={() => setShowAccountNumberInput(!showAccountNumberInput)}
-                    className="absolute right-2 top-2 p-1.5 text-zinc-500 hover:text-cyan-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/5"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 text-zinc-500 hover:text-cyan-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-white/5"
                   >
-                    {showAccountNumberInput ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showAccountNumberInput ? <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                   </button>
                 </div>
               </div>
 
-              <div className="space-y-1.5 relative" ref={dropdownRef}>
-                <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Account Type</label>
+              <div className="space-y-1 relative" ref={dropdownRef}>
+                <label className="text-[9px] sm:text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Account Type</label>
                 <div 
                   onClick={() => setShowAccountTypeDropdown(!showAccountTypeDropdown)}
-                  className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white flex justify-between items-center cursor-pointer hover:border-cyan-500/50 transition-all"
+                  className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white flex justify-between items-center cursor-pointer hover:border-cyan-500/50 transition-all"
                 >
                   <span className="capitalize">{formData.accountType} Account</span>
-                  <ChevronDown className={`w-4 h-4 text-slate-500 dark:text-zinc-500 transition-transform ${showAccountTypeDropdown ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-zinc-500 transition-transform ${showAccountTypeDropdown ? "rotate-180" : ""}`} />
                 </div>
                 
                 <AnimatePresence>
@@ -180,7 +180,7 @@ export default function AdminAddBankAccountPage() {
                           setFormData(prev => ({ ...prev, accountType: "savings" }));
                           setShowAccountTypeDropdown(false);
                         }}
-                        className={`px-4 py-3 text-sm cursor-pointer transition-colors ${formData.accountType === "savings" ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400" : "text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-[#27272a]"}`}
+                        className={`px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm cursor-pointer transition-colors ${formData.accountType === "savings" ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-medium" : "text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-[#27272a]"}`}
                       >
                         Savings Account
                       </div>
@@ -189,7 +189,7 @@ export default function AdminAddBankAccountPage() {
                           setFormData(prev => ({ ...prev, accountType: "current" }));
                           setShowAccountTypeDropdown(false);
                         }}
-                        className={`px-4 py-3 text-sm cursor-pointer transition-colors ${formData.accountType === "current" ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400" : "text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-[#27272a]"}`}
+                        className={`px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm cursor-pointer transition-colors ${formData.accountType === "current" ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-medium" : "text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-[#27272a]"}`}
                       >
                         Current Account
                       </div>
@@ -198,8 +198,8 @@ export default function AdminAddBankAccountPage() {
                 </AnimatePresence>
               </div>
 
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">IFSC Code</label>
+              <div className="space-y-1 sm:col-span-2">
+                <label className="text-[9px] sm:text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">IFSC Code</label>
                 <div className="relative">
                   <input
                     name="ifscCode"
@@ -207,52 +207,52 @@ export default function AdminAddBankAccountPage() {
                     onChange={handleInputChange}
                     placeholder="e.g. SBIN0001234"
                     required
-                    className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white uppercase placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-11"
+                    className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white uppercase placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-9 sm:pl-11"
                   />
-                  <Building2 className="w-5 h-5 text-slate-400 dark:text-zinc-500 absolute left-3.5 top-3" />
+                  <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 dark:text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
                   {ifscLoading && (
-                    <span className="absolute right-3.5 top-3.5 h-4 w-4 border-2 border-slate-300 dark:border-white/20 border-t-cyan-500 rounded-full animate-spin" />
+                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 border-2 border-slate-300 dark:border-white/20 border-t-cyan-500 rounded-full animate-spin" />
                   )}
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Bank Name</label>
+              <div className="space-y-1">
+                <label className="text-[9px] sm:text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Bank Name</label>
                 <input
                   name="bankName"
                   value={formData.bankName}
                   onChange={handleInputChange}
                   placeholder="Auto-filled via IFSC"
-                  className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all"
+                  className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Branch Name</label>
+              <div className="space-y-1">
+                <label className="text-[9px] sm:text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Branch Name</label>
                 <input
                   name="branchName"
                   value={formData.branchName}
                   onChange={handleInputChange}
                   placeholder="Auto-filled via IFSC"
-                  className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all"
+                  className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all"
                 />
               </div>
 
             </form>
           </div>
 
-          <div className="mt-8 pt-8 border-t border-slate-200 dark:border-[#27272a] flex flex-col-reverse sm:flex-row items-center justify-end gap-4">
+          <div className="mt-5 pt-5 sm:mt-8 sm:pt-8 border-t border-slate-200 dark:border-[#27272a] flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5 sm:gap-4">
             <button
               type="button"
               onClick={() => router.push("/dashboard/admin/bank-account")}
-              className="w-full sm:w-auto px-6 py-3 text-sm font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-[#18181b] hover:bg-slate-50 dark:hover:bg-[#27272a] border border-slate-200 dark:border-[#27272a] rounded-xl transition-colors shadow-sm dark:shadow-none"
+              className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-[13px] sm:text-sm font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-[#18181b] hover:bg-slate-50 dark:hover:bg-[#27272a] border border-slate-200 dark:border-[#27272a] rounded-xl transition-colors shadow-sm dark:shadow-none"
             >
               Cancel
             </button>
             <button 
               form="bank-form"
               disabled={submitting}
-              className="w-full sm:w-auto px-8 py-3 text-sm font-bold bg-[linear-gradient(180deg,#06b6d4_0%,#0891b2_100%)] hover:bg-[linear-gradient(180deg,#22d3ee_0%,#06b6d4_100%)] text-white dark:text-[#05050a] rounded-xl transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-5 py-2 sm:px-8 sm:py-3 text-[13px] sm:text-sm font-bold bg-[linear-gradient(180deg,#06b6d4_0%,#0891b2_100%)] hover:bg-[linear-gradient(180deg,#22d3ee_0%,#06b6d4_100%)] text-white dark:text-[#05050a] rounded-xl transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {submitting && <span className="h-4 w-4 border-2 border-white/30 dark:border-[#05050a]/30 border-t-white dark:border-t-[#05050a] rounded-full animate-spin" />}
               Add Account

@@ -48,33 +48,35 @@ export default function DisputeCard({ dispute, onApprove, onReject, onViewDetail
     <div className="group bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 hover:shadow-md transition-all flex flex-col gap-5">
       
       {/* Header Area */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-mono font-bold text-slate-500 dark:text-slate-400">
-              {dispute.disputeNumber}
-            </span>
-            <span className={`px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-md ${statusColors[dispute.status] || "bg-slate-100 text-slate-500"}`}>
-              {dispute.status === 'resolved' ? 'refund_approved' : dispute.status.replace("_", " ")}
-            </span>
-            <span className={`px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-md border ${priorityColors[priority]}`}>
-              {priority} Priority
-            </span>
-          </div>
-          
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-1">
-            {dispute.productTitle} 
-            <span className="text-sm font-normal text-slate-400 dark:text-slate-500 ml-2">
-              {dispute.productCategory} • {dispute.productFileType}
-            </span>
-          </h3>
+      <div className="flex flex-col gap-1 sm:gap-1.5">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-mono font-bold text-slate-500 dark:text-slate-400">
+            {dispute.disputeNumber}
+          </span>
+          <span className={`px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-md ${statusColors[dispute.status] || "bg-slate-100 text-slate-500"}`}>
+            {dispute.status === 'resolved' ? 'refund_approved' : dispute.status.replace("_", " ")}
+          </span>
+          <span className={`text-[10px] font-bold uppercase tracking-wider ml-1 ${
+            priority === 'high' ? 'text-red-500' : 
+            priority === 'medium' ? 'text-amber-500' : 'text-emerald-500'
+          }`}>
+            • {priority} Priority
+          </span>
         </div>
+        
+        <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mt-1 truncate">
+          {dispute.productTitle} 
+          <span className="text-xs sm:text-sm font-normal text-slate-400 dark:text-slate-500 ml-2">
+            {dispute.productCategory}
+            {dispute.productFileType && dispute.productFileType !== 'Unknown' && dispute.productFileType !== 'undefined' ? ` • ${dispute.productFileType}` : ''}
+          </span>
+        </h3>
 
-        <div className="text-right flex flex-col items-end">
-          <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 leading-none">
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 leading-none">
             {fmt(dispute.refundAmount)}
           </span>
-          <span className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+          <span className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-500">
             {new Date(dispute.createdAt).toLocaleString()}
           </span>
         </div>
@@ -117,10 +119,10 @@ export default function DisputeCard({ dispute, onApprove, onReject, onViewDetail
       </div>
 
       {/* Footer Actions */}
-      <div className="flex items-center justify-end gap-3 pt-2 mt-1">
+      <div className="flex items-center justify-end gap-2 sm:gap-3 pt-2 mt-1">
         <button
           onClick={() => onViewDetails(dispute.id)}
-          className="px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+          className="flex-1 sm:flex-none text-center px-2 sm:px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 text-[10px] sm:text-xs font-bold uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
         >
           Details
         </button>
@@ -129,15 +131,15 @@ export default function DisputeCard({ dispute, onApprove, onReject, onViewDetail
           <>
             <button
               onClick={() => onReject(dispute.id)}
-              className="px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold uppercase tracking-wider hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
+              className="flex-1 sm:flex-none text-center px-2 sm:px-4 py-2 rounded-xl border border-rose-200 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
             >
               Reject
             </button>
             <button
               onClick={() => onApprove(dispute.id)}
-              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
+              className="flex-1 sm:flex-none text-center px-2 sm:px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
             >
-              Approve Refund
+              Approve
             </button>
           </>
         )}

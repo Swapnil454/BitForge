@@ -11,6 +11,7 @@ import {
   Bug, Star, Phone, Calendar, BarChart3, User
 } from "lucide-react";
 import React from "react";
+import { useSwipeable } from "react-swipeable";
 import MalwareStatsCards from "./components/MalwareStatsCards";
 import ScanHistoryTable from "./components/ScanHistoryTable";
 import { KPICardsSkeleton, ScanListSkeleton } from "./components/Skeletons";
@@ -103,6 +104,19 @@ export default function SecurityDashboard() {
   const contentObserverTarget = useRef<HTMLDivElement>(null);
   const identityObserverTarget = useRef<HTMLDivElement>(null);
   const firstLoadRef                      = useRef(true);
+
+  const handlers = useSwipeable({
+    onSwipedLeft: () => {
+      if (activeTab === "malware") setActiveTab("content");
+      else if (activeTab === "content") setActiveTab("identity");
+    },
+    onSwipedRight: () => {
+      if (activeTab === "identity") setActiveTab("content");
+      else if (activeTab === "content") setActiveTab("malware");
+    },
+    preventScrollOnSwipe: false,
+    trackMouse: false,
+  });
 
   const fetchTabData = useCallback(async (
     tab: ActiveTab,
@@ -268,7 +282,7 @@ export default function SecurityDashboard() {
         backLabel="Back"
       />
 
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 space-y-6 sm:space-y-8 pb-8">
+      <section {...handlers} className="max-w-5xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 space-y-6 sm:space-y-8 pb-8">
 
         {/* ── Tabs ── */}
         <div className="flex bg-white dark:bg-[#16161e] rounded-2xl p-1 gap-1 border border-slate-200 dark:border-white/[0.05]">

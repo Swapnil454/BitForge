@@ -355,7 +355,6 @@ function TransactionsPageContent() {
             <div className="sm:hidden relative z-50">
               <button 
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 transition"
               >
                 <MoreVertical className="h-5 w-5" />
               </button>
@@ -543,18 +542,18 @@ function TransactionsPageContent() {
           
           {/* Bulk Action Bar (Sticky inside container) */}
           {selectedRows.size > 0 && (
-            <div className="absolute top-0 left-0 w-full h-14 bg-indigo-50 dark:bg-indigo-500/10 border-b border-indigo-100 dark:border-indigo-500/20 flex items-center px-6 justify-between z-10">
-              <span className="text-sm font-bold text-indigo-900 dark:text-indigo-300">
-                {selectedRows.size} transaction{selectedRows.size > 1 ? "s" : ""} selected
+            <div className="absolute top-0 left-0 w-full h-14 bg-indigo-50 dark:bg-indigo-500/10 border-b border-indigo-100 dark:border-indigo-500/20 flex items-center px-2 sm:px-6 justify-between z-10">
+              <span className="text-[10px] sm:text-sm font-bold text-indigo-900 dark:text-indigo-300 leading-tight flex-1 pr-2">
+                {selectedRows.size} <span className="hidden sm:inline">transaction{selectedRows.size > 1 ? "s" : ""}</span><span className="sm:hidden">txns</span> selected
               </span>
-              <div className="flex gap-3">
+              <div className="flex gap-1.5 sm:gap-3 shrink-0">
                 <button
                   onClick={handleBulkMarkReviewed}
-                  className="text-sm px-3 py-1.5 font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">
-                  Mark as Reviewed
+                  className="text-[10px] sm:text-sm px-2.5 sm:px-3 py-1.5 font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition">
+                  Mark Reviewed
                 </button>
-                <button onClick={() => setSelectedRows(new Set())} className="text-sm px-3 py-1.5 font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 rounded-lg transition flex items-center gap-1">
-                  <X className="h-4 w-4" /> Clear
+                <button onClick={() => setSelectedRows(new Set())} className="text-[10px] sm:text-sm px-2 sm:px-3 py-1.5 font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 rounded-lg transition flex items-center gap-1">
+                  <X className="h-3 w-3 sm:h-4 sm:w-4" /> Clear
                 </button>
               </div>
             </div>

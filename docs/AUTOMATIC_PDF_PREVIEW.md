@@ -247,7 +247,7 @@ upload.fields([
 
 ---
 
-## 🧪 Testing Checklist
+##  Testing Checklist
 
 ### Manual Testing
 
@@ -311,7 +311,7 @@ Our system matches how TOP marketplaces handle previews:
 
 ---
 
-## 🔧 Configuration Options
+##  Configuration Options
 
 ### Customizing Preview Length
 

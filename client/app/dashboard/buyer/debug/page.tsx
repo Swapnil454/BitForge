@@ -86,7 +86,7 @@ export default function BuyerDebugPage() {
         {/* Webhook Fix Instructions */}
         {data?.webhookIssue && (
           <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6 mb-6">
-            <h3 className="text-xl font-bold text-yellow-300 mb-3">🔧 How to Fix Webhook Issue</h3>
+            <h3 className="text-xl font-bold text-yellow-300 mb-3"> How to Fix Webhook Issue</h3>
             <ol className="text-yellow-100 space-y-2 list-decimal list-inside">
               <li>Go to: <a href="https://dashboard.razorpay.com" target="_blank" className="text-cyan-400 underline">Razorpay Dashboard</a></li>
               <li>Navigate to: Settings → Webhooks</li>
