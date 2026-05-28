@@ -59,13 +59,13 @@ const promotionRequestSchema = new mongoose.Schema(
     },
     title: {
       type: String,
-      required: true,
       trim: true,
+      default: "",
     },
     subtitle: {
       type: String,
-      required: true,
       trim: true,
+      default: "",
     },
     bannerImage: {
       type: String,
@@ -111,7 +111,7 @@ const promotionRequestSchema = new mongoose.Schema(
     },
     heroLayout: {
       type: String,
-      enum: ["floating", "single", "minimal"],
+      enum: ["floating", "single", "minimal", "fullImage"],
       default: "floating",
     },
     adImages: [

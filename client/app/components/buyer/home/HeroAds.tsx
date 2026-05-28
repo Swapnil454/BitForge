@@ -18,7 +18,7 @@ export interface Banner {
   gradientClass?: string;
   heroBgColor?: string;
   heroTextColor?: "light" | "dark" | "auto";
-  heroLayout?: "floating" | "single" | "minimal" | "legacy";
+  heroLayout?: "floating" | "single" | "minimal" | "legacy" | "fullImage";
   heroTitleColor?: string;
   heroSubtitleColor?: string;
   heroButtonBgColor?: string;
@@ -232,8 +232,9 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
   }
 
   // Determine styling based on legacy vs new schema
-  const hasModernStyling = !!currentBanner.heroBgColor && isValidHexColor(currentBanner.heroBgColor);
-  const bgColor = hasModernStyling ? currentBanner.heroBgColor : undefined;
+  const isFullImage = currentBanner.heroLayout === "fullImage";
+  const hasModernStyling = (!!currentBanner.heroBgColor && isValidHexColor(currentBanner.heroBgColor)) || isFullImage;
+  const bgColor = hasModernStyling && !isFullImage ? currentBanner.heroBgColor : undefined;
   
   // Determine Text Color Mode (W3C Luminance Logic)
   let isDarkText = false;
@@ -255,28 +256,27 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
   const adImages = currentBanner.adImages ? [...currentBanner.adImages].sort((a, b) => a.position - b.position) : [];
 
   return (
-    <div className="relative z-0 w-full mb-6 sm:mb-10">
-      {/* Subtle global page tint matching the hero banner */}
-      {hasModernStyling && bgColor && (
+    <div className="relative z-0 w-full mb-0 sm:mb-2">
+      {/* Background bleed layer (fades across the entire initial screen view) */}
+      {hasModernStyling && (
         <div 
-          className="fixed inset-0 w-full h-full pointer-events-none -z-50 transition-colors duration-700" 
-          style={{ backgroundColor: bgColor, opacity: isDarkText ? 0.04 : 0.08 }}
-        />
-      )}
-      {/* Background bleed layer */}
-      {hasModernStyling && bgColor && (
-        <div 
-          className="absolute top-0 left-0 w-full h-[800px] sm:h-[1200px] lg:h-[1400px] pointer-events-none -z-10" 
-          style={{ backgroundImage: `linear-gradient(to bottom, ${bgColor} 320px, ${bgColor}00 100%)` }}
+          className="absolute top-0 left-0 w-full h-[600px] sm:h-[700px] md:h-[850px] pointer-events-none -z-10 transition-colors duration-700" 
+          style={{ 
+            backgroundColor: bgColor || 'transparent',
+            WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
+            maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)'
+          }}
         />
       )}
       <div 
-        className={`relative w-full overflow-hidden transition-all duration-700 flex items-center group ${
+        className={`relative w-full transition-all duration-700 flex items-center group ${
           !hasModernStyling 
-            ? `bg-gradient-to-r ${currentBanner.gradientClass} h-[240px] sm:h-[300px] md:h-[360px]` 
-            : "h-0 md:h-[360px]"
+            ? `bg-gradient-to-r ${currentBanner.gradientClass} h-[180px] sm:h-[220px] md:h-[260px] overflow-hidden` 
+            : layout === "fullImage"
+            ? "h-[180px] sm:h-[220px] md:h-[260px]"
+            : "h-auto md:h-[260px] overflow-hidden"
         }`}
-        style={hasModernStyling ? { backgroundColor: 'transparent' } : {}}
+        style={bgColor ? { backgroundColor: bgColor } : {}}
       >
         {/* Legacy Banner Image Support */}
         {!hasModernStyling && currentBanner.bannerImage ? (
@@ -292,158 +292,177 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
         ) : null}
 
         {/* Abstract Glow Background for Premium Themes */}
-        {hasModernStyling && (
+        {hasModernStyling && layout !== "fullImage" && (
           <>
             <div className="absolute -left-1/4 -top-1/4 h-[120%] w-[120%] md:h-full md:w-1/2 rounded-full bg-white/20 blur-3xl mix-blend-overlay"></div>
             <div className="absolute -bottom-1/4 -right-1/4 h-[120%] w-[120%] md:h-full md:w-1/2 rounded-full bg-black/20 blur-3xl mix-blend-overlay"></div>
           </>
         )}
 
-        {/* All content area: hidden on mobile, shown from md+ */}
-        <div className={`hidden md:flex relative z-10 w-full max-w-[1440px] mx-auto h-full flex-row items-center px-4 md:px-12 lg:px-16`}>
-          
-          {/* Left Images Area (Images 2 and 3) — side by side, centered */}
-          {hasModernStyling && layout !== "minimal" && adImages.length > 1 && (
-            <div className="hidden md:flex relative z-10 w-[29%] h-full items-center justify-center gap-2 px-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-left-8 duration-700">
-              {adImages.slice(1, 3).map((img) => {
-                const cdnUrl = img.url.includes("cloudinary.com") 
-                  ? img.url.replace("/upload/", "/upload/f_auto,q_auto,w_400/") 
-                  : img.url;
-                return (
-                  <div
-                    key={img.key}
-                    className="flex-1 min-w-0 flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300"
-                    onClick={handleBannerClick}
-                  >
-                    <img
-                      src={cdnUrl}
-                      alt=""
-                      className="w-full h-auto object-contain drop-shadow-xl rounded-lg"
-                      style={{ maxHeight: "240px" }}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Content Area */}
+        {/* Desktop Content Area: hidden on mobile, shown from md+ */}
+        {layout === "fullImage" ? (
           <div 
-            className={`relative z-20 flex flex-col justify-center h-full flex-1 min-w-0 ${layout === "minimal" || (hasModernStyling && adImages.length > 0) ? "items-center text-center px-4" : "items-start"} motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-8 duration-700`}
-            style={{ fontFamily: currentBanner.heroFontFamily || "inherit" }}
+            className="hidden md:flex absolute top-0 left-0 w-full cursor-pointer items-start justify-center motion-safe:animate-in motion-safe:fade-in duration-700 pointer-events-auto"
+            onClick={handleBannerClick}
+            style={{
+              zIndex: -1,
+              WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
+              maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)'
+            }}
           >
-            <div className={`flex flex-col gap-1 mb-1 sm:mb-2 ${layout === "minimal" || (hasModernStyling && adImages.length > 0) ? "items-center" : "items-start"}`}>
-              {/* Row 1: Sponsored Badge */}
-              {currentBanner.badge && (
-                <span className={`inline-block  px-3 py-1 text-[10px] sm:text-xs font-bold rounded-full uppercase tracking-widest ${isDarkText ? "bg-black/10 text-slate-800 border-black/10" : "bg-white/20 text-white border-white/20"} backdrop-blur-sm border`}>
-                  {currentBanner.badge}
-                </span>
-              )}
-              {/* Row 2: Promotion Goal Badge (Refined 3D + Word Glow) */}
-              {currentBanner.promotionGoal && (
-                <div className="relative group inline-block">
-                  <div className="absolute inset-0 bg-red-500/20 blur-md rounded-lg group-hover:bg-red-500/40 transition-all duration-500"></div>
-                  <span className="relative inline-flex items-center px-4 py-1 text-[11px] sm:text-[13px] font-bold uppercase tracking-[0.08em] rounded-lg bg-gradient-to-b from-[#ff4747] to-[#cc0000] text-[#ffe600] border-t border-t-white/30 border-b-[3px] border-b-[#800000] shadow-[0_3px_0_#4d0000,0_4px_8px_rgba(0,0,0,0.3)] active:border-b-[1px] active:translate-y-[2px] active:shadow-[0_1px_0_#4d0000,0_2px_4px_rgba(0,0,0,0.3)] group-hover:-translate-y-0.5 transition-all duration-300 cursor-default isolate overflow-hidden">
-                    <span className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[150%] group-hover:translate-x-full transition-transform duration-[1200ms] ease-in-out pointer-events-none"></span>
-                    {currentBanner.promotionGoal.split(' ').map((word, idx) => (
-                      <span 
-                        key={idx} 
-                        className="inline-block animate-pulse drop-shadow-[0_0_5px_rgba(255,230,0,0.8)]"
-                        style={{ animationDelay: `${idx * 300}ms`, animationDuration: '2s' }}
-                      >
-                        {word}&nbsp;
-                      </span>
-                    ))}
-                  </span>
-                </div>
-              )}
-            </div>
+            {(adImages.length > 0 || currentBanner.bannerImage) && (
+              <img 
+                src={adImages.length > 0 ? (adImages[0].url.includes("cloudinary.com") ? adImages[0].url.replace("/upload/", "/upload/f_auto,q_100/") : adImages[0].url) : currentBanner.bannerImage} 
+                alt={currentBanner.title || "Promotion Banner"} 
+                className="w-full h-auto object-top"
+              />
+            )}
+          </div>
+        ) : (
+          <div className={`hidden md:flex relative z-10 w-full max-w-[1800px] mx-auto h-full flex-row items-center justify-center gap-6 lg:gap-10 px-3 md:px-5 lg:px-6`}>
             
-            <h2 
-              className={`text-3xl sm:text-4xl lg:text-5xl font-black mb-1 sm:mb-2 tracking-tight drop-shadow-sm ${currentBanner.heroTitleColor ? "" : textColorClass} ${layout === "minimal" ? "leading-tight" : "leading-[1.1]"}`}
-              style={currentBanner.heroTitleColor ? { color: currentBanner.heroTitleColor } : {}}
-            >
-              {currentBanner.title}
-            </h2>
-
-            {currentBanner.productPrice !== undefined && (
-              <div className={`flex items-center gap-3 mb-2 sm:mb-3 ${layout === "minimal" || (hasModernStyling && adImages.length > 0) ? "justify-center" : "justify-start"}`}>
-                <span className={`text-2xl sm:text-3xl font-black tracking-tight drop-shadow-sm ${isDarkText ? "text-slate-900" : "text-white"}`}>
-                  <span className="text-xl sm:text-2xl font-bold mr-0.5 opacity-90">₹</span>
-                  {
-                    currentBanner.productDiscount 
-                      ? Math.max(currentBanner.productPrice - (currentBanner.productPrice * currentBanner.productDiscount) / 100, 0).toLocaleString("en-IN")
-                      : currentBanner.productPrice.toLocaleString("en-IN")
-                  }
-                </span>
-                {currentBanner.productDiscount !== undefined && currentBanner.productDiscount > 0 && (
-                  <div className="flex items-center gap-2">
-                    <span className={`text-sm line-through font-medium drop-shadow-sm ${isDarkText ? "text-slate-500" : "text-white/70"}`}>
-                      ₹{currentBanner.productPrice.toLocaleString("en-IN")}
-                    </span>
-                    <div className="relative inline-block ml-1 group/tag">
-                      <div className="absolute inset-0 bg-red-600/20 blur-md rounded-md group-hover/tag:bg-red-500/40 transition-all duration-500 transform -skew-x-6"></div>
-                      <span className="relative flex items-center justify-center bg-gradient-to-b from-[#ff4747] to-[#cc0000] text-white px-2.5 py-0.5 rounded-md text-[12px] font-bold uppercase italic tracking-wider border-t border-t-white/30 border-b-[3px] border-b-[#800000] shadow-[0_3px_0_#4d0000,2px_4px_6px_rgba(0,0,0,0.3)] active:border-b-[1px] active:translate-y-[2px] active:shadow-[0_1px_0_#4d0000,1px_2px_3px_rgba(0,0,0,0.3)] group-hover/tag:-translate-y-0.5 transition-all duration-300 transform -skew-x-6 cursor-default isolate overflow-hidden">
-                        <span className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[150%] group-hover/tag:translate-x-[50%] transition-transform duration-[1000ms] ease-in-out pointer-events-none"></span>
-                        {`${currentBanner.productDiscount}% OFF`.split(' ').map((word, idx) => (
-                          <span 
-                            key={idx} 
-                            className="inline-block animate-pulse drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]"
-                            style={{ animationDelay: `${idx * 400}ms`, animationDuration: '2s' }}
-                          >
-                            {word}&nbsp;
-                          </span>
-                        ))}
-                      </span>
+            {/* Left Images Area (Images 2 and 3) — side by side, centered */}
+            {hasModernStyling && layout !== "minimal" && adImages.length > 1 && (
+              <div className="hidden md:flex relative z-10 flex-1 h-full items-center justify-end gap-4 px-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-left-8 duration-700">
+                {adImages.slice(1, 3).map((img) => {
+                  const cdnUrl = img.url.includes("cloudinary.com") 
+                    ? img.url.replace("/upload/", "/upload/f_auto,q_auto,w_400/") 
+                    : img.url;
+                  return (
+                    <div
+                      key={img.key}
+                      className="w-[140px] h-[140px] sm:w-[170px] sm:h-[170px] md:w-[200px] md:h-[200px] flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300 shrink-0 rounded-2xl overflow-hidden shadow-xl drop-shadow-xl"
+                      onClick={handleBannerClick}
+                    >
+                      <img
+                        src={cdnUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
                     </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Content Area */}
+            <div 
+              className={`relative z-20 flex flex-col justify-center h-full shrink-0 max-w-[45%] lg:max-w-[50%] ${layout === "minimal" || (hasModernStyling && adImages.length > 0) ? "items-center text-center" : "items-start"} motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-8 duration-700`}
+              style={{ fontFamily: currentBanner.heroFontFamily || "inherit" }}
+            >
+              <div className={`flex flex-col gap-1 mb-1 sm:mb-2 ${layout === "minimal" || (hasModernStyling && adImages.length > 0) ? "items-center" : "items-start"}`}>
+                {/* Row 1: Sponsored Badge */}
+                {currentBanner.badge && (
+                  <span className={`inline-block  px-3 py-1 text-[10px] sm:text-xs font-bold rounded-full uppercase tracking-widest ${isDarkText ? "bg-black/10 text-slate-800 border-black/10" : "bg-white/20 text-white border-white/20"} backdrop-blur-sm border`}>
+                    {currentBanner.badge}
+                  </span>
+                )}
+                {/* Row 2: Promotion Goal Badge (Refined 3D + Word Glow) */}
+                {currentBanner.promotionGoal && (
+                  <div className="relative group inline-block">
+                    <div className="absolute inset-0 bg-red-500/20 blur-md rounded-lg group-hover:bg-red-500/40 transition-all duration-500"></div>
+                    <span className="relative inline-flex items-center px-4 py-1 text-[11px] sm:text-[13px] font-bold uppercase tracking-[0.08em] rounded-lg bg-gradient-to-b from-[#ff4747] to-[#cc0000] text-[#ffe600] border-t border-t-white/30 border-b-[3px] border-b-[#800000] shadow-[0_3px_0_#4d0000,0_4px_8px_rgba(0,0,0,0.3)] active:border-b-[1px] active:translate-y-[2px] active:shadow-[0_1px_0_#4d0000,0_2px_4px_rgba(0,0,0,0.3)] group-hover:-translate-y-0.5 transition-all duration-300 cursor-default isolate overflow-hidden">
+                      <span className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[150%] group-hover:translate-x-full transition-transform duration-[1200ms] ease-in-out pointer-events-none"></span>
+                      {currentBanner.promotionGoal.split(' ').map((word, idx) => (
+                        <span 
+                          key={idx} 
+                          className="inline-block animate-pulse drop-shadow-[0_0_5px_rgba(255,230,0,0.8)]"
+                          style={{ animationDelay: `${idx * 300}ms`, animationDuration: '2s' }}
+                        >
+                          {word}&nbsp;
+                        </span>
+                      ))}
+                    </span>
                   </div>
                 )}
               </div>
-            )}
-            
-            <p 
-              className={`text-xs sm:text-sm mb-3 sm:mb-5 line-clamp-2 font-medium sm:leading-relaxed drop-shadow-sm ${currentBanner.heroSubtitleColor ? "" : subtextColorClass}`}
-              style={currentBanner.heroSubtitleColor ? { color: currentBanner.heroSubtitleColor } : {}}
-            >
-              {currentBanner.subtitle || "\u00A0"}
-            </p>
-            
-            <button 
-              onClick={handleBannerClick}
-              className={`w-fit flex items-center gap-2 px-6 py-3 sm:px-8 sm:py-3.5 font-bold rounded-full transition-all duration-300 shadow-xl ${!currentBanner.heroButtonBgColor ? buttonClass : ""} hover:-translate-y-0.5 hover:scale-105 active:scale-95 text-xs sm:text-base group/btn`}
-              style={{
-                ...(currentBanner.heroButtonBgColor ? { backgroundColor: currentBanner.heroButtonBgColor } : {}),
-                ...(currentBanner.heroButtonTextColor ? { color: currentBanner.heroButtonTextColor } : {}),
-              }}
-            >
-              {currentBanner.buttonText}
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover/btn:translate-x-1" />
-            </button>
-          </div>
+              
+              <h2 
+                className={`text-xl sm:text-2xl lg:text-3xl font-black mb-0.5 tracking-tight drop-shadow-sm ${currentBanner.heroTitleColor ? "" : textColorClass} ${layout === "minimal" ? "leading-tight" : "leading-[1.1]"}`}
+                style={currentBanner.heroTitleColor ? { color: currentBanner.heroTitleColor } : {}}
+              >
+                {currentBanner.title}
+              </h2>
 
-          {/* Right Image Area (Image 1) — centered */}
-          {hasModernStyling && layout !== "minimal" && (
-            <div className="hidden md:flex relative z-10 w-[27%] h-full items-center justify-center px-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-8 duration-700">
-              {adImages.length > 0 ? (
-                <div
-                  className="w-full flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300"
-                  onClick={handleBannerClick}
-                >
-                  <img 
-                    src={adImages[0].url.includes("cloudinary.com") ? adImages[0].url.replace("/upload/", "/upload/f_auto,q_auto,w_400/") : adImages[0].url} 
-                    alt="" 
-                    className="w-full h-auto object-contain drop-shadow-xl rounded-lg"
-                    style={{ maxHeight: "260px" }}
-                  />
+              {currentBanner.productPrice !== undefined && (
+                <div className={`flex items-center gap-2 mb-1 ${layout === "minimal" || (hasModernStyling && adImages.length > 0) ? "justify-center" : "justify-start"}`}>
+                  <span className={`text-lg sm:text-xl font-black tracking-tight drop-shadow-sm ${isDarkText ? "text-slate-900" : "text-white"}`}>
+                    <span className="text-xl sm:text-2xl font-bold mr-0.5 opacity-90">₹</span>
+                    {
+                      currentBanner.productDiscount 
+                        ? Math.max(currentBanner.productPrice - (currentBanner.productPrice * currentBanner.productDiscount) / 100, 0).toLocaleString("en-IN")
+                        : currentBanner.productPrice.toLocaleString("en-IN")
+                    }
+                  </span>
+                  {currentBanner.productDiscount !== undefined && currentBanner.productDiscount > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm line-through font-medium drop-shadow-sm ${isDarkText ? "text-slate-500" : "text-white/70"}`}>
+                        ₹{currentBanner.productPrice.toLocaleString("en-IN")}
+                      </span>
+                      <div className="relative inline-block ml-1 group/tag">
+                        <div className="absolute inset-0 bg-red-600/20 blur-md rounded-md group-hover/tag:bg-red-500/40 transition-all duration-500 transform -skew-x-6"></div>
+                        <span className="relative flex items-center justify-center bg-gradient-to-b from-[#ff4747] to-[#cc0000] text-white px-2.5 py-0.5 rounded-md text-[12px] font-bold uppercase italic tracking-wider border-t border-t-white/30 border-b-[3px] border-b-[#800000] shadow-[0_3px_0_#4d0000,2px_4px_6px_rgba(0,0,0,0.3)] active:border-b-[1px] active:translate-y-[2px] active:shadow-[0_1px_0_#4d0000,1px_2px_3px_rgba(0,0,0,0.3)] group-hover/tag:-translate-y-0.5 transition-all duration-300 transform -skew-x-6 cursor-default isolate overflow-hidden">
+                          <span className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[150%] group-hover/tag:translate-x-[50%] transition-transform duration-[1000ms] ease-in-out pointer-events-none"></span>
+                          {`${currentBanner.productDiscount}% OFF`.split(' ').map((word, idx) => (
+                            <span 
+                              key={idx} 
+                              className="inline-block animate-pulse drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]"
+                              style={{ animationDelay: `${idx * 400}ms`, animationDuration: '2s' }}
+                            >
+                              {word}&nbsp;
+                            </span>
+                          ))}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              ) : currentBanner.bannerImage ? (
-                <div className="w-full flex items-center justify-center pointer-events-none">
-                  <img src={currentBanner.bannerImage} className="w-full h-auto object-contain drop-shadow-2xl rounded-2xl" style={{ maxHeight: "260px" }} alt="" />
-                </div>
-              ) : null}
+              )}
+              
+              <p 
+                className={`text-[10px] sm:text-xs mb-1.5 sm:mb-2 line-clamp-2 font-medium sm:leading-relaxed drop-shadow-sm ${currentBanner.heroSubtitleColor ? "" : subtextColorClass}`}
+                style={currentBanner.heroSubtitleColor ? { color: currentBanner.heroSubtitleColor } : {}}
+              >
+                {currentBanner.subtitle || "\u00A0"}
+              </p>
+              
+              <button 
+                onClick={handleBannerClick}
+                className={`w-fit flex items-center gap-1.5 px-4 py-2 sm:px-5 sm:py-2.5 font-bold rounded-full transition-all duration-300 shadow-xl ${!currentBanner.heroButtonBgColor ? buttonClass : ""} hover:-translate-y-0.5 hover:scale-105 active:scale-95 text-[10px] sm:text-xs group/btn`}
+                style={{
+                  ...(currentBanner.heroButtonBgColor ? { backgroundColor: currentBanner.heroButtonBgColor } : {}),
+                  ...(currentBanner.heroButtonTextColor ? { color: currentBanner.heroButtonTextColor } : {}),
+                }}
+              >
+                {currentBanner.buttonText}
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover/btn:translate-x-1" />
+              </button>
             </div>
-          )}
-        </div>
+
+            {/* Right Image Area (Image 1) — centered */}
+            {hasModernStyling && layout !== "minimal" && (
+              <div className="hidden md:flex relative z-10 flex-1 h-full items-center justify-start px-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-8 duration-700">
+                {adImages.length > 0 ? (
+                  <div
+                    className="w-auto flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300 shrink-0"
+                    onClick={handleBannerClick}
+                  >
+                    <img 
+                      src={adImages[0].url.includes("cloudinary.com") ? adImages[0].url.replace("/upload/", "/upload/f_auto,q_auto,w_400/") : adImages[0].url} 
+                      alt="" 
+                      className="w-full h-auto object-contain drop-shadow-xl rounded-lg"
+                      style={{ maxHeight: "200px" }}
+                    />
+                  </div>
+                ) : currentBanner.bannerImage ? (
+                  <div className="w-auto flex items-center justify-center pointer-events-none shrink-0">
+                    <img src={currentBanner.bannerImage} className="w-full h-auto object-contain drop-shadow-2xl rounded-2xl" style={{ maxHeight: "200px" }} alt="" />
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Navigation Arrows */}
         <button 

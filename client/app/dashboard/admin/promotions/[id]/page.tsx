@@ -52,7 +52,7 @@ export default function AdminPromotionDetailPage() {
   const [heroLayout, setHeroLayout] = useState<"floating" | "single" | "minimal">("floating");
 
   // UI State
-  const [modalState, setModalState] = useState<"approve" | "reject" | "pause" | "resume" | "verify" | null>(null);
+  const [modalState, setModalState] = useState<"approve" | "reject" | "pause" | "resume" | "verify" | "rejectPayment" | null>(null);
   const [styleExpanded, setStyleExpanded] = useState(false);
 
   const loadPage = useCallback(async () => {
@@ -138,7 +138,7 @@ export default function AdminPromotionDetailPage() {
   const isActive = promotion.status === "ACTIVE";
   const isPaused = promotion.status === "PAUSED";
   const isRejected = promotion.status === "REJECTED";
-  const showPaymentVerification = promotion.paymentMethod === "MANUAL" && ["APPROVED_WAITING_PAYMENT", "PAYMENT_PENDING"].includes(promotion.status);
+  const showPaymentVerification = promotion.paymentMethod === "MANUAL" && promotion.paymentStatus === "PENDING" && ["APPROVED_WAITING_PAYMENT", "PAYMENT_PENDING"].includes(promotion.status);
   
   // Payment Verification Banner State
   const paymentVerified = promotion.paymentStatus === "PAID";
@@ -310,15 +310,24 @@ export default function AdminPromotionDetailPage() {
                   <CheckCircle2 className="w-5 h-5" /> Payment Verified
                 </div>
               ) : paymentMismatch ? (
-                <div className="bg-red-50 dark:bg-red-500/10 border-b border-red-100 dark:border-red-500/20 px-6 py-3 flex items-center gap-2 text-sm font-bold text-red-700 dark:text-red-400">
-                  <ShieldAlert className="w-5 h-5" /> Payment Mismatch - Action Required
+                <div className="bg-red-50 dark:bg-red-500/10 border-b border-red-100 dark:border-red-500/20 px-6 py-3 flex items-center justify-between text-sm font-bold text-red-700 dark:text-red-400">
+                  <div className="flex items-center gap-2">
+                    <ShieldAlert className="w-5 h-5" /> Payment Mismatch - Action Required
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setModalState("rejectPayment")} className="px-3 py-1 bg-white dark:bg-black/20 text-red-700 dark:text-red-400 rounded-full text-xs hover:bg-red-100 transition border border-red-200 dark:border-red-500/20">Reject Proof</button>
+                    <button onClick={() => setModalState("verify")} className="px-3 py-1 bg-red-200 dark:bg-red-500/20 rounded-full text-xs hover:bg-red-300 transition text-red-800">Verify Now</button>
+                  </div>
                 </div>
               ) : showPaymentVerification ? (
                 <div className="bg-amber-50 dark:bg-amber-500/10 border-b border-amber-100 dark:border-amber-500/20 px-6 py-3 flex items-center justify-between text-sm font-bold text-amber-700 dark:text-amber-400">
                   <div className="flex items-center gap-2">
                     <Clock3 className="w-5 h-5" /> Manual Payment Pending
                   </div>
-                  <button onClick={() => setModalState("verify")} className="px-3 py-1 bg-amber-200 dark:bg-amber-500/20 rounded-full text-xs hover:bg-amber-300 transition">Verify Now</button>
+                  <div className="flex gap-2">
+                    <button onClick={() => setModalState("rejectPayment")} className="px-3 py-1 bg-white dark:bg-black/20 text-amber-700 dark:text-amber-400 rounded-full text-xs hover:bg-amber-100 transition border border-amber-200 dark:border-amber-500/20">Reject Proof</button>
+                    <button onClick={() => setModalState("verify")} className="px-3 py-1 bg-amber-200 dark:bg-amber-500/20 rounded-full text-xs hover:bg-amber-300 transition">Verify Now</button>
+                  </div>
                 </div>
               ) : (
                 <div className="bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5 px-6 py-3 flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-white/60">
@@ -800,6 +809,34 @@ export default function AdminPromotionDetailPage() {
         </div>
       )}
 
+      {modalState === "rejectPayment" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-[2rem] bg-white p-6 shadow-2xl dark:bg-[#13131a] border border-slate-200 dark:border-white/10 animate-in fade-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-black text-red-600 dark:text-red-400 mb-1">Reject Payment Proof</h2>
+            <p className="text-sm text-slate-500 dark:text-white/60 mb-6">This will mark the payment as failed and ask the seller to upload a new proof.</p>
+            
+            <label className="block mb-4">
+              <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Reason for Rejection</span>
+              <textarea rows={3} value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} className={`${inputClass} resize-none`} placeholder="e.g. Image is blurry, UTR does not match..." />
+            </label>
+            <label className="block mb-6">
+              <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Admin Note (Optional)</span>
+              <textarea rows={2} value={adminNote} onChange={(e) => setAdminNote(e.target.value)} className={`${inputClass} resize-none`} placeholder="Internal note..." />
+            </label>
+
+            <div className="flex gap-3">
+              <button onClick={() => setModalState(null)} disabled={processing} className="flex-1 rounded-xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10 transition">Cancel</button>
+              <button
+                onClick={() => void runAction(() => promotionAPI.rejectPromotionPayment(promotion._id, { rejectedReason: rejectReason, adminNote }), "Payment proof rejected")}
+                disabled={processing || !rejectReason.trim()}
+                className="flex-[1.5] rounded-xl bg-red-500 px-4 py-3 text-sm font-bold text-white hover:bg-red-600 transition shadow-sm disabled:opacity-50"
+              >
+                Reject Proof
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

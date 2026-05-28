@@ -10,11 +10,11 @@ import { createNotification } from "./notification.controller.js";
 
 const DEFAULT_AD_SETTINGS = {
   key: "global",
-  marketplaceHeroMaxAds: 3,
+  marketplaceHeroMaxAds: 5,
   autoRotate: true,
   defaultDurationDays: 7,
   minimumPrice: 2,
-  maximumActiveAdsPerSeller: 2,
+  maximumActiveAdsPerSeller: 5,
 };
 
 const PROMOTION_POPULATE = [
@@ -45,6 +45,14 @@ const getAdSettings = async () => {
   // Roll older seeded defaults forward without overriding future custom values.
   if (settings.minimumPrice === 299 || settings.minimumPrice === 1) {
     settings.minimumPrice = 2;
+    await settings.save();
+  }
+
+  if (settings.maximumActiveAdsPerSeller === 2) {
+    settings.maximumActiveAdsPerSeller = 5;
+    if (settings.marketplaceHeroMaxAds < 5) {
+      settings.marketplaceHeroMaxAds = 5;
+    }
     await settings.save();
   }
 
@@ -477,7 +485,7 @@ export const createPromotionRequest = async (req, res) => {
       return res.status(400).json({ message: "Valid product is required" });
     }
 
-    if (!title?.trim() || !subtitle?.trim()) {
+    if (req.body.heroLayout !== "fullImage" && (!title?.trim() || !subtitle?.trim())) {
       return res.status(400).json({ message: "Title and subtitle are required" });
     }
 
@@ -516,7 +524,7 @@ export const createPromotionRequest = async (req, res) => {
         const uploadResult = await uploadBuffer({
           buffer: file.buffer,
           folder: "bitforge/promotions/banners",
-          transformation: [{ width: 1200, height: 1200, crop: "limit" }],
+          transformation: [{ width: 3000, height: 3000, crop: "limit" }],
         });
         return {
           url: uploadResult.secure_url,
@@ -534,8 +542,8 @@ export const createPromotionRequest = async (req, res) => {
       productTitle: product.title,
       productThumbnailUrl: product.thumbnailUrl || null,
       placement,
-      title: title.trim(),
-      subtitle: subtitle.trim(),
+      title: title?.trim() || "",
+      subtitle: subtitle?.trim() || "",
       bannerImage: bannerImageUpload?.secure_url || null,
       bannerImageKey: bannerImageUpload?.public_id || null,
       adImages,
@@ -976,6 +984,63 @@ export const verifyPromotionPaymentAdmin = async (req, res) => {
   } catch (error) {
     console.error("Verify promotion payment error:", error);
     return res.status(500).json({ message: error.message || "Failed to verify payment" });
+  }
+};
+
+export const rejectPromotionPaymentAdmin = async (req, res) => {
+  try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: "Invalid promotion id" });
+    }
+
+    const promotion = await PromotionRequest.findById(req.params.id);
+    if (!promotion) {
+      return res.status(404).json({ message: "Promotion not found" });
+    }
+
+    if (!["APPROVED_WAITING_PAYMENT", "PAYMENT_PENDING"].includes(promotion.status)) {
+      return res.status(400).json({ message: "This promotion is not waiting for payment verification" });
+    }
+
+    const rejectedReason = req.body.rejectedReason?.trim();
+    if (!rejectedReason) {
+      return res.status(400).json({ message: "Rejection reason is required" });
+    }
+
+    // Set payment status back
+    promotion.paymentStatus = "FAILED";
+    promotion.status = "APPROVED_WAITING_PAYMENT";
+    promotion.adminNote = req.body.adminNote?.trim() || promotion.adminNote || "";
+    
+    // Clear out the invalid payment proof so they can upload a new one
+    if (promotion.paymentProofImageKey) {
+      cloudinary.uploader.destroy(promotion.paymentProofImageKey).catch(console.error);
+      promotion.paymentProofImageKey = null;
+    }
+    promotion.paymentProofImage = null;
+    
+    // Clear transaction ID if it was part of the failed manual payment
+    if (promotion.paymentMethod === "MANUAL") {
+      promotion.transactionId = null;
+    }
+
+    await promotion.save();
+
+    await notifySeller(
+      promotion.sellerId,
+      "Payment Proof Rejected",
+      `Your payment proof for "${promotion.productTitle}" was rejected. Reason: ${rejectedReason}. Please upload a valid proof or pay via Razorpay.`,
+      promotion._id,
+      `/dashboard/seller/promotions/${promotion._id}`
+    );
+
+    return res.json({
+      message: "Payment proof rejected",
+      promotion: await getPopulatedPromotionResponse(promotion._id),
+    });
+  } catch (error) {
+    console.error("Reject promotion payment error:", error);
+    return res.status(500).json({ message: error.message || "Failed to reject payment proof" });
   }
 };
 
@@ -1451,14 +1516,40 @@ export const recordPromotionImpression = async (req, res) => {
     }
 
     const now = new Date();
-    await PromotionRequest.findOneAndUpdate(
+    const dateStr = now.toISOString().split("T")[0];
+
+    // 1. Ensure the history element for today exists
+    await PromotionRequest.updateOne(
+      {
+        _id: req.params.id,
+        "history.date": { $ne: dateStr }
+      },
+      {
+        $push: {
+          history: {
+            date: dateStr,
+            impressions: 0,
+            clicks: 0
+          }
+        }
+      }
+    );
+
+    // 2. Increment global and daily impressions
+    await PromotionRequest.updateOne(
       {
         _id: req.params.id,
         status: "ACTIVE",
         startDate: { $lte: now },
         endDate: { $gte: now },
+        "history.date": dateStr
       },
-      { $inc: { impressions: 1 } }
+      { 
+        $inc: { 
+          impressions: 1,
+          "history.$.impressions": 1
+        } 
+      }
     );
 
     return res.json({ success: true });
@@ -1475,14 +1566,40 @@ export const recordPromotionClick = async (req, res) => {
     }
 
     const now = new Date();
-    await PromotionRequest.findOneAndUpdate(
+    const dateStr = now.toISOString().split("T")[0];
+
+    // 1. Ensure the history element for today exists
+    await PromotionRequest.updateOne(
+      {
+        _id: req.params.id,
+        "history.date": { $ne: dateStr }
+      },
+      {
+        $push: {
+          history: {
+            date: dateStr,
+            impressions: 0,
+            clicks: 0
+          }
+        }
+      }
+    );
+
+    // 2. Increment global and daily clicks
+    await PromotionRequest.updateOne(
       {
         _id: req.params.id,
         status: "ACTIVE",
         startDate: { $lte: now },
         endDate: { $gte: now },
+        "history.date": dateStr
       },
-      { $inc: { clicks: 1 } }
+      { 
+        $inc: { 
+          clicks: 1,
+          "history.$.clicks": 1
+        } 
+      }
     );
 
     return res.json({ success: true });

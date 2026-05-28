@@ -27,6 +27,9 @@ export type ColorToken = {
 };
 
 export interface PromotionFormState {
+  // Layout Options
+  layoutType: 'modern' | 'fullImage';
+
   // Product
   selectedProductId: string;
   selectedProductMeta: ProductMeta | null;
@@ -59,8 +62,11 @@ export interface PromotionFormState {
   formCompletion: number;
 }
 
+
 export interface PromotionFormActions {
   // Setters
+  setLayoutType: (type: 'modern' | 'fullImage') => void;
+
   setProduct: (id: string, meta: ProductMeta | null) => void;
   setProductLoadingState: (state: PromotionFormState['productLoadingState']) => void;
   
@@ -88,6 +94,8 @@ export interface PromotionFormActions {
 const initialAssetSlot: AssetSlot = { uploadState: 'empty', progress: 0 };
 
 const initialState: PromotionFormState = {
+  layoutType: 'modern',
+
   selectedProductId: '',
   selectedProductMeta: null,
   productLoadingState: 'idle',
@@ -116,6 +124,8 @@ const initialState: PromotionFormState = {
 
 export const usePromotionFormStore = create<PromotionFormState & PromotionFormActions>((set, get) => ({
   ...initialState,
+
+  setLayoutType: (type) => set({ layoutType: type }, false),
 
   setProduct: (id, meta) => set({ selectedProductId: id, selectedProductMeta: meta }, false),
   setProductLoadingState: (state) => set({ productLoadingState: state }, false),
@@ -152,8 +162,17 @@ export const usePromotionFormStore = create<PromotionFormState & PromotionFormAc
 
   calculateCompletion: () => set((state) => {
     let completed = 0;
-    let total = 6; // Product, Title, Subtitle, Duration, DesktopImage(1), MobileImage
+    
+    if (state.layoutType === 'fullImage') {
+      let total = 4; // Product, Duration, DesktopImage(1), MobileImage
+      if (state.selectedProductId) completed++;
+      if (state.requestedDuration > 0) completed++;
+      if (state.floatingImages[0].uploadState === 'success' || state.floatingImages[0].url) completed++;
+      if (state.mobileBanner.uploadState === 'success' || state.mobileBanner.url) completed++;
+      return { formCompletion: Math.round((completed / total) * 100) };
+    }
 
+    let total = 6; // Product, Title, Subtitle, Duration, DesktopImage(s), MobileImage
     if (state.selectedProductId) completed++;
     if (state.bannerTitle.trim().length > 0) completed++;
     if (state.bannerSubtitle.trim().length > 0) completed++;

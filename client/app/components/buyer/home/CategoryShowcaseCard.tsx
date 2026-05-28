@@ -19,27 +19,27 @@ export default function CategoryShowcaseCard({ title, categoryId, items, linkTex
   const router = useRouter();
 
   return (
-    <div className="bg-white dark:bg-[#0B1221] border border-gray-100 dark:border-white/5 rounded-xl sm:rounded-2xl p-3 sm:p-4 h-full flex flex-col transition-all duration-300 hover:bg-gray-50 dark:hover:bg-[#131F37] shadow-sm hover:shadow-md">
+    <div className="bg-white dark:bg-[#0B1221] p-4 sm:p-5 h-full flex flex-col hover:shadow-xl transition-shadow border border-transparent dark:border-white/5">
       <div className="flex items-center justify-between mb-3 sm:mb-4">
-        <h3 className="font-bold text-lg sm:text-xl text-gray-900 dark:text-white tracking-tight">{title}</h3>
+        <h3 className="font-bold text-[19px] sm:text-[21px] text-[#0F1111] dark:text-white tracking-tight">{title}</h3>
       </div>
       
       {/* 2x2 Grid */}
-      <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 flex-grow">
+      <div className="grid grid-cols-2 gap-x-3 sm:gap-x-4 gap-y-5 sm:gap-y-6 mb-6 flex-grow">
         {items.slice(0, 4).map((item, idx) => (
           <button 
             key={idx}
             onClick={() => router.push(`/marketplace?category=${encodeURIComponent(categoryId)}`)}
             className="flex flex-col items-start gap-1.5 sm:gap-2 group text-left"
           >
-            <div className={`w-full aspect-square rounded-lg sm:rounded-xl ${item.imageColor || 'bg-gray-50 dark:bg-slate-800/50'} overflow-hidden relative border border-gray-100 dark:border-white/5`}>
+            <div className={`w-full aspect-square ${item.imageColor || 'bg-gray-50 dark:bg-slate-800/50'} overflow-hidden relative`}>
                {item.imageUrl ? (
-                 <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                 <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover transition-transform duration-500" />
                ) : (
-                 <div className="w-full h-full bg-slate-100 dark:bg-white/5 group-hover:bg-transparent transition-colors"></div>
+                 <div className="w-full h-full bg-slate-100 dark:bg-white/5 transition-colors"></div>
                )}
             </div>
-            <span className="text-[11px] sm:text-xs font-semibold text-gray-800 dark:text-slate-200 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 line-clamp-2 w-full transition-colors leading-tight">
+            <span className="text-xs sm:text-[13px] font-medium text-[#0F1111] dark:text-slate-200 line-clamp-1 w-full leading-tight">
               {item.title}
             </span>
           </button>
@@ -48,7 +48,7 @@ export default function CategoryShowcaseCard({ title, categoryId, items, linkTex
 
       <button 
         onClick={() => router.push(`/marketplace?category=${encodeURIComponent(categoryId)}`)}
-        className="text-xs sm:text-sm font-bold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors w-fit mt-auto"
+        className="text-[13px] sm:text-[14px] font-medium text-[#007185] dark:text-[#52a6b8] hover:text-[#c7511f] dark:hover:text-[#e47911] hover:underline transition-colors w-fit mt-auto"
       >
         {linkText}
       </button>

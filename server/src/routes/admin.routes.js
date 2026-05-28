@@ -77,6 +77,7 @@ import {
   updateAdSettingsAdmin,
   updatePromotionPriorityAdmin,
   verifyPromotionPaymentAdmin,
+  rejectPromotionPaymentAdmin,
   updatePromotionStyleAdmin,
 } from "../controllers/promotion.controller.js";
 
@@ -182,6 +183,7 @@ router.get("/promotions/:id", getPromotionAdminById);
 router.patch("/promotions/:id/approve", approvePromotionAdmin);
 router.patch("/promotions/:id/reject", rejectPromotionAdmin);
 router.patch("/promotions/:id/verify-payment", verifyPromotionPaymentAdmin);
+router.patch("/promotions/:id/reject-payment", rejectPromotionPaymentAdmin);
 router.patch("/promotions/:id/pause", pausePromotionAdmin);
 router.patch("/promotions/:id/resume", resumePromotionAdmin);
 router.patch("/promotions/:id/priority", updatePromotionPriorityAdmin);

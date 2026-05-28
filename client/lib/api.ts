@@ -901,6 +901,11 @@ export const promotionAPI = {
         return response.data;
     },
 
+    rejectPromotionPayment: async (id: string, payload: { rejectedReason: string; adminNote?: string }) => {
+        const response = await api.patch(`/admin/promotions/${id}/reject-payment`, payload);
+        return response.data;
+    },
+
     pausePromotion: async (id: string, payload?: { adminNote?: string }) => {
         const response = await api.patch(`/admin/promotions/${id}/pause`, payload || {});
         return response.data;

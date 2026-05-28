@@ -79,6 +79,7 @@ export default function ProductCard({
         rounded-2xl border border-gray-100/80 dark:border-white/5 shadow-sm
         sm:flex-col sm:items-start sm:rounded-[1.25rem] sm:border sm:border-gray-100 sm:dark:border-white/8
         sm:shadow-sm sm:hover:shadow-lg sm:hover:-translate-y-0.5 sm:p-3
+        lg:p-0 lg:rounded-sm lg:border-transparent lg:shadow-none lg:hover:shadow-none lg:hover:-translate-y-0 lg:bg-transparent lg:dark:bg-transparent
       `}
     >
       {/* ── Thumbnail ── */}
@@ -87,7 +88,8 @@ export default function ProductCard({
         flex items-center justify-center self-stretch
         w-[125px] sm:w-full sm:h-auto sm:aspect-square
         m-3 rounded-xl sm:m-0 sm:rounded-xl
-        transition-shadow duration-300 group-hover:shadow-md
+        lg:rounded-none lg:aspect-auto lg:h-[220px] lg:bg-[#F7F7F7] lg:dark:bg-[#0A101D]
+        transition-shadow duration-300 group-hover:shadow-md lg:group-hover:shadow-none
       `}>
         {product.thumbnailUrl ? (
           <img
@@ -122,7 +124,7 @@ export default function ProductCard({
       </div>
 
       {/* ── Info Area ── */}
-      <div className="flex flex-col flex-1 min-w-0 py-3.5 pr-3 sm:py-0 sm:pr-0 sm:pt-3">
+      <div className="flex flex-col flex-1 min-w-0 py-3.5 pr-3 sm:py-0 sm:pr-0 sm:pt-3 lg:p-2 lg:bg-white lg:dark:bg-[#0B1221] lg:w-full">
 
         {/* Category pill — visible on mobile */}
         <span className={`self-start text-[10px] font-semibold px-2 py-0.5 rounded-full mb-1 ${catStyle.pill}`}>
@@ -130,7 +132,7 @@ export default function ProductCard({
         </span>
 
         {/* Title — bold & prominent */}
-        <h3 className="font-extrabold text-[14.5px] sm:text-sm text-gray-900 dark:text-white line-clamp-2 leading-snug tracking-tight">
+        <h3 className="font-extrabold text-[14.5px] sm:text-sm text-gray-900 dark:text-white line-clamp-2 leading-snug tracking-tight lg:font-medium lg:text-[15px] lg:text-[#007185] lg:dark:text-[#52a6b8] lg:group-hover:text-[#c7511f]">
           {product.title}
         </h3>
 
@@ -165,8 +167,8 @@ export default function ProductCard({
 
         {/* Price + discount inline */}
         <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-          <span className="font-extrabold text-base sm:text-xl text-gray-900 dark:text-white tracking-tight">
-            <span className="text-[11px] font-semibold mr-0.5">₹</span>
+          <span className="font-extrabold text-base sm:text-xl text-gray-900 dark:text-white tracking-tight lg:text-[#B12704] lg:dark:text-[#f48570] lg:text-[22px]">
+            <span className="text-[11px] lg:text-[13px] font-semibold mr-0.5">₹</span>
             {finalPrice.toLocaleString()}
           </span>
           {(product.discount ?? 0) > 0 && (

@@ -16,11 +16,11 @@ export default function AdSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [marketplaceHeroMaxAds, setMarketplaceHeroMaxAds] = useState(3);
+  const [marketplaceHeroMaxAds, setMarketplaceHeroMaxAds] = useState(5);
   const [autoRotate, setAutoRotate] = useState(true);
   const [defaultDurationDays, setDefaultDurationDays] = useState(7);
   const [minimumPrice, setMinimumPrice] = useState(2);
-  const [maximumActiveAdsPerSeller, setMaximumActiveAdsPerSeller] = useState(2);
+  const [maximumActiveAdsPerSeller, setMaximumActiveAdsPerSeller] = useState(5);
 
   const loadSettings = async () => {
     try {
