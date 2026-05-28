@@ -213,7 +213,7 @@ Total Retained: ₹1,180 (11.8% effective rate)
 
 ---
 
-## 🔧 Database Changes
+##  Database Changes
 
 ### Existing Payouts (if any)
 Old payouts in database will still work but won't have the new fields:

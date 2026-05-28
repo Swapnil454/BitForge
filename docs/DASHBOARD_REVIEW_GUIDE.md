@@ -354,7 +354,7 @@ Back to My Purchases page
 12. **Seller Responds** (Later)
     - Seller adds response: "Thank you Sarah!"
     - Sarah receives notification
-    - Response appears below her review with 💬 icon
+    - Response appears below her review with  icon
 
 ---
 
@@ -545,7 +545,7 @@ Mobile View:
 - 🚀 **Fast:** Write reviews without leaving dashboard
 - 🎯 **Easy:** Modal interface, no page navigation needed
 -  **Verified:** Only completed purchases can be reviewed
-- 💬 **Interactive:** Seller can respond to your reviews
+-  **Interactive:** Seller can respond to your reviews
 - 🔔 **Notified:** Get alerts when sellers respond
 
 ---

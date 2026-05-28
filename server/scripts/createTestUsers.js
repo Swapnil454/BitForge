@@ -63,7 +63,7 @@ async function run() {
     console.error(' Error:', err);
   } finally {
     await mongoose.disconnect();
-    console.log('Account preferences and security Disconnected');
+    console.log('🔌 Disconnected');
   }
 }
 

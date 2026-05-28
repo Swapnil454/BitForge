@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Banknote, Activity, AlertTriangle, DollarSign, Plug, Ban } from "lucide-react";
 
 export default function AdminPayoutsPage() {
   return (
@@ -33,17 +34,17 @@ export default function AdminPayoutsPage() {
             </p>
             <div className="grid md:grid-cols-3 gap-4 mt-4">
               <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-3xl mb-2">Account preferences and security</div>
+                <div className="text-3xl mb-2"><Banknote className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
                 <p className="text-slate-900 dark:text-white font-semibold">Review Requests</p>
                 <p className="text-slate-500 dark:text-white/60 text-sm">Approve or hold payouts</p>
               </div>
               <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-3xl mb-2"></div>
+                <div className="text-3xl mb-2"><Activity className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
                 <p className="text-slate-900 dark:text-white font-semibold">Monitor Transactions</p>
                 <p className="text-slate-500 dark:text-white/60 text-sm">Track all payout activity</p>
               </div>
               <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-3xl mb-2"></div>
+                <div className="text-3xl mb-2"><AlertTriangle className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
                 <p className="text-slate-900 dark:text-white font-semibold">Handle Issues</p>
                 <p className="text-slate-500 dark:text-white/60 text-sm">Resolve failed payouts</p>
               </div>
@@ -93,7 +94,7 @@ export default function AdminPayoutsPage() {
               </ol>
             </div>
             <div className="mt-4 p-3 bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded">
-              <p className="text-red-200 text-sm"> <strong>Warning:</strong> Manual payouts bypass automated fraud checks. Use with caution.</p>
+              <p className="text-red-700 dark:text-red-200 text-sm"> <strong>Warning:</strong> Manual payouts bypass automated fraud checks. Use with caution.</p>
             </div>
           </div>
         </section>
@@ -104,7 +105,7 @@ export default function AdminPayoutsPage() {
           <div className="space-y-4">
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">🚫</span> When to Hold Payouts
+                <Ban className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> When to Hold Payouts
               </h3>
               <ul className="space-y-1 text-slate-600 dark:text-white/70 text-sm list-disc list-inside">
                 <li>Suspicious activity or fraud indicators</li>
@@ -159,11 +160,12 @@ export default function AdminPayoutsPage() {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <Link href="/docs/payout-system" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3"></div>
+            <div className="text-3xl mb-3"><DollarSign className="w-8 h-8 text-indigo-500 dark:text-cyan-400" /></div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Seller Payout System</h3>
             <p className="text-slate-500 dark:text-white/60 text-sm">How payouts work for sellers</p>
           </Link>
           <Link href="/docs/api/payouts" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
+            <div className="text-3xl mb-3"><Plug className="w-8 h-8 text-indigo-500 dark:text-cyan-400" /></div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Payouts API</h3>
             <p className="text-slate-500 dark:text-white/60 text-sm">API reference documentation</p>
           </Link>

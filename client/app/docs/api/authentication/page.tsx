@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Lock, ShoppingCart } from "lucide-react";
+import { Lock, ShoppingCart, Cookie, KeySquare, Ticket } from "lucide-react";
 
 export default function AuthenticationAPIPage() {
   return (
@@ -53,12 +53,12 @@ export default function AuthenticationAPIPage() {
               <p className="text-slate-500 dark:text-white/60 text-sm mt-2">Bearer token authentication</p>
             </div>
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-2">🍪</div>
+              <div className="text-3xl mb-2"><Cookie className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
               <h3 className="text-slate-900 dark:text-white font-semibold">HTTP Cookies</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm mt-2">Secure session cookies</p>
             </div>
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-2">🔑</div>
+              <div className="text-3xl mb-2"><KeySquare className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
               <h3 className="text-slate-900 dark:text-white font-semibold">OAuth 2.0</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm mt-2">Google & GitHub</p>
             </div>
@@ -470,7 +470,7 @@ export default function AuthenticationAPIPage() {
         {/* JWT Token Structure */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <span className="text-cyan-400">🎫</span> JWT Token Structure
+            <span className="text-cyan-400"><Ticket className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></span> JWT Token Structure
           </h2>
           <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">JWT tokens are returned upon successful login/registration. Include them in the Authorization header for protected endpoints.</p>
@@ -492,7 +492,7 @@ export default function AuthenticationAPIPage() {
             <CodeBlock code="Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." language="bash" />
 
             <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-              <p className="text-yellow-200 text-sm flex items-start gap-2">
+              <p className="text-yellow-700 dark:text-yellow-200 text-sm flex items-start gap-2">
                 <span className="text-xl"></span>
                 <span>
                   <strong>Important:</strong> Tokens expire after 7 days. Use the refresh endpoint to get a new token without re-authenticating.

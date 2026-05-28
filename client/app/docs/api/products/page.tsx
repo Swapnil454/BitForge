@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Radio, ShoppingCart, Check } from "lucide-react";
+import { Radio, ShoppingCart, Check, Gift } from "lucide-react";
 
 export default function ProductsAPIPage() {
   return (
@@ -408,7 +408,7 @@ export default function ProductsAPIPage() {
         {/* Promotions Integration */}
         <section>
           <h2 className="mb-4 text-2xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <span className="text-pink-500">🎁</span> Promotions Integration
+            <span className="text-pink-500"><Gift className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></span> Promotions Integration
           </h2>
           <p className="mb-4 text-slate-600 dark:text-white/70">
             Products may have active promotions (coupons) linked to them. The Products API typically returns the base price, but the actual discounted price can be validated at checkout using the Orders API. 

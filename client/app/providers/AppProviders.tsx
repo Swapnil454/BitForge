@@ -104,7 +104,9 @@ export default function AppProviders({ children }: AppProvidersProps) {
     }
   }
 
-  const forcedTheme = !isAuthenticated ? "dark" : undefined;
+  // Force dark theme for unauthenticated users OR specific public pages (homepage, auth)
+  const isForceDarkRoute = pathname === "/" || pathname === "/login" || pathname === "/register" || pathname === "/forgot-password" || pathname === "/reset-password";
+  const forcedTheme = (!isAuthenticated || isForceDarkRoute) ? "dark" : undefined;
 
   return (
     <ThemeProvider 

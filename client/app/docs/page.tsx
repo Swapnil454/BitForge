@@ -3,69 +3,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useMemo } from "react";
-import {
-  Rocket,
-  DollarSign,
-  Edit3,
-  Upload,
-  Trash2,
-  Lock,
-  Radio,
-  ShoppingCart,
-  AlertCircle,
-  CreditCard,
-  Shield,
-  Users,
-  Clock,
-  TestTube,
-  Wrench,
-  MessageCircle,
-  Network,
-  Key,
-  Building,
-  Code,
-  Gift,
-  Building2,
-  Bell,
-  Palette,
-} from "lucide-react";
+import { Rocket, DollarSign, Edit3, Upload, Trash2, Lock, Radio, ShoppingCart, AlertCircle, CreditCard, Shield, Users, Clock, TestTube, Wrench, MessageCircle, Network, Key, Building, Code, Gift, Building2, Bell, Palette, Pencil, LockKeyhole, Megaphone, Settings, Timer, FlaskConical, Search, Landmark, Briefcase, Book } from "lucide-react";
 import { BackButton } from "./BackButton";
 
 // Icon mapping function
-const iconMap: Record<string, React.ReactNode> = {
-  "🚀": <Rocket className="w-5 h-5" />,
-  "💰": <DollarSign className="w-5 h-5" />,
-  "✏️": <Edit3 className="w-5 h-5" />,
-  "📤": <Upload className="w-5 h-5" />,
-  "🗑️": <Trash2 className="w-5 h-5" />,
-  "🔐": <Lock className="w-5 h-5" />,
-  "📡": <Radio className="w-5 h-5" />,
-  "🛒": <ShoppingCart className="w-5 h-5" />,
-  "🔒": <AlertCircle className="w-5 h-5" />,
-  "📢": <MessageCircle className="w-5 h-5" />,
-  "💳": <CreditCard className="w-5 h-5" />,
-  "🛡️": <Shield className="w-5 h-5" />,
-  "👥": <Users className="w-5 h-5" />,
-  "⚙️": <Wrench className="w-5 h-5" />,
-  "⏱️": <Clock className="w-5 h-5" />,
-  "🧪": <TestTube className="w-5 h-5" />,
-  "🔧": <Wrench className="w-5 h-5" />,
-  "🔑": <Key className="w-5 h-5" />,
-  "🏦": <Building className="w-5 h-5" />,
-  "👨‍💻": <Code className="w-5 h-5" />,
-  "🎁": <Gift className="w-5 h-5" />,
-  "🏢": <Building2 className="w-5 h-5" />,
-  "🔔": <Bell className="w-5 h-5" />,
-  "🎨": <Palette className="w-5 h-5" />,
-};
-
-const IconWrapper = ({ icon }: { icon: string | React.ReactNode }) => {
-  if (typeof icon === "string") {
-    return iconMap[icon] || null;
-  }
-  return icon;
-};
-
 // All documentation cards data
 const allDocs = {
   sellers: [
@@ -78,25 +19,25 @@ const allDocs = {
     {
       title: "Payout System",
       description: "Understand how earnings are calculated, held, and transferred to your bank account.",
-      icon: "💰",
+      icon: <DollarSign className="w-5 h-5 text-indigo-500" />,
       href: "/docs/payout-system",
     },
     {
       title: "Product Changes API",
       description: "Request modifications to live products with admin approval system.",
-      icon: "✏️",
+      icon: <Pencil className="w-5 h-5 text-indigo-500" />,
       href: "/docs/product-changes",
     },
     {
       title: "Upload Solutions",
       description: "Troubleshooting file uploads, format requirements, and error handling.",
-      icon: "📤",
+      icon: <Upload className="w-5 h-5 text-indigo-500" />,
       href: "/docs/upload-solutions",
     },
     {
       title: "Seller Deletion",
       description: "Account termination process with admin approval and data retention policies.",
-      icon: "🗑️",
+      icon: <Trash2 className="w-5 h-5 text-indigo-500" />,
       href: "/docs/seller-deletion",
     },
     {
@@ -108,7 +49,7 @@ const allDocs = {
     {
       title: "Promotions & Coupons",
       description: "Create discount codes, set usage limits, and boost your product sales.",
-      icon: "🎁",
+      icon: <Gift className="w-5 h-5 text-indigo-500" />,
       href: "/docs/promotions",
     },
   ],
@@ -116,37 +57,37 @@ const allDocs = {
     {
       title: "OAuth Setup",
       description: "Integrate Google and GitHub OAuth authentication for seamless user login.",
-      icon: "🔐",
+      icon: <LockKeyhole className="w-5 h-5 text-indigo-500" />,
       href: "/docs/oauth-setup",
     },
     {
       title: "Admin Products API",
       description: "Complete API reference for product CRUD operations with role-based access.",
-      icon: "📡",
+      icon: <Radio className="w-5 h-5 text-indigo-500" />,
       href: "/docs/api/products",
     },
     {
       title: "Payout API Reference",
       description: "Endpoints for manual payouts, balance checks, and transaction history.",
-      icon: "💰",
+      icon: <DollarSign className="w-5 h-5 text-indigo-500" />,
       href: "/docs/api/payouts",
     },
     {
       title: "Orders API",
       description: "Track purchases, sales history, and transaction details.",
-      icon: "🛒",
+      icon: <ShoppingCart className="w-5 h-5 text-indigo-500" />,
       href: "/docs/api/orders",
     },
     {
       title: "Authentication API",
       description: "JWT tokens, OAuth flows, and session management.",
-      icon: "🔒",
+      icon: <Lock className="w-5 h-5 text-indigo-500" />,
       href: "/docs/api/authentication",
     },
     {
       title: "Webhooks",
       description: "Real-time notifications for payments, payouts, and status updates.",
-      icon: "📢",
+      icon: <Megaphone className="w-5 h-5 text-indigo-500" />,
       href: "/docs/webhooks",
     },
   ],
@@ -154,19 +95,19 @@ const allDocs = {
     {
       title: "Admin Payout Guide",
       description: "Manage seller payouts, review holds, process manual disbursements, and reconcile transactions.",
-      icon: "💳",
+      icon: <CreditCard className="w-5 h-5 text-indigo-500" />,
       href: "/docs/admin/payouts",
     },
     {
       title: "Product Management",
       description: "Approve/reject products, manage pending changes, and enforce content policies.",
-      icon: "🛡️",
+      icon: <Shield className="w-5 h-5 text-indigo-500" />,
       href: "/docs/admin/products",
     },
     {
       title: "User Management",
       description: "Manage users, roles, permissions, and account actions.",
-      icon: "👥",
+      icon: <Users className="w-5 h-5 text-indigo-500" />,
       href: "/docs/admin/users",
     },
     {
@@ -178,19 +119,19 @@ const allDocs = {
     {
       title: "Content Moderation",
       description: "Review reports, enforce policies, and manage disputes.",
-      icon: "🛡️",
+      icon: <Shield className="w-5 h-5 text-indigo-500" />,
       href: "/docs/admin/moderation",
     },
     {
       title: "System Settings",
       description: "Platform configuration, fee structure, and feature flags.",
-      icon: "⚙️",
+      icon: <Settings className="w-5 h-5 text-indigo-500" />,
       href: "/docs/admin/settings",
     },
     {
       title: "Careers Management",
       description: "Create job postings, manage applications, and grow your BitForge team.",
-      icon: "🏢",
+      icon: <Building2 className="w-5 h-5 text-indigo-500" />,
       href: "/docs/admin/careers",
     },
   ],
@@ -198,37 +139,37 @@ const allDocs = {
     {
       title: "Security Best Practices",
       description: "Guidelines for secure integration, data handling, and compliance.",
-      icon: "🔒",
+      icon: <Lock className="w-5 h-5 text-indigo-500" />,
       href: "/docs/security",
     },
     {
       title: "Rate Limits",
       description: "API rate limits, quotas, and best practices for optimization.",
-      icon: "⏱️",
+      icon: <Timer className="w-5 h-5 text-indigo-500" />,
       href: "/docs/rate-limits",
     },
     {
       title: "Testing Guide",
       description: "Test mode, sample data, and integration testing strategies.",
-      icon: "🧪",
+      icon: <FlaskConical className="w-5 h-5 text-indigo-500" />,
       href: "/docs/testing",
     },
     {
       title: "Troubleshooting",
       description: "Common issues, debugging tips, and error resolution.",
-      icon: "🔧",
+      icon: <Wrench className="w-5 h-5 text-indigo-500" />,
       href: "/docs/troubleshooting",
     },
     {
       title: "Push Notifications",
       description: "Setup FCM tokens, manage user opt-ins, and broadcast messages.",
-      icon: "🔔",
+      icon: <Bell className="w-5 h-5 text-indigo-500" />,
       href: "/docs/push-notifications",
     },
     {
       title: "UI & Theming",
       description: "Learn about Dark/Light mode toggles, persistent preferences, and Glassmorphism.",
-      icon: "🎨",
+      icon: <Palette className="w-5 h-5 text-indigo-500" />,
       href: "/docs/ui-theming",
     },
   ],
@@ -391,7 +332,7 @@ export default function DocsPage() {
                           >
                             <div className="flex items-start gap-3">
                               <div className="text-xl flex-shrink-0 text-indigo-500 dark:text-cyan-400">
-                                <IconWrapper icon={doc.icon} />
+                                {doc.icon}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="text-sm font-medium text-slate-900 dark:text-white truncate">
@@ -440,13 +381,13 @@ export default function DocsPage() {
                 className="group rounded-2xl border border-emerald-200 dark:border-emerald-400/30 bg-emerald-50 dark:bg-transparent dark:bg-gradient-to-b dark:from-emerald-500/10 dark:to-cyan-500/10 p-6 transition-all hover:border-emerald-300 dark:hover:border-emerald-400/50 hover:shadow-lg dark:hover:shadow-emerald-500/10 shadow-sm"
               >
                 <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-white">
-                  <IconWrapper icon="🚀" />
+                  <Rocket className="w-5 h-5" />
                 </div>
                 <h3 className="mb-2 text-lg font-bold text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">Quick Start</h3>
                 <p className="mb-4 text-sm text-slate-600 dark:text-white/70 leading-relaxed">
                   Get up and running in 15 minutes with API keys, environment setup, and your first test transaction.
                 </p>
-                <span className="inline-flex items-center text-sm font-medium text-emerald-600 dark:text-cyan-300 group-hover:text-emerald-700 dark:group-hover:text-cyan-200">
+                <span className="inline-flex items-center text-sm font-medium text-emerald-600 dark:text-cyan-300 group-hover:text-emerald-700 dark:group-hover:text-cyan-700 dark:text-cyan-200">
                   Read guide →
                 </span>
               </Link>
@@ -456,13 +397,13 @@ export default function DocsPage() {
                 className="group rounded-2xl border border-cyan-200 dark:border-cyan-400/30 bg-cyan-50 dark:bg-transparent dark:bg-gradient-to-b dark:from-cyan-500/10 dark:to-indigo-500/10 p-6 transition-all hover:border-cyan-300 dark:hover:border-cyan-400/50 hover:shadow-lg dark:hover:shadow-cyan-500/10 shadow-sm"
               >
                 <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-white">
-                  <IconWrapper icon="🔑" />
+                  <Key className="w-5 h-5" />
                 </div>
                 <h3 className="mb-2 text-lg font-bold text-slate-900 dark:text-white group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors">API Keys Setup</h3>
                 <p className="mb-4 text-sm text-slate-600 dark:text-white/70 leading-relaxed">
                   Step-by-step instructions to get Razorpay, RazorpayX, and OAuth credentials configured.
                 </p>
-                <span className="inline-flex items-center text-sm font-medium text-cyan-600 dark:text-cyan-300 group-hover:text-cyan-700 dark:group-hover:text-cyan-200">
+                <span className="inline-flex items-center text-sm font-medium text-cyan-600 dark:text-cyan-300 group-hover:text-cyan-700 dark:group-hover:text-cyan-700 dark:text-cyan-200">
                   Read guide →
                 </span>
               </Link>
@@ -471,14 +412,14 @@ export default function DocsPage() {
                 href="/docs/bank-account-setup"
                 className="group rounded-2xl border border-indigo-200 dark:border-indigo-400/30 bg-indigo-50 dark:bg-transparent dark:bg-gradient-to-b dark:from-indigo-500/10 dark:to-purple-500/10 p-6 transition-all hover:border-indigo-300 dark:hover:border-indigo-400/50 hover:shadow-lg dark:hover:shadow-indigo-500/10 shadow-sm"
               >
-                <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-white">
-                  <IconWrapper icon="🏦" />
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 dark:bg-white/5 text-indigo-600 dark:text-cyan-400 group-hover:scale-110 transition-transform">
+                  <Landmark className="w-5 h-5" />
                 </div>
                 <h3 className="mb-2 text-lg font-bold text-slate-900 dark:text-white group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors">Bank Account Setup</h3>
                 <p className="mb-4 text-sm text-slate-600 dark:text-white/70 leading-relaxed">
                   Configure payment flows, seller payouts, and commission management with RazorpayX.
                 </p>
-                <span className="inline-flex items-center text-sm font-medium text-indigo-600 dark:text-cyan-300 group-hover:text-indigo-700 dark:group-hover:text-cyan-200">
+                <span className="inline-flex items-center text-sm font-medium text-indigo-600 dark:text-cyan-300 group-hover:text-indigo-700 dark:group-hover:text-cyan-700 dark:text-cyan-200">
                   Read guide →
                 </span>
               </Link>
@@ -510,7 +451,7 @@ export default function DocsPage() {
             <div>
               <div className="mb-6 flex items-center gap-3">
                 <div className="mb-3 inline-flex h-6 w-6 items-center justify-center text-indigo-600 dark:text-cyan-400">
-                  <IconWrapper icon="💼" />
+                  <Briefcase className="w-5 h-5" />
                 </div>
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">For Sellers</h2>
               </div>
@@ -527,7 +468,7 @@ export default function DocsPage() {
             <div>
               <div className="mb-6 flex items-center gap-3 mt-10">
                 <div className="mb-3 inline-flex h-6 w-6 items-center justify-center text-indigo-600 dark:text-cyan-400">
-                  <IconWrapper icon="👨‍💻" />
+                  <Code className="w-5 h-5" />
                 </div>
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">For Developers</h2>
               </div>
@@ -544,7 +485,7 @@ export default function DocsPage() {
             <div>
               <div className="mb-6 flex items-center gap-3 mt-10">
                 <div className="mb-3 inline-flex h-6 w-6 items-center justify-center text-indigo-600 dark:text-cyan-400">
-                  <IconWrapper icon="⚙️" />
+                  <Settings className="w-5 h-5" />
                 </div>
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">For Admins</h2>
               </div>
@@ -561,7 +502,7 @@ export default function DocsPage() {
             <div>
               <div className="mb-6 flex items-center gap-3 mt-10">
                 <div className="mb-3 inline-flex h-6 w-6 items-center justify-center text-indigo-600 dark:text-cyan-400">
-                  <IconWrapper icon="📚" />
+                  <Book className="w-5 h-5" />
                 </div>
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Platform Guides</h2>
               </div>
@@ -581,7 +522,7 @@ export default function DocsPage() {
             filteredDocs.admins.length === 0 &&
             filteredDocs.platform.length === 0 && (
               <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-12 text-center shadow-sm">
-                <div className="text-5xl mb-4 text-slate-300 dark:text-white/20">🔍</div>
+                <div className="text-5xl mb-4 text-slate-300 dark:text-white/20"><Search className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No results found</h3>
                 <p className="text-slate-500 dark:text-white/60 mb-4 leading-relaxed">
                   No documentation matches &quot;{searchQuery}&quot;
@@ -696,7 +637,7 @@ function DocCard({
       className="group block rounded-xl border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 p-5 transition-all hover:border-indigo-400/40 dark:hover:border-cyan-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 shadow-sm"
     >
       <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 dark:bg-cyan-500/10 text-indigo-600 dark:text-cyan-400 group-hover:bg-indigo-100 dark:group-hover:bg-cyan-500/20 transition-colors">
-        {icon ? <IconWrapper icon={icon} /> : <Rocket className="w-5 h-5" />}
+        {icon ? icon : <Rocket className="w-5 h-5" />}
       </div>
       <h3 className="mb-2 text-base font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">
         {title}

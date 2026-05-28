@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { DollarSign, AlertCircle, Lock, MessageCircle, ShoppingCart, Key, TestTube } from "lucide-react";
+import { DollarSign, AlertCircle, Lock, MessageCircle, ShoppingCart, Key, TestTube, Zap, RefreshCcw, Lightbulb } from "lucide-react";
 
 export default function WebhooksPage() {
   return (
@@ -271,7 +271,7 @@ app.post('/webhooks', (req, res) => {
           <div className="space-y-4">
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">⚡</span> Respond Quickly
+                <Zap className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Respond Quickly
               </h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">
                 Return a 200 OK response within 5 seconds. Process heavy tasks asynchronously in the background.
@@ -279,7 +279,7 @@ app.post('/webhooks', (req, res) => {
             </div>
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">🔄</span> Handle Retries
+                <RefreshCcw className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Handle Retries
               </h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">
                 We retry failed webhooks up to 3 times with exponential backoff. Make your endpoint idempotent to handle duplicate events.
@@ -321,8 +321,8 @@ Bitforge webhooks test --event payment.completed`}
               language="bash"
             />
             <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-              <p className="text-blue-200 text-sm flex items-start gap-2">
-                <span className="text-xl">💡</span>
+              <p className="text-blue-700 dark:text-blue-200 text-sm flex items-start gap-2">
+                <Lightbulb className="w-6 h-6 text-indigo-500 dark:text-cyan-400" />
                 <span>
                   <strong>Tip:</strong> Use tools like ngrok to expose your local server for webhook testing during development.
                 </span>

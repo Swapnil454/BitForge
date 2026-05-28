@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { DollarSign, Users, Wrench } from "lucide-react";
+import { DollarSign, Users, Wrench, Package, ShoppingCart, Banknote, ShoppingBag } from "lucide-react";
 
 export default function AdminAnalyticsPage() {
   return (
@@ -41,12 +41,12 @@ export default function AdminAnalyticsPage() {
                 <p className="text-slate-500 dark:text-white/60 text-sm">Growth metrics</p>
               </div>
               <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg">
-                <div className="text-2xl mb-2"></div>
+                <div className="text-2xl mb-2"><Package className="w-5 h-5 mx-auto text-green-400" /></div>
                 <p className="text-slate-900 dark:text-white font-semibold">Products</p>
                 <p className="text-slate-500 dark:text-white/60 text-sm">Catalog health</p>
               </div>
               <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg">
-                <div className="text-2xl mb-2"></div>
+                <div className="text-2xl mb-2"><ShoppingCart className="w-5 h-5 mx-auto text-purple-400" /></div>
                 <p className="text-slate-900 dark:text-white font-semibold">Sales</p>
                 <p className="text-slate-500 dark:text-white/60 text-sm">Transaction volume</p>
               </div>
@@ -77,7 +77,7 @@ export default function AdminAnalyticsPage() {
               </ul>
             </div>
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
-              <h3 className="text-slate-900 dark:text-white font-semibold mb-2">🛍️ Transaction Metrics</h3>
+              <h3 className="text-slate-900 dark:text-white font-semibold mb-2"><ShoppingBag className="w-5 h-5 inline-block mr-2 text-indigo-500 dark:text-cyan-400" /> Transaction Metrics</h3>
               <ul className="space-y-1 text-slate-600 dark:text-white/70 text-sm list-disc list-inside">
                 <li>Total transactions processed</li>
                 <li>Success rate (completed vs failed)</li>
@@ -108,7 +108,7 @@ export default function AdminAnalyticsPage() {
             <p className="text-slate-500 dark:text-white/60 text-sm">Platform configuration</p>
           </Link>
           <Link href="/docs/admin/payouts" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3"></div>
+            <div className="text-3xl mb-3"><Banknote className="w-8 h-8 text-indigo-500 dark:text-cyan-400" /></div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Payouts</h3>
             <p className="text-slate-500 dark:text-white/60 text-sm">Manage disbursements</p>
           </Link>

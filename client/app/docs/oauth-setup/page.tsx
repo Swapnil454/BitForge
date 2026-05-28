@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Rocket, Check, Shield, AlertCircle, Lock, Users } from "lucide-react";
+import { Rocket, Check, Shield, AlertCircle, Lock, Users, MousePointerClick, ArrowRightLeft, Ticket, Timer, FlaskConical, Wrench } from "lucide-react";
 
 export default function OAuthSetupPage() {
   return (
@@ -69,22 +69,22 @@ export default function OAuthSetupPage() {
           </h2>
           <div className="grid md:grid-cols-4 gap-4">
             <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3"></div>
+              <div className="text-3xl mb-3"><MousePointerClick className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2">1. User Clicks Login</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">User chooses Google or GitHub</p>
             </div>
             <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3">🔀</div>
+              <div className="text-3xl mb-3"><ArrowRightLeft className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2">2. Redirect to Provider</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">User authenticates with provider</p>
             </div>
             <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3">🎫</div>
+              <div className="text-3xl mb-3"><Ticket className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2">3. Authorization Code</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">Provider returns auth code</p>
             </div>
             <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3"></div>
+              <div className="text-3xl mb-3"><Timer className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2">4. Create Session</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">User logged in successfully</p>
             </div>
@@ -325,7 +325,7 @@ GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback`}
                 </li>
               </ol>
               <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                <p className="text-yellow-200 text-sm flex items-start gap-2">
+                <p className="text-yellow-700 dark:text-yellow-200 text-sm flex items-start gap-2">
                   <span className="text-xl"></span>
                   <span>
                     <strong>Important:</strong> Save your client secret securely. GitHub won't show it again.
@@ -381,7 +381,7 @@ SESSION_SECRET=your_super_secret_session_key_here`}
         {/* Testing OAuth */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <span className="text-cyan-400">🧪</span> Testing OAuth Integration
+            <span className="text-cyan-400"><FlaskConical className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></span> Testing OAuth Integration
           </h2>
           <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <ol className="space-y-4 text-slate-600 dark:text-white/70">
@@ -453,7 +453,7 @@ GITHUB_CALLBACK_URL=https://yourdomain.com/api/auth/github/callback`}
         {/* Troubleshooting */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <span className="text-cyan-400">🔧</span> Troubleshooting
+            <span className="text-cyan-400"><Wrench className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></span> Troubleshooting
           </h2>
           <div className="space-y-4">
             <details className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 cursor-pointer">

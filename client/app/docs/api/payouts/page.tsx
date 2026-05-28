@@ -352,7 +352,7 @@ export default function PayoutsAPIPage() {
               title="Bank Account Setup"
               description="Configure bank account for payouts"
               href="/docs/bank-account-setup"
-              icon="🏦"
+              icon=""
             />
           </div>
         </section>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ShoppingBag } from "lucide-react";
 
 export default function TestingPage() {
   return (
@@ -37,7 +38,7 @@ export default function TestingPage() {
                 <li>Go to Dashboard → API Settings</li>
                 <li>Toggle "Test Mode" switch</li>
                 <li>Use test API keys (start with <code className="text-indigo-600 dark:text-cyan-400">csfy_test_</code>)</li>
-                <li>Transactions marked with 🧪 badge</li>
+                <li>Transactions marked with  badge</li>
               </ol>
             </div>
           </div>
@@ -81,7 +82,7 @@ export default function TestingPage() {
               </table>
             </div>
             <div className="p-4 bg-blue-500/10 border-t border-blue-500/30">
-              <p className="text-blue-200 text-sm">
+              <p className="text-blue-700 dark:text-blue-200 text-sm">
                 <strong>Note:</strong> Use any future expiry date (e.g., 12/25) and any 3-digit CVV.
               </p>
             </div>
@@ -126,7 +127,7 @@ export default function TestingPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Testing Common Workflows</h2>
           <div className="space-y-4">
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
-              <h3 className="text-slate-900 dark:text-white font-semibold mb-2">🛍️ Purchase Flow</h3>
+              <h3 className="text-slate-900 dark:text-white font-semibold mb-2"><ShoppingBag className="w-5 h-5 inline-block mr-2 text-indigo-500 dark:text-cyan-400" /> Purchase Flow</h3>
               <ol className="space-y-1 text-slate-600 dark:text-white/70 text-sm list-decimal list-inside">
                 <li>Add product to cart</li>
                 <li>Proceed to checkout</li>

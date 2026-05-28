@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Check, Shield, AlertCircle } from "lucide-react";
+import { Check, Shield, AlertCircle, RefreshCcw, FlaskConical, Wrench } from "lucide-react";
 
 export default function BankAccountSetupPage() {
   return (
@@ -152,7 +152,7 @@ export default function BankAccountSetupPage() {
             </div>
 
             <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-              <p className="text-yellow-200 text-sm flex items-start gap-2">
+              <p className="text-yellow-700 dark:text-yellow-200 text-sm flex items-start gap-2">
                 <span className="text-xl"></span>
                 <span>
                   <strong>Important:</strong> Ensure all details match your bank records exactly. Incorrect information will cause payout failures.
@@ -175,7 +175,7 @@ export default function BankAccountSetupPage() {
             <div className="space-y-4">
               <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg p-4">
                 <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                  <span className="text-cyan-400">🔄</span> Penny Drop Verification
+                  <span className="text-cyan-400"><RefreshCcw className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></span> Penny Drop Verification
                 </h3>
                 <ul className="space-y-2 text-slate-600 dark:text-white/70 text-sm">
                   <li className="flex items-start gap-2">
@@ -259,7 +259,7 @@ export default function BankAccountSetupPage() {
         {/* Testing Your Setup */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <span className="text-cyan-400">🧪</span> Testing Your Setup
+            <span className="text-cyan-400"><FlaskConical className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></span> Testing Your Setup
           </h2>
           <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">
@@ -293,7 +293,7 @@ export default function BankAccountSetupPage() {
         {/* Troubleshooting */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <span className="text-cyan-400">🔧</span> Troubleshooting
+            <span className="text-cyan-400"><Wrench className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></span> Troubleshooting
           </h2>
           <div className="space-y-4">
             <details className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 cursor-pointer">
@@ -407,7 +407,7 @@ export default function BankAccountSetupPage() {
               title="Payment Testing"
               description="Test the full payment flow with Razorpay test cards"
               href="/docs/quick-start#test-payments"
-              icon="🧪"
+              icon=""
             />
             <NextStepCard
               title="Dashboard Overview"

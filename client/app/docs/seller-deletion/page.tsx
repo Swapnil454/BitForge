@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Trash2 } from "lucide-react";
+import { Trash2, Pause } from "lucide-react";
 
 export default function SellerDeletionPage() {
   return (
@@ -33,7 +33,7 @@ export default function SellerDeletionPage() {
               Deleting your seller account is a serious action that requires admin approval. This process ensures all pending transactions are settled and customer obligations are fulfilled.
             </p>
             <div className="bg-white dark:bg-black/30 p-4 rounded-lg">
-              <p className="text-yellow-200 text-sm flex items-start gap-2">
+              <p className="text-yellow-700 dark:text-yellow-200 text-sm flex items-start gap-2">
                 <Trash2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
                 <span><strong>Warning:</strong> Account deletion is permanent and irreversible. All your products will be removed from the marketplace.</span>
               </p>
@@ -223,7 +223,7 @@ export default function SellerDeletionPage() {
           <div className="space-y-4">
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">⏸️</span> Temporarily Pause Account
+                <Pause className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Temporarily Pause Account
               </h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">
                 Deactivate your account temporarily without losing data. Products hidden from marketplace, can be reactivated anytime.

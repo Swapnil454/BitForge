@@ -94,7 +94,7 @@ npm run dev
 2. **Respond to Review**
    - Click "Add Response" on a review
    - Enter seller response
-   - Response appears below review with 💬 icon
+   - Response appears below review with  icon
 
 ---
 

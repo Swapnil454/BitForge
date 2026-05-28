@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Package, Wrench, RefreshCcw, FileArchive, FlaskConical } from "lucide-react";
 
 export default function UploadSolutionsPage() {
   return (
@@ -97,7 +97,7 @@ export default function UploadSolutionsPage() {
 
             <div className="bg-red-50 dark:bg-transparent dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-3 flex items-center gap-2">
-                <span className="text-xl">🔄</span> Error: Upload Interrupted
+                <RefreshCcw className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Error: Upload Interrupted
               </h3>
               <p className="text-slate-600 dark:text-white/70 mb-3"><strong className="text-slate-900 dark:text-white">Message:</strong> "Upload failed - connection lost"</p>
               <p className="text-slate-600 dark:text-white/70 mb-3"><strong className="text-slate-900 dark:text-white">Cause:</strong> Network interruption during upload.</p>
@@ -172,7 +172,7 @@ export default function UploadSolutionsPage() {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">🗜️</span> Compress Files
+                <FileArchive className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Compress Files
               </h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">
                 Always compress files before uploading. Use ZIP for documents, HandBrake for videos, TinyPNG for images.
@@ -188,7 +188,7 @@ export default function UploadSolutionsPage() {
             </div>
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">🧪</span> Test Downloads
+                <FlaskConical className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Test Downloads
               </h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">
                 After uploading, download and test your files to ensure they work correctly before publishing.
@@ -208,12 +208,12 @@ export default function UploadSolutionsPage() {
         {/* Related */}
         <div className="grid sm:grid-cols-2 gap-4 mb-10">
           <Link href="/docs/product-management" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-indigo-400/40 dark:hover:border-cyan-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3"></div>
+            <div className="text-3xl mb-3"><Package className="w-8 h-8 text-indigo-500 dark:text-cyan-400" /></div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">Product Management</h3>
             <p className="text-slate-500 dark:text-white/60 text-sm">Complete product setup guide</p>
           </Link>
           <Link href="/docs/troubleshooting" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-indigo-400/40 dark:hover:border-cyan-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3">🔧</div>
+            <div className="text-3xl mb-3"><Wrench className="w-8 h-8 text-indigo-500 dark:text-cyan-400" /></div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">Troubleshooting</h3>
             <p className="text-slate-500 dark:text-white/60 text-sm">More common issues & solutions</p>
           </Link>

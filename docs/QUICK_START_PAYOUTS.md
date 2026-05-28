@@ -78,7 +78,7 @@ POST /api/admin/payouts/:id/approve
 
 ---
 
-## Account preferences and security Commission Breakdown
+## 💵 Commission Breakdown
 
 | Amount | Commission (10%) | GST (18%) | You Keep | Seller Gets |
 |--------|------------------|-----------|----------|-------------|
@@ -134,7 +134,7 @@ POST /api/admin/payouts/:id/reject
 
 ---
 
-## 🏦 For Sellers
+##  For Sellers
 
 ### Request Withdrawal
 ```bash

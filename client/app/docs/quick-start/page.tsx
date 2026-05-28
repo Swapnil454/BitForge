@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Rocket, Check, Key, Building, DollarSign } from "lucide-react";
+import { Rocket, Check, Key, Building, DollarSign, Briefcase, ShoppingCart, Palette, Bell } from "lucide-react";
 
 export default function QuickStartPage() {
   return (
@@ -60,7 +60,7 @@ export default function QuickStartPage() {
                   href="https://razorpay.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-indigo-600 dark:text-cyan-300 hover:text-indigo-700 dark:hover:text-cyan-200 underline transition-colors"
+                  className="text-indigo-600 dark:text-cyan-300 hover:text-indigo-700 dark:hover:text-cyan-700 dark:text-cyan-200 underline transition-colors"
                 >
                   Sign up here
                 </a>
@@ -182,7 +182,7 @@ RESEND_FROM_EMAIL='BitForge <no-reply@bittforge.in>'`}
                 <p className="mb-2 font-semibold text-amber-700 dark:text-amber-300">Important</p>
                 <p className="text-sm text-slate-600 dark:text-white/70">
                   Replace the placeholder values with your actual credentials. Never commit sensitive keys to version control.
-                  See our <Link href="/docs/api-keys-setup" className="text-indigo-600 dark:text-cyan-300 hover:text-indigo-700 dark:hover:text-cyan-200 underline transition-colors">API Keys Setup guide</Link> for detailed instructions.
+                  See our <Link href="/docs/api-keys-setup" className="text-indigo-600 dark:text-cyan-300 hover:text-indigo-700 dark:hover:text-cyan-700 dark:text-cyan-200 underline transition-colors">API Keys Setup guide</Link> for detailed instructions.
                 </p>
               </div>
             </div>
@@ -213,7 +213,7 @@ sudo systemctl start mongod
 # MongoDB runs as a service by default after installation`}
           />
           <p className="mt-4 text-sm text-slate-500 dark:text-white/60">
-            Or use <a href="https://www.mongodb.com/cloud/atlas" target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-cyan-300 hover:text-indigo-700 dark:hover:text-cyan-200 underline transition-colors">MongoDB Atlas</a> for a hosted solution.
+            Or use <a href="https://www.mongodb.com/cloud/atlas" target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-cyan-300 hover:text-indigo-700 dark:hover:text-cyan-700 dark:text-cyan-200 underline transition-colors">MongoDB Atlas</a> for a hosted solution.
           </p>
         </section>
 
@@ -250,7 +250,7 @@ npm run dev`}
                 <p className="mb-2 font-semibold text-emerald-700 dark:text-emerald-300">Success!</p>
                 <p className="text-sm text-slate-600 dark:text-white/70">
                   Your BitForge instance should now be running. Open{" "}
-                  <a href="http://localhost:3000" className="text-indigo-600 dark:text-cyan-300 hover:text-indigo-700 dark:hover:text-cyan-200 underline transition-colors">
+                  <a href="http://localhost:3000" className="text-indigo-600 dark:text-cyan-300 hover:text-indigo-700 dark:hover:text-cyan-700 dark:text-cyan-200 underline transition-colors">
                     http://localhost:3000
                   </a>{" "}
                   in your browser.
@@ -279,8 +279,8 @@ node scripts/createTestUsers.js`}
           <p className="mt-4 text-sm text-slate-600 dark:text-white/70">This creates three test accounts:</p>
           <ul className="mt-3 space-y-2 text-sm text-slate-500 dark:text-white/60">
             <li> <strong>Admin:</strong> admin@bitforge.com / password123</li>
-            <li>💼 <strong>Seller:</strong> seller@bitforge.com / password123</li>
-            <li>🛒 <strong>Buyer:</strong> buyer@bitforge.com / password123</li>
+            <li><Briefcase className="w-5 h-5 inline-block mr-2 text-indigo-500 dark:text-cyan-400" /> <strong>Seller:</strong> seller@bitforge.com / password123</li>
+            <li><ShoppingCart className="w-5 h-5 inline-block mr-2 text-indigo-500 dark:text-cyan-400" /> <strong>Buyer:</strong> buyer@bitforge.com / password123</li>
           </ul>
         </section>
 
@@ -331,11 +331,11 @@ node scripts/createTestUsers.js`}
           </p>
           <ul className="space-y-2 text-slate-600 dark:text-white/70">
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400 mt-0.5 flex-shrink-0">🎨</span>
+              <span className="text-cyan-400 mt-0.5 flex-shrink-0"><Palette className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></span>
               <span><strong>Theming:</strong> Toggle between Light and Dark mode using the button in the top navigation. Your preference is saved to your account.</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400 mt-0.5 flex-shrink-0">🔔</span>
+              <span className="text-cyan-400 mt-0.5 flex-shrink-0"><Bell className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></span>
               <span><strong>Push Notifications:</strong> Allow notifications when prompted by your browser to test FCM push messages sent by the admin.</span>
             </li>
           </ul>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Check, DollarSign, MessageCircle, Upload } from "lucide-react";
+import { Check, DollarSign, MessageCircle, Upload, Lightbulb, Star, Ticket, Hourglass } from "lucide-react";
 
 const CheckIcon = () => <Check className="w-5 h-5" />;
 
@@ -146,7 +146,7 @@ export default function ProductManagementPage() {
 
           <div className="mt-6 rounded-lg border border-indigo-200 dark:border-cyan-500/30 bg-cyan-500/5 p-4">
             <div className="flex items-start gap-3">
-              <span className="text-xl">💡</span>
+              <Lightbulb className="w-6 h-6 text-indigo-500 dark:text-cyan-400" />
               <div>
                 <p className="mb-2 font-semibold text-cyan-300">Best Practices</p>
                 <ul className="space-y-1 text-sm text-slate-600 dark:text-white/70">
@@ -263,7 +263,7 @@ export default function ProductManagementPage() {
               <span><strong>Sales:</strong> Monitor total sales and revenue</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">⭐</span>
+              <span className="text-cyan-400"><Star className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></span>
               <span><strong>Ratings:</strong> See customer feedback and ratings</span>
             </li>
             <li className="flex items-start gap-3">
@@ -281,15 +281,15 @@ export default function ProductManagementPage() {
           </p>
           <ul className="space-y-2 text-slate-600 dark:text-white/70">
             <li className="flex items-start gap-3">
-              <span className="text-pink-500 mt-0.5 flex-shrink-0">🎟️</span>
+              <span className="text-pink-500 mt-0.5 flex-shrink-0"><Ticket className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></span>
               <span><strong>Percentage Off:</strong> Offer a flat percentage discount (e.g., 20% off) on specific products.</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-pink-500 mt-0.5 flex-shrink-0">💰</span>
+              <span className="text-pink-500 mt-0.5 flex-shrink-0"><DollarSign className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></span>
               <span><strong>Fixed Amount:</strong> Offer a specific monetary discount (e.g., $5 off).</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-pink-500 mt-0.5 flex-shrink-0">⏳</span>
+              <span className="text-pink-500 mt-0.5 flex-shrink-0"><Hourglass className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></span>
               <span><strong>Time-Limited:</strong> Set start and expiration dates for your promotions.</span>
             </li>
           </ul>

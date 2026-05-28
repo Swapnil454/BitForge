@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Lock, Check, Building } from "lucide-react";
+import { Lock, Check, Building, Lightbulb } from "lucide-react";
 
 export default function APIKeysSetupPage() {
   return (
@@ -47,7 +47,7 @@ export default function APIKeysSetupPage() {
                 href="https://razorpay.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-indigo-600 dark:text-cyan-300 hover:text-indigo-700 dark:hover:text-cyan-200 underline transition-colors"
+                className="text-indigo-600 dark:text-cyan-300 hover:text-indigo-700 dark:hover:text-cyan-700 dark:text-cyan-200 underline transition-colors"
               >
                 razorpay.com
               </a>{" "}
@@ -75,7 +75,7 @@ RAZORPAY_KEY_SECRET=your_razorpay_key_secret`}
 
           <div className="mt-6 rounded-lg border border-indigo-200 dark:border-cyan-500/30 bg-cyan-500/5 p-4">
             <div className="flex items-start gap-3">
-              <span className="text-xl">💡</span>
+              <Lightbulb className="w-6 h-6 text-indigo-500 dark:text-cyan-400" />
               <div>
                 <p className="mb-2 font-semibold text-cyan-300">Test Card Numbers</p>
                 <CodeBlock
@@ -139,7 +139,7 @@ RAZORPAYX_KEY_SECRET=your_razorpayx_secret`}
 
           <h3 className="mb-3 text-lg font-semibold text-slate-900 dark:text-white">Step 1: Create Google Cloud Project</h3>
           <ol className="space-y-3 text-slate-600 dark:text-white/70">
-            <li>1. Go to <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-cyan-300 hover:text-indigo-700 dark:hover:text-cyan-200 underline transition-colors">Google Cloud Console</a></li>
+            <li>1. Go to <a href="https://console.cloud.google.com" target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-cyan-300 hover:text-indigo-700 dark:hover:text-cyan-700 dark:text-cyan-200 underline transition-colors">Google Cloud Console</a></li>
             <li>2. Create a new project or select existing one</li>
             <li>3. Enable <strong>Google+ API</strong></li>
           </ol>
@@ -207,7 +207,7 @@ GITHUB_REDIRECT_URI=http://localhost:5000/auth/github/callback`}
 
           <h3 className="mb-3 text-lg font-semibold text-slate-900 dark:text-white">Setup Steps</h3>
           <ol className="space-y-3 text-slate-600 dark:text-white/70">
-            <li>1. Sign up at <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-cyan-300 hover:text-indigo-700 dark:hover:text-cyan-200 underline transition-colors">resend.com</a></li>
+            <li>1. Sign up at <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-cyan-300 hover:text-indigo-700 dark:hover:text-cyan-700 dark:text-cyan-200 underline transition-colors">resend.com</a></li>
             <li>2. Verify your domain or use Resend's test domain</li>
             <li>3. Go to <strong>API Keys</strong> section</li>
             <li>4. Create a new API key</li>

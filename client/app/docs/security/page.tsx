@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Lock, AlertCircle, CreditCard, Check, Trash2, Key, Lock as LockIcon, Bell, TestTube } from "lucide-react";
+import { Lock, AlertCircle, CreditCard, Check, Trash2, Key, Lock as LockIcon, Bell, TestTube, Timer, Ban } from "lucide-react";
 
 export default function SecurityPage() {
   return (
@@ -135,7 +135,7 @@ echo ".env" >> .gitignore`}
             <div className="space-y-4">
               <div>
                 <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                  <span className="text-xl">🔑</span> Use OAuth 2.0
+                  <Key className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Use OAuth 2.0
                 </h3>
                 <p className="text-slate-600 dark:text-white/70 text-sm">
                   OAuth provides secure, token-based authentication without exposing user passwords. Always use OAuth for integrations.
@@ -143,7 +143,7 @@ echo ".env" >> .gitignore`}
               </div>
               <div>
                 <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                  <span className="text-xl">⏱️</span> Token Expiration
+                  <Timer className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Token Expiration
                 </h3>
                 <p className="text-slate-600 dark:text-white/70 text-sm">
                   Access tokens expire after 1 hour. Refresh tokens are valid for 30 days. Implement automatic token refresh in your application.
@@ -151,7 +151,7 @@ echo ".env" >> .gitignore`}
               </div>
               <div>
                 <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                  <span className="text-xl">🚫</span> Revoke Compromised Tokens
+                  <Ban className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Revoke Compromised Tokens
                 </h3>
                 <p className="text-slate-600 dark:text-white/70 text-sm">
                   If you suspect a token has been compromised, revoke it immediately from Dashboard → API Settings → Active Tokens.

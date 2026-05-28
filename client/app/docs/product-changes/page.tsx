@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Check, MessageCircle } from "lucide-react";
+import { Check, MessageCircle, Send, Search, CheckCircle, XCircle, Lightbulb, Camera, Bell, Timer, Zap } from "lucide-react";
 
 export default function ProductChangesPage() {
   return (
@@ -117,28 +117,28 @@ export default function ProductChangesPage() {
           </h2>
           <div className="grid md:grid-cols-4 gap-4">
             <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3"></div>
+              <div className="text-3xl mb-3"><Send className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2">1. Submitted</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">Changes submitted for admin review</p>
             </div>
             <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3"></div>
+              <div className="text-3xl mb-3"><Search className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2">2. Under Review</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">Admin reviewing your changes</p>
             </div>
             <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3"></div>
+              <div className="text-3xl mb-3"><CheckCircle className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2">3. Approved</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">Changes go live automatically</p>
             </div>
             <div className="bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-3"></div>
+              <div className="text-3xl mb-3"><XCircle className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2">4. Rejected</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">Feedback provided to revise</p>
             </div>
           </div>
           <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-            <p className="text-blue-200 text-sm flex items-start gap-2">
+            <p className="text-blue-700 dark:text-blue-200 text-sm flex items-start gap-2">
               <span className="text-xl">ℹ️</span>
               <span>
                 <strong>Review Time:</strong> Most changes are reviewed within 24-48 hours. You'll receive an email notification when your changes are approved or rejected.
@@ -199,7 +199,7 @@ export default function ProductChangesPage() {
         {/* Instant Updates */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <span className="text-cyan-400">⚡</span> Instant Updates (No Approval Needed)
+            <span className="text-cyan-400"><Zap className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></span> Instant Updates (No Approval Needed)
           </h2>
           <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Some changes can be made instantly without approval:</p>
@@ -234,7 +234,7 @@ export default function ProductChangesPage() {
           <div className="space-y-4">
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">💡</span> Be Transparent
+                <Lightbulb className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Be Transparent
               </h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">
                 Provide clear change notes explaining why you're updating the product. This helps admin reviewers approve changes faster.
@@ -242,7 +242,7 @@ export default function ProductChangesPage() {
             </div>
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">📸</span> Update Previews
+                <Camera className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Update Previews
               </h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">
                 When updating product content, also update screenshots or previews to match the new version.
@@ -250,7 +250,7 @@ export default function ProductChangesPage() {
             </div>
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">🔔</span> Notify Existing Customers
+                <Bell className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Notify Existing Customers
               </h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">
                 Consider sending update notifications to existing customers when you make significant improvements.
@@ -258,7 +258,7 @@ export default function ProductChangesPage() {
             </div>
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">⏱️</span> Plan Ahead
+                <Timer className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Plan Ahead
               </h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">
                 Submit changes at least 2-3 days before you need them live to account for review time.
@@ -321,13 +321,13 @@ export default function ProductChangesPage() {
               title="Upload Solutions"
               description="Fix common upload issues"
               href="/docs/upload-solutions"
-              icon="🔧"
+              icon=""
             />
             <NextStepCard
               title="Contact Support"
               description="Get help with your products"
               href="/contact"
-              icon="💬"
+              icon=""
             />
           </div>
         </section>

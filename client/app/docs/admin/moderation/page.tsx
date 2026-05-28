@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Users } from "lucide-react";
+import { Users, FileText, Ban, Gavel, PackageCheck, Circle } from "lucide-react";
 
 export default function AdminModerationPage() {
   return (
@@ -31,17 +31,17 @@ export default function AdminModerationPage() {
             <p className="text-slate-700 dark:text-white/80 mb-4">Enforce community guidelines, handle reports, and remove prohibited content.</p>
             <div className="grid md:grid-cols-3 gap-4">
               <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-3xl mb-2"></div>
+                <div className="text-3xl mb-2"><FileText className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
                 <p className="text-slate-900 dark:text-white font-semibold">Reports</p>
                 <p className="text-slate-500 dark:text-white/60 text-sm">User-submitted flags</p>
               </div>
               <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-3xl mb-2">🚫</div>
+                <div className="text-3xl mb-2"><Ban className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
                 <p className="text-slate-900 dark:text-white font-semibold">Violations</p>
                 <p className="text-slate-500 dark:text-white/60 text-sm">Policy infractions</p>
               </div>
               <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-3xl mb-2"></div>
+                <div className="text-3xl mb-2"><Gavel className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
                 <p className="text-slate-900 dark:text-white font-semibold">Actions</p>
                 <p className="text-slate-500 dark:text-white/60 text-sm">Warning/removal</p>
               </div>
@@ -98,15 +98,15 @@ export default function AdminModerationPage() {
             <p className="text-slate-700 dark:text-white/80 mb-4">Access: <strong>Admin → Moderation → Reports Queue</strong></p>
             <div className="space-y-3">
               <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 p-4 rounded-lg">
-                <p className="text-slate-900 dark:text-white font-semibold mb-1">🟡 Priority: High</p>
+                <p className="text-slate-900 dark:text-white font-semibold mb-1"><Circle className="w-5 h-5 inline-block mr-2 text-indigo-500 dark:text-cyan-400" /> Priority: High</p>
                 <p className="text-slate-600 dark:text-white/70 text-sm">Copyright claims, malware, dangerous content</p>
               </div>
               <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 p-4 rounded-lg">
-                <p className="text-slate-900 dark:text-white font-semibold mb-1">🔵 Priority: Medium</p>
+                <p className="text-slate-900 dark:text-white font-semibold mb-1"><Circle className="w-5 h-5 inline-block mr-2 text-indigo-500 dark:text-cyan-400" /> Priority: Medium</p>
                 <p className="text-slate-600 dark:text-white/70 text-sm">Misleading descriptions, quality issues</p>
               </div>
               <div className="bg-gradient-to-r from-gray-500/10 to-slate-500/10 p-4 rounded-lg">
-                <p className="text-slate-900 dark:text-white font-semibold mb-1">⚪ Priority: Low</p>
+                <p className="text-slate-900 dark:text-white font-semibold mb-1"><Circle className="w-5 h-5 inline-block mr-2 text-indigo-500 dark:text-cyan-400" /> Priority: Low</p>
                 <p className="text-slate-600 dark:text-white/70 text-sm">Minor guideline infractions, disputes</p>
               </div>
             </div>
@@ -120,7 +120,7 @@ export default function AdminModerationPage() {
             <p className="text-slate-500 dark:text-white/60 text-sm">Manage user accounts</p>
           </Link>
           <Link href="/docs/admin/products" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3"></div>
+            <div className="text-3xl mb-3"><PackageCheck className="w-8 h-8 text-indigo-500 dark:text-cyan-400" /></div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Product Approval</h3>
             <p className="text-slate-500 dark:text-white/60 text-sm">Review submissions</p>
           </Link>

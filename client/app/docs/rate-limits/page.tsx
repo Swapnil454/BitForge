@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Rocket } from "lucide-react";
+import { Rocket, Zap, Star, FileText, Bell } from "lucide-react";
 
 export default function RateLimitsPage() {
   return (
@@ -34,7 +34,7 @@ export default function RateLimitsPage() {
             </p>
             <div className="grid md:grid-cols-3 gap-4 mt-6">
               <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-5 text-center">
-                <div className="text-3xl mb-3">🏯</div>
+                <div className="text-3xl mb-3"><Zap className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
                 <h3 className="text-slate-900 dark:text-white font-semibold mb-2">100 req/min</h3>
                 <p className="text-slate-500 dark:text-white/60 text-sm">Standard Tier</p>
               </div>
@@ -44,7 +44,7 @@ export default function RateLimitsPage() {
                 <p className="text-slate-500 dark:text-white/60 text-sm">Pro Tier</p>
               </div>
               <div className="bg-gradient-to-br from-cyan-500/10 to-indigo-500/10 border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-5 text-center">
-                <div className="text-3xl mb-3">⭐</div>
+                <div className="text-3xl mb-3"><Star className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
                 <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Custom</h3>
                 <p className="text-slate-500 dark:text-white/60 text-sm">Enterprise</p>
               </div>
@@ -151,13 +151,13 @@ export default function RateLimitsPage() {
           <div className="space-y-4">
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">📄</span> Cache Responses
+                <FileText className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Cache Responses
               </h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">Cache API responses locally. Product data, user profiles, and settings change infrequently.</p>
             </div>
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <h3 className="text-slate-900 dark:text-white font-semibold mb-2 flex items-center gap-2">
-                <span className="text-xl">🔔</span> Use Webhooks
+                <Bell className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Use Webhooks
               </h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">Instead of polling for updates, use webhooks to receive real-time notifications without consuming API requests.</p>
             </div>

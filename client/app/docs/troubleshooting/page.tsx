@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Upload, CreditCard, MessageCircle, Rocket, AlertCircle } from "lucide-react";
+import { Upload, CreditCard, MessageCircle, Rocket, AlertCircle, Key, Zap, Mail } from "lucide-react";
 
 export default function TroubleshootingPage() {
   return (
@@ -32,7 +32,7 @@ export default function TroubleshootingPage() {
             {/* API Keys */}
             <details className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 cursor-pointer group">
               <summary className="text-slate-900 dark:text-white font-semibold list-none cursor-pointer flex items-center gap-2">
-                <span className="text-xl">🔑</span> API Authentication Errors (401 Unauthorized)
+                <Key className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> API Authentication Errors (401 Unauthorized)
               </summary>
               <div className="mt-4 space-y-3 text-slate-600 dark:text-white/70 text-sm">
                 <p><strong className="text-slate-900 dark:text-white">Symptom:</strong> Getting 401 errors when calling API endpoints.</p>
@@ -152,7 +152,7 @@ export default function TroubleshootingPage() {
             {/* API Rate Limits */}
             <details className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 cursor-pointer group">
               <summary className="text-slate-900 dark:text-white font-semibold list-none cursor-pointer flex items-center gap-2">
-                <span className="text-xl">⚡</span> Rate Limit Exceeded (429 Error)
+                <Zap className="w-6 h-6 text-indigo-500 dark:text-cyan-400" /> Rate Limit Exceeded (429 Error)
               </summary>
               <div className="mt-4 space-y-3 text-slate-600 dark:text-white/70 text-sm">
                 <p><strong className="text-slate-900 dark:text-white">Symptom:</strong> Getting 429 "Too Many Requests" errors.</p>
@@ -243,7 +243,7 @@ headers: {
 }`}</code></pre>
             </div>
             <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-              <p className="text-yellow-200 text-sm flex items-start gap-2">
+              <p className="text-yellow-700 dark:text-yellow-200 text-sm flex items-start gap-2">
                 <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                 <span><strong>Warning:</strong> Never enable debug mode in production. It may expose sensitive information.</span>
               </p>
@@ -258,7 +258,7 @@ headers: {
             <p className="text-slate-700 dark:text-white/80 mb-4">If you're still experiencing issues, contact our support team:</p>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg">
-                <h3 className="text-slate-900 dark:text-white font-semibold mb-2">📧 Email Support</h3>
+                <h3 className="text-slate-900 dark:text-white font-semibold mb-2"><Mail className="w-5 h-5 inline-block mr-2 text-indigo-500 dark:text-cyan-400" /> Email Support</h3>
                 <p className="text-cyan-300 text-sm">support@bittforge.in</p>
                 <p className="text-slate-500 dark:text-white/60 text-xs mt-2">Response within 24 hours</p>
               </div>
@@ -281,7 +281,7 @@ headers: {
               <p className="text-slate-500 dark:text-white/60 text-sm">Get started with Bitforge</p>
             </Link>
             <Link href="/docs/api-keys-setup" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-indigo-400/40 dark:hover:border-cyan-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
-              <div className="text-3xl mb-3">🔑</div>
+              <div className="text-3xl mb-3"><Key className="w-8 h-8 text-indigo-500 dark:text-cyan-400" /></div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">API Keys</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm">Setup authentication</p>
             </Link>

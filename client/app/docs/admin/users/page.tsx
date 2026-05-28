@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Trash2, Shield } from "lucide-react";
+import { Trash2, Shield, BarChart3, Ban, RefreshCcw } from "lucide-react";
 
 export default function AdminUsersPage() {
   return (
@@ -50,7 +50,7 @@ export default function AdminUsersPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">User Actions</h2>
           <div className="space-y-4">
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
-              <h3 className="text-slate-900 dark:text-white font-semibold mb-2">🚫 Suspend Account</h3>
+              <h3 className="text-slate-900 dark:text-white font-semibold mb-2"><Ban className="w-5 h-5 inline-block mr-2 text-indigo-500 dark:text-cyan-400" /> Suspend Account</h3>
               <p className="text-slate-600 dark:text-white/70 text-sm">Temporarily disable account for policy violations. User can appeal suspension.</p>
             </div>
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
@@ -58,7 +58,7 @@ export default function AdminUsersPage() {
               <p className="text-slate-600 dark:text-white/70 text-sm">Permanently remove account and data. Cannot be undone. Requires approval.</p>
             </div>
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
-              <h3 className="text-slate-900 dark:text-white font-semibold mb-2">🔄 Reset Password</h3>
+              <h3 className="text-slate-900 dark:text-white font-semibold mb-2"><RefreshCcw className="w-5 h-5 inline-block mr-2 text-indigo-500 dark:text-cyan-400" /> Reset Password</h3>
               <p className="text-slate-600 dark:text-white/70 text-sm">Send password reset email to user. Use when user has account access issues.</p>
             </div>
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
@@ -95,7 +95,7 @@ export default function AdminUsersPage() {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <Link href="/docs/admin/analytics" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3"></div>
+            <div className="text-3xl mb-3"><BarChart3 className="w-8 h-8 text-indigo-500 dark:text-cyan-400" /></div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Analytics</h3>
             <p className="text-slate-500 dark:text-white/60 text-sm">User metrics & insights</p>
           </Link>

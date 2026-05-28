@@ -41,7 +41,7 @@
 
 ---
 
-## 🔧 Files Modified
+##  Files Modified
 
 ### 2. **Product Controller**
 **File:** `server/src/controllers/product.controller.js`
@@ -142,7 +142,7 @@ upload.fields([
 
 ---
 
-## 🔧 Dependencies
+##  Dependencies
 
 ### Installed Packages
 ```bash

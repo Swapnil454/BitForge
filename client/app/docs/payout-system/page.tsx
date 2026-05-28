@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { DollarSign, ShoppingCart, CreditCard, Check, Radio, Building } from "lucide-react";
+import { DollarSign, ShoppingCart, CreditCard, Check, Radio, Building, AlarmClock, Landmark, ReceiptText } from "lucide-react";
 
 export default function PayoutSystemPage() {
   return (
@@ -61,9 +61,7 @@ export default function PayoutSystemPage() {
 
             <div className="rounded-lg border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-5">
               <div className="mb-3 flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500/20 text-lg">
-                  ⏰
-                </span>
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500/20 text-lg"><AlarmClock className="w-5 h-5 inline-block mr-2 text-indigo-500 dark:text-cyan-400" /> </span>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white">3. Holding Period</h3>
               </div>
               <p className="text-sm text-slate-600 dark:text-white/70">
@@ -73,9 +71,7 @@ export default function PayoutSystemPage() {
 
             <div className="rounded-lg border border-slate-200/60 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm p-5">
               <div className="mb-3 flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/20 text-lg">
-                  🏦
-                </span>
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/20 text-lg"><Landmark className="w-5 h-5 inline-block mr-2 text-indigo-500 dark:text-cyan-400" /> </span>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white">4. Available for Payout</h3>
               </div>
               <p className="text-sm text-slate-600 dark:text-white/70">
@@ -253,7 +249,7 @@ export default function PayoutSystemPage() {
               <span><strong>Analytics:</strong> Monthly earnings breakdown and trends</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-cyan-400">🧾</span>
+              <span className="text-cyan-400"><ReceiptText className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></span>
               <span><strong>Export:</strong> Download CSV reports for accounting</span>
             </li>
           </ul>

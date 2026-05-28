@@ -85,7 +85,7 @@ export default function RegisterWithPhonePage() {
         {/* LOGO */}
         <div className="flex justify-center mb-5">
           <div className="h-14 w-14 rounded-xl bg-gradient-to-r from-cyan-400 to-indigo-500 shadow-[0_0_40px_rgba(56,189,248,0.7)] flex items-center justify-center text-black font-black text-xl">
-            💬
+
           </div>
         </div>
 
@@ -128,11 +128,10 @@ export default function RegisterWithPhonePage() {
                 key={r.v}
                 type="button"
                 onClick={() => setRole(r.v)}
-                className={`rounded-xl p-3 border transition ${
-                  role === r.v
+                className={`rounded-xl p-3 border transition ${role === r.v
                     ? "bg-cyan-400/10 border-cyan-400 text-cyan-400 shadow-[0_0_20px_rgba(56,189,248,0.35)]"
                     : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/60 hover:bg-slate-200 dark:hover:bg-white/10"
-                }`}
+                  }`}
               >
                 <div className="text-lg">{r.i}</div>
                 <div className="text-xs font-semibold mt-1">{r.l}</div>
