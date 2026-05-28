@@ -54,7 +54,7 @@ import {
   ClipboardCheck
 } from "lucide-react";
 import { clearAuthStorage, getStoredUser, setCookie, getCookie } from "@/lib/cookies";
-import { notificationAPI, userAPI } from "@/lib/api";
+import { notificationAPI, userAPI, wishlistAPI } from "@/lib/api";
 import { useBuyerDashboard, useInvalidateBuyerCache, buyerQueryKeys } from "@/lib/hooks/useBuyerDashboard";
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -312,16 +312,16 @@ export default function BuyerDashboard() {
   };
 
   useEffect(() => {
-    const saved = localStorage.getItem("wishlist");
-    if (saved) {
-      try {
-        const wishlist = JSON.parse(saved);
-        setWishlistCount(wishlist.length);
-      } catch (e) {
-        console.error("Failed to parse wishlist", e);
-      }
+    if (user) {
+      wishlistAPI.getWishlistCount()
+        .then((data) => {
+          if (data && typeof data.wishlistCount === 'number') {
+            setWishlistCount(data.wishlistCount);
+          }
+        })
+        .catch(console.error);
     }
-  }, []);
+  }, [user]);
 
   const logout = () => {
     clearAuthStorage();

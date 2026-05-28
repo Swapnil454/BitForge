@@ -238,7 +238,7 @@ export default function PurchasesPage() {
         backHref="/dashboard/buyer"
         backLabel="Dashboard"
         title="My Purchases"
-        subtitle="View your order history, downloads and disputes"
+        subtitle="Order History & Downloads"
         rightSlot={
           <div className="relative shrink-0" ref={headerMenuRef}>
             <button
@@ -256,22 +256,31 @@ export default function PurchasesPage() {
                   initial={{ opacity: 0, y: 8, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                  className="absolute right-0 top-11 w-52 rounded-xl border border-white/15 bg-slate-900/95 backdrop-blur-xl p-1.5 shadow-xl shadow-black/40 z-20"
+                  className="absolute right-0 top-11 w-52 rounded-xl border border-slate-200 dark:border-white/15 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl p-1.5 shadow-xl shadow-black/5 dark:shadow-black/40 z-20"
                 >
                   <button
                     type="button"
                     onClick={() => { setHeaderMenuOpen(false); router.push("/marketplace"); }}
-                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-white/85 hover:text-white hover:bg-white/10 transition"
+                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-white/85 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition"
                   >
                     Browse Marketplace
                   </button>
                   <button
                     type="button"
                     onClick={() => { setHeaderMenuOpen(false); router.push("/dashboard/buyer/disputes"); }}
-                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-white/85 hover:text-white hover:bg-white/10 transition"
+                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-white/85 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition"
                   >
                     View My Disputes
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { setHeaderMenuOpen(false); router.push("/dashboard/buyer/purchases/analytics"); }}
+                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-white/85 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition"
+                  >
+                    View Purchase Analytics
+                  </button>
+
                 </motion.div>
               )}
             </AnimatePresence>

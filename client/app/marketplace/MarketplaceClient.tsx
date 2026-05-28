@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { cartAPI, searchAPI } from "@/lib/api";
+import { cartAPI, searchAPI, wishlistAPI } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
 import { useInfiniteProducts } from "@/lib/useInfiniteProducts";
 import toast from "react-hot-toast";
@@ -286,11 +286,14 @@ export default function MarketplaceClient() {
 
   // Load wishlist
   useEffect(() => {
-    const saved = localStorage.getItem("wishlist");
-    if (saved) {
-      try { setWishlist(JSON.parse(saved)); } catch {}
+    if (isAuthenticated) {
+      wishlistAPI.getWishlist()
+        .then((data) => {
+          setWishlist(data.wishlist || []);
+        })
+        .catch(() => {});
     }
-  }, []);
+  }, [isAuthenticated]);
 
   // Load cart
   useEffect(() => {
@@ -306,12 +309,16 @@ export default function MarketplaceClient() {
 
   const toggleWishlist = (e: React.MouseEvent, productId: string) => {
     e.stopPropagation(); e.preventDefault();
-    requireAuth("add to wishlist", () => {
+    requireAuth("add to wishlist", async () => {
       const isIn = wishlist.includes(productId);
-      const updated = isIn ? wishlist.filter((id) => id !== productId) : [...wishlist, productId];
-      setWishlist(updated);
-      localStorage.setItem("wishlist", JSON.stringify(updated));
-      toast.success(isIn ? "Removed from wishlist" : "Added to wishlist");
+      try {
+        await wishlistAPI.toggleWishlist(productId);
+        const updated = isIn ? wishlist.filter((id) => id !== productId) : [...wishlist, productId];
+        setWishlist(updated);
+        toast.success(isIn ? "Removed from wishlist" : "Added to wishlist");
+      } catch (error) {
+        toast.error("Failed to update wishlist");
+      }
     });
   };
 

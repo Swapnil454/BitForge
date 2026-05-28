@@ -559,20 +559,23 @@ export const buyerAPI = {
         const response = await api.get('/buyer/spending-over-time');
         return response.data;
     },
-    
-    getWishlistCount: async () => {
-        const response = await api.get('/buyer/wishlist-count');
-        return response.data;
-    },
 
     getAllTransactions: async (params?: {
         page?: number;
         limit?: number;
-        status?: "all" | "paid" | "created" | "failed";
-        sortBy?: "newest" | "oldest";
+        status?: "all" | "success" | "pending" | "failed";
+        sortBy?: "date_desc" | "date_asc" | "amount_desc" | "amount_asc";
         search?: string;
+        dateRange?: string;
+        startDate?: string;
+        endDate?: string;
     }) => {
         const response = await api.get('/buyer/transactions', { params });
+        return response.data;
+    },
+
+    getBuyerTransactionAnalytics: async (dateRange?: string) => {
+        const response = await api.get('/buyer/transactions/analytics', { params: { dateRange } });
         return response.data;
     },
 
@@ -581,7 +584,12 @@ export const buyerAPI = {
         return response.data;
     },
 
-    getAllPurchases: async (params?: {
+    getPurchasesAnalytics: async (params?: { dateRange?: string }) => {
+    const { data } = await api.get('/buyer/purchases/analytics', { params });
+    return data;
+  },
+
+  getAllPurchases: async (params?: {
         page?: number;
         limit?: number;
         sortBy?: "newest" | "oldest";
@@ -602,8 +610,13 @@ export const buyerAPI = {
         return response.data;
     },
 
-    getMyDisputes: async (params?: { page?: number; limit?: number }) => {
+    getMyDisputes: async (params?: { page?: number; limit?: number; search?: string; status?: string; sort?: string }) => {
         const response = await api.get('/disputes/my', { params });
+        return response.data;
+    },
+
+    getMyDisputeAnalytics: async (params?: { range?: string }) => {
+        const response = await api.get('/disputes/my/analytics', { params });
         return response.data;
     },
 
@@ -684,6 +697,24 @@ export const buyerAPI = {
             return response.data;
         },
     };
+
+// Wishlist API functions
+export const wishlistAPI = {
+    getWishlist: async (populate: boolean = false) => {
+        const response = await api.get(`/wishlist${populate ? "?populate=true" : ""}`);
+        return response.data;
+    },
+
+    getWishlistCount: async () => {
+        const response = await api.get('/wishlist/count');
+        return response.data;
+    },
+
+    toggleWishlist: async (productId: string) => {
+        const response = await api.post('/wishlist/toggle', { productId });
+        return response.data;
+    }
+};
 
 // Cart API functions
 export const cartAPI = {
@@ -1103,7 +1134,8 @@ export const reviewAPI = {
     },
 
     canReview: async (productId: string, orderId?: string) => {
-        const response = await api.get(`/reviews/can-review/${productId}`);
+        const url = orderId ? `/reviews/can-review/${productId}?orderId=${orderId}` : `/reviews/can-review/${productId}`;
+        const response = await api.get(url);
         return response.data;
     },
 

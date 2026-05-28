@@ -28,6 +28,8 @@ interface ProductCardProps {
   onBuyNow: (e: React.MouseEvent, productId: string) => void;
   /** Optional context badge override — passed by parent sections */
   badge?: "bestseller" | "trending" | "new" | null;
+  /** Override layout to be always vertical instead of horizontal on mobile */
+  layout?: "vertical" | "responsive";
 }
 
 function getBadge(product: ProductType, overrideBadge?: "bestseller" | "trending" | "new" | null) {
@@ -58,6 +60,7 @@ export default function ProductCard({
   onAddToCart,
   onBuyNow,
   badge: badgeProp,
+  layout = "responsive",
 }: ProductCardProps) {
   const router = useRouter();
 
@@ -74,11 +77,11 @@ export default function ProductCard({
     <div
       onClick={() => router.push(`/marketplace/${product._id}`)}
       className={`
-        w-full group cursor-pointer bg-white dark:bg-[#0f0f17] transition-all duration-200
-        flex flex-row items-stretch gap-0
-        rounded-2xl border border-gray-100/80 dark:border-white/5 shadow-sm
-        sm:flex-col sm:items-start sm:rounded-[1.25rem] sm:border sm:border-gray-100 sm:dark:border-white/8
-        sm:shadow-sm sm:hover:shadow-lg sm:hover:-translate-y-0.5 sm:p-3
+        w-full group cursor-pointer bg-white dark:bg-[#0f0f17] transition-all duration-200 shadow-sm
+        ${layout === "vertical"
+          ? "flex flex-col items-start rounded-[1.25rem] border border-gray-100 sm:dark:border-white/8 p-3 sm:hover:shadow-lg sm:hover:-translate-y-0.5"
+          : "flex flex-row items-stretch gap-0 rounded-2xl border border-gray-100/80 dark:border-white/5 sm:flex-col sm:items-start sm:rounded-[1.25rem] sm:border sm:border-gray-100 sm:dark:border-white/8 sm:p-3 sm:hover:shadow-lg sm:hover:-translate-y-0.5"
+        }
         lg:p-0 lg:rounded-sm lg:border-transparent lg:shadow-none lg:hover:shadow-none lg:hover:-translate-y-0 lg:bg-transparent lg:dark:bg-transparent
       `}
     >
@@ -86,8 +89,10 @@ export default function ProductCard({
       <div className={`
         relative flex-shrink-0 bg-[#F7F7F7] dark:bg-[#0A101D] overflow-hidden
         flex items-center justify-center self-stretch
-        w-[125px] sm:w-full sm:h-auto sm:aspect-square
-        m-3 rounded-xl sm:m-0 sm:rounded-xl
+        ${layout === "vertical"
+          ? "w-full h-auto aspect-square rounded-xl"
+          : "w-[125px] sm:w-full sm:h-auto sm:aspect-square m-3 rounded-xl sm:m-0 sm:rounded-xl"
+        }
         lg:rounded-none lg:aspect-auto lg:h-[220px] lg:bg-[#F7F7F7] lg:dark:bg-[#0A101D]
         transition-shadow duration-300 group-hover:shadow-md lg:group-hover:shadow-none
       `}>
@@ -124,7 +129,13 @@ export default function ProductCard({
       </div>
 
       {/* ── Info Area ── */}
-      <div className="flex flex-col flex-1 min-w-0 py-3.5 pr-3 sm:py-0 sm:pr-0 sm:pt-3 lg:p-2 lg:bg-white lg:dark:bg-[#0B1221] lg:w-full">
+      <div className={`
+        flex flex-col flex-1 min-w-0
+        ${layout === "vertical"
+          ? "pt-3 lg:p-2 lg:bg-white lg:dark:bg-[#0B1221] lg:w-full w-full"
+          : "py-3.5 pr-3 sm:py-0 sm:pr-0 sm:pt-3 lg:p-2 lg:bg-white lg:dark:bg-[#0B1221] lg:w-full"
+        }
+      `}>
 
         {/* Category pill — visible on mobile */}
         <span className={`self-start text-[10px] font-semibold px-2 py-0.5 rounded-full mb-1 ${catStyle.pill}`}>

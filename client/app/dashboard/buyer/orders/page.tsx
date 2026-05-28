@@ -20,7 +20,7 @@ interface Order {
   sellerName: string;
   sellerEmail: string;
   amount: number;
-  status: "paid" | "created" | "failed";
+  status: "success" | "pending" | "failed" | "refunded" | "paid" | "created";
   date: string;
 }
 
@@ -78,11 +78,22 @@ export default function AllOrdersPage() {
     else setLoadingMore(true);
 
     try {
+      const statusMap: Record<FilterOption, "all" | "success" | "pending" | "failed"> = {
+        all: "all",
+        paid: "success",
+        created: "pending",
+        failed: "failed",
+      };
+      const sortMap: Record<SortOption, "date_desc" | "date_asc"> = {
+        newest: "date_desc",
+        oldest: "date_asc",
+      };
+
       const data = await buyerAPI.getAllTransactions({
         page: targetPage,
         limit: PAGE_SIZE,
-        status: filterBy,
-        sortBy,
+        status: statusMap[filterBy],
+        sortBy: sortMap[sortBy],
         search: debouncedSearch,
       });
 
@@ -138,28 +149,36 @@ export default function AllOrdersPage() {
   const getStatusConfig = (status: string) => {
     switch (status) {
       case "paid":
+      case "success":
         return {
-          label: "Success",
-          badgeClass: "bg-emerald-500/15 text-emerald-300 border-emerald-500/35",
-          dotColor: "bg-emerald-400",
+          label: "Paid",
+          badgeClass: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/35",
+          dotColor: "bg-emerald-500 dark:bg-emerald-400",
         };
       case "failed":
         return {
           label: "Failed",
-          badgeClass: "bg-red-500/15 text-red-300 border-red-500/35",
-          dotColor: "bg-red-400",
+          badgeClass: "bg-red-100 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/35",
+          dotColor: "bg-red-500 dark:bg-red-400",
         };
       case "created":
+      case "pending":
         return {
           label: "Pending",
-          badgeClass: "bg-amber-500/15 text-amber-300 border-amber-500/35",
-          dotColor: "bg-amber-400",
+          badgeClass: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/35",
+          dotColor: "bg-amber-500 dark:bg-amber-400",
+        };
+      case "refunded":
+        return {
+          label: "Refunded",
+          badgeClass: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/35",
+          dotColor: "bg-blue-500 dark:bg-blue-400",
         };
       default:
         return {
-          label: "Unknown",
-          badgeClass: "bg-gray-500/15 text-gray-300 border-gray-500/35",
-          dotColor: "bg-gray-400",
+          label: status ? status.charAt(0).toUpperCase() + status.slice(1) : "Unknown",
+          badgeClass: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-gray-500/15 dark:text-gray-300 dark:border-gray-500/35",
+          dotColor: "bg-slate-400 dark:bg-gray-400",
         };
     }
   };
@@ -220,7 +239,7 @@ export default function AllOrdersPage() {
         }
       />
 
-      <main className="max-w-7xl mx-auto px-4 pt-3 pb-28 md:pb-6 space-y-4">
+      <main className="max-w-5xl mx-auto px-4 pt-3 pb-28 md:pb-6 space-y-4">
         <InlineSearchFilters
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
@@ -241,17 +260,25 @@ export default function AllOrdersPage() {
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className="rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c] p-4 sm:p-5 shadow-sm dark:shadow-lg overflow-hidden animate-pulse"
+                  className="rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#12141c] overflow-hidden animate-pulse"
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 space-y-3">
-                      <div className="h-5 w-48 bg-slate-200 dark:bg-white/10 rounded-lg" />
-                      <div className="h-4 w-32 bg-slate-100 dark:bg-white/5 rounded-lg" />
-                      <div className="h-4 w-24 bg-slate-100 dark:bg-white/5 rounded-lg" />
+                  {/* Skeleton header */}
+                  <div className="flex items-center justify-between px-4 sm:px-5 py-2.5 border-b border-slate-100 dark:border-white/[0.05] bg-slate-50 dark:bg-white/[0.02]">
+                    <div className="flex items-center gap-3">
+                      <div className="h-3.5 w-20 bg-slate-200 dark:bg-white/10 rounded" />
+                      <div className="h-3.5 w-24 bg-slate-200 dark:bg-white/10 rounded" />
                     </div>
-                    <div className="text-right space-y-2">
-                      <div className="h-7 w-20 bg-slate-200 dark:bg-white/10 rounded-lg ml-auto" />
-                      <div className="h-6 w-16 bg-slate-100 dark:bg-white/5 rounded-full ml-auto" />
+                    <div className="h-5 w-14 bg-slate-200 dark:bg-white/10 rounded" />
+                  </div>
+                  {/* Skeleton body */}
+                  <div className="p-4 sm:px-5 flex gap-5">
+                    <div className="flex-1 space-y-2.5">
+                      <div className="h-5 w-3/5 bg-slate-200 dark:bg-white/10 rounded-lg" />
+                      <div className="h-4 w-2/5 bg-slate-100 dark:bg-white/5 rounded-lg" />
+                      <div className="h-6 w-24 bg-slate-200 dark:bg-white/10 rounded-lg mt-1" />
+                    </div>
+                    <div className="shrink-0 w-32 flex items-center justify-center border-l border-slate-100 dark:border-white/5 pl-5">
+                      <div className="h-9 w-full bg-slate-100 dark:bg-white/5 rounded-lg" />
                     </div>
                   </div>
                 </div>
@@ -261,18 +288,21 @@ export default function AllOrdersPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/[0.03] p-10 text-center shadow-lg"
+              className="rounded-2xl border border-dashed border-slate-300 dark:border-white/10 bg-white dark:bg-white/[0.02] p-12 text-center"
             >
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-2">No Orders Found</h3>
-              <p className="text-slate-500 dark:text-white/60 mb-5 text-sm sm:text-base">
+              <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center">
+                <CalendarDays className="w-7 h-7 text-slate-400 dark:text-white/30" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1.5">No Orders Found</h3>
+              <p className="text-slate-500 dark:text-white/45 text-sm max-w-xs mx-auto">
                 {searchQuery || filterBy !== "all"
-                  ? "No orders match your filters. Try a different status or sort."
-                  : "You have no orders yet. Explore marketplace to get started."}
+                  ? "No orders match your current filters."
+                  : "You haven't placed any orders yet. Explore the marketplace to get started."}
               </p>
               {!searchQuery && filterBy === "all" && (
                 <button
                   onClick={() => router.push("/marketplace")}
-                  className="px-5 py-2.5 rounded-xl bg-linear-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-slate-900 dark:text-white font-semibold transition"
+                  className="mt-5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white font-semibold text-sm transition shadow-md shadow-violet-500/25"
                 >
                   Browse Marketplace
                 </button>
@@ -291,61 +321,78 @@ export default function AllOrdersPage() {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ delay: index * 0.02 }}
                     onClick={() => router.push(`/dashboard/buyer/transactions/${order._id}`)}
-                    className="relative overflow-hidden cursor-pointer rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c] p-4 sm:p-5 text-left transition-all duration-300 hover:bg-slate-50 dark:hover:bg-[#181a25] hover:border-slate-300 dark:hover:border-white/10 hover:shadow-lg dark:hover:shadow-xl dark:hover:shadow-black/50 group"
+                    className="group bg-white dark:bg-[#12141c] cursor-pointer rounded-2xl border border-slate-200 dark:border-white/[0.07] shadow-sm hover:shadow-lg hover:shadow-slate-200/60 dark:hover:shadow-black/40 hover:border-violet-200 dark:hover:border-violet-500/25 hover:ring-1 hover:ring-violet-200/60 dark:hover:ring-violet-500/20 transition-all duration-200 overflow-hidden"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-xl leading-tight font-semibold text-slate-900 dark:text-white group-hover:text-violet-700 dark:group-hover:text-violet-200 transition-colors truncate">
-                          {order.productName || "Product"}
-                        </h3>
-                        <p className="text-sm text-slate-500 dark:text-white/65 mt-1.5">
-                          Sold by <span className="text-slate-800 dark:text-white/90 font-semibold">{order.sellerName || "Unknown"}</span>
-                        </p>
-
-                        <div className="mt-3 flex flex-wrap items-center gap-2.5 text-xs text-slate-500 dark:text-white/50">
-                          <span className="inline-flex items-center gap-1.5">
-                            <CalendarDays className="h-3.5 w-3.5" />
+                    {/* Card Header */}
+                    <div className="flex items-center justify-between px-4 sm:px-5 py-2.5 border-b border-slate-100 dark:border-white/[0.05] bg-slate-50 dark:bg-white/[0.025]">
+                      <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center gap-1.5">
+                          <CalendarDays className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                          <span className="font-medium text-slate-700 dark:text-slate-200">
                             {new Date(order.date || Date.now()).toLocaleDateString("en-IN", {
                               day: "numeric",
                               month: "short",
                               year: "numeric",
                             })}
                           </span>
-                          <span className="hidden sm:inline">•</span>
-                          <span className="inline-flex items-center gap-1.5 font-mono">
-                            ID: {order.orderId ? order.orderId.slice(-8) : order._id?.slice(-8)}
-                            <button
-                              type="button"
-                              onClick={(e) => handleCopyOrderId(e, order.orderId || order._id)}
-                              className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10 transition"
-                              title="Copy Order ID"
-                            >
-                              {copiedId === (order.orderId || order._id) ? (
-                                <Check className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" />
-                              ) : (
-                                <Copy className="h-3.5 w-3.5 text-slate-400 dark:text-white/65" />
-                              )}
-                            </button>
+                        </div>
+                        <span className="text-slate-300 dark:text-white/10">•</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-slate-400 dark:text-slate-500">Order</span>
+                          <span className="font-mono font-semibold text-slate-600 dark:text-slate-300">
+                            #{order.orderId ? order.orderId.slice(-8).toUpperCase() : order._id?.slice(-8).toUpperCase()}
                           </span>
+                          <button 
+                            type="button"
+                            onClick={(e) => handleCopyOrderId(e, order.orderId || order._id)}
+                            className="p-0.5 rounded text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
+                            title="Copy Order ID"
+                          >
+                            {copiedId === (order.orderId || order._id) ? (
+                              <Check className="w-3 h-3 text-emerald-500" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                          </button>
                         </div>
                       </div>
-
-                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2.5">
-                        <p className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">₹{(order.amount || 0).toLocaleString()}</p>
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${statusConfig.badgeClass}`}
-                        >
-                          <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dotColor}`} />
-                          {statusConfig.label}
-                        </span>
+                      <div className={`flex shrink-0 items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${statusConfig.badgeClass}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${statusConfig.dotColor}`}></div>
+                        {statusConfig.label}
                       </div>
                     </div>
 
-                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
-                      <span className="text-violet-600 dark:text-violet-300 text-sm font-medium group-hover:text-violet-700 dark:group-hover:text-violet-200 transition-colors">
-                        View Details
-                      </span>
-                      <span className="text-xs text-slate-400 dark:text-white/35">#{order._id?.slice(-6)}</span>
+                    {/* Card Body */}
+                    <div className="px-4 sm:px-5 py-4 flex flex-col sm:flex-row gap-4 sm:gap-5">
+                      {/* Product Details */}
+                      <div className="flex-1 flex flex-col justify-center min-w-0">
+                        <h2 className="text-base sm:text-[17px] font-bold text-slate-900 dark:text-white truncate group-hover:text-violet-700 dark:group-hover:text-violet-300 transition-colors duration-200">
+                          {order.productName || "Product"}
+                        </h2>
+                        <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+                          Sold by{" "}
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">
+                            {order.sellerName || "Unknown"}
+                          </span>
+                        </p>
+                        <div className="mt-3 text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                          ₹{(order.amount || 0).toLocaleString("en-IN")}
+                        </div>
+                      </div>
+
+                      {/* Actions Panel */}
+                      <div className="shrink-0 w-full sm:w-36 flex flex-col justify-center border-t sm:border-t-0 sm:border-l border-slate-100 dark:border-white/[0.05] pt-4 sm:pt-0 sm:pl-5">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/dashboard/buyer/transactions/${order._id}`);
+                          }}
+                          className="w-full flex items-center justify-center gap-1.5 h-9 px-3 rounded-xl border border-violet-200 dark:border-violet-500/25 bg-violet-50 dark:bg-violet-500/10 text-xs font-bold text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-500/20 transition-colors"
+                        >
+                          View Details
+                        </button>
+                      </div>
                     </div>
                   </motion.article>
                 );

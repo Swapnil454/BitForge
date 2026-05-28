@@ -21,6 +21,7 @@ import buyerRoutes from "./routes/buyer.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import cartRoutes from "./routes/cart.routes.js";
+import wishlistRoutes from "./routes/wishlist.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
 import careerRoutes from "./routes/career.routes.js";
 import orderFixRoutes from "./routes/orderFix.routes.js";
@@ -109,6 +110,7 @@ app.use("/api/buyer", buyerRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/chat", chatRoutes); // Keep for legacy if needed, or remove later
 app.use("/api/contact", contactRoutes);
 app.use("/api/careers", careerRoutes);
