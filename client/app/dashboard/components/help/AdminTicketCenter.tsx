@@ -72,9 +72,11 @@ export default function AdminTicketCenter() {
 
     const socketUrl = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace("/api", "") : "http://localhost:5000";
     const newSocket = io(socketUrl, {
-      path: "/api/socket.io",
       auth: { token },
-      transports: ["polling", "websocket"],
+      path: "/socket.io",
+      transports: ["websocket", "polling"],
+      upgrade: true,
+      withCredentials: true,
     });
 
     newSocket.on("ticket:new", ({ ticket, message }) => {
