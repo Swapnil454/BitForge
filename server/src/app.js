@@ -35,10 +35,45 @@ const app = express();
 // Trust proxy so OAuth callbacks use correct HTTPS URL on Render
 app.set("trust proxy", 1);
 
-// Support multiple frontend origins in comma-separated CLIENT_URL
-const allowedOrigins = process.env.CLIENT_URL
-  ? process.env.CLIENT_URL.split(",").map((origin) => origin.trim())
-  : undefined;
+const normalizeOrigin = (origin) => origin?.trim().replace(/\/$/, "");
+const configuredOrigins = (process.env.CLIENT_URL || "")
+  .split(",")
+  .map(normalizeOrigin)
+  .filter(Boolean);
+
+const allowedOriginSet = new Set([
+  ...configuredOrigins,
+  "https://bittforge.in",
+  "https://www.bittforge.in",
+  "http://localhost:3000",
+]);
+
+configuredOrigins.forEach((origin) => {
+  try {
+    const url = new URL(origin);
+    if (url.hostname.startsWith("www.")) {
+      url.hostname = url.hostname.slice(4);
+      allowedOriginSet.add(url.origin);
+    } else {
+      url.hostname = `www.${url.hostname}`;
+      allowedOriginSet.add(url.origin);
+    }
+  } catch {
+    // Ignore malformed env entries and let the request fail CORS normally.
+  }
+});
+
+const corsOrigin = (origin, callback) => {
+  if (!origin) return callback(null, true);
+  try {
+    const normalizedOrigin = normalizeOrigin(origin);
+    const isAllowed = allowedOriginSet.has(normalizedOrigin);
+
+    return callback(null, isAllowed);
+  } catch {
+    return callback(null, false);
+  }
+};
 
 // Session middleware (required for OAuth)
 app.use(session({
@@ -58,7 +93,7 @@ app.use(passport.session());
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: corsOrigin,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,

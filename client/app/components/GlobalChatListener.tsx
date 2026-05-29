@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { io } from "socket.io-client";
 import { getCookie, getStoredUser } from "@/lib/cookies";
 import { toast } from "react-hot-toast";
 import { usePathname, useRouter } from "next/navigation";
+import { createSocket } from "@/lib/socket";
 
 export default function GlobalChatListener() {
   const router = useRouter();
@@ -20,14 +20,9 @@ export default function GlobalChatListener() {
 
   useEffect(() => {
     if (!user || !user.id) return;
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-    const socketUrl = apiBase.replace(/\/api$/, "");
     const token = getCookie("token");
 
-    const socket = io(socketUrl, {
-      auth: { token },
-      withCredentials: true,
-    });
+    const socket = createSocket(token);
 
     socket.on("ticket:new-message", (newMsg: any) => {
       const isSupportPage = pathname?.startsWith("/dashboard/support");
@@ -63,6 +58,10 @@ export default function GlobalChatListener() {
           </div>
         ), { duration: 4000, position: 'top-right' });
       }
+    });
+
+    socket.on("connect_error", (err: any) => {
+      console.error("Socket connect error (global chat listener)", err?.message || err);
     });
 
     return () => {
