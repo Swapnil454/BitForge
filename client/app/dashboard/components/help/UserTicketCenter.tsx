@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/lib/useAuth";
-import { io } from "socket.io-client";
+import { createSocket } from "@/lib/socket";
 import TicketSidebar from "./TicketSidebar";
 import TicketWindow from "./TicketWindow";
 import EmptyState from "./EmptyState";
@@ -59,14 +59,7 @@ export default function UserTicketCenter({
     
     fetchTickets(1);
 
-    const socketUrl = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace("/api", "") : "http://localhost:5000";
-    const newSocket = io(socketUrl, {
-      auth: { token },
-      path: "/socket.io",
-      transports: ["websocket", "polling"],
-      upgrade: true,
-      withCredentials: true,
-    });
+    const newSocket = createSocket(token);
 
     newSocket.on("ticket:new-message", (newMsg: any) => {
       const currentSelectedId = selectedTicketIdRef.current;
@@ -127,6 +120,10 @@ export default function UserTicketCenter({
         }
         return m;
       }));
+    });
+
+    newSocket.on("connect_error", (err: any) => {
+      console.error("Socket connect error (user tickets)", err?.message || err);
     });
 
     setSocket(newSocket);
@@ -208,7 +205,11 @@ export default function UserTicketCenter({
       if (res.ok) {
         const data = await res.json();
         setMessages(data.messages || []);
-        setTickets((prev) => prev.map(t => t._id === tId ? { ...t, ...data.ticket, unreadCount: 0 } : t));
+        setTickets((prev) => {
+          const exists = prev.some((t) => t._id === tId);
+          if (!exists) return [{ ...data.ticket, unreadCount: 0 }, ...prev];
+          return prev.map(t => t._id === tId ? { ...t, ...data.ticket, unreadCount: 0 } : t);
+        });
       } else if (res.status === 404) {
         toast.error("Ticket not found");
         setSelectedTicketId(null);

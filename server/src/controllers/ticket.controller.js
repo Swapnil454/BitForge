@@ -23,6 +23,32 @@ async function getNextTicketNumber() {
   return `TKT-${String(counter.seq).padStart(5, '0')}`;
 }
 
+function emitTicketReadStatus(ticketId, messages, readerId, readAt) {
+  if (!messages.length) return;
+
+  try {
+    let target = getIO()
+      .to(`ticket:${ticketId}`)
+      .to(String(readerId))
+      .to(`user:${readerId}`);
+
+    messages.forEach((message) => {
+      if (message.from) {
+        target = target.to(String(message.from)).to(`user:${message.from}`);
+      }
+    });
+
+    target.emit('ticket:message-status-update', {
+      msgIds: messages.map((message) => String(message._id)),
+      status: 'read',
+      readAt,
+      userId: String(readerId),
+    });
+  } catch (err) {
+    console.error("emit ticket read status error", err);
+  }
+}
+
 export async function logEvent(ticketId, actorId, actorRole, action, meta = {}) {
   await TicketEvent.create({
     ticketId,
@@ -173,18 +199,23 @@ export const getTicket = async (req, res) => {
 
     // Mark unread messages as read by user
     const now = new Date();
-    await ChatMessage.updateMany(
-      {
-        ticketId: ticket._id,
-        from: { $ne: userId },
-        readBy: { $ne: userId },
-        messageType: { $ne: 'note' }
-      },
-      {
-        $addToSet: { readBy: userId },
-        $set: { readAt: now }
-      }
-    );
+    const unreadMessages = await ChatMessage.find({
+      ticketId: ticket._id,
+      from: { $ne: userId },
+      readBy: { $ne: userId },
+      messageType: { $ne: 'note' }
+    }).select("_id from").lean();
+
+    if (unreadMessages.length > 0) {
+      await ChatMessage.updateMany(
+        { _id: { $in: unreadMessages.map((message) => message._id) } },
+        {
+          $addToSet: { readBy: userId },
+          $set: { readAt: now }
+        }
+      );
+      emitTicketReadStatus(ticket._id, unreadMessages, userId, now);
+    }
 
     // Users should not see 'note' messageTypes
     const messages = await ChatMessage.find({ 

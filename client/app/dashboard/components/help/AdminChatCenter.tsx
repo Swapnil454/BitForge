@@ -3,7 +3,8 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
-import { io, Socket } from "socket.io-client";
+import { type Socket } from "socket.io-client";
+import { createSocket } from "@/lib/socket";
 import { toast } from "react-hot-toast";
 import { useTheme } from "next-themes";
 import SupportSidebar from "./SupportSidebar";
@@ -90,12 +91,7 @@ export default function AdminChatCenter() {
     if (!token) return;
     fetchConversations(1);
 
-    const newSocket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000", {
-      path: "/socket.io",
-      auth: { token },
-      transports: ["websocket", "polling"],
-      reconnectionAttempts: 5,
-    });
+    const newSocket = createSocket(token);
     setSocket(newSocket);
 
     newSocket.on("chat:new-message", (newMsg: any) => {

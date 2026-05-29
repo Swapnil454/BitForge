@@ -3,7 +3,8 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
-import { io, Socket } from "socket.io-client";
+import { type Socket } from "socket.io-client";
+import { createSocket } from "@/lib/socket";
 import { toast } from "react-hot-toast";
 import { useTheme } from "next-themes";
 import { User, Shield, AlertCircle, FileText, CheckCircle2 } from "lucide-react";
@@ -50,6 +51,8 @@ export default function AdminTicketCenter() {
   const [chatLoading, setChatLoading] = useState(false);
 
   useEffect(() => {
+    if (!token) return;
+
     if (!hasInitializedUrl.current && urlId) {
       setMobileView("chat");
       fetchTicketDetails(urlId);
@@ -62,7 +65,7 @@ export default function AdminTicketCenter() {
       setSelectedTicketId(null);
       setMobileView("sidebar");
     }
-  }, [urlId]);
+  }, [urlId, token]);
 
   useEffect(() => {
     if (!token) return;
@@ -70,14 +73,7 @@ export default function AdminTicketCenter() {
     // Initial fetch
     fetchTickets(1);
 
-    const socketUrl = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace("/api", "") : "http://localhost:5000";
-    const newSocket = io(socketUrl, {
-      auth: { token },
-      path: "/socket.io",
-      transports: ["websocket", "polling"],
-      upgrade: true,
-      withCredentials: true,
-    });
+    const newSocket = createSocket(token);
 
     newSocket.on("ticket:new", ({ ticket, message }) => {
       setTickets((prev) => [ticket, ...prev]);
@@ -164,6 +160,10 @@ export default function AdminTicketCenter() {
       }));
     });
 
+    newSocket.on("connect_error", (err: any) => {
+      console.error("Socket connect error (admin tickets)", err?.message || err);
+    });
+
     setSocket(newSocket);
     return () => { newSocket.disconnect(); };
   }, [token]);
@@ -231,7 +231,11 @@ export default function AdminTicketCenter() {
         const data = await res.json();
         setMessages(data.messages || []);
         // Update the specific ticket in the list while preserving computed fields
-        setTickets(prev => prev.map(t => t._id === tId ? { ...t, ...data.ticket, unreadCount: 0 } : t));
+        setTickets(prev => {
+          const exists = prev.some((t) => t._id === tId);
+          if (!exists) return [{ ...data.ticket, unreadCount: 0 }, ...prev];
+          return prev.map(t => t._id === tId ? { ...t, ...data.ticket, unreadCount: 0 } : t);
+        });
       } else if (res.status === 404) {
         toast.error("Ticket not found. Redirecting...");
         setSelectedTicketId(null);

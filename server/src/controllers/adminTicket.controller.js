@@ -20,6 +20,32 @@ function canTransition(currentStatus, newStatus, role) {
   return STATUS_TRANSITIONS[role]?.[currentStatus]?.includes(newStatus) ?? false;
 }
 
+function emitTicketReadStatus(ticketId, messages, readerId, readAt) {
+  if (!messages.length) return;
+
+  try {
+    let target = getIO()
+      .to(`ticket:${ticketId}`)
+      .to(String(readerId))
+      .to(`user:${readerId}`);
+
+    messages.forEach((message) => {
+      if (message.from) {
+        target = target.to(String(message.from)).to(`user:${message.from}`);
+      }
+    });
+
+    target.emit('ticket:message-status-update', {
+      msgIds: messages.map((message) => String(message._id)),
+      status: 'read',
+      readAt,
+      userId: String(readerId),
+    });
+  } catch (err) {
+    console.error("emit admin ticket read status error", err);
+  }
+}
+
 // GET /api/admin/tickets
 export const listAllTickets = async (req, res) => {
   try {
@@ -130,18 +156,23 @@ export const getTicketDetails = async (req, res) => {
 
     // Mark unread messages as read by admin
     const now = new Date();
-    await ChatMessage.updateMany(
-      {
-        ticketId,
-        from: { $ne: req.user._id },
-        readBy: { $ne: req.user._id },
-        messageType: { $ne: 'note' }
-      },
-      {
-        $addToSet: { readBy: req.user._id },
-        $set: { readAt: now }
-      }
-    );
+    const unreadMessages = await ChatMessage.find({
+      ticketId,
+      from: { $ne: req.user._id },
+      readBy: { $ne: req.user._id },
+      messageType: { $ne: 'note' }
+    }).select("_id from").lean();
+
+    if (unreadMessages.length > 0) {
+      await ChatMessage.updateMany(
+        { _id: { $in: unreadMessages.map((message) => message._id) } },
+        {
+          $addToSet: { readBy: req.user._id },
+          $set: { readAt: now }
+        }
+      );
+      emitTicketReadStatus(ticketId, unreadMessages, req.user._id, now);
+    }
 
     const messages = await ChatMessage.find({ ticketId })
       .sort({ createdAt: 1 })
