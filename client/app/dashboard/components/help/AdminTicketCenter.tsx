@@ -70,9 +70,7 @@ export default function AdminTicketCenter() {
     // Initial fetch
     fetchTickets(1);
 
-    const socketUrl = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace("/api", "") : "http://localhost:5000";
-    const newSocket = io(socketUrl, {
-      path: "/api/socket.io",
+    const newSocket = io(undefined as any, {
       auth: { token },
       transports: ["polling", "websocket"],
     });
