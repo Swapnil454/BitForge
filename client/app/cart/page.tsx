@@ -223,11 +223,11 @@ export default function CartPage() {
   };
 
   const calculateGST = () => {
-    return calculatePriceAfterDiscount() * 0.05; // 5% GST
+    return calculateOriginalPrice() * 0.05; // 5% GST
   };
 
   const calculatePlatformFee = () => {
-    return calculatePriceAfterDiscount() * 0.02; // 2% Platform fee
+    return calculateOriginalPrice() * 0.02; // 2% Platform fee
   };
 
   const calculateFinalTotal = () => {

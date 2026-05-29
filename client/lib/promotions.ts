@@ -68,7 +68,7 @@ export interface PromotionRecord {
   heroButtonBgColor?: string;
   heroButtonTextColor?: string;
   heroFontFamily?: string;
-  heroLayout?: "floating" | "single" | "minimal" | "legacy";
+  heroLayout?: "floating" | "single" | "minimal" | "legacy" | "fullImage";
   buttonText: string;
   targetLink?: string | null;
   promotionGoal?: string;
@@ -123,7 +123,7 @@ export interface ActivePromotionBanner {
   }[];
   heroBgColor?: string;
   heroTextColor?: "light" | "dark" | "auto";
-  heroLayout?: "floating" | "single" | "minimal" | "legacy";
+  heroLayout?: "floating" | "single" | "minimal" | "legacy" | "fullImage";
   heroTitleColor?: string;
   heroSubtitleColor?: string;
   heroButtonBgColor?: string;

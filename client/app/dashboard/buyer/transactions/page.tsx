@@ -1,375 +1,710 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { CalendarDays, Check, Copy, MoreVertical, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { buyerAPI } from "@/lib/api";
-import { copyText } from "@/lib/clipboard";
 import toast from "react-hot-toast";
+import * as XLSX from "xlsx";
+import { motion } from "framer-motion";
+import { Search, Filter, X, ChevronDown, Check, MoreHorizontal, MoreVertical } from "lucide-react";
 
-import PageHeader from "./components/PageHeader";
-import InlineSearchFilters, { FilterOption, SortOption } from "./components/InlineSearchFilters";
+import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
+import TransactionSidebar from "./components/TransactionSidebar";
+import TransactionSummaryPanel from "./components/TransactionSummaryPanel";
 
 interface Transaction {
   _id: string;
+  type: "buyer_to_admin" | "admin_to_seller";
   orderId: string;
+  buyerName?: string;
+  buyerEmail?: string;
+  sellerName?: string;
+  sellerEmail?: string;
   productName: string;
-  productId: string;
-  sellerName: string;
-  sellerEmail: string;
   amount: number;
-  status: "paid" | "created" | "failed";
+  status: "success" | "failed" | "pending";
   date: string;
+  paymentMethod?: string;
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+  errorReason?: string;
 }
 
-const PAGE_SIZE = 10;
+interface SummaryData {
+  total: { count: number; amount: number };
+  success: { count: number; amount: number };
+  pending: { count: number; amount: number };
+  failed: { count: number; amount: number };
+}
 
-export default function TransactionsPage() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState<SortOption>("newest");
-  const [filterBy, setFilterBy] = useState<FilterOption>("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
+const EMPTY_SUMMARY: SummaryData = {
+  total: { count: 0, amount: 0 },
+  success: { count: 0, amount: 0 },
+  pending: { count: 0, amount: 0 },
+  failed: { count: 0, amount: 0 },
+};
 
+function TransactionsPageContent() {
   const router = useRouter();
-  const headerMenuRef = useRef<HTMLDivElement>(null);
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const isFetchingRef = useRef(false);
+  const searchParams = useSearchParams();
+  const buyerEmail = searchParams.get("buyer");
+  
+  // State
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [summary, setSummary] = useState<SummaryData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Search debounce
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery.trim());
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  // Filters & Pagination
+  const [dateRange, setDateRange] = useState("30d");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalFilteredRows, setTotalFilteredRows] = useState(0);
+  const [limit, setLimit] = useState(25);
 
-  // Handle filter/search changes (reset to page 1)
-  useEffect(() => {
-    void fetchPage(1, true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortBy, filterBy, debouncedSearch]);
+  // UI State
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [density, setDensity] = useState<"compact" | "default" | "comfortable">("default");
 
-  // Click outside for header menu
+  // Export State
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportStartDate, setExportStartDate] = useState("");
+  const [exportEndDate, setExportEndDate] = useState("");
+
+  // Dropdown states
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
+  const [dateDropdownOpen, setDateDropdownOpen] = useState(false);
+  const [densityDropdownOpen, setDensityDropdownOpen] = useState(false);
+
+  // Load density from local storage
   useEffect(() => {
-    const handleOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (headerMenuRef.current && !headerMenuRef.current.contains(target)) {
-        setHeaderMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleOutside);
-    return () => document.removeEventListener("mousedown", handleOutside);
+    const saved = localStorage.getItem("adminTxDensity");
+    if (saved === "compact" || saved === "default" || saved === "comfortable") {
+      setDensity(saved);
+    }
   }, []);
 
-  const fetchPage = async (targetPage: number, isInitial = false) => {
-    if (isFetchingRef.current) return;
-    isFetchingRef.current = true;
+  const handleDensityChange = (newDensity: "compact" | "default" | "comfortable") => {
+    setDensity(newDensity);
+    localStorage.setItem("adminTxDensity", newDensity);
+  };
 
-    if (isInitial) setLoading(true);
-    else setLoadingMore(true);
+  const observerTarget = useRef<HTMLDivElement>(null);
+  const isAppending = useRef(false);
 
+  useEffect(() => {
+    isAppending.current = false;
+    setTransactions([]);
+    setPage(1);
+  }, [statusFilter, searchTerm, dateRange, limit]);
+
+  useEffect(() => {
+    fetchTransactions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, statusFilter, searchTerm, dateRange, limit]);
+
+  const fetchTransactions = async () => {
+    setLoading(true);
     try {
       const data = await buyerAPI.getAllTransactions({
-        page: targetPage,
-        limit: PAGE_SIZE,
-        status: filterBy,
-        sortBy,
-        search: debouncedSearch,
+        page,
+        limit,
+        search: searchTerm,
+        
+        status: statusFilter as any,
+        dateRange: dateRange,
+        sortBy: "date_desc"
       });
-
-      const incoming: Transaction[] = data.transactions || [];
-      const pag = data.pagination;
-
-      setTransactions((prev) => (isInitial ? incoming : [...prev, ...incoming]));
-      setHasNextPage(pag?.hasNextPage ?? false);
-      setPage(targetPage);
+      if (isAppending.current) {
+        setTransactions(prev => {
+          const newTxs = data.transactions || [];
+          const existingIds = new Set(prev.map(t => t._id));
+          const uniqueNewTxs = newTxs.filter((t: any) => !existingIds.has(t._id));
+          return [...prev, ...uniqueNewTxs];
+        });
+        isAppending.current = false;
+      } else {
+        setTransactions(data.transactions || []);
+      }
+      setTotalPages(data.pagination?.pages || 1);
+      setTotalFilteredRows(data.pagination?.total || 0);
+      setSummary({
+        total: data.summary?.total || EMPTY_SUMMARY.total,
+        success: data.summary?.success || EMPTY_SUMMARY.success,
+        pending: data.summary?.pending || EMPTY_SUMMARY.pending,
+        failed: data.summary?.failed || EMPTY_SUMMARY.failed,
+      });
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to load transactions");
+      setSummary(EMPTY_SUMMARY);
     } finally {
       setLoading(false);
-      setLoadingMore(false);
-      isFetchingRef.current = false;
     }
   };
 
-  // IntersectionObserver for infinite scroll
   useEffect(() => {
-    if (!sentinelRef.current) return;
-
     const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !loadingMore && !loading) {
-          void fetchPage(page + 1, false);
+      entries => {
+        if (entries[0].isIntersecting && page < totalPages && !loading) {
+          isAppending.current = true;
+          setPage(p => p + 1);
         }
       },
-      { rootMargin: "200px" }
+      { threshold: 0.1 }
     );
-
-    observer.observe(sentinelRef.current);
+    if (observerTarget.current && window.innerWidth < 640) {
+      observer.observe(observerTarget.current);
+    }
     return () => observer.disconnect();
-  }, [hasNextPage, loadingMore, loading, page, sortBy, filterBy, debouncedSearch]);
+  }, [page, totalPages, loading]);
 
-  const handleCopyOrderId = async (e: React.MouseEvent, orderId: string) => {
-    e.stopPropagation();
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  /* ================= EXPORT ================= */
+  const confirmExportCSV = async () => {
+    setExportModalOpen(false);
+    const toastId = toast.loading("Preparing export...");
     try {
-      const copied = await copyText(orderId);
-      if (!copied) {
-        toast.error("Failed to copy");
+      const data = await buyerAPI.getAllTransactions({
+        limit: 5000,
+        search: searchTerm,
+        
+        status: statusFilter as any,
+        dateRange: exportStartDate || exportEndDate ? undefined : dateRange,
+        startDate: exportStartDate || undefined,
+        endDate: exportEndDate || undefined,
+      });
+
+      if (!data.transactions?.length) {
+        toast.error("No data to export", { id: toastId });
         return;
       }
-      setCopiedId(orderId);
-      toast.success("Order ID copied");
-      setTimeout(() => setCopiedId(null), 2000);
-    } catch {
-      toast.error("Failed to copy");
+
+      const rows = data.transactions.map((t: Transaction) => {
+        const fromName = t.buyerName || "Unknown Buyer";
+        const toName = t.sellerName || "Unknown Seller";
+        
+        return {
+          "Transaction ID": t.orderId,
+          "Date": new Date(t.date).toISOString(),
+          "Type": t.type === "buyer_to_admin" ? "Buyer Payment" : "Seller Payout",
+          "Parties": `${fromName} -> ${toName}`,
+        "Product": t.productName,
+        "Amount": t.amount,
+        "Status": t.status,
+          "Gateway ID": t.razorpayPaymentId || "",
+        };
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
+      
+      const today = new Date().toISOString().split("T")[0];
+      const filename = `transactions_${statusFilter}_${dateRange}_${today}.csv`;
+      
+      XLSX.writeFile(workbook, filename);
+      toast.success(`Exported ${rows.length} rows successfully`, { id: toastId });
+    } catch (error) {
+      toast.error("Export failed", { id: toastId });
     }
   };
 
-  const getStatusConfig = (status: string) => {
-    switch (status) {
-      case "paid":
-        return {
-          label: "Success",
-          badgeClass: "bg-emerald-500/15 text-emerald-300 border-emerald-500/35",
-          dotColor: "bg-emerald-400",
-        };
-      case "failed":
-        return {
-          label: "Failed",
-          badgeClass: "bg-red-500/15 text-red-300 border-red-500/35",
-          dotColor: "bg-red-400",
-        };
-      case "created":
-        return {
-          label: "Pending",
-          badgeClass: "bg-amber-500/15 text-amber-300 border-amber-500/35",
-          dotColor: "bg-amber-400",
-        };
-      default:
-        return {
-          label: "Unknown",
-          badgeClass: "bg-gray-500/15 text-gray-300 border-gray-500/35",
-          dotColor: "bg-gray-400",
-        };
-    }
+  /* ================= ACTIVE FILTERS ================= */
+  const activeFiltersCount = (statusFilter !== "all" ? 1 : 0);
+
+  const clearAllFilters = () => {
+    setStatusFilter("all");
+    setSearchTerm("");
   };
 
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    setPage(1);
-  };
-
-  const handleFilterChange = (value: FilterOption) => {
-    setFilterBy(value);
-    setPage(1);
-  };
-
-  const handleSortChange = (value: SortOption) => {
-    setSortBy(value);
-    setPage(1);
-  };
+  // Row height mapping
+  const rowHeightClass = density === "compact" ? "py-1.5" : density === "comfortable" ? "py-5" : "py-3";
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white scroll-smooth">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-20">
+      {/* GLOBAL DROPDOWN BACKDROP */}
+      {(mobileMenuOpen || dateDropdownOpen || densityDropdownOpen || false || statusDropdownOpen) && (
+        <div 
+          className="fixed inset-0 z-40"
+          onClick={() => {
+            setMobileMenuOpen(false);
+            setDateDropdownOpen(false);
+            setDensityDropdownOpen(false);
+            setStatusDropdownOpen(false);
+          }}
+        />
+      )}
+
       <PageHeader
         backHref="/dashboard/buyer"
         backLabel="Dashboard"
         title="Transaction History"
-        subtitle="Manage and track every payment in one place"
+        subtitle="Manage & audit platform payments"
         rightSlot={
-          <div className="relative shrink-0" ref={headerMenuRef}>
-            <button
-              onClick={() => setHeaderMenuOpen((prev) => !prev)}
-              className="h-10 w-10 rounded-xl border border-white/15 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 hover:border-white/30 inline-flex items-center justify-center transition"
-              aria-label="Open actions"
-            >
-              <MoreVertical className="h-5 w-5 text-slate-700 dark:text-white/80" />
-            </button>
-
-            <AnimatePresence>
-              {headerMenuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                  className="absolute right-0 top-11 w-44 rounded-xl border border-slate-200 dark:border-white/15 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl p-1.5 shadow-xl shadow-slate-200 dark:shadow-black/40"
+          <>
+            {/* Desktop Actions */}
+            <div className="hidden sm:flex items-center gap-3 relative z-50">
+              <button
+                onClick={() => setExportModalOpen(true)}
+                className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-white/80 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/10 transition flex items-center gap-2"
+              >
+                Export CSV
+              </button>
+              
+              {/* Desktop Custom Date Range Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setDateDropdownOpen(!dateDropdownOpen)}
+                  className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-white/80 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/10 transition flex items-center gap-2 outline-none"
                 >
+                  {dateRange === "7d" ? "Last 7 days" : dateRange === "30d" ? "Last 30 days" : dateRange === "90d" ? "Last 90 days" : "All time"}
+                  <ChevronDown className="h-4 w-4 shrink-0" />
+                </button>
+                {dateDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-40 bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl z-50 py-1">
+                    {[
+                      { val: "7d", label: "Last 7 days" },
+                      { val: "30d", label: "Last 30 days" },
+                      { val: "90d", label: "Last 90 days" },
+                      { val: "all", label: "All time" }
+                    ].map(opt => (
+                      <button
+                        key={opt.val}
+                        onClick={() => { setDateRange(opt.val); setDateDropdownOpen(false); }}
+                        className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-white/80 hover:bg-slate-100 dark:hover:bg-white/5 flex justify-between items-center"
+                      >
+                        {opt.label}
+                        {dateRange === opt.val && <Check className="h-4 w-4 text-cyan-500 shrink-0" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop Custom Density Dropdown */}
+              <div className="relative">
+                <button 
+                  onClick={() => setDensityDropdownOpen(!densityDropdownOpen)}
+                  className="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 transition outline-none"
+                >
+                  <MoreHorizontal className="h-5 w-5" />
+                </button>
+                {densityDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl z-50 p-2">
+                    <p className="text-[10px] uppercase font-bold text-slate-400 mb-1 px-2">Row Density</p>
+                    {(["compact", "default", "comfortable"] as const).map(d => (
+                      <button
+                        key={d}
+                        onClick={() => { handleDensityChange(d); setDensityDropdownOpen(false); }}
+                        className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg flex justify-between items-center capitalize"
+                      >
+                        {d}
+                        {density === d && <Check className="h-4 w-4 text-cyan-500" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile Actions Dropdown */}
+            <div className="sm:hidden relative z-50">
+              <button 
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                <MoreVertical className="h-5 w-5" />
+              </button>
+              <div className={`absolute right-0 top-full mt-2 w-56 bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl transition-all z-50 p-2 flex flex-col gap-1 ${mobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+                <button
+                  onClick={() => { setMobileMenuOpen(false); router.push("/dashboard/buyer/transactions/analytics"); }}
+                  className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg"
+                >
+                  Analytics
+                </button>
+                <button
+                  onClick={() => { setMobileMenuOpen(false); setExportModalOpen(true); }}
+                  className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg"
+                >
+                  Export CSV
+                </button>
+                <div className="w-full h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
+                
+                <p className="text-[10px] uppercase font-bold text-slate-400 px-2 mt-1 mb-1">Date Range</p>
+                {[
+                  { val: "7d", label: "Last 7 days" },
+                  { val: "30d", label: "Last 30 days" },
+                  { val: "90d", label: "Last 90 days" },
+                  { val: "all", label: "All time" }
+                ].map(opt => (
                   <button
-                    onClick={() => {
-                      setHeaderMenuOpen(false);
-                      router.push("/dashboard/buyer/transactions/analytics");
-                    }}
-                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-white/85 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition"
+                    key={opt.val}
+                    onClick={() => { setDateRange(opt.val); setMobileMenuOpen(false); }}
+                    className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg flex justify-between items-center"
                   >
-                    Analytics
+                    {opt.label}
+                    {dateRange === opt.val && <Check className="h-4 w-4 text-cyan-500 shrink-0" />}
                   </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                ))}
+                
+                <div className="w-full h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
+                
+                <p className="text-[10px] uppercase font-bold text-slate-400 px-2 mt-1 mb-1">Row Density</p>
+                {(["compact", "default", "comfortable"] as const).map(d => (
+                  <button
+                    key={d}
+                    onClick={() => { handleDensityChange(d); setMobileMenuOpen(false); }}
+                    className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg flex justify-between items-center capitalize"
+                  >
+                    {d}
+                    {density === d && <Check className="h-4 w-4 text-cyan-500" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
         }
       />
 
-      <main className="max-w-7xl mx-auto px-4 pt-3 pb-6 space-y-4">
-        <InlineSearchFilters
-          searchQuery={searchQuery}
-          onSearchChange={handleSearchChange}
-          filterBy={filterBy}
-          onFilterChange={handleFilterChange}
-          sortBy={sortBy}
-          onSortChange={handleSortChange}
-        />
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.08 }}
-          className="space-y-3"
-        >
-          {loading ? (
-            <div className="space-y-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c] p-4 sm:p-5 shadow-sm dark:shadow-lg overflow-hidden animate-pulse"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 space-y-3">
-                      <div className="h-5 w-48 bg-slate-200 dark:bg-white/10 rounded-lg" />
-                      <div className="h-4 w-32 bg-slate-100 dark:bg-white/5 rounded-lg" />
-                      <div className="h-4 w-24 bg-slate-100 dark:bg-white/5 rounded-lg" />
-                    </div>
-                    <div className="text-right space-y-2">
-                      <div className="h-7 w-20 bg-slate-200 dark:bg-white/10 rounded-lg ml-auto" />
-                      <div className="h-6 w-16 bg-slate-100 dark:bg-white/5 rounded-full ml-auto" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : transactions.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/[0.03] p-10 text-center shadow-lg"
-            >
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-2">No Transactions Found</h3>
-              <p className="text-slate-500 dark:text-white/60 mb-5 text-sm sm:text-base">
-                {searchQuery || filterBy !== "all"
-                  ? "No transactions match your filters. Try a different status or sort."
-                  : "You have no transactions yet. Explore marketplace to get started."}
-              </p>
-              {!searchQuery && filterBy === "all" && (
-                <button
-                  onClick={() => router.push("/marketplace")}
-                  className="px-5 py-2.5 rounded-xl bg-linear-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-slate-900 dark:text-white font-semibold transition"
-                >
-                  Browse Marketplace
-                </button>
-              )}
-            </motion.div>
-          ) : (
-            <AnimatePresence mode="popLayout">
-              {transactions.map((transaction, index) => {
-                const statusConfig = getStatusConfig(transaction.status);
-
-                return (
-                  <motion.article
-                    key={transaction._id}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ delay: index * 0.02 }}
-                    onClick={() => router.push(`/dashboard/buyer/transactions/${transaction._id}`)}
-                    className="relative overflow-hidden cursor-pointer rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c] p-4 sm:p-5 text-left transition-all duration-300 hover:bg-slate-50 dark:hover:bg-[#181a25] hover:border-slate-300 dark:hover:border-white/10 hover:shadow-lg dark:hover:shadow-xl dark:hover:shadow-black/50 group"
-                  >
-
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-xl leading-tight font-semibold text-slate-900 dark:text-white group-hover:text-violet-700 dark:group-hover:text-violet-200 transition-colors truncate">
-                          {transaction.productName}
-                        </h3>
-                        <p className="text-sm text-slate-500 dark:text-white/65 mt-1.5">
-                          Sold by <span className="text-slate-800 dark:text-white/90 font-semibold">{transaction.sellerName}</span>
-                        </p>
-
-                        <div className="mt-3 flex flex-wrap items-center gap-2.5 text-xs text-slate-500 dark:text-white/50">
-                          <span className="inline-flex items-center gap-1.5">
-                            <CalendarDays className="h-3.5 w-3.5" />
-                            {new Date(transaction.date).toLocaleDateString("en-IN", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                          </span>
-                          <span className="hidden sm:inline">•</span>
-                          <span className="inline-flex items-center gap-1.5 font-mono">
-                            ID: {transaction.orderId.slice(-8)}
-                            <button
-                              type="button"
-                              onClick={(e) => handleCopyOrderId(e, transaction.orderId)}
-                              className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10 transition"
-                              title="Copy Order ID"
-                            >
-                              {copiedId === transaction.orderId ? (
-                                <Check className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" />
-                              ) : (
-                                <Copy className="h-3.5 w-3.5 text-slate-400 dark:text-white/65" />
-                              )}
-                            </button>
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2.5">
-                        <p className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">₹{transaction.amount.toLocaleString()}</p>
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${statusConfig.badgeClass}`}
-                        >
-                          <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dotColor}`} />
-                          {statusConfig.label}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
-                      <span className="text-violet-600 dark:text-violet-300 text-sm font-medium group-hover:text-violet-700 dark:group-hover:text-violet-200 transition-colors">
-                        View Details
-                      </span>
-                      <span className="text-xs text-slate-400 dark:text-white/35">#{transaction._id.slice(-6)}</span>
-                    </div>
-                  </motion.article>
-                );
-              })}
-            </AnimatePresence>
-          )}
-        </motion.div>
-
-        <div ref={sentinelRef} className="h-4" />
-
-        {loadingMore && (
-          <div className="flex justify-center py-6">
-            <div className="flex items-center gap-2 text-slate-500 dark:text-white/40 text-sm">
-              <Loader2 className="w-5 h-5 animate-spin text-cyan-500" />
-              <span>Loading more transactions...</span>
-            </div>
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-4 space-y-6">
+        
+        {/* SUMMARY STRIP - Hidden on mobile */}
+        {summary && (
+          <div className="hidden sm:block">
+            <TransactionSummaryPanel
+              totalVolume={summary.total.amount}
+              totalCount={summary.total.count}
+              successful={summary.success}
+              pending={summary.pending}
+              failed={summary.failed}
+              dateLabel={
+                dateRange === "7d" ? "Last 7 days" :
+                dateRange === "30d" ? "Last 30 days" :
+                dateRange === "90d" ? "Last 90 days" : "All time"
+              }
+            />
           </div>
         )}
 
-        {!hasNextPage && !loadingMore && transactions.length > 0 && (
-          <p className="text-center text-xs text-slate-400 dark:text-white/25 py-4 tracking-wide">
-            — You've reached the end —
-          </p>
-        )}
+        {/* SEARCH & FILTER BAR */}
+        <div className="flex flex-col space-y-3">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <input
+                type="search"
+                placeholder="Search by order ID, product name, email, or gateway ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full h-12 pl-10 pr-4 bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/50 text-slate-900 dark:text-white"
+              />
+            </div>
+
+            <div className="hidden sm:flex items-center gap-3 shrink-0">
+              {/* Status Dropdown */}
+              <div className="relative">
+                <button 
+                  onClick={() => { setStatusDropdownOpen(!statusDropdownOpen); }}
+                  className="h-12 px-4 text-sm font-medium bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-white/10 transition"
+                >
+                  {statusFilter === "all" ? "All Status" : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
+                  <ChevronDown className="h-4 w-4 shrink-0" />
+                </button>
+                {statusDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-1 w-40 bg-white dark:bg-[#0a0a14] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl z-50 py-1">
+                    {["all", "success", "pending", "failed"].map(opt => (
+                      <button
+                        key={opt}
+                        onClick={() => { setStatusFilter(opt); setStatusDropdownOpen(false); }}
+                        className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-white/80 hover:bg-slate-100 dark:hover:bg-white/5 flex justify-between items-center capitalize"
+                      >
+                        {opt === "all" ? "All Status" : opt}
+                        {statusFilter === opt && <Check className="h-4 w-4 text-cyan-500" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Inline Filter Pills */}
+          <div className="flex sm:hidden overflow-x-auto gap-2 pb-1 scrollbar-hide snap-x items-center w-full">
+            {[
+              { val: "success", label: "Success" },
+              { val: "pending", label: "Pending" },
+              { val: "failed", label: "Failed" }
+            ].map((opt) => {
+              const isActive = statusFilter === opt.val;
+              return (
+                <button
+                  key={`status-${opt.val}`}
+                  onClick={() => {
+                    setStatusFilter(isActive ? "all" : opt.val);
+                  }}
+                  className={`flex-shrink-0 px-3.5 py-1.5 text-xs font-medium rounded-full transition-colors snap-start border ${
+                    isActive 
+                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent' 
+                      : 'bg-white dark:bg-[#0a0a14] border-slate-200 dark:border-white/10 text-slate-700 dark:text-white/80 hover:bg-slate-50 dark:hover:bg-white/5'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* TABLE CONTAINER */}
+        <div className="relative rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0a0a14] shadow-sm overflow-hidden">
+
+          <div className="overflow-x-auto relative">
+            <table className="w-full text-left border-collapse min-w-max sm:min-w-[1000px]">
+              <thead className="bg-slate-50 dark:bg-[#0a0a14] border-b border-slate-200 dark:border-white/10 sticky top-0 z-0">
+                <tr>
+                  <th className="w-[110px] min-w-[110px] sm:w-[18%] px-1.5 sm:px-4 py-2 sm:py-3 text-[9px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-white/50 sticky left-0 sm:static z-20 bg-slate-50 dark:bg-[#0a0a14] shadow-[2px_0_5px_rgba(0,0,0,0.05)] dark:shadow-[2px_0_5px_rgba(0,0,0,0.5)] sm:shadow-none sm:bg-transparent">Transaction</th>
+                  
+                  <th className="w-[140px] min-w-[140px] sm:w-[22%] px-1.5 sm:px-4 py-2 sm:py-3 text-[9px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-white/50">Parties</th>
+                  <th className="w-[120px] min-w-[120px] sm:w-[20%] px-1.5 sm:px-4 py-2 sm:py-3 text-[9px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-white/50">Product</th>
+                  <th className="w-[90px] min-w-[90px] sm:w-[120px] px-1.5 sm:px-4 py-2 sm:py-3 text-[9px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-white/50 text-right">Amount</th>
+                  <th className="w-[80px] min-w-[80px] sm:w-[10%] px-1.5 sm:px-4 py-2 sm:py-3 text-[9px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-white/50 text-center">Status</th>
+                  <th className="w-[40px] min-w-[40px] sm:w-[4%] px-1.5 sm:px-4 py-2 sm:py-3 text-center"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                {loading ? (
+                  <tr>
+                    <td colSpan={8} className="py-20 text-center text-slate-400">Loading transactions...</td>
+                  </tr>
+                ) : transactions.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-20 text-center text-slate-400">No transactions found for the current filters.</td>
+                  </tr>
+                ) : (
+                  transactions.map(t => (
+                    <tr 
+                      key={t._id} 
+                      onClick={() => { if (window.innerWidth < 640) setSelectedTx(t); }}
+                      className={`group bg-white dark:bg-[#05050a] hover:bg-slate-50 dark:hover:bg-[#0a0a14] transition border-l-[3px] cursor-pointer sm:cursor-default ${
+                        t.status === "pending" ? "border-amber-400" :
+                        t.status === "failed" ? "border-rose-400" : "border-transparent"
+                      } `}
+                    >
+
+                      <td className={`px-1.5 sm:px-4 ${rowHeightClass} sticky left-0 sm:static z-10 bg-inherit shadow-[2px_0_5px_rgba(0,0,0,0.05)] dark:shadow-[2px_0_5px_rgba(0,0,0,0.5)] sm:shadow-none sm:bg-transparent`}>
+                        <p className="font-mono text-[10px] sm:text-sm text-slate-900 dark:text-white/90">
+                          {t.orderId.length > 12 ? `${t.orderId.substring(0, 12)}...` : t.orderId}
+                        </p>
+                        <p className="text-[8px] sm:text-[11px] text-slate-500 dark:text-white/40 mt-0.5">
+                          {new Date(t.date).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" })}
+                        </p>
+                      </td>
+                      <td className={`px-1.5 sm:px-4 ${rowHeightClass}`}>
+                        {t.type === "buyer_to_admin" ? (
+                          <span className="inline-flex px-1.5 sm:px-2 py-0.5 rounded text-[8px] sm:text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">
+                            Buyer → Admin
+                          </span>
+                        ) : (
+                          <span className="inline-flex px-1.5 sm:px-2 py-0.5 rounded text-[8px] sm:text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20">
+                            Admin → Seller
+                          </span>
+                        )}
+                      </td>
+                      <td className={`px-1.5 sm:px-4 ${rowHeightClass}`}>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] sm:text-sm font-medium text-slate-900 dark:text-white/90 truncate max-w-[110px] sm:max-w-[200px]">
+                            {t.buyerName || "Unknown Buyer"}
+                          </span>
+                          <span className="text-[8px] sm:text-xs text-slate-400 dark:text-white/40">
+                            → {t.sellerName || "Unknown Seller"}
+                          </span>
+                        </div>
+                      </td>
+                      <td className={`px-1.5 sm:px-4 ${rowHeightClass}`}>
+                        <p className="text-[10px] sm:text-sm text-slate-700 dark:text-white/70 truncate max-w-[100px] sm:max-w-[180px]">
+                          {t.productName}
+                        </p>
+                      </td>
+                      <td className={`px-1.5 sm:px-4 ${rowHeightClass} text-right`}>
+                        <p className="font-mono text-[10px] sm:text-sm font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                          {formatAmount(t.amount)}
+                        </p>
+                      </td>
+                      <td className={`px-1.5 sm:px-4 ${rowHeightClass} text-center`}>
+                        <span className={`inline-flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 rounded-full text-[8px] sm:text-[10px] font-bold tracking-wider ${
+                          t.status === "success" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+                          t.status === "failed" ? "bg-rose-500/10 text-rose-600 dark:text-rose-400" :
+                          "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                        }`}>
+                          <span className={`h-1 w-1 sm:h-1.5 sm:w-1.5 rounded-full ${
+                            t.status === "success" ? "bg-emerald-500" :
+                            t.status === "failed" ? "bg-rose-500" : "bg-amber-500"
+                          }`} />
+                          <span className="capitalize">{t.status}</span>
+                        </span>
+                      </td>
+                      <td className={`px-1.5 sm:px-4 ${rowHeightClass} text-center`}>
+                        <button 
+                          onClick={() => setSelectedTx(t)}
+                          className="text-[9px] sm:text-xs font-bold text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-300"
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="hidden sm:flex px-6 py-4 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#0a0a14] flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-white/50">
+              <span>Showing {totalFilteredRows === 0 ? 0 : (page - 1) * limit + 1}–{Math.min(page * limit, totalFilteredRows)} of {totalFilteredRows} transactions</span>
+              <div className="flex items-center gap-2">
+                <span>Rows per page:</span>
+                <select 
+                  value={limit} 
+                  onChange={e => setLimit(Number(e.target.value))}
+                  className="bg-transparent border-none outline-none font-medium text-slate-700 dark:text-white/80 cursor-pointer"
+                >
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                disabled={page === 1}
+                onClick={() => setPage(p => p - 1)}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 text-sm font-medium text-slate-600 dark:text-white/60 hover:bg-slate-100 dark:hover:bg-white/5 disabled:opacity-30 transition"
+              >
+                Prev
+              </button>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let p = i + 1;
+                  // Simple logic to show current pages around active page
+                  if (totalPages > 5 && page > 3) {
+                    p = page - 2 + i;
+                    if (p > totalPages) return null;
+                  }
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={`h-8 w-8 rounded-lg flex items-center justify-center text-sm font-medium transition ${
+                        page === p 
+                          ? "bg-cyan-500 text-white" 
+                          : "text-slate-600 dark:text-white/60 hover:bg-slate-100 dark:hover:bg-white/5"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <button
+                disabled={page === totalPages || totalPages === 0}
+                onClick={() => setPage(p => p + 1)}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 text-sm font-medium text-slate-600 dark:text-white/60 hover:bg-slate-100 dark:hover:bg-white/5 disabled:opacity-30 transition"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Infinite Scroll Target */}
+          <div className="sm:hidden w-full py-6 flex justify-center items-center" ref={observerTarget}>
+            {loading && page > 1 && (
+              <span className="text-xs font-medium text-cyan-600 dark:text-cyan-400 flex items-center gap-2">
+                <span className="animate-spin h-4 w-4 border-2 border-cyan-500 border-t-transparent rounded-full"></span>
+                Loading more...
+              </span>
+            )}
+            {!loading && page < totalPages && (
+              <span className="text-xs font-medium text-slate-400 dark:text-white/30">Scroll for more</span>
+            )}
+            {!loading && page >= totalPages && transactions.length > 0 && (
+              <span className="text-xs font-medium text-slate-400 dark:text-white/30">End of results</span>
+            )}
+          </div>
+        </div>
       </main>
+
+      <TransactionSidebar 
+        transaction={selectedTx} 
+        onClose={() => setSelectedTx(null)} 
+      />
+
+      {/* Export Modal */}
+      {exportModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-[2rem] bg-white p-6 shadow-2xl dark:bg-[#13131a] border border-slate-200 dark:border-white/10 animate-in fade-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Export Transactions</h3>
+            <p className="text-sm text-slate-500 mb-6">
+              Choose a date range for your export. Current filters (Status: <span className="capitalize">{statusFilter}</span>, Type: <span className="capitalize">{"".replace("_", " ")}</span>) will be applied.
+            </p>
+            
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Start Date (Optional)</label>
+                <input 
+                  type="date"
+                  value={exportStartDate}
+                  onChange={(e) => setExportStartDate(e.target.value)}
+                  className="w-full h-11 px-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">End Date (Optional)</label>
+                <input 
+                  type="date"
+                  value={exportEndDate}
+                  onChange={(e) => setExportEndDate(e.target.value)}
+                  className="w-full h-11 px-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+                />
+              </div>
+            </div>
+            
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setExportModalOpen(false)}
+                className="flex-1 py-3 text-sm font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmExportCSV}
+                className="flex-1 py-3 text-sm font-bold text-white bg-cyan-600 rounded-xl hover:bg-cyan-700 transition"
+              >
+                Download CSV
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+export default function TransactionsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading transactions...</div>}>
+      <TransactionsPageContent />
+    </Suspense>
   );
 }

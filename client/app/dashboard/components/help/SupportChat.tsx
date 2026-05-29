@@ -6,13 +6,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { chatAPI } from "@/lib/api";
 import { getCookie } from "@/lib/cookies";
 import toast from "react-hot-toast";
-import { 
-  MoreVertical, 
-  Paperclip, 
-  X, 
-  Trash2, 
-  Camera, 
-  Download, 
+import {
+  MoreVertical,
+  Paperclip,
+  X,
+  Trash2,
+  Camera,
+  Download,
   ChevronLeft,
   Send,
   FileText,
@@ -91,13 +91,13 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
-  
+
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [attachment, setAttachment] = useState<File | null>(null);
-  const [previewImage, setPreviewImage] = useState<{url: string, name: string} | null>(null);
+  const [previewImage, setPreviewImage] = useState<{ url: string, name: string } | null>(null);
   const [imageZoom, setImageZoom] = useState(1);
-  
+
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -106,8 +106,8 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
   const shouldAutoScrollRef = useRef(true);
   const pendingScrollBehaviorRef = useRef<ScrollBehavior | null>(null);
   const scrollRetryTimeoutsRef = useRef<number[]>([]);
-  const settleScrollToBottomRef = useRef<(behavior?: ScrollBehavior) => void>(() => {});
-  
+  const settleScrollToBottomRef = useRef<(behavior?: ScrollBehavior) => void>(() => { });
+
   const queryClient = useQueryClient();
 
   const isNearBottom = () => {
@@ -271,7 +271,7 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
     if (!input.trim() && !attachment) return;
     try {
       setSending(true);
-      
+
       let attachmentData = null;
       if (attachment) {
         setUploading(true);
@@ -287,10 +287,10 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
       }
 
       const data = await chatAPI.sendSupportMessage(input.trim(), attachmentData ? [attachmentData] : undefined);
-      
+
       setInput("");
       setAttachment(null);
-      
+
       if (data.chat) {
         setMessages((prev) => {
           if (prev.some((m) => m._id === data.chat._id)) return prev;
@@ -323,7 +323,7 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
   };
 
   const toggleSelection = (id: string) => {
-    setSelectedMessages(prev => 
+    setSelectedMessages(prev =>
       prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
     );
   };
@@ -350,9 +350,9 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
 
   return (
     <div className="flex flex-col w-full h-full flex-1 min-h-0 max-w-5xl xl:max-w-6xl mx-auto md:border-x border-slate-200 dark:border-white/5 bg-slate-100 dark:bg-gradient-to-br dark:from-[#05050a] dark:via-[#0a0a14] dark:to-[#0f1123] overflow-hidden relative">
-      
+
       {previewImage && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] bg-white dark:bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
           onWheel={(e) => {
             e.preventDefault();
@@ -360,35 +360,35 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
           }}
         >
           <div className="absolute top-4 right-4 flex items-center gap-2 z-[101]">
-            <button 
+            <button
               onClick={() => setImageZoom(prev => Math.min(prev + 0.25, 5))}
               className="p-2.5 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white transition"
               title="Zoom In"
             >
               <ZoomIn className="w-5 h-5" />
             </button>
-            <button 
+            <button
               onClick={() => setImageZoom(prev => Math.max(prev - 0.25, 0.5))}
               className="p-2.5 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white transition"
               title="Zoom Out"
             >
               <ZoomOut className="w-5 h-5" />
             </button>
-            <button 
+            <button
               onClick={() => setImageZoom(1)}
               className="p-2.5 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white transition"
               title="Reset Zoom"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
-            <button 
-              onClick={(e) => handleDownload(previewImage.url, previewImage.name, e)} 
+            <button
+              onClick={(e) => handleDownload(previewImage.url, previewImage.name, e)}
               className="p-2.5 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white transition flex items-center gap-2"
             >
               <Download className="w-5 h-5" />
               <span className="text-sm font-medium hidden md:inline">Download</span>
             </button>
-            <button 
+            <button
               onClick={() => { setPreviewImage(null); setImageZoom(1); }}
               className="p-2.5 rounded-full bg-slate-200 dark:bg-white/10 hover:bg-white/20 text-slate-900 dark:text-white transition"
             >
@@ -396,9 +396,9 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
             </button>
           </div>
           <div className="relative w-full h-full max-w-5xl max-h-[85vh] flex items-center justify-center overflow-hidden">
-            <img 
-              src={previewImage.url} 
-              alt={previewImage.name} 
+            <img
+              src={previewImage.url}
+              alt={previewImage.name}
               className="max-w-full max-h-full object-contain rounded-lg shadow-2xl transition-transform duration-150 cursor-zoom-in"
               style={{ transform: `scale(${imageZoom})`, transformOrigin: 'center center' }}
             />
@@ -409,7 +409,7 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
           </div>
         </div>
       )}
-      
+
       {/* HEADER */}
       <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-black/40 backdrop-blur-md border-b border-slate-200 dark:border-white/5 relative z-10 shrink-0 shadow-sm">
         {isSelectionMode ? (
@@ -436,9 +436,9 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
                 <p className="text-xs text-slate-500 dark:text-[#8696A0] truncate">{subtitle}</p>
               </div>
             </div>
-            
+
             <div className="relative shrink-0" ref={dropdownRef}>
-              <button 
+              <button
                 onClick={() => setShowDropdown(!showDropdown)}
                 className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 dark:text-[#8696A0] transition"
               >
@@ -446,7 +446,7 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
               </button>
               {showDropdown && (
                 <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-[#233138] rounded-lg shadow-xl border border-slate-200 dark:border-white/5 py-2 z-50">
-                  <button 
+                  <button
                     onClick={handleClearChat}
                     className="w-full text-left px-4 py-2 text-sm text-slate-800 dark:text-[#E9EDEF] hover:bg-slate-100 dark:hover:bg-[#111B21] transition"
                   >
@@ -460,7 +460,7 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
       </div>
 
       {/* CHAT AREA */}
-      <div 
+      <div
         ref={messagesContainerRef}
         onScroll={handleMessagesScroll}
         className="flex-1 overflow-y-auto overscroll-contain px-4 py-6 space-y-2 relative"
@@ -476,7 +476,7 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
         ) : messages.length === 0 ? (
           <div className="flex justify-center py-10">
             <div className="bg-white dark:bg-[#111B21] text-slate-500 dark:text-[#8696A0] text-xs px-5 py-3 rounded-2xl max-w-xs text-center shadow-sm border border-slate-200 dark:border-white/5">
-              💬 Start a conversation with our support team.
+              Start a conversation with our support team.
             </div>
           </div>
         ) : (
@@ -484,10 +484,10 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
             const isMine = m.from.role !== "admin";
             const isSelected = selectedMessages.includes(m._id);
             const messageStatus = getMessageStatus(m);
-            
+
             return (
-              <div 
-                key={m._id} 
+              <div
+                key={m._id}
                 className={`flex w-full group ${isMine ? "justify-end" : "justify-start"} ${isSelected ? "bg-indigo-500/10 -mx-4 px-4 py-1 rounded-xl" : ""} mb-1`}
                 onClick={() => isSelectionMode && toggleSelection(m._id)}
                 onContextMenu={(e) => {
@@ -502,13 +502,12 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
                     </button>
                   </div>
                 )}
-                
-                <div 
-                  className={`relative max-w-[85%] md:max-w-[70%] px-4 py-2.5 select-none ${
-                    isMine 
-                      ? "bg-indigo-600 dark:bg-indigo-600 text-white rounded-2xl rounded-br-sm shadow-md shadow-indigo-500/20" 
+
+                <div
+                  className={`relative max-w-[85%] md:max-w-[70%] px-4 py-2.5 select-none ${isMine
+                      ? "bg-indigo-600 dark:bg-indigo-600 text-white rounded-2xl rounded-br-sm shadow-md shadow-indigo-500/20"
                       : "bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl rounded-bl-sm shadow-sm border border-slate-100 dark:border-white/5"
-                  }`}
+                    }`}
                   style={{ WebkitUserSelect: 'none', userSelect: 'none' }}
                 >
                   {/* Sender Name for incoming */}
@@ -530,16 +529,16 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
                           {m.attachments.map((att, idx) => {
                             const isImage = att.type.startsWith('image/');
                             return isImage ? (
-                              <div 
-                                key={idx} 
+                              <div
+                                key={idx}
                                 className="relative w-full max-w-[240px] md:max-w-xs rounded-md overflow-hidden cursor-pointer group"
                                 onClick={() => setPreviewImage({ url: att.url, name: att.name || 'Image' })}
                               >
-                                <img 
-                                  src={att.url} 
-                                  alt="attachment" 
+                                <img
+                                  src={att.url}
+                                  alt="attachment"
                                   onLoad={handleAttachmentLoad}
-                                  className="w-full h-auto max-h-64 object-contain rounded-md bg-white dark:bg-black/20" 
+                                  className="w-full h-auto max-h-64 object-contain rounded-md bg-white dark:bg-black/20"
                                 />
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
                                   <Maximize className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition shadow-sm" />
@@ -569,7 +568,7 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
                       )}
                     </>
                   )}
-                  
+
                   {/* Timestamp */}
                   <div className={`text-[10px] flex items-center justify-end gap-1 mt-1 ${isMine ? 'text-indigo-200/80 dark:text-white/40' : 'text-slate-400 dark:text-white/40'}`}>
                     {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -591,7 +590,7 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
 
       {/* INPUT AREA */}
       <div className="px-3 md:px-5 py-3 flex flex-col gap-2 relative z-10 bg-slate-100 dark:bg-transparent border-t border-slate-200 dark:border-transparent shrink-0">
-        
+
         {/* Attachment Preview */}
         {attachment && (
           <div className="flex items-center gap-3 p-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl mb-2 shadow-sm">
@@ -615,18 +614,18 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
         <div className="flex items-end gap-3 max-w-4xl mx-auto w-full">
           {/* Input field */}
           <div className="flex-1 bg-white dark:bg-white/5 rounded-full flex items-center min-h-[48px] px-3 border border-slate-200 dark:border-white/10 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-400/20 dark:focus-within:border-indigo-500/50 transition-all shadow-sm">
-            
-            <button 
+
+            <button
               onClick={() => fileInputRef.current?.click()}
               className="p-2 text-slate-400 dark:text-white/40 hover:text-indigo-600 dark:hover:text-indigo-400 transition shrink-0"
               title="Attach File"
             >
               <Paperclip className="w-4 h-4" />
             </button>
-            <input 
-              type="file" 
-              className="hidden" 
-              ref={fileInputRef} 
+            <input
+              type="file"
+              className="hidden"
+              ref={fileInputRef}
               onChange={handleFileSelect}
             />
 
@@ -643,19 +642,19 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
               rows={1}
             />
 
-            <button 
+            <button
               onClick={() => cameraInputRef.current?.click()}
               className="p-2 text-slate-400 dark:text-white/40 hover:text-indigo-600 dark:hover:text-indigo-400 transition shrink-0"
               title="Take Photo"
             >
               <Camera className="w-4 h-4" />
             </button>
-            <input 
-              type="file" 
-              accept="image/*" 
-              capture="environment" 
-              className="hidden" 
-              ref={cameraInputRef} 
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              ref={cameraInputRef}
               onChange={handleFileSelect}
             />
           </div>
@@ -664,11 +663,10 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
           <button
             onClick={input.trim() || attachment ? handleSend : undefined}
             disabled={(!input.trim() && !attachment) || sending || uploading}
-            className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-all active:scale-90 ${
-              input.trim() || attachment
+            className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-all active:scale-90 ${input.trim() || attachment
                 ? 'bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-500/30 cursor-pointer'
                 : 'bg-slate-200 dark:bg-white/5 text-slate-400 dark:text-white/20 cursor-not-allowed'
-            }`}
+              }`}
           >
             {uploading || sending ? (
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

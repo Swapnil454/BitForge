@@ -1,16 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { DollarSign, Wrench, AlertCircle } from "lucide-react";
+import { DollarSign, Wrench, AlertCircle, FileText, BarChart3 } from "lucide-react";
 
 export default function AdminSettingsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-10 px-4">
+    <div className="py-10 px-4 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <nav className="mb-6 text-sm text-slate-500 dark:text-white/60">
-          <Link href="/docs" className="hover:text-cyan-400">Documentation</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Documentation</Link>
           <span className="mx-2">/</span>
-          <Link href="/docs" className="hover:text-cyan-400">Admin Guides</Link>
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">Admin Guides</Link>
           <span className="mx-2">/</span>
           <span className="text-slate-900 dark:text-white">System Settings</span>
         </nav>
@@ -41,7 +41,7 @@ export default function AdminSettingsPage() {
                 <p className="text-slate-500 dark:text-white/60 text-sm">Enable/disable</p>
               </div>
               <div className="bg-slate-100 dark:bg-white/5 p-4 rounded-lg text-center">
-                <div className="text-3xl mb-2"></div>
+                <div className="text-3xl mb-2"><FileText className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
                 <p className="text-slate-900 dark:text-white font-semibold">Policies</p>
                 <p className="text-slate-500 dark:text-white/60 text-sm">Terms & guidelines</p>
               </div>
@@ -53,7 +53,7 @@ export default function AdminSettingsPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Fee Configuration</h2>
           <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Platform Commission:</h3>
-            <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 p-4 rounded-lg">
+            <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 p-4 rounded-lg">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-slate-900 dark:text-white">Seller Commission Rate:</span>
                 <span className="text-cyan-400 font-bold">10%</span>
@@ -61,7 +61,7 @@ export default function AdminSettingsPage() {
               <p className="text-slate-500 dark:text-white/60 text-sm">Percentage taken from each sale. Adjust in Admin → Settings → Fees.</p>
             </div>
             <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded">
-              <p className="text-yellow-200 text-sm"> <strong>Note:</strong> Fee changes apply to new transactions only, not retroactively.</p>
+              <p className="text-yellow-700 dark:text-yellow-200 text-sm"> <strong>Note:</strong> Fee changes apply to new transactions only, not retroactively.</p>
             </div>
           </div>
         </section>
@@ -91,6 +91,28 @@ export default function AdminSettingsPage() {
                 <span className="text-slate-900 dark:text-white">Maintenance Mode</span>
                 <input type="checkbox" />
               </label>
+              <label className="flex items-center justify-between p-3 bg-slate-100 dark:bg-white/5 rounded-lg cursor-pointer">
+                <div>
+                  <span className="block text-slate-900 dark:text-white">Global Push Notifications</span>
+                  <span className="block text-xs text-slate-500 dark:text-white/50">Allow sending FCM broadcasts to all users</span>
+                </div>
+                <input type="checkbox" defaultChecked />
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section className="mb-10">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">UI & Preferences</h2>
+          <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+            <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Theming Engine:</h3>
+            <p className="text-slate-700 dark:text-white/80 mb-4">
+              The platform supports a robust Light and Dark mode toggle. User preferences are saved instantly to the database (<code>preferences.theme</code>) ensuring the chosen theme persists across sessions and devices.
+            </p>
+            <div className="p-3 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 rounded">
+              <p className="text-indigo-700 dark:text-indigo-300 text-sm">
+                <strong>Note:</strong> The Glassmorphism UI components automatically adapt their opacities and borders based on the active theme to ensure optimal accessibility.
+              </p>
             </div>
           </div>
         </section>
@@ -111,7 +133,7 @@ export default function AdminSettingsPage() {
 
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Security Settings</h2>
-          <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30 rounded-xl p-6">
+          <div className="bg-red-50 dark:bg-transparent dark:bg-gradient-to-r dark:from-red-500/10 dark:to-orange-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-6">
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Configure Security:</h3>
             <ul className="space-y-2 text-slate-600 dark:text-white/70 text-sm list-disc list-inside">
               <li>Two-factor authentication (2FA) requirement</li>
@@ -124,13 +146,13 @@ export default function AdminSettingsPage() {
         </section>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          <Link href="/docs/admin/analytics" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
-            <div className="text-3xl mb-3"></div>
+          <Link href="/docs/admin/analytics" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
+            <div className="text-3xl mb-3"><BarChart3 className="w-8 h-8 text-indigo-500 dark:text-cyan-400" /></div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Analytics</h3>
             <p className="text-slate-500 dark:text-white/60 text-sm">Platform metrics</p>
           </Link>
-          <Link href="/docs/security" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
-            <AlertCircle className="w-5 h-5 mb-3 text-red-400" />
+          <Link href="/docs/security" className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-purple-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all">
+            <AlertCircle className="w-5 h-5 mb-3 text-red-500 dark:text-red-400" />
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Security</h3>
             <p className="text-slate-500 dark:text-white/60 text-sm">Best practices guide</p>
           </Link>

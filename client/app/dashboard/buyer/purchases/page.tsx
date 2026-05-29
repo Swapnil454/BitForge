@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Loader2, MoreVertical } from "lucide-react";
+import { Loader2, MoreVertical, AlertTriangle } from "lucide-react";
 import { buyerAPI } from "@/lib/api";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
@@ -137,12 +137,89 @@ export default function PurchasesPage() {
       void fetchPage(1, true);
     } catch (error: any) {
       toast.dismiss(loadingToast);
+
+      // When responseType is "blob", Axios wraps the error body as a Blob.
+      // We must read it back to text and parse JSON before checking the fields.
+      let errData: any = error.response?.data;
+      if (errData && typeof errData.text === 'function') {
+        try {
+          const text = await errData.text();
+          try {
+            errData = JSON.parse(text);
+          } catch {
+            console.error("Failed to parse JSON from blob, raw text:", text);
+            errData = { message: text.substring(0, 100) + (text.length > 100 ? "..." : "") };
+          }
+        } catch {
+          errData = error.response?.data;
+        }
+      } else if (errData && errData instanceof Blob) {
+        // Fallback for older browsers using FileReader
+        try {
+          const text = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsText(errData);
+          });
+          try {
+            errData = JSON.parse(text);
+          } catch {
+            console.error("Failed to parse JSON from FileReader, raw text:", text);
+            errData = { message: text.substring(0, 100) + (text.length > 100 ? "..." : "") };
+          }
+        } catch {
+          errData = error.response?.data;
+        }
+      } else if (typeof errData === 'string') {
+        try {
+           errData = JSON.parse(errData);
+        } catch {
+           errData = { message: errData };
+        }
+      }
+
       if (error.response?.status === 404) {
         toast.error("This file is no longer available. Please contact support.");
-      } else if (error.response?.status === 403 && error.response?.data?.downloadLimit) {
-        toast.error(`Download limit reached (${error.response.data.downloadLimit}).`);
+      } else if (error.response?.status === 403 && errData?.downloadLimit) {
+        const limit = errData.downloadLimit;
+        toast.custom(
+          (t) => (
+            <div
+              className={`${
+                t.visible ? "animate-enter" : "animate-leave"
+              } max-w-sm w-full bg-white dark:bg-slate-900 shadow-xl rounded-2xl border border-amber-200 dark:border-amber-500/30 flex items-start gap-3 p-4`}
+            >
+              <div className="shrink-0 w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-500/15 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-amber-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-slate-900 dark:text-white text-sm leading-tight">
+                  Download Limit Reached
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+                  You&apos;ve used all {limit} downloads for this product.
+                  Contact support if you need more access.
+                </p>
+                <button
+                  onClick={() => { toast.dismiss(t.id); window.open("/dashboard/support", "_blank"); }}
+                  className="mt-2 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline"
+                >
+                  Contact Support →
+                </button>
+              </div>
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="shrink-0 text-slate-400 hover:text-slate-600 dark:hover:text-white transition text-lg leading-none"
+              >
+                ×
+              </button>
+            </div>
+          ),
+          { duration: 6000 }
+        );
       } else {
-        toast.error(error.response?.data?.message || error.message || "Download failed");
+        toast.error(errData?.message || error.message || "Download failed");
       }
     } finally {
       setDownloadingOrderId(null);
@@ -161,7 +238,7 @@ export default function PurchasesPage() {
         backHref="/dashboard/buyer"
         backLabel="Dashboard"
         title="My Purchases"
-        subtitle="View your order history, downloads and disputes"
+        subtitle="Order History & Downloads"
         rightSlot={
           <div className="relative shrink-0" ref={headerMenuRef}>
             <button
@@ -179,22 +256,31 @@ export default function PurchasesPage() {
                   initial={{ opacity: 0, y: 8, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                  className="absolute right-0 top-11 w-52 rounded-xl border border-white/15 bg-slate-900/95 backdrop-blur-xl p-1.5 shadow-xl shadow-black/40 z-20"
+                  className="absolute right-0 top-11 w-52 rounded-xl border border-slate-200 dark:border-white/15 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl p-1.5 shadow-xl shadow-black/5 dark:shadow-black/40 z-20"
                 >
                   <button
                     type="button"
                     onClick={() => { setHeaderMenuOpen(false); router.push("/marketplace"); }}
-                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-white/85 hover:text-white hover:bg-white/10 transition"
+                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-white/85 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition"
                   >
                     Browse Marketplace
                   </button>
                   <button
                     type="button"
                     onClick={() => { setHeaderMenuOpen(false); router.push("/dashboard/buyer/disputes"); }}
-                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-white/85 hover:text-white hover:bg-white/10 transition"
+                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-white/85 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition"
                   >
                     View My Disputes
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { setHeaderMenuOpen(false); router.push("/dashboard/buyer/purchases/analytics"); }}
+                    className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-700 dark:text-white/85 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition"
+                  >
+                    View Purchase Analytics
+                  </button>
+
                 </motion.div>
               )}
             </AnimatePresence>

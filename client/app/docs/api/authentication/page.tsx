@@ -2,19 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Lock, ShoppingCart } from "lucide-react";
+import { Lock, ShoppingCart, Cookie, KeySquare, Ticket } from "lucide-react";
 
 export default function AuthenticationAPIPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-10 px-4">
+    <div className="py-10 px-4 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <nav className="mb-6 text-sm text-slate-500 dark:text-white/60">
-          <Link href="/docs" className="hover:text-cyan-400">
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">
             Documentation
           </Link>
           <span className="mx-2">/</span>
-          <Link href="/docs" className="hover:text-cyan-400">
+          <Link href="/docs" className="hover:text-indigo-600 dark:hover:text-cyan-400 transition-colors">
             API Reference
           </Link>
           <span className="mx-2">/</span>
@@ -39,7 +39,7 @@ export default function AuthenticationAPIPage() {
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Base URL</h2>
           <CodeBlock code="http://localhost:5000/api/auth" language="bash" />
           <p className="text-slate-500 dark:text-white/60 text-sm mt-2">
-            Production: <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">https://api.Bitforge.com/api/auth</code>
+            Production: <code className="text-cyan-300 bg-slate-50 dark:bg-slate-950/50 px-2 py-1 rounded">https://api.Bitforge.com/api/auth</code>
           </p>
         </section>
 
@@ -53,12 +53,12 @@ export default function AuthenticationAPIPage() {
               <p className="text-slate-500 dark:text-white/60 text-sm mt-2">Bearer token authentication</p>
             </div>
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-2">🍪</div>
+              <div className="text-3xl mb-2"><Cookie className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
               <h3 className="text-slate-900 dark:text-white font-semibold">HTTP Cookies</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm mt-2">Secure session cookies</p>
             </div>
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 text-center">
-              <div className="text-3xl mb-2">🔑</div>
+              <div className="text-3xl mb-2"><KeySquare className="w-8 h-8 mx-auto text-indigo-500 dark:text-cyan-400" /></div>
               <h3 className="text-slate-900 dark:text-white font-semibold">OAuth 2.0</h3>
               <p className="text-slate-500 dark:text-white/60 text-sm mt-2">Google & GitHub</p>
             </div>
@@ -68,7 +68,7 @@ export default function AuthenticationAPIPage() {
         {/* Register User */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">POST /register</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Register a new user with email and password.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Request Body</h3>
@@ -84,25 +84,25 @@ export default function AuthenticationAPIPage() {
                 </thead>
                 <tbody className="text-slate-500 dark:text-white/60">
                   <tr className="border-b border-slate-200 dark:border-white/5">
-                    <td className="py-3 pr-4"><code className="text-cyan-300">name</code></td>
+                    <td className="py-3 pr-4"><code className="text-indigo-600 dark:text-cyan-400">name</code></td>
                     <td className="py-3 pr-4">string</td>
-                    <td className="py-3 pr-4"><span className="text-green-400">Yes</span></td>
+                    <td className="py-3 pr-4"><span className="text-emerald-500 dark:text-emerald-400">Yes</span></td>
                     <td className="py-3">Full name (2-50 characters)</td>
                   </tr>
                   <tr className="border-b border-slate-200 dark:border-white/5">
-                    <td className="py-3 pr-4"><code className="text-cyan-300">email</code></td>
+                    <td className="py-3 pr-4"><code className="text-indigo-600 dark:text-cyan-400">email</code></td>
                     <td className="py-3 pr-4">string</td>
-                    <td className="py-3 pr-4"><span className="text-green-400">Yes</span></td>
+                    <td className="py-3 pr-4"><span className="text-emerald-500 dark:text-emerald-400">Yes</span></td>
                     <td className="py-3">Valid email address</td>
                   </tr>
                   <tr className="border-b border-slate-200 dark:border-white/5">
-                    <td className="py-3 pr-4"><code className="text-cyan-300">password</code></td>
+                    <td className="py-3 pr-4"><code className="text-indigo-600 dark:text-cyan-400">password</code></td>
                     <td className="py-3 pr-4">string</td>
-                    <td className="py-3 pr-4"><span className="text-green-400">Yes</span></td>
+                    <td className="py-3 pr-4"><span className="text-emerald-500 dark:text-emerald-400">Yes</span></td>
                     <td className="py-3">Minimum 8 characters</td>
                   </tr>
                   <tr className="border-b border-slate-200 dark:border-white/5">
-                    <td className="py-3 pr-4"><code className="text-cyan-300">role</code></td>
+                    <td className="py-3 pr-4"><code className="text-indigo-600 dark:text-cyan-400">role</code></td>
                     <td className="py-3 pr-4">string</td>
                     <td className="py-3 pr-4"><span className="text-yellow-400">Optional</span></td>
                     <td className="py-3">"seller" or "buyer" (default: "buyer")</td>
@@ -136,6 +136,11 @@ export default function AuthenticationAPIPage() {
       "email": "swapnil@example.com",
       "role": "seller",
       "isVerified": false,
+      "preferences": {
+        "theme": "system",
+        "emailNotifications": true
+      },
+      "fcmToken": "cRx1...",
       "createdAt": "2024-01-15T10:30:00.000Z"
     },
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -146,8 +151,8 @@ export default function AuthenticationAPIPage() {
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3 mt-6">Error Responses</h3>
             <div className="space-y-3">
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-                <p className="text-red-400 font-semibold mb-2">400 Bad Request</p>
+              <div className="bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
+                <p className="text-red-500 dark:text-red-400 font-semibold mb-2">400 Bad Request</p>
                 <CodeBlock
                   code={`{
   "success": false,
@@ -156,8 +161,8 @@ export default function AuthenticationAPIPage() {
                   language="json"
                 />
               </div>
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-                <p className="text-red-400 font-semibold mb-2">422 Validation Error</p>
+              <div className="bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
+                <p className="text-red-500 dark:text-red-400 font-semibold mb-2">422 Validation Error</p>
                 <CodeBlock
                   code={`{
   "success": false,
@@ -177,7 +182,7 @@ export default function AuthenticationAPIPage() {
         {/* Login */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">POST /login</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Login with email and password to receive a JWT token.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Request Body</h3>
@@ -193,15 +198,15 @@ export default function AuthenticationAPIPage() {
                 </thead>
                 <tbody className="text-slate-500 dark:text-white/60">
                   <tr className="border-b border-slate-200 dark:border-white/5">
-                    <td className="py-3 pr-4"><code className="text-cyan-300">email</code></td>
+                    <td className="py-3 pr-4"><code className="text-indigo-600 dark:text-cyan-400">email</code></td>
                     <td className="py-3 pr-4">string</td>
-                    <td className="py-3 pr-4"><span className="text-green-400">Yes</span></td>
+                    <td className="py-3 pr-4"><span className="text-emerald-500 dark:text-emerald-400">Yes</span></td>
                     <td className="py-3">Registered email address</td>
                   </tr>
                   <tr className="border-b border-slate-200 dark:border-white/5">
-                    <td className="py-3 pr-4"><code className="text-cyan-300">password</code></td>
+                    <td className="py-3 pr-4"><code className="text-indigo-600 dark:text-cyan-400">password</code></td>
                     <td className="py-3 pr-4">string</td>
-                    <td className="py-3 pr-4"><span className="text-green-400">Yes</span></td>
+                    <td className="py-3 pr-4"><span className="text-emerald-500 dark:text-emerald-400">Yes</span></td>
                     <td className="py-3">User password</td>
                   </tr>
                 </tbody>
@@ -230,7 +235,12 @@ export default function AuthenticationAPIPage() {
       "name": "Swapnil Shelke",
       "email": "swapnil@example.com",
       "role": "seller",
-      "isVerified": true
+      "isVerified": true,
+      "preferences": {
+        "theme": "dark",
+        "emailNotifications": true
+      },
+      "fcmToken": "cRx1..."
     },
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "expiresIn": "7d"
@@ -241,8 +251,8 @@ export default function AuthenticationAPIPage() {
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3 mt-6">Error Responses</h3>
             <div className="space-y-3">
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-                <p className="text-red-400 font-semibold mb-2">401 Unauthorized</p>
+              <div className="bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
+                <p className="text-red-500 dark:text-red-400 font-semibold mb-2">401 Unauthorized</p>
                 <CodeBlock
                   code={`{
   "success": false,
@@ -258,7 +268,7 @@ export default function AuthenticationAPIPage() {
         {/* Get Current User */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">GET /me</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Get the currently authenticated user's profile.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Headers</h3>
@@ -292,6 +302,11 @@ export default function AuthenticationAPIPage() {
         "totalEarnings": 75000,
         "productsListed": 25
       },
+      "preferences": {
+        "theme": "dark",
+        "emailNotifications": true
+      },
+      "fcmToken": "cRx1...",
       "createdAt": "2024-01-15T10:30:00.000Z"
     }
   }
@@ -300,8 +315,8 @@ export default function AuthenticationAPIPage() {
             />
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3 mt-6">Error Response</h3>
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-              <p className="text-red-400 font-semibold mb-2">401 Unauthorized</p>
+            <div className="bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg p-4">
+              <p className="text-red-500 dark:text-red-400 font-semibold mb-2">401 Unauthorized</p>
               <CodeBlock
                 code={`{
   "success": false,
@@ -316,7 +331,7 @@ export default function AuthenticationAPIPage() {
         {/* OAuth Google */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">GET /google</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Initiate Google OAuth 2.0 authentication flow.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Usage</h3>
@@ -331,7 +346,7 @@ export default function AuthenticationAPIPage() {
               </li>
               <li className="flex items-start gap-3">
                 <span className="font-bold text-cyan-400">2.</span>
-                <span>Browser redirects to <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">/api/auth/google</code></span>
+                <span>Browser redirects to <code className="text-cyan-300 bg-slate-50 dark:bg-slate-950/50 px-2 py-1 rounded">/api/auth/google</code></span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="font-bold text-cyan-400">3.</span>
@@ -343,7 +358,7 @@ export default function AuthenticationAPIPage() {
               </li>
               <li className="flex items-start gap-3">
                 <span className="font-bold text-cyan-400">5.</span>
-                <span>Google redirects to <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">/api/auth/google/callback</code></span>
+                <span>Google redirects to <code className="text-cyan-300 bg-slate-50 dark:bg-slate-950/50 px-2 py-1 rounded">/api/auth/google/callback</code></span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="font-bold text-cyan-400">6.</span>
@@ -360,7 +375,7 @@ export default function AuthenticationAPIPage() {
         {/* OAuth GitHub */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">GET /github</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Initiate GitHub OAuth 2.0 authentication flow.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Usage</h3>
@@ -368,7 +383,7 @@ export default function AuthenticationAPIPage() {
             <CodeBlock code="window.location.href = 'http://localhost:5000/api/auth/github';" language="javascript" />
 
             <p className="text-slate-500 dark:text-white/60 text-sm mt-4">
-              Flow is identical to Google OAuth. GitHub redirects to <code className="text-cyan-300 bg-slate-950/50 px-2 py-1 rounded">/api/auth/github/callback</code> after authorization.
+              Flow is identical to Google OAuth. GitHub redirects to <code className="text-cyan-300 bg-slate-50 dark:bg-slate-950/50 px-2 py-1 rounded">/api/auth/github/callback</code> after authorization.
             </p>
           </div>
         </section>
@@ -376,7 +391,7 @@ export default function AuthenticationAPIPage() {
         {/* Logout */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">POST /logout</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Logout user and invalidate session/token.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Headers</h3>
@@ -403,7 +418,7 @@ export default function AuthenticationAPIPage() {
         {/* Refresh Token */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">POST /refresh</h2>
-          <div className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+          <div className="bg-indigo-50/50 dark:bg-transparent dark:bg-gradient-to-r dark:from-indigo-500/10 dark:to-cyan-500/10 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">Refresh an expired JWT token using a refresh token.</p>
 
             <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Request Body</h3>
@@ -419,9 +434,9 @@ export default function AuthenticationAPIPage() {
                 </thead>
                 <tbody className="text-slate-500 dark:text-white/60">
                   <tr className="border-b border-slate-200 dark:border-white/5">
-                    <td className="py-3 pr-4"><code className="text-cyan-300">refreshToken</code></td>
+                    <td className="py-3 pr-4"><code className="text-indigo-600 dark:text-cyan-400">refreshToken</code></td>
                     <td className="py-3 pr-4">string</td>
-                    <td className="py-3 pr-4"><span className="text-green-400">Yes</span></td>
+                    <td className="py-3 pr-4"><span className="text-emerald-500 dark:text-emerald-400">Yes</span></td>
                     <td className="py-3">Valid refresh token</td>
                   </tr>
                 </tbody>
@@ -455,7 +470,7 @@ export default function AuthenticationAPIPage() {
         {/* JWT Token Structure */}
         <section className="mb-10">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <span className="text-cyan-400">🎫</span> JWT Token Structure
+            <span className="text-cyan-400"><Ticket className="w-5 h-5 text-indigo-500 dark:text-cyan-400" /></span> JWT Token Structure
           </h2>
           <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
             <p className="text-slate-700 dark:text-white/80 mb-4">JWT tokens are returned upon successful login/registration. Include them in the Authorization header for protected endpoints.</p>
@@ -477,7 +492,7 @@ export default function AuthenticationAPIPage() {
             <CodeBlock code="Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." language="bash" />
 
             <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-              <p className="text-yellow-200 text-sm flex items-start gap-2">
+              <p className="text-yellow-700 dark:text-yellow-200 text-sm flex items-start gap-2">
                 <span className="text-xl"></span>
                 <span>
                   <strong>Important:</strong> Tokens expire after 7 days. Use the refresh endpoint to get a new token without re-authenticating.
@@ -494,7 +509,7 @@ export default function AuthenticationAPIPage() {
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center bg-red-500/20 rounded-lg">
-                  <span className="text-red-400 font-bold text-lg">400</span>
+                  <span className="text-red-500 dark:text-red-400 font-bold text-lg">400</span>
                 </div>
                 <div>
                   <h3 className="text-slate-900 dark:text-white font-semibold mb-1">Bad Request</h3>
@@ -518,7 +533,7 @@ export default function AuthenticationAPIPage() {
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center bg-red-500/20 rounded-lg">
-                  <span className="text-red-400 font-bold text-lg">403</span>
+                  <span className="text-red-500 dark:text-red-400 font-bold text-lg">403</span>
                 </div>
                 <div>
                   <h3 className="text-slate-900 dark:text-white font-semibold mb-1">Forbidden</h3>
@@ -542,7 +557,7 @@ export default function AuthenticationAPIPage() {
             <div className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center bg-red-500/20 rounded-lg">
-                  <span className="text-red-400 font-bold text-lg">500</span>
+                  <span className="text-red-500 dark:text-red-400 font-bold text-lg">500</span>
                 </div>
                 <div>
                   <h3 className="text-slate-900 dark:text-white font-semibold mb-1">Internal Server Error</h3>
@@ -585,7 +600,7 @@ export default function AuthenticationAPIPage() {
         </section>
 
         {/* Support CTA */}
-        <div className="bg-gradient-to-r from-cyan-500/10 to-indigo-500/10 border border-cyan-500/30 rounded-xl p-8 text-center">
+        <div className="bg-gradient-to-r from-indigo-50 to-cyan-50 dark:from-cyan-500/10 dark:to-indigo-500/10 shadow-sm border border-indigo-200 dark:border-cyan-500/30 rounded-xl p-8 text-center">
           <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Need Help with Authentication?</h3>
           <p className="text-slate-600 dark:text-white/70 mb-6">
             Having trouble integrating authentication? Contact our API support team.
@@ -622,8 +637,8 @@ function CodeBlock({ code, language = "bash" }: { code: string; language?: strin
 
   return (
     <div className="relative group mb-4">
-      <pre className="bg-slate-950/50 border border-slate-200 dark:border-white/10 rounded-lg p-4 overflow-x-auto">
-        <code className="text-cyan-300 text-sm font-mono">{code}</code>
+      <pre className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/10 rounded-lg p-4 overflow-x-auto">
+        <code className="text-sm font-mono text-indigo-600 dark:text-cyan-400">{code}</code>
       </pre>
       <button
         onClick={handleCopy}
@@ -649,10 +664,10 @@ function NextStepCard({
   return (
     <Link
       href={href}
-      className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-cyan-400/40 hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
+      className="group block bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 hover:border-indigo-400/40 dark:hover:border-cyan-400/40 hover:bg-indigo-50/50 dark:hover:bg-white/10 transition-all"
     >
       <div className="text-3xl mb-3">{icon}</div>
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-cyan-300">
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-cyan-300 transition-colors">
         {title}
       </h3>
       <p className="text-slate-500 dark:text-white/60 text-sm group-hover:text-slate-600 dark:group-hover:text-white/70">{description}</p>

@@ -124,19 +124,19 @@ export default function BankAnalyticsPage() {
             <div className="absolute top-0 right-0 w-32 h-32 sm:w-48 sm:h-48 bg-white/30 rounded-full blur-3xl -mr-10 -mt-10 transition-transform group-hover:scale-110 duration-700"></div>
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-cyan-300/40 rounded-full blur-2xl -ml-10 -mb-10"></div>
             <div className="flex items-center gap-3 mb-2 sm:mb-4 relative z-10">
-              <div className="p-2 sm:p-2.5 rounded-xl bg-white/20 text-white backdrop-blur-md shadow-sm border border-white/10">
+              <div className="p-2 sm:p-2.5 rounded-xl bg-white/20 text-white dark:text-slate-900 dark:bg-black/10 backdrop-blur-md shadow-sm border border-white/10 dark:border-black/10">
                 <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div>
-                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/90">
+                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white/90 dark:text-slate-900">
                   Net Platform Balance
                 </p>
               </div>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-black text-white relative z-10 drop-shadow-sm">
+            <h2 className="text-3xl sm:text-4xl font-black text-white dark:text-slate-900 relative z-10 drop-shadow-sm dark:drop-shadow-none">
               {formatCurrency(stats.netBalance)}
             </h2>
-            <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-sky-50 relative z-10 drop-shadow-sm">
+            <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-sky-50 dark:text-slate-800 relative z-10 drop-shadow-sm dark:drop-shadow-none">
               Current holding balance (Payments - Payouts)
             </p>
           </div>

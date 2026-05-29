@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { adminAPI } from "@/lib/api";
 import toast from "react-hot-toast";
@@ -43,7 +43,9 @@ const mapToModerationProduct = (p: any): ModerationProduct => ({
   },
   history: p.moderationHistory || [
     { action: 'Submitted by seller', timestamp: p.createdAt || new Date().toISOString() }
-  ]
+  ],
+  reviewSeverity: p.reviewSeverity,
+  reviewFlags: p.reviewFlags,
 });
 
 export default function AdminProductsPage() {
@@ -51,13 +53,8 @@ export default function AdminProductsPage() {
 
   // Core data state
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [pending, setPending] = useState<ModerationProduct[]>([]);
-  const [changes, setChanges] = useState<ModerationProduct[]>([]);
-  const [approvedTodayCount, setApprovedTodayCount] = useState(0);
-  const [rejectedTodayCount, setRejectedTodayCount] = useState(0);
-  const [approvedList, setApprovedList] = useState<ModerationProduct[]>([]);
-  const [rejectedList, setRejectedList] = useState<ModerationProduct[]>([]);
+  const [products, setProducts] = useState<ModerationProduct[]>([]);
+  const [stats, setStats] = useState({ pending: 0, changes: 0, approved: 0, rejected: 0 });
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -75,67 +72,144 @@ export default function AdminProductsPage() {
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [requestChangesModalOpen, setRequestChangesModalOpen] = useState(false);
 
+  // Touch states for swipe gesture
+  const [touchStartX, setTouchStartX] = useState(0);
+  const [touchEndX, setTouchEndX] = useState(0);
+  
+  const TABS = ['new', 'changes', 'approved', 'rejected'] as const;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return;
+    const distance = touchStartX - touchEndX;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+    
+    if (isLeftSwipe || isRightSwipe) {
+      const currentIndex = TABS.indexOf(activeTab);
+      
+      if (isLeftSwipe && currentIndex < TABS.length - 1) {
+        // Swiped left, go to NEXT tab
+        setActiveTab(TABS[currentIndex + 1]);
+      } else if (isRightSwipe && currentIndex > 0) {
+        // Swiped right, go to PREV tab
+        setActiveTab(TABS[currentIndex - 1]);
+      }
+    }
+    
+    setTouchStartX(0);
+    setTouchEndX(0);
+  };
+
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastProductRef = useCallback((node: HTMLDivElement) => {
+    if (loading || loadingMore) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage(prevPage => prevPage + 1);
+      }
+    }, { rootMargin: '200px' });
+    if (node) observer.current.observe(node);
+  }, [loading, loadingMore, hasMore]);
+
+  // Initial stats fetch
   useEffect(() => {
     const user = getStoredUser<{ role?: string }>();
     if (!user || user.role !== "admin") {
       router.push("/dashboard");
       return;
     }
-    loadAll(false, 1);
-  }, [search, categoryFilter, sortOrder]);
+    
+    adminAPI.getProductStats().then(statsRes => {
+      setStats({
+        pending: statsRes.pending || 0,
+        changes: statsRes.pendingChanges || 0,
+        approved: statsRes.approvedToday || 0,
+        rejected: statsRes.rejectedToday || 0
+      });
+    }).catch(() => {});
+  }, []);
 
-  const loadAll = async (isRefresh = false, pageNum = 1) => {
+  const fetchData = async (pageNum: number) => {
     if (pageNum > 1) {
       setLoadingMore(true);
-    } else if (isRefresh) {
-      setRefreshing(true);
     } else {
       setLoading(true);
     }
 
     try {
-      // API calls
-      const pendingRes = await adminAPI.getPendingProducts({ 
-        page: pageNum, 
-        limit: 20, 
-        search, 
-        category: categoryFilter, 
-        sort: sortOrder 
-      });
-      const changesRes = await adminAPI.getPendingProductChanges();
-      
-      const statsRes = await adminAPI.getProductStats();
+      let statusParam = 'pending';
+      if (activeTab === 'changes') statusParam = 'changes_requested';
+      if (activeTab === 'approved') statusParam = 'approved';
+      if (activeTab === 'rejected') statusParam = 'rejected';
 
-      const pendingMapped = (Array.isArray(pendingRes) ? pendingRes : pendingRes.products || []).map(mapToModerationProduct);
-      const changesMapped = (Array.isArray(changesRes) ? changesRes : changesRes.products || []).map(mapToModerationProduct);
+      const res = await adminAPI.getAllProducts({
+        page: pageNum,
+        limit: 10,
+        search,
+        category: categoryFilter,
+        sortBy: sortOrder,
+        status: statusParam
+      });
+
+      const mapped = (res.products || []).map(mapToModerationProduct);
 
       if (pageNum > 1) {
-        setPending(prev => [...prev, ...pendingMapped]);
+        setProducts(prev => [...prev, ...mapped]);
       } else {
-        setPending(pendingMapped);
+        setProducts(mapped);
       }
       
-      setHasMore(pendingMapped.length === 20 && pageNum < (pendingRes.totalPages || Infinity));
-      setPage(pageNum);
-
-      setChanges(changesMapped);
+      setHasMore(pageNum < (res.pagination?.pages || 1));
       
-      // Real counts from backend stats API
-      setApprovedTodayCount(statsRes.approvedToday || 0);
-      setRejectedTodayCount(statsRes.rejectedToday || 0);
-
-      // Note: approvedList and rejectedList are cleared out here since pagination wasn't built yet,
-      // and we just wanted counts for the stats. We leave them empty to focus the UI on moderation tabs.
-      setApprovedList([]);
-      setRejectedList([]);
-
+      if (res.stats) {
+        setStats(prev => ({
+          ...prev,
+          pending: res.stats.pending ?? prev.pending,
+          approved: res.stats.approved ?? prev.approved,
+          rejected: res.stats.rejected ?? prev.rejected,
+        }));
+      }
     } catch (error) {
       toast.error("Failed to fetch product data");
     } finally {
       setLoading(false);
-      setRefreshing(false);
       setLoadingMore(false);
     }
+  };
+
+  // Trigger fetch when dependencies change
+  useEffect(() => {
+    setPage(1);
+    fetchData(1);
+  }, [activeTab, search, categoryFilter, sortOrder]);
+
+  // Handle infinite scroll trigger
+  useEffect(() => {
+    if (page > 1) {
+      fetchData(page);
+    }
+  }, [page]);
+
+  const refreshAfterAction = () => {
+    adminAPI.getProductStats().then(statsRes => {
+      setStats({
+        pending: statsRes.pending || 0,
+        changes: statsRes.pendingChanges || 0,
+        approved: statsRes.approvedToday || 0,
+        rejected: statsRes.rejectedToday || 0
+      });
+    }).catch(() => {});
+    setPage(1);
+    fetchData(1);
   };
 
   const handleApprove = async (product: ModerationProduct, note: string) => {
@@ -143,7 +217,7 @@ export default function AdminProductsPage() {
       await adminAPI.approveProduct(product.id, note);
       toast.success("Product approved successfully!");
       setModalOpen(false);
-      loadAll(true);
+      refreshAfterAction();
     } catch (error) {
       toast.error("Failed to approve product");
     }
@@ -156,7 +230,7 @@ export default function AdminProductsPage() {
       toast.success("Product rejected");
       setRejectModalOpen(false);
       setModalOpen(false);
-      loadAll(true);
+      refreshAfterAction();
     } catch (error) {
       toast.error("Failed to reject product");
     }
@@ -179,7 +253,7 @@ export default function AdminProductsPage() {
       toast.success("Changes requested successfully");
       setRequestChangesModalOpen(false);
       setModalOpen(false);
-      loadAll(true);
+      refreshAfterAction();
     } catch (error) {
       toast.error("Failed to request changes");
     }
@@ -190,33 +264,7 @@ export default function AdminProductsPage() {
     setModalOpen(true);
   };
 
-  // Determine current list to render
-  const getCurrentList = () => {
-    let list = pending;
-    if (activeTab === 'changes') list = changes;
-    if (activeTab === 'approved') list = approvedList;
-    if (activeTab === 'rejected') list = rejectedList;
-
-    // Filter
-    if (categoryFilter !== 'all') {
-      list = list.filter(p => p.category.toLowerCase() === categoryFilter.toLowerCase());
-    }
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(p => p.title.toLowerCase().includes(q) || p.seller.email.toLowerCase().includes(q));
-    }
-
-    // Sort
-    return [...list].sort((a, b) => {
-      if (sortOrder === 'newest') return new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime();
-      if (sortOrder === 'oldest') return new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime();
-      if (sortOrder === 'price_high') return b.finalPrice - a.finalPrice;
-      if (sortOrder === 'price_low') return a.finalPrice - b.finalPrice;
-      return 0;
-    });
-  };
-
-  const displayList = getCurrentList();
+  const displayList = products;
 
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-24">
@@ -237,7 +285,7 @@ export default function AdminProductsPage() {
         // }
       />
 
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-2 space-y-3 sm:space-y-4">
         
 
 
@@ -249,8 +297,8 @@ export default function AdminProductsPage() {
         />
 
         {/* TABS */}
-        <div className="flex overflow-x-auto hide-scrollbar gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-          {(['new', 'changes', 'approved', 'rejected'] as const).map(tab => (
+        <div className="flex overflow-x-auto hide-scrollbar gap-2 pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
+          {TABS.map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -260,16 +308,21 @@ export default function AdminProductsPage() {
                   : "bg-white dark:bg-[#16161e] text-slate-600 dark:text-white/60 hover:bg-slate-50 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10"
               }`}
             >
-              {tab === 'new' && `New Products (${pending.length})`}
-              {tab === 'changes' && `Pending Changes (${changes.length})`}
-              {tab === 'approved' && `Approved (${approvedList.length})`}
-              {tab === 'rejected' && `Rejected (${rejectedList.length})`}
+              {tab === 'new' && `New Products (${stats.pending})`}
+              {tab === 'changes' && `Pending Changes (${stats.changes})`}
+              {tab === 'approved' && `Approved (${stats.approved})`}
+              {tab === 'rejected' && `Rejected (${stats.rejected})`}
             </button>
           ))}
         </div>
 
         {/* LIST */}
-        <div className="space-y-4">
+        <div 
+          className="space-y-2 sm:space-y-4 touch-pan-y"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           {loading ? (
             <div className="flex justify-center p-12">
               <RefreshCw className="w-8 h-8 text-indigo-500 animate-spin" />
@@ -294,16 +347,17 @@ export default function AdminProductsPage() {
                 />
               ))}
 
-              {activeTab === 'new' && hasMore && (
-                <div className="pt-4 pb-8 flex justify-center">
-                  <button
-                    onClick={() => loadAll(false, page + 1)}
-                    disabled={loadingMore}
-                    className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 transition-colors flex items-center gap-2"
-                  >
-                    {loadingMore && <RefreshCw className="w-4 h-4 animate-spin" />}
-                    {loadingMore ? 'Loading...' : 'Load More'}
-                  </button>
+              {hasMore && (
+                <div ref={lastProductRef} className="pt-4 pb-8 flex justify-center">
+                  <div className="flex items-center gap-3 text-slate-500">
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    <span className="text-sm font-medium">Loading more products...</span>
+                  </div>
+                </div>
+              )}
+              {!hasMore && displayList.length > 0 && (
+                <div className="pt-4 pb-8 text-center text-slate-500 text-sm">
+                  End of list
                 </div>
               )}
             </>

@@ -4,6 +4,7 @@ import {
   approveSeller,
   rejectSeller,
   approveProduct,
+  pendingProduct,
   getPendingProducts,
   getProductStats,
   getAllProducts,
@@ -76,6 +77,7 @@ import {
   updateAdSettingsAdmin,
   updatePromotionPriorityAdmin,
   verifyPromotionPaymentAdmin,
+  rejectPromotionPaymentAdmin,
   updatePromotionStyleAdmin,
 } from "../controllers/promotion.controller.js";
 
@@ -109,6 +111,7 @@ router.get("/products/report", getProductReport);
 router.put("/products/:id/edit", editProductByAdmin);
 router.delete("/products/:id/delete", deleteProductByAdmin);
 router.post("/products/:id/approve", approveProduct);
+router.post("/products/:id/pending", pendingProduct);
 router.post("/products/:id/reject", rejectProduct);
 router.post("/products/:id/request-changes", requestProductChanges);
 
@@ -180,6 +183,7 @@ router.get("/promotions/:id", getPromotionAdminById);
 router.patch("/promotions/:id/approve", approvePromotionAdmin);
 router.patch("/promotions/:id/reject", rejectPromotionAdmin);
 router.patch("/promotions/:id/verify-payment", verifyPromotionPaymentAdmin);
+router.patch("/promotions/:id/reject-payment", rejectPromotionPaymentAdmin);
 router.patch("/promotions/:id/pause", pausePromotionAdmin);
 router.patch("/promotions/:id/resume", resumePromotionAdmin);
 router.patch("/promotions/:id/priority", updatePromotionPriorityAdmin);

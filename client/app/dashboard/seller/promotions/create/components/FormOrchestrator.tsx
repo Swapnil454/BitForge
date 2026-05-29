@@ -73,24 +73,26 @@ export function FormOrchestrator() {
       const formData = new FormData();
       formData.append('productId', store.selectedProductId);
       formData.append('placement', 'MARKETPLACE_HERO');
-      formData.append('title', store.bannerTitle);
-      formData.append('subtitle', store.bannerSubtitle);
-      if (store.ctaText) formData.append('buttonText', store.ctaText);
-      if (store.targetLink) formData.append('targetLink', store.targetLink);
+      if (store.layoutType !== 'fullImage') {
+        formData.append('title', store.bannerTitle);
+        formData.append('subtitle', store.bannerSubtitle);
+        if (store.ctaText) formData.append('buttonText', store.ctaText);
+        if (store.targetLink) formData.append('targetLink', store.targetLink);
+        
+        formData.append('heroBgColor', store.customHex || store.colorToken.bg);
+        const textHex = store.colorToken.textColor.toLowerCase();
+        const isLightText = textHex === '#ffffff' || textHex === '#fef3c7' || textHex === '#f8fafc';
+        formData.append('heroTextColor', isLightText ? 'light' : 'dark');
+        formData.append('heroTitleColor', store.colorToken.textColor);
+        formData.append('heroSubtitleColor', store.colorToken.textColor);
+        formData.append('heroButtonBgColor', store.colorToken.ctaBg);
+      }
+      
       if (store.promotionGoal) formData.append('promotionGoal', store.promotionGoal);
       formData.append('requestedDurationDays', String(store.requestedDuration));
       if (store.adminNotes) formData.append('sellerNote', store.adminNotes);
       
-      formData.append('heroBgColor', store.customHex || store.colorToken.bg);
-      
-      const textHex = store.colorToken.textColor.toLowerCase();
-      const isLightText = textHex === '#ffffff' || textHex === '#fef3c7' || textHex === '#f8fafc';
-      formData.append('heroTextColor', isLightText ? 'light' : 'dark');
-      formData.append('heroTitleColor', store.colorToken.textColor);
-      formData.append('heroSubtitleColor', store.colorToken.textColor);
-      
-      formData.append('heroButtonBgColor', store.colorToken.ctaBg);
-      formData.append('heroLayout', 'floating');
+      formData.append('heroLayout', store.layoutType === 'fullImage' ? 'fullImage' : 'floating');
 
       // Append floating images
       store.floatingImages.forEach((img) => {
@@ -173,9 +175,9 @@ export function FormOrchestrator() {
         <div className="space-y-4">
           <CardProductSelection />
           <div className={`space-y-4 transition-all duration-500 ${isLocked ? 'opacity-50 grayscale-[30%] pointer-events-none' : ''}`}>
-            <CardBannerContent locked={isLocked} />
+            {store.layoutType === 'modern' && <CardBannerContent locked={isLocked} />}
             <CardCampaignDetails locked={isLocked} />
-            <CardBannerStyle locked={isLocked} />
+            {store.layoutType === 'modern' && <CardBannerStyle locked={isLocked} />}
             <CardDesktopImages locked={isLocked} />
             <CardMobileBanner locked={isLocked} />
           </div>

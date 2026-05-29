@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCheck, Filter } from "lucide-react";
+import { CheckCheck, Filter, Bell, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { notificationAPI } from "@/lib/api";
 import { getStoredUser } from "@/lib/cookies";
 import { showError, showSuccess } from "@/lib/toast";
 import NotificationCard from "@/app/dashboard/components/notifications/NotificationCard";
 import { AppNotification, getNotificationDestination } from "@/lib/notification-ui";
+import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
 
 interface User {
   id: string;
@@ -16,12 +17,18 @@ interface User {
 }
 
 export default function AdminNotificationsPage() {
+  const ITEMS_PER_PAGE = 15;
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [filter, setFilter] = useState<"all" | "unread">("all");
+  const [filter, setFilter] = useState<string>("all");
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const stored = getStoredUser<User>();
@@ -31,25 +38,50 @@ export default function AdminNotificationsPage() {
     }
 
     setUser(stored);
-    void fetchNotifications();
+    void fetchNotifications(1);
   }, [router]);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (page = 1, append = false) => {
     try {
-      setLoading(true);
-      const response = await notificationAPI.getNotifications(100, 0);
-      setNotifications(response.notifications || []);
+      if (page === 1) setLoading(true);
+      else setLoadingMore(true);
+
+      const response = await notificationAPI.getNotifications({
+        page,
+        limit: ITEMS_PER_PAGE,
+      });
+      const incoming = response.notifications || [];
+      setNotifications((prev) => (append ? [...prev, ...incoming] : incoming));
       setUnreadCount(response.unreadCount || 0);
+      setCurrentPage(response.pagination?.page || page);
+      setHasNextPage((response.pagination?.page || page) < (response.pagination?.totalPages || 1));
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
       showError("Failed to load notifications");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !loadingMore && !loading) {
+          void fetchNotifications(currentPage + 1, true);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, loadingMore, loading, currentPage]);
+
   const filteredNotifications = useMemo(
-    () => notifications.filter((item) => (filter === "unread" ? !item.isRead : true)),
+    () => notifications.filter((item) => (filter === "all" ? true : (item.category || "system") === filter)),
     [filter, notifications]
   );
 
@@ -107,92 +139,40 @@ export default function AdminNotificationsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.14),_transparent_28%),linear-gradient(180deg,#020617_0%,#0f172a_100%)]">
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/80">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 dark:text-white/45">
-              BitForge Admin
-            </p>
-            <h1 className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
-              Notifications
-            </h1>
-          </div>
+      <PageHeader 
+        title="Notifications" 
+        backHref="/dashboard/admin" 
+        backLabel="Dashboard" 
+      />
+
+      <main className="mx-auto max-w-6xl px-4 py-4 sm:px-6">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
           <button
-            onClick={() => router.push("/dashboard/admin")}
-            className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:text-white/75 dark:hover:bg-white/5"
+            onClick={() => setFilter("all")}
+            className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition ${
+              filter === "all"
+                ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+                : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white/65 dark:hover:bg-white/10"
+            }`}
           >
-            Back to dashboard
+            All
           </button>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <div className="grid gap-4 md:grid-cols-3">
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
-            <p className="text-sm text-slate-500 dark:text-white/55">Total notifications</p>
-            <p className="mt-3 text-3xl font-semibold text-slate-900 dark:text-white">{notifications.length}</p>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
-            <p className="text-sm text-slate-500 dark:text-white/55">Unread</p>
-            <p className="mt-3 text-3xl font-semibold text-slate-900 dark:text-white">{unreadCount}</p>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
-            <p className="text-sm text-slate-500 dark:text-white/55">Tracked categories</p>
-            <p className="mt-3 text-3xl font-semibold text-slate-900 dark:text-white">{Object.keys(categorySummary).length}</p>
-          </motion.div>
-        </div>
-
-        <div className="mt-6 flex flex-col gap-3 rounded-3xl border border-slate-200 bg-white/80 p-4 shadow-sm dark:border-white/10 dark:bg-white/5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-slate-500 dark:border-white/10 dark:text-white/50">
-              <Filter className="h-3.5 w-3.5" />
-              Filter
-            </div>
+          {Object.keys(categorySummary).map((key) => (
             <button
-              onClick={() => setFilter("all")}
-              className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${
-                filter === "all"
-                  ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
-                  : "border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-white/70 dark:hover:bg-white/5"
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setFilter("unread")}
-              className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${
-                filter === "unread"
-                  ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
-                  : "border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:text-white/70 dark:hover:bg-white/5"
-              }`}
-            >
-              Unread ({unreadCount})
-            </button>
-          </div>
-
-          {unreadCount > 0 && (
-            <button
-              onClick={handleMarkAllAsRead}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
-            >
-              <CheckCheck className="h-4 w-4" />
-              Mark all as read
-            </button>
-          )}
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          {Object.entries(categorySummary).map(([key, count]) => (
-            <span
               key={key}
-              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-white/65"
+              onClick={() => setFilter(key)}
+              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                filter === key
+                  ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+                  : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white/65 dark:hover:bg-white/10"
+              }`}
             >
-              {key.replace(/_/g, " ")}: {count}
-            </span>
+              {key.replace(/_/g, " ")}
+            </button>
           ))}
         </div>
 
-        <div className="mt-6 space-y-3">
+        <div className="mt-3 space-y-3">
           {loading ? (
             Array.from({ length: 4 }).map((_, index) => (
               <div key={index} className="h-32 rounded-2xl border border-slate-200 bg-white/80 animate-pulse dark:border-white/10 dark:bg-white/5" />
@@ -227,6 +207,15 @@ export default function AdminNotificationsPage() {
             ))
           )}
         </div>
+
+        {/* Sentinel div for Intersection Observer */}
+        <div ref={sentinelRef} className="h-10 w-full" />
+
+        {loadingMore && (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="h-6 w-6 animate-spin text-indigo-500" />
+          </div>
+        )}
       </main>
     </div>
   );

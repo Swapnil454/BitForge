@@ -10,7 +10,7 @@ const adSettingsSchema = new mongoose.Schema(
     },
     marketplaceHeroMaxAds: {
       type: Number,
-      default: 3,
+      default: 5,
       min: 1,
       max: 10,
     },
@@ -31,7 +31,7 @@ const adSettingsSchema = new mongoose.Schema(
     },
     maximumActiveAdsPerSeller: {
       type: Number,
-      default: 2,
+      default: 5,
       min: 1,
       max: 50,
     },

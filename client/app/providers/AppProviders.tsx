@@ -8,6 +8,7 @@ import QueryProvider from "./QueryProvider";
 import BannedModal from "@/app/components/BannedModal";
 import ReactivationModal from "@/app/components/ReactivationModal";
 import PushNotificationManager from "@/app/components/PushNotificationManager";
+import GlobalChatListener from "@/app/components/GlobalChatListener";
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -91,14 +92,21 @@ export default function AppProviders({ children }: AppProvidersProps) {
     window.location.reload();
   };
 
-  // Force dark theme on landing and authentication pages
-  const isDarkOnlyRoute = 
-    pathname === "/" || 
-    pathname?.startsWith("/login") || 
-    pathname?.startsWith("/register") || 
-    pathname?.startsWith("/forgot-password") ||
-    pathname?.startsWith("/reset-password") ||
-    pathname?.startsWith("/verify");
+  // Check authentication status to force dark theme for unauthenticated users
+  const isClient = typeof window !== "undefined";
+  let isAuthenticated = false;
+  if (isClient) {
+    try {
+      const userStr = getCookie("user");
+      isAuthenticated = !!userStr && userStr !== '""';
+    } catch (e) {
+      isAuthenticated = false;
+    }
+  }
+
+  // Force dark theme for unauthenticated users OR specific public pages (homepage, auth)
+  const isForceDarkRoute = pathname === "/" || pathname === "/login" || pathname === "/register" || pathname === "/forgot-password" || pathname === "/reset-password";
+  const forcedTheme = (!isAuthenticated || isForceDarkRoute) ? "dark" : undefined;
 
   return (
     <ThemeProvider 
@@ -106,12 +114,13 @@ export default function AppProviders({ children }: AppProvidersProps) {
       defaultTheme="system" 
       enableSystem={true}
       disableTransitionOnChange
-      forcedTheme={isDarkOnlyRoute ? "dark" : undefined}
+      forcedTheme={forcedTheme}
     >
       <QueryProvider>
         {children}
         <PushNotificationManager />
         <ThemeSync />
+        <GlobalChatListener />
       
       {showBannedModal && (
         <BannedModal 
@@ -141,8 +150,9 @@ function ThemeSync() {
       if (!userStr || userStr === '""') return;
       const user = JSON.parse(userStr);
 
-      if (user?.preferences?.theme) {
-        setTheme(user.preferences.theme);
+      const theme = user?.preferences?.theme || user?.theme;
+      if (theme) {
+        setTheme(theme);
       }
     } catch (e) {
       // ignore

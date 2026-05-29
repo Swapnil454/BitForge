@@ -353,7 +353,7 @@ export default function BuyerHeader({
                         </button>
                         
                         <button
-                          onClick={() => { setIsMobileMenuOpen(false); router.push("/dashboard/buyer/help-center"); }}
+                          onClick={() => { setIsMobileMenuOpen(false); router.push("/dashboard/support"); }}
                           className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-white/10 dark:hover:text-white rounded-xl w-full text-left font-medium transition-all"
                         >
                           <CircleHelp size={16} /> Help Center

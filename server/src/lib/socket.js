@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import ChatMessage from "../models/ChatMessage.js";
 
 let ioInstance = null;
 
@@ -39,6 +40,9 @@ export const initSocket = (httpServer) => {
 
       socket.user = user;
       socket.join(String(user._id));
+      if (user.role === 'admin' || user.role === 'superadmin') {
+        socket.join('admins');
+      }
       next();
     } catch (err) {
       next(new Error("Unauthorized"));
@@ -46,6 +50,73 @@ export const initSocket = (httpServer) => {
   });
 
   io.on("connection", (socket) => {
+    socket.on("join-ticket", (ticketId) => {
+      if (ticketId) {
+        socket.join(`ticket:${ticketId}`);
+      }
+    });
+
+    socket.on("leave-ticket", (ticketId) => {
+      if (ticketId) {
+        socket.leave(`ticket:${ticketId}`);
+      }
+    });
+
+    socket.on('ticket:mark-delivered', async ({ msgId }) => {
+      try {
+        const msg = await ChatMessage.findById(msgId);
+        if (!msg) return;
+
+        // Ensure msg.from exists before comparing
+        const senderIdStr = msg.from ? msg.from.toString() : null;
+        if (senderIdStr === String(socket.user?._id)) return;
+
+        if (msg.deliveredAt) return;
+
+        const now = new Date();
+        await ChatMessage.findByIdAndUpdate(msgId, { deliveredAt: now });
+
+        io.to(`ticket:${msg.ticketId}`).emit('ticket:message-status-update', {
+          msgIds: [msgId],
+          status: 'delivered',
+          deliveredAt: now,
+          userId: String(socket.user?._id)
+        });
+      } catch (err) {
+        console.error("mark-delivered error:", err);
+      }
+    });
+
+    socket.on('ticket:mark-read', async ({ ticketId, msgIds }) => {
+      try {
+        if (!msgIds || msgIds.length === 0) return;
+        const now = new Date();
+        
+        const userIdStr = String(socket.user?._id);
+
+        await ChatMessage.updateMany(
+          {
+            _id: { $in: msgIds },
+            from: { $ne: socket.user?._id }, 
+            readBy: { $ne: socket.user?._id } 
+          },
+          {
+            $addToSet: { readBy: socket.user?._id },
+            $set: { readAt: now }
+          }
+        );
+
+        io.to(`ticket:${ticketId}`).emit('ticket:message-status-update', {
+          msgIds,
+          status: 'read',
+          readAt: now,
+          userId: userIdStr
+        });
+      } catch (err) {
+        console.error("mark-read error:", err);
+      }
+    });
+
     socket.on("disconnect", () => {
       // Socket disconnected
     });

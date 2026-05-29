@@ -82,7 +82,7 @@ curl -X POST http://localhost:5000/api/products/upload \
 
 ---
 
-## 🧪 Test Cases
+##  Test Cases
 
 ### Test 1: Single-Page PDF
 - Upload a 1-page PDF

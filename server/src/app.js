@@ -21,6 +21,7 @@ import buyerRoutes from "./routes/buyer.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import cartRoutes from "./routes/cart.routes.js";
+import wishlistRoutes from "./routes/wishlist.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
 import careerRoutes from "./routes/career.routes.js";
 import orderFixRoutes from "./routes/orderFix.routes.js";
@@ -28,7 +29,7 @@ import reviewRoutes from "./routes/review.routes.js";
 import sellerProfileRoutes from "./routes/sellerProfile.routes.js";
 import reportRoutes from "./routes/report.routes.js";
 import promotionRoutes from "./routes/promotions.routes.js";
-
+import settingsRoutes from "./routes/settings.routes.js";
 const app = express();
 
 // Trust proxy so OAuth callbacks use correct HTTPS URL on Render
@@ -89,9 +90,14 @@ app.post("/api/test", (req, res) => {
     res.json({ message: "Test endpoint working", body: req.body });
 });
 
+import ticketRoutes from "./routes/ticket.routes.js";
+import adminTicketRoutes from "./routes/adminTicket.routes.js";
+
 app.use("/api/auth", authRoutes);
 app.use("/api/oauth", oauthRoutes);
+app.use("/api/admin/tickets", adminTicketRoutes); // Put before /api/admin to not get caught by catch-alls if any
 app.use("/api/admin", adminRoutes);
+app.use("/api/tickets", ticketRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/marketplace", marketplaceRoutes);
 app.use("/api/payments", paymentRoutes);
@@ -104,7 +110,8 @@ app.use("/api/buyer", buyerRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/cart", cartRoutes);
-app.use("/api/chat", chatRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/chat", chatRoutes); // Keep for legacy if needed, or remove later
 app.use("/api/contact", contactRoutes);
 app.use("/api/careers", careerRoutes);
 app.use("/api/order-fix", orderFixRoutes);
@@ -112,6 +119,5 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/sellers", sellerProfileRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/promotions", promotionRoutes);
-
-
+app.use("/api/settings", settingsRoutes);
 export default app;

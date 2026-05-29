@@ -90,16 +90,18 @@ export default function Dashboard() {
     setTheme(newTheme);
     setProfileOpen(false);
     
-    userAPI.updatePreferences({ theme: newTheme }).then((res) => {
-      const userStr = getCookie("user");
-      if (userStr && userStr !== '""') {
-        try {
-          const userObj = JSON.parse(userStr as string);
-          userObj.preferences = res.preferences || { theme: newTheme };
-          setCookie("user", JSON.stringify(userObj), 7);
-        } catch(e) {}
-      }
-    }).catch(() => {
+    // Optimistically update cookie
+    const userStr = getCookie("user");
+    if (userStr && userStr !== '""') {
+      try {
+        const userObj = JSON.parse(userStr as string);
+        if (!userObj.preferences) userObj.preferences = {};
+        userObj.preferences.theme = newTheme;
+        setCookie("user", JSON.stringify(userObj), 7);
+      } catch(e) {}
+    }
+
+    userAPI.updatePreferences({ theme: newTheme }).catch(() => {
       toast.error("Failed to sync theme preference", { id: "theme-sync-error" });
     });
   };
@@ -154,11 +156,19 @@ export default function Dashboard() {
           }
         }
 
-        setUser(fresh);
-        setCookie("user", JSON.stringify(fresh), 7);
-        if (typeof localStorage !== "undefined") {
-          localStorage.setItem("user", JSON.stringify(fresh));
-        }
+        const applyUserUpdate = (fresh: any) => {
+          setUser(fresh);
+          setCookie("user", JSON.stringify(fresh), 7);
+          if (typeof localStorage !== "undefined") {
+            localStorage.setItem("user", JSON.stringify(fresh));
+          }
+          const newTheme = fresh.preferences?.theme || fresh.theme;
+          if (newTheme) {
+            setTheme(newTheme);
+          }
+        };
+
+        applyUserUpdate(fresh);
         setProfileChecked(true);
       } catch (err) {
         console.error("Failed to sync user profile", err);
@@ -375,7 +385,7 @@ export default function Dashboard() {
                       badge={chatUnreadCount > 0 ? chatUnreadCount : undefined}
                       onClick={() => {
                         cacheInvalidator.invalidateChatUnread();
-                        router.push("/dashboard/seller/help-center");
+                        router.push("/dashboard/support");
                         setProfileOpen(false);
                       }}
                     />
@@ -673,7 +683,7 @@ export default function Dashboard() {
           <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[24px] border border-white dark:border-slate-800 shadow-[0_8px_30px_rgba(15,23,42,0.06)] dark:shadow-none p-5">
             <div className="grid grid-cols-4 gap-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4 lg:gap-5">
 
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/transactions")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/transactions")} className="flex flex-col items-center gap-2 group md:flex-row md:items-center md:gap-0 md:p-3 bg-transparent md:bg-slate-50/70 md:dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/60 md:hover:bg-slate-100 md:dark:hover:bg-slate-800/80 rounded-2xl md:border md:border-slate-200/60 md:dark:border-slate-700/50 md:shadow-sm md:hover:shadow md:transition-all md:duration-200 w-full">
                 <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden">
                   <span className="anim-wrapper anim-flip delay-4 inline-flex relative z-10"><WalletCards className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                 </div>
@@ -684,7 +694,7 @@ export default function Dashboard() {
                 <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Revenue</span>
               </motion.button>
 
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/transactions?period=month")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/transactions?period=month")} className="flex flex-col items-center gap-2 group md:flex-row md:items-center md:gap-0 md:p-3 bg-transparent md:bg-slate-50/70 md:dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/60 md:hover:bg-slate-100 md:dark:hover:bg-slate-800/80 rounded-2xl md:border md:border-slate-200/60 md:dark:border-slate-700/50 md:shadow-sm md:hover:shadow md:transition-all md:duration-200 w-full">
                 <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden">
                   <span className="anim-wrapper anim-float delay-5 inline-flex relative z-10"><TrendingUp className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                 </div>
@@ -695,7 +705,7 @@ export default function Dashboard() {
                 <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">This Month</span>
               </motion.button>
 
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/sales")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/sales")} className="flex flex-col items-center gap-2 group md:flex-row md:items-center md:gap-0 md:p-3 bg-transparent md:bg-slate-50/70 md:dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/60 md:hover:bg-slate-100 md:dark:hover:bg-slate-800/80 rounded-2xl md:border md:border-slate-200/60 md:dark:border-slate-700/50 md:shadow-sm md:hover:shadow md:transition-all md:duration-200 w-full">
                 <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden">
                   <span className="anim-wrapper anim-bounce delay-6 inline-flex relative z-10"><ShoppingBag className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                 </div>
@@ -706,7 +716,7 @@ export default function Dashboard() {
                 <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Sales</span>
               </motion.button>
 
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/growth")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/growth")} className="flex flex-col items-center gap-2 group md:flex-row md:items-center md:gap-0 md:p-3 bg-transparent md:bg-slate-50/70 md:dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/60 md:hover:bg-slate-100 md:dark:hover:bg-slate-800/80 rounded-2xl md:border md:border-slate-200/60 md:dark:border-slate-700/50 md:shadow-sm md:hover:shadow md:transition-all md:duration-200 w-full">
                 <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden">
                   <span className="anim-wrapper anim-swing delay-7 inline-flex relative z-10"><BarChart3 className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                 </div>
@@ -817,7 +827,7 @@ export default function Dashboard() {
               <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Reports</span>
             </motion.button>
 
-            <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/help-center")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+            <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/support")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
               <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
                 <span className="anim-wrapper anim-float delay-6 inline-flex relative z-10"><CircleHelp className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
               </div>
@@ -878,40 +888,69 @@ export default function Dashboard() {
 function SellerDashboardSkeleton() {
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
-      <header className="sticky top-0 z-40 bg-linear-to-r from-cyan-900/80 via-slate-900/80 to-indigo-900/80 backdrop-blur-xl border-b border-cyan-500/40">
+      <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto h-16 px-4 flex items-center justify-between">
-          <div className="h-6 w-28 rounded-full bg-gradient-to-r from-cyan-400/70 via-purple-400/70 to-indigo-400/70 animate-pulse" />
+          <div className="h-6 w-32 rounded-full bg-slate-200 dark:bg-slate-800 animate-pulse" />
           <div className="flex items-center gap-3">
-            <div className="h-9 w-24 bg-slate-800/90 rounded-full animate-pulse" />
-            <div className="h-9 w-9 bg-slate-800/90 rounded-xl animate-pulse" />
+            <div className="h-9 w-24 bg-slate-200 dark:bg-slate-800 rounded-full animate-pulse" />
+            <div className="h-9 w-9 bg-slate-200 dark:bg-slate-800 rounded-xl animate-pulse" />
           </div>
         </div>
       </header>
 
-      <section className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+      <section className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-20 rounded-2xl bg-slate-800/90 border border-emerald-500/40 shadow-md shadow-emerald-500/25 animate-pulse"
-            />
+            <div key={i} className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
+                <div className="h-4 w-16 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse" />
+              </div>
+              <div className="h-8 w-24 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse mb-3" />
+              <div className="h-2 w-32 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse" />
+            </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-24 rounded-xl bg-slate-800/90 border border-indigo-500/40 shadow-md shadow-indigo-500/25 animate-pulse"
-            />
+            <div key={i} className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-4">
+                <div className="h-3 w-16 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse" />
+                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse" />
+              </div>
+              <div className="h-6 w-20 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
+            </div>
           ))}
         </div>
 
-        <div className="h-44 rounded-2xl bg-slate-900/90 border border-cyan-500/40 shadow-lg shadow-cyan-500/30 animate-pulse" />
+        <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm h-64 flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+            <div className="h-5 w-40 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse" />
+            <div className="h-8 w-24 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse" />
+          </div>
+          <div className="flex-1 w-full bg-slate-50 dark:bg-slate-800/40 rounded-2xl animate-pulse" />
+        </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="h-64 rounded-2xl bg-slate-900/90 border border-cyan-500/40 shadow-lg shadow-cyan-500/30 animate-pulse" />
-          <div className="h-64 rounded-2xl bg-slate-900/90 border border-purple-500/40 shadow-lg shadow-purple-500/30 animate-pulse" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm h-72 flex flex-col">
+              <div className="flex justify-between items-center mb-6">
+                <div className="h-5 w-32 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse" />
+              </div>
+              <div className="space-y-4 flex-1">
+                {Array.from({ length: 4 }).map((_, j) => (
+                  <div key={j} className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse" />
+                      <div className="h-3 w-2/3 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
     </main>

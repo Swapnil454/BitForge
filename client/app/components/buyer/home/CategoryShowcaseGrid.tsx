@@ -80,7 +80,7 @@ export default function CategoryShowcaseGrid({ products = [] }: { products?: Pro
   }, []);
 
   return (
-    <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mb-8 sm:mb-12 mt-6 sm:mt-10">
+    <div className="relative z-10 w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 mb-8 sm:mb-12 mt-2 sm:mt-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {showcaseData.map((data, idx) => (
           <div key={idx} className={displayIndices.includes(idx) ? "block" : "hidden md:block"}>

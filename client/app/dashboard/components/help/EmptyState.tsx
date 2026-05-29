@@ -1,10 +1,13 @@
+import { useEffect, useState } from "react";
 import { Lock } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 
 export default function EmptyState() {
   const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isDark = mounted && resolvedTheme === "dark";
 
   return (
     <div className={`flex-1 flex flex-col items-center justify-center p-6 relative overflow-hidden transition-colors duration-300 ${isDark ? "bg-[#0b1016]" : "bg-[#f0f4f8]"}`}>
@@ -36,7 +39,7 @@ export default function EmptyState() {
           {/* Inner Circle with Logo */}
           <div className={`relative z-10 w-24 h-24 rounded-full flex items-center justify-center shadow-2xl ${isDark ? "bg-[#161b22] shadow-cyan-900/50" : "bg-white shadow-cyan-200/80"}`}>
             {/* Replace with your exact logo path, or fallback to an icon */}
-            <Image src="/icon.png" alt="BitForge" width={56} height={56} className="object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+            <Image src="/icon.png" alt="BitForge" width={56} height={56} className="object-contain w-auto h-auto" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
             <div className={`absolute inset-0 flex items-center justify-center font-bold text-xl ${isDark ? "text-white" : "text-slate-800"}`} style={{ display: 'none' }} id="fallback-logo-text">BF</div>
           </div>
         </div>

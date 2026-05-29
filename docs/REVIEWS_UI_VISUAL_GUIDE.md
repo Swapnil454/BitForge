@@ -178,7 +178,7 @@
 
 ---
 
-## 💬 Seller Responds to Your Review
+##  Seller Responds to Your Review
 
 ```
 ╔══════════════════════════════════════════════════════════════════╗
@@ -192,7 +192,7 @@
 ║  │  state management in just 2 weeks. The practical            │ ║
 ║  │  examples are super helpful. Worth every penny!             │ ║
 ║  │                                                              │ ║
-║  │  ┌─ 💬 Seller Response ──────────────────────────────────┐ │ ║
+║  │  ┌─  Seller Response ──────────────────────────────────┐ │ ║
 ║  │  │                                                         │ │ ║
 ║  │  │  👔 John Doe (Seller)                                  │ │ ║
 ║  │  │  📅 1 hour ago                                         │ │ ║

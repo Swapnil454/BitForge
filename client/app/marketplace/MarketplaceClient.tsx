@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { cartAPI, searchAPI } from "@/lib/api";
+import { cartAPI, searchAPI, wishlistAPI } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
 import { useInfiniteProducts } from "@/lib/useInfiniteProducts";
 import toast from "react-hot-toast";
@@ -182,7 +182,7 @@ function HomeView({
     return (
       <>
         <HeroSkeleton />
-        <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mt-10">
+        <div className="w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 mt-10">
           <GridSkeleton />
         </div>
       </>
@@ -212,7 +212,7 @@ function HomeView({
       })}
 
       {/* "See All" CTA */}
-      <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mb-8 flex flex-col items-center gap-2">
+      <div className="w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 mb-8 flex flex-col items-center gap-2">
         <p className="text-sm text-gray-400 dark:text-slate-500">Showing a curated selection from our catalogue</p>
         <button
           onClick={() => router.push("/marketplace?collection=All")}
@@ -286,11 +286,14 @@ export default function MarketplaceClient() {
 
   // Load wishlist
   useEffect(() => {
-    const saved = localStorage.getItem("wishlist");
-    if (saved) {
-      try { setWishlist(JSON.parse(saved)); } catch {}
+    if (isAuthenticated) {
+      wishlistAPI.getWishlist()
+        .then((data) => {
+          setWishlist(data.wishlist || []);
+        })
+        .catch(() => {});
     }
-  }, []);
+  }, [isAuthenticated]);
 
   // Load cart
   useEffect(() => {
@@ -306,12 +309,16 @@ export default function MarketplaceClient() {
 
   const toggleWishlist = (e: React.MouseEvent, productId: string) => {
     e.stopPropagation(); e.preventDefault();
-    requireAuth("add to wishlist", () => {
+    requireAuth("add to wishlist", async () => {
       const isIn = wishlist.includes(productId);
-      const updated = isIn ? wishlist.filter((id) => id !== productId) : [...wishlist, productId];
-      setWishlist(updated);
-      localStorage.setItem("wishlist", JSON.stringify(updated));
-      toast.success(isIn ? "Removed from wishlist" : "Added to wishlist");
+      try {
+        await wishlistAPI.toggleWishlist(productId);
+        const updated = isIn ? wishlist.filter((id) => id !== productId) : [...wishlist, productId];
+        setWishlist(updated);
+        toast.success(isIn ? "Removed from wishlist" : "Added to wishlist");
+      } catch (error) {
+        toast.error("Failed to update wishlist");
+      }
     });
   };
 
@@ -383,14 +390,14 @@ export default function MarketplaceClient() {
         {/* Global Hero Ads and Category Pills */}
         {!searchQuery && <HeroAds />}
         {!searchQuery && (
-          <div className="mt-3 sm:mt-4 mb-3 sm:mb-5 relative z-10">
+          <div className="mt-0 mb-1 sm:mb-2 relative z-10">
             <CategoryPills products={homeProducts} />
           </div>
         )}
 
         {/* Grid view: search / category / collection / all */}
         {isGridView ? (
-          <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 py-6">
+          <div className="relative z-10 w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 py-6">
             <InfiniteProductGrid
                 title={gridTitle()}
                 subtitle={gridSubtitle()}

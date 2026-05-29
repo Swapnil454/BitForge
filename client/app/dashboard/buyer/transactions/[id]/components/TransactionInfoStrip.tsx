@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Package, User, Mail, Hash, CreditCard, FileKey } from "lucide-react";
 import { TransactionDetails } from "../types";
 
 type TransactionInfoStripProps = {
@@ -10,7 +10,8 @@ type TransactionInfoStripProps = {
   onCopy: (text: string, fieldName: string) => void;
 };
 
-function InlineField({
+function InfoRow({
+  icon: Icon,
   label,
   value,
   mono,
@@ -18,6 +19,7 @@ function InlineField({
   copied,
   onCopy,
 }: {
+  icon: React.ElementType;
   label: string;
   value: string;
   mono?: boolean;
@@ -26,26 +28,46 @@ function InlineField({
   onCopy?: () => void;
 }) {
   return (
-    <div className="py-3 first:pt-0 last:pb-0 flex items-start justify-between gap-3 border-b border-white/8 last:border-b-0">
-      <span className="text-white/45 text-xs sm:text-sm">{label}</span>
-      <div className="flex items-center gap-2 max-w-[70%]">
-        <span className={`text-right text-sm sm:text-base text-slate-800 dark:text-white/90 ${mono ? "font-mono text-xs sm:text-sm break-all" : "truncate"}`}>
-          {value}
-        </span>
-        {copyValue && onCopy && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onCopy();
-            }}
-            className="h-7 w-7 shrink-0 rounded-md border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition inline-flex items-center justify-center"
-            title={`Copy ${label}`}
-          >
-            {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5 text-slate-500 dark:text-white/65" />}
-          </button>
-        )}
+    <div className="flex items-start gap-3 py-3 border-b border-slate-100 dark:border-white/[0.05] last:border-b-0">
+      <div className="mt-0.5 shrink-0 w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center">
+        <Icon className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
       </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-0.5">
+          {label}
+        </p>
+        <p className={`text-sm text-slate-800 dark:text-slate-200 break-all ${mono ? "font-mono" : "font-medium"}`}>
+          {value}
+        </p>
+      </div>
+      {copyValue && onCopy && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onCopy();
+          }}
+          className="shrink-0 mt-0.5 h-7 w-7 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 transition inline-flex items-center justify-center"
+          title={`Copy ${label}`}
+        >
+          {copied ? (
+            <Check className="h-3.5 w-3.5 text-emerald-500" />
+          ) : (
+            <Copy className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function InfoCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#12141c] overflow-hidden">
+      <div className="px-4 sm:px-5 py-3 border-b border-slate-100 dark:border-white/[0.05] bg-slate-50 dark:bg-white/[0.025]">
+        <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200">{title}</h3>
+      </div>
+      <div className="px-4 sm:px-5 py-1">{children}</div>
     </div>
   );
 }
@@ -60,18 +82,17 @@ export default function TransactionInfoStrip({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.05 }}
-      className="grid gap-5 lg:grid-cols-2"
+      className="grid gap-4 lg:grid-cols-2"
     >
-      <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] p-4 sm:p-5">
-        <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Product & Seller</h3>
-        <InlineField label="Product" value={transaction.productName} />
-        <InlineField label="Seller" value={transaction.sellerName} />
-        <InlineField label="Email" value={transaction.sellerEmail} />
-      </div>
+      <InfoCard title="Product & Seller">
+        <InfoRow icon={Package} label="Product" value={transaction.productName} />
+        <InfoRow icon={User} label="Seller" value={transaction.sellerName} />
+        <InfoRow icon={Mail} label="Email" value={transaction.sellerEmail} />
+      </InfoCard>
 
-      <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] p-4 sm:p-5">
-        <h3 className="text-slate-900 dark:text-white font-semibold mb-3">Transaction Reference</h3>
-        <InlineField
+      <InfoCard title="Transaction Reference">
+        <InfoRow
+          icon={Hash}
           label="Order ID"
           value={transaction.orderId}
           mono
@@ -80,7 +101,8 @@ export default function TransactionInfoStrip({
           onCopy={() => onCopy(transaction.orderId, "orderId")}
         />
         {transaction.razorpayOrderId && (
-          <InlineField
+          <InfoRow
+            icon={FileKey}
             label="Razorpay Order"
             value={transaction.razorpayOrderId}
             mono
@@ -90,7 +112,8 @@ export default function TransactionInfoStrip({
           />
         )}
         {transaction.razorpayPaymentId && (
-          <InlineField
+          <InfoRow
+            icon={CreditCard}
             label="Payment ID"
             value={transaction.razorpayPaymentId}
             mono
@@ -99,7 +122,7 @@ export default function TransactionInfoStrip({
             onCopy={() => onCopy(transaction.razorpayPaymentId!, "razorpayPaymentId")}
           />
         )}
-      </div>
+      </InfoCard>
     </motion.section>
   );
 }

@@ -120,7 +120,28 @@ export default function SellerPromotionsPage() {
     });
     
     const dates = Array.from(dateSet).sort();
-    if (dates.length === 0) return [];
+    if (dates.length === 0) {
+      // Fallback: Generate last 7 days with 0 impressions if no history exists
+      const placeholderDates = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        placeholderDates.push(d.toISOString().split('T')[0]);
+      }
+      
+      return placeholderDates.map(dateStr => {
+        const dateObj = new Date(dateStr);
+        const shortDate = !isNaN(dateObj.getTime()) 
+          ? dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          : dateStr;
+        
+        const row: any = { day: shortDate };
+        activeChartPromotions.forEach(promo => {
+          row[promo._id] = 0;
+        });
+        return row;
+      });
+    }
     
     // Map dates to row objects
     return dates.map(dateStr => {

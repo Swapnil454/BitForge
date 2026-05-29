@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X, AlertCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export const REJECT_REASONS = [
   'Poor or misleading description',
@@ -30,8 +31,6 @@ export default function RejectReasonModal({
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [adminNote, setAdminNote] = useState("");
 
-  if (!isOpen) return null;
-
   const handleToggleReason = (reason: string) => {
     setSelectedReasons((prev) =>
       prev.includes(reason)
@@ -45,8 +44,23 @@ export default function RejectReasonModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm">
-      <div className="bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/10 rounded-2xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh]">
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm z-[1100]"
+          />
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "tween", duration: 0.3 }}
+            className="fixed inset-y-0 right-0 h-[100dvh] w-full sm:w-[450px] max-w-full bg-white dark:bg-[#16161e] shadow-2xl border-l border-slate-200 dark:border-white/10 z-[1200] flex flex-col"
+          >
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-white/5">
           <div className="flex items-center gap-3">
@@ -106,7 +120,7 @@ export default function RejectReasonModal({
         </div>
 
         {/* Footer */}
-        <div className="p-5 border-t border-slate-100 dark:border-white/5 flex items-center justify-end gap-3 bg-slate-50 dark:bg-white/[0.02] rounded-b-2xl">
+        <div className="p-5 border-t border-slate-100 dark:border-white/5 flex items-center justify-end gap-3 bg-slate-50 dark:bg-white/[0.02] pb-8 sm:pb-5">
           <button
             onClick={onClose}
             className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 dark:text-white/60 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
@@ -121,7 +135,9 @@ export default function RejectReasonModal({
             Reject Product
           </button>
         </div>
-      </div>
-    </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }

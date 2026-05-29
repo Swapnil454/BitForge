@@ -48,8 +48,8 @@ export default function PromoGridRow({ products = [], variant = "default" }: Pro
   const blocks = variant === "tools" ? toolsBlocks : defaultBlocks;
 
   return (
-    <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 mb-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 mb-8 sm:mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {blocks.map((block, idx) => (
           <PromoGridCard key={idx} title={block.title} items={block.items} />
         ))}

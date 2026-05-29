@@ -87,6 +87,33 @@ export const updateProfile = async (req, res) => {
   }
 };
 
+// Update profile
+export const updatePreferences = async (req, res) => {
+  try {
+    const { theme, browserPushEnabled } = req.body;
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.preferences) user.preferences = {};
+    if (theme !== undefined) user.preferences.theme = theme;
+    if (browserPushEnabled !== undefined) user.preferences.browserPushEnabled = browserPushEnabled;
+
+    await user.save();
+
+    res.json({
+      message: "Preferences updated successfully",
+      preferences: user.preferences,
+    });
+  } catch (error) {
+    console.error("Error updating preferences:", error);
+    res.status(500).json({ message: "Failed to update preferences" });
+  }
+};
+
 // Change password (requires old password)
 export const changePassword = async (req, res) => {
   try {
@@ -502,38 +529,7 @@ export const reactivateAccount = async (req, res) => {
   }
 };
 
-/**
- * UPDATE PREFERENCES
- * Protected endpoint — updates user preferences like theme.
- */
-export const updatePreferences = async (req, res) => {
-  try {
-    const { theme } = req.body;
-    const userId = req.user.id;
 
-    if (!["light", "dark", "system"].includes(theme)) {
-      return res.status(400).json({ message: "Invalid theme" });
-    }
-
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { "preferences.theme": theme },
-      { new: true }
-    ).select("-password -resetPasswordOTP -resetPasswordExpire");
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.json({
-      success: true,
-      preferences: user.preferences,
-    });
-  } catch (error) {
-    console.error("Error updating preferences:", error);
-    res.status(500).json({ message: "Failed to update preferences" });
-  }
-};
 
 /**
  * Upload identity documents

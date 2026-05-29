@@ -131,6 +131,15 @@ export default function PushNotificationManager() {
         return;
       }
 
+      try {
+        const prefs = await notificationAPI.getPreferences();
+        if (prefs?.browserPushEnabled) {
+          return; // Suppress prompt if user already enabled push on their profile
+        }
+      } catch (error) {
+        // Ignore preference fetch errors
+      }
+
       const dismissedAt = Number(window.localStorage.getItem(DISMISS_KEY) || 0);
       if (Date.now() - dismissedAt > PROMPT_COOLDOWN_MS) {
         setShowPrompt(true);
@@ -177,6 +186,8 @@ export default function PushNotificationManager() {
 
     let unsubscribe = () => {};
     void subscribeToForegroundMessages((payload) => {
+      if (payload.data?.category === "chat") return;
+      
       const actionUrl =
         payload.data?.actionUrl ||
         payload.fcmOptions?.link ||
@@ -278,7 +289,7 @@ export default function PushNotificationManager() {
                   if (synced) {
                     toast.success("Browser notifications enabled");
                   } else {
-                    toast("Notifications permission was granted, but push setup is still unavailable. Please try again in a moment.");
+                    toast.error("Push setup is currently unavailable in this environment.");
                   }
                 } else {
                   window.localStorage.setItem(DISMISS_KEY, String(Date.now()));

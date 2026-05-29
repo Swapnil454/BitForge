@@ -21,6 +21,7 @@ export interface AdminDashboardStats {
   totalBuyers: number;
   totalSellers: number;
   totalProducts: number;
+  openDisputes?: number;
   userGrowth: number;
   pendingSellers: Array<{ id: string; name: string; email: string; appliedDate: string }>;
   recentTransactions: Array<{ id: string; orderId: string; user: string; productName: string; amount: string; date: string }>;

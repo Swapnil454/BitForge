@@ -134,7 +134,7 @@ POST /api/admin/payouts/:id/reject
 
 ---
 
-## 🏦 For Sellers
+##  For Sellers
 
 ### Request Withdrawal
 ```bash

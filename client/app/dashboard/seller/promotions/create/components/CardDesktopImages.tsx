@@ -71,22 +71,41 @@ function UploadSlot({
 }
 
 export function CardDesktopImages({ locked }: { locked: boolean }) {
-  const { floatingImages, updateFloatingImage, reorderFloatingImages } = usePromotionFormStore();
+  const { floatingImages, updateFloatingImage, reorderFloatingImages, layoutType } = usePromotionFormStore();
 
   const handleUpload = (index: number, file: File) => {
-    // Validation
-    if (!["image/png", "image/webp"].includes(file.type)) {
-      updateFloatingImage(index, { uploadState: 'error', errorMessage: 'Only PNG or WEBP files are supported.' });
+    // Basic validation
+    if (!["image/png", "image/webp", "image/jpeg", "image/jpg"].includes(file.type)) {
+      updateFloatingImage(index, { uploadState: 'error', errorMessage: 'Invalid image format.' });
       return;
     }
+    
     if (file.size > 9 * 1024 * 1024) {
-      updateFloatingImage(index, { uploadState: 'error', errorMessage: 'File exceeds 9MB limit. Please compress and retry.' });
+      updateFloatingImage(index, { uploadState: 'error', errorMessage: 'File exceeds 9MB limit.' });
       return;
     }
 
-    // Success
     const url = URL.createObjectURL(file);
-    updateFloatingImage(index, { file, url, uploadState: 'success', errorMessage: undefined });
+    const img = new Image();
+    
+    img.onload = () => {
+      if (layoutType === 'fullImage') {
+        if (img.width !== 3000 || img.height !== 1200) {
+          updateFloatingImage(index, { uploadState: 'error', errorMessage: `Must be exactly 3000x1200. Got ${img.width}x${img.height}.` });
+          URL.revokeObjectURL(url);
+          return;
+        }
+      }
+      
+      updateFloatingImage(index, { file, url, uploadState: 'success', errorMessage: undefined });
+    };
+    
+    img.onerror = () => {
+      updateFloatingImage(index, { uploadState: 'error', errorMessage: 'Failed to read image.' });
+      URL.revokeObjectURL(url);
+    };
+    
+    img.src = url;
   };
 
   const handleRemove = (index: number) => {
@@ -107,34 +126,46 @@ export function CardDesktopImages({ locked }: { locked: boolean }) {
   };
 
   return (
-    <SectionCard stepNumber={5} title="Desktop Floating Images" locked={locked}>
+    <SectionCard stepNumber={layoutType === 'fullImage' ? 4 : 5} title={layoutType === 'fullImage' ? "Desktop Banner Image" : "Desktop Floating Images"} locked={locked}>
       <div className="space-y-6">
         
         <details className="group rounded-2xl border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5 [&_summary::-webkit-details-marker]:hidden">
           <summary className="flex cursor-pointer items-center justify-between p-4 font-semibold text-slate-700 dark:text-white/90">
-            Seller Guidelines for Premium Ads
+            Seller Guidelines for {layoutType === 'fullImage' ? 'Full Banners' : 'Premium Ads'}
             <span className="transition group-open:rotate-180">
               <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
             </span>
           </summary>
           <div className="p-4 pt-0 text-sm text-slate-600 dark:text-white/70">
             <ul className="list-disc pl-5 space-y-1">
-              <li>Use transparent PNG or WEBP images for the best floating effect.</li>
-              <li>Avoid text near the edges of your images.</li>
-              <li>Square or portrait crops work best.</li>
-              <li>Max 9MB per image. You can reorder images by dragging them.</li>
+              {layoutType === 'fullImage' ? (
+                <>
+                  <li><strong className="text-red-500">Must be exactly 3000 x 1200 pixels.</strong></li>
+                  <li>Use high quality JPEGs or PNGs without transparent backgrounds.</li>
+                  <li>This image will be displayed edge-to-edge on large devices.</li>
+                </>
+              ) : (
+                <>
+                  <li>Use transparent PNG or WEBP images for the best floating effect.</li>
+                  <li>Avoid text near the edges of your images.</li>
+                  <li>Square or portrait crops work best.</li>
+                  <li>Max 9MB per image. You can reorder images by dragging them.</li>
+                </>
+              )}
             </ul>
-            <div className="mt-4 flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <p className="text-xs font-medium leading-relaxed">
-                Ensure your image has a transparent background. WEBP transparency cannot be auto-detected, so double-check your files. These floating images appear on large screens (desktop/tablet) only.
-              </p>
-            </div>
+            {layoutType !== 'fullImage' && (
+              <div className="mt-4 flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <p className="text-xs font-medium leading-relaxed">
+                  Ensure your image has a transparent background. WEBP transparency cannot be auto-detected, so double-check your files. These floating images appear on large screens (desktop/tablet) only.
+                </p>
+              </div>
+            )}
           </div>
         </details>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {floatingImages.map((slot, index) => (
+        <div className={`grid grid-cols-1 ${layoutType === 'fullImage' ? 'sm:grid-cols-1 max-w-md mx-auto' : 'sm:grid-cols-3'} gap-3`}>
+          {floatingImages.slice(0, layoutType === 'fullImage' ? 1 : 3).map((slot, index) => (
             <UploadSlot 
               key={`slot-${index}`}
               index={index}

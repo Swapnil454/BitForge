@@ -68,7 +68,7 @@ export default function PurchaseCard({
 
   return (
     <article className="bg-white dark:bg-[#12141c] border border-slate-200 dark:border-white/5 rounded-2xl p-4 sm:p-5 flex flex-col group hover:border-slate-300 dark:hover:border-white/10 transition-all shadow-sm hover:shadow-xl dark:shadow-none dark:hover:shadow-black/50">
-      <div className="flex gap-4 sm:gap-5">
+      <div className="flex gap-4 sm:gap-5 items-center">
         {/* Thumbnail - Fixed Left */}
         <div className="w-[88px] h-[88px] sm:w-[110px] sm:h-[110px] shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/5 relative shadow-inner">
           {purchase.thumbnailUrl ? (
@@ -182,47 +182,59 @@ export default function PurchaseCard({
           </div>
 
           {/* Price & Primary Action */}
-          <div className="flex items-center justify-between mt-3 gap-2 min-w-0">
-            <p className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight shrink-0">
-              ₹{purchase.amount.toLocaleString()}
-            </p>
-            
-            <button
-              type="button"
-              onClick={() => {
-                if (!purchase.productId) {
-                  toast.error("Product is unavailable. Please contact support team.", {
-                    id: `unavailable-${purchase._id}`,
-                  });
-                  return;
-                }
-                if (!isLimitReached && !downloading && !downloadLocked) {
-                  setDownloadLocked(true);
-                  onDownload(purchase._id);
-                  setTimeout(() => setDownloadLocked(false), 60000);
-                } else if (downloadLocked) {
-                  toast.error("Please wait 1 minute before downloading again.", {
-                    id: `locked-${purchase._id}`,
-                  });
-                }
-              }}
-              disabled={downloading || (isLimitReached && !!purchase.productId)}
-              className={`shrink-0 h-9 px-3 sm:px-5 rounded-xl text-[11px] sm:text-sm font-bold transition-all inline-flex items-center justify-center gap-1.5 shadow-md max-w-[160px] sm:max-w-none ${
-                isLimitReached || !purchase.productId
-                  ? "cursor-not-allowed bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-white/30 border border-slate-200 dark:border-white/5 shadow-none"
-                  : downloadLocked
-                  ? "cursor-wait bg-cyan-500/50 text-white/80 shadow-none"
-                  : "bg-cyan-500 hover:bg-cyan-600 text-white shadow-cyan-500/25 active:scale-95"
-              }`}
-            >
-              <Download className={`h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 ${downloadLocked ? "animate-pulse" : ""}`} />
-              <span className="whitespace-nowrap">{downloading ? "Wait..." : downloadLocked ? "Wait 1m" : "Download"}</span>
-              {(!isLimitReached && purchase.productId) && (
-                <span className="rounded bg-white/25 px-1 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-inner leading-none">
-                  {remaining}/{downloadLimit}
-                </span>
-              )}
-            </button>
+          <div className="flex flex-col mt-3">
+            <div className="flex items-center justify-between gap-2 min-w-0">
+              <p className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight shrink-0">
+                ₹{purchase.amount.toLocaleString()}
+              </p>
+              
+              <button
+                type="button"
+                onClick={() => {
+                  if (!purchase.productId) {
+                    toast.error("Product is unavailable. Please contact support team.", {
+                      id: `unavailable-${purchase._id}`,
+                    });
+                    return;
+                  }
+                  if (!isLimitReached && !downloading && !downloadLocked) {
+                    setDownloadLocked(true);
+                    onDownload(purchase._id);
+                    setTimeout(() => setDownloadLocked(false), 60000);
+                  } else if (downloadLocked) {
+                    toast.error("Please wait 1 minute before downloading again.", {
+                      id: `locked-${purchase._id}`,
+                    });
+                  }
+                }}
+                disabled={downloading || (isLimitReached && !!purchase.productId)}
+                className={`shrink-0 h-9 px-3 sm:px-5 rounded-xl text-[11px] sm:text-sm font-bold transition-all inline-flex items-center justify-center gap-1.5 shadow-md max-w-[160px] sm:max-w-none ${
+                  isLimitReached || !purchase.productId
+                    ? "cursor-not-allowed bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-white/30 border border-slate-200 dark:border-white/5 shadow-none"
+                    : downloadLocked
+                    ? "cursor-wait bg-cyan-500/50 text-white/80 shadow-none"
+                    : "bg-cyan-500 hover:bg-cyan-600 text-white shadow-cyan-500/25 active:scale-95"
+                }`}
+              >
+                <Download className={`h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 ${downloadLocked ? "animate-pulse" : ""}`} />
+                <span className="whitespace-nowrap">{downloading ? "Wait..." : downloadLocked ? "Wait 1m" : "Download"}</span>
+                {(!isLimitReached && purchase.productId) && (
+                  <span className="rounded bg-white/25 px-1 py-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-inner leading-none">
+                    {remaining}/{downloadLimit}
+                  </span>
+                )}
+              </button>
+            </div>
+            {isLimitReached && purchase.productId && (
+              <p className="text-[10px] sm:text-xs text-rose-500 dark:text-rose-400 font-medium text-right mt-1.5 truncate" title="Download limit reached. Please repurchase.">
+                Download limit reached. Please repurchase.
+              </p>
+            )}
+            {!purchase.productId && (
+              <p className="text-[10px] sm:text-xs text-amber-500 dark:text-amber-400 font-medium text-right mt-1.5 truncate" title="Product is currently unavailable. Please contact support.">
+                Product is currently unavailable. Please contact support.
+              </p>
+            )}
           </div>
         </div>
       </div>

@@ -60,6 +60,7 @@ export default function ProductsManagementPage() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -72,6 +73,7 @@ export default function ProductsManagementPage() {
 
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
   const headerMenuRef = useRef<HTMLDivElement>(null);
+  const loaderRef = useRef<HTMLDivElement>(null);
 
   const PAGE_SIZE = 12;
 
@@ -94,7 +96,11 @@ export default function ProductsManagementPage() {
   }, [searchTerm]);
 
   const fetchProducts = useCallback(async () => {
-    setLoading(true);
+    if (page === 1) {
+      setLoading(true);
+    } else {
+      setIsLoadingMore(true);
+    }
     try {
       const data = await adminAPI.getAllProducts({
         page,
@@ -104,13 +110,23 @@ export default function ProductsManagementPage() {
         category: categoryFilter,
         sortBy,
       });
-      setProducts(data.products || []);
+      if (page === 1) {
+        setProducts(data.products || []);
+      } else {
+        setProducts((prev) => {
+          const newProducts = (data.products || []).filter(
+            (newProd: Product) => !prev.some((p) => p._id === newProd._id)
+          );
+          return [...prev, ...newProducts];
+        });
+      }
       setTotalPages(data.pagination?.pages || 1);
       setTotalCount(data.pagination?.total || 0);
     } catch {
       toast.error("Failed to load products");
     } finally {
       setLoading(false);
+      setIsLoadingMore(false);
     }
   }, [categoryFilter, debouncedSearch, page, sortBy, statusFilter]);
 
@@ -121,6 +137,19 @@ export default function ProductsManagementPage() {
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch, statusFilter, categoryFilter, sortBy]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && page < totalPages && !loading && !isLoadingMore) {
+          setPage((p) => p + 1);
+        }
+      },
+      { rootMargin: "100px" }
+    );
+    if (loaderRef.current) observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [page, totalPages, loading, isLoadingMore]);
 
   const handleClearAll = () => {
     setSearchTerm("");
@@ -155,12 +184,11 @@ export default function ProductsManagementPage() {
         backHref="/dashboard/admin"
         backLabel="Dashboard"
         title="Products"
-        subtitle="Manage product approvals and catalog"
+        subtitle="product approvals and catalog"
         rightSlot={
           <div className="relative" ref={headerMenuRef}>
             <button
               onClick={() => setHeaderMenuOpen(!headerMenuOpen)}
-              className="h-11 w-11 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/[0.03] flex items-center justify-center hover:bg-white/[0.08] transition shadow-xl"
             >
               <MoreVertical className="h-5 w-5 text-slate-600 dark:text-white/70" />
             </button>
@@ -178,7 +206,7 @@ export default function ProductsManagementPage() {
                       router.push("/dashboard/admin/products-management/analytics");
                       setHeaderMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-500 dark:text-white/60 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:bg-white/[0.05] transition-all"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-500 dark:text-white/60  dark:hover:text-white  dark:bg-white/[0.05] transition-all"
                   >
                     <BarChart3 className="w-4 h-4" />
                     Analytics
@@ -190,8 +218,8 @@ export default function ProductsManagementPage() {
         }
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-8">
-        <div className="space-y-3">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-1 pb-6 space-y-2 sm:space-y-4">
+        <div className="space-y-2">
           <div className="flex flex-col lg:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -452,49 +480,19 @@ export default function ProductsManagementPage() {
           </AnimatePresence>
         </div>
 
-        {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-200 dark:border-white/5">
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-              Showing {products.length} of {totalCount} products
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                disabled={page === 1}
-                onClick={() => setPage((p) => p - 1)}
-                className="h-10 w-10 flex items-center justify-center rounded-xl bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-400 dark:text-white/40 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-white/[0.08] transition-all"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }).map((_, i) => {
-                  const currentPage = i + 1;
-                  if (totalPages > 5 && Math.abs(currentPage - page) > 2) return null;
-
-                  return (
-                    <button
-                      key={currentPage}
-                      onClick={() => setPage(currentPage)}
-                      className={`h-10 w-10 rounded-xl text-xs font-bold transition-all border ${
-                        page === currentPage
-                          ? "bg-cyan-500/15 border-cyan-400/40 text-cyan-600 dark:text-cyan-300"
-                          : "bg-white dark:bg-white/[0.03] border-slate-200 dark:border-white/5 text-slate-500 dark:text-white/40 hover:bg-slate-50 dark:hover:bg-white/[0.08] hover:text-slate-900 dark:hover:text-white"
-                      }`}
-                    >
-                      {currentPage}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <button
-                disabled={page === totalPages}
-                onClick={() => setPage((p) => p + 1)}
-                className="h-10 w-10 flex items-center justify-center rounded-xl bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 text-slate-400 dark:text-white/40 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-white/[0.08] transition-all"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
+        {products.length > 0 && page < totalPages && (
+          <div ref={loaderRef} className="py-8 flex justify-center items-center w-full">
+            <div className="flex items-center gap-3 px-5 py-2.5 bg-white dark:bg-[#111826] rounded-full border border-slate-200 dark:border-white/10 shadow-sm">
+              <div className="w-4 h-4 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
+              <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">Loading more...</span>
             </div>
+          </div>
+        )}
+        {products.length > 0 && page >= totalPages && totalPages > 1 && (
+          <div className="py-8 flex justify-center w-full">
+            <p className="text-slate-400 dark:text-slate-500 text-sm font-semibold">
+              End of results
+            </p>
           </div>
         )}
       </main>

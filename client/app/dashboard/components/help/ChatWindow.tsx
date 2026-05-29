@@ -84,7 +84,9 @@ export default function ChatWindow({
   onLoadMoreMessages
 }: ChatWindowProps) {
   const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isDark = mounted && resolvedTheme === "dark";
   const [inputValue, setInputValue] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
   const [showMenu, setShowMenu] = useState(false);
