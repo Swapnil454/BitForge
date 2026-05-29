@@ -69,21 +69,11 @@ export default function CategoryShowcaseGrid({ products = [] }: { products?: Pro
     }
   ];
 
-  const [displayIndices, setDisplayIndices] = useState<number[]>([0, 1, 2, 3]);
-
-  useEffect(() => {
-    // On small screens, pick 2 random categories to display
-    if (window.innerWidth < 768) {
-      const shuffled = [0, 1, 2, 3].sort(() => 0.5 - Math.random());
-      setDisplayIndices(shuffled.slice(0, 2));
-    }
-  }, []);
-
   return (
     <div className="relative z-10 w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 mb-8 sm:mb-12 mt-2 sm:mt-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-4 md:pb-0 hide-scrollbar -mx-3 px-3 md:mx-0 md:px-0">
         {showcaseData.map((data, idx) => (
-          <div key={idx} className={displayIndices.includes(idx) ? "block" : "hidden md:block"}>
+          <div key={idx} className="w-[85vw] sm:w-[350px] md:w-auto flex-shrink-0 md:flex-shrink md:block snap-center">
             <CategoryShowcaseCard
               title={data.title}
               categoryId={data.categoryId}

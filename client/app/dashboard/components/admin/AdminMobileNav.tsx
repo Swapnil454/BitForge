@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, FolderOpen, Megaphone, CircleHelp, Shield } from "lucide-react";
+import { Home, FolderOpen, Megaphone, CircleHelp, Shield, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function AdminMobileNav() {

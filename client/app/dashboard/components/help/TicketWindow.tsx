@@ -254,8 +254,14 @@ export default function TicketWindow({
       });
 
       if (res.ok) {
-        // The real message will come via socket. We remove the optimistic message to avoid duplicates.
-        setMessages((prev: any) => prev.filter((m: any) => m.localId !== localId));
+        const data = await res.json();
+        setMessages((prev: any) => {
+          const filtered = prev.filter((m: any) => m.localId !== localId);
+          if (data.message && !filtered.some((m: any) => m._id === data.message._id)) {
+            filtered.push(data.message);
+          }
+          return filtered;
+        });
       } else {
         const data = await res.json().catch(() => ({}));
         if (data.action === 'create_new_ticket') {

@@ -37,20 +37,9 @@ export default function SupportHelpCenterPage({ params }: any) {
       <div className={`${isChatOpen ? "h-[100dvh]" : "h-[calc(100dvh-53px)]"} md:h-[calc(100vh-69px)] w-full flex-1 relative overflow-hidden`}>
         <UserTicketCenter 
           urlId={Array.isArray(resolvedParams?.id) ? resolvedParams.id[0] : resolvedParams?.id} 
-          onNewTicket={() => setIsModalOpen(true)}
           onChatOpenChange={setIsChatOpen}
         />
       </div>
-
-      {isModalOpen && (
-        <CreateTicketModal 
-          token={auth?.token}
-          onClose={() => setIsModalOpen(false)}
-          onSuccess={() => {
-            setIsModalOpen(false);
-          }}
-        />
-      )}
     </main>
   );
 }

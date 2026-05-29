@@ -20,15 +20,7 @@ export default function PromoGridRow({ products = [], variant = "default" }: Pro
       (parseInt(a._id.slice(-4), 16) + seed) % 97 - (parseInt(b._id.slice(-4), 16) + seed) % 97
     );
 
-    const result = filtered.slice(0, count);
-    while (result.length < count) {
-      result.push({
-        _id: `placeholder-${seed}-${result.length}`,
-        title: "Coming Soon",
-        category: category || "Product",
-      } as any);
-    }
-    return result;
+    return filtered.slice(0, count);
   };
 
   const defaultBlocks = [
@@ -45,13 +37,23 @@ export default function PromoGridRow({ products = [], variant = "default" }: Pro
     { title: "Power your productivity",  items: getProducts("Software",     4, 8) },
   ];
 
-  const blocks = variant === "tools" ? toolsBlocks : defaultBlocks;
+  const blocks = (variant === "tools" ? toolsBlocks : defaultBlocks).filter(block => block.items.length > 0);
+
+  if (blocks.length === 0) return null;
+
+  const lgGridClass = 
+    blocks.length === 1 ? "lg:grid-cols-1" :
+    blocks.length === 2 ? "lg:grid-cols-2" :
+    blocks.length === 3 ? "lg:grid-cols-3" :
+    "lg:grid-cols-4";
 
   return (
-    <div className="w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 mb-8 sm:mb-10">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+    <div className="relative z-10 w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 mb-8 sm:mb-10 mt-2 sm:mt-4">
+      <div className={`flex md:grid md:grid-cols-2 ${lgGridClass} gap-4 sm:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-4 md:pb-0 hide-scrollbar -mx-3 px-3 md:mx-0 md:px-0`}>
         {blocks.map((block, idx) => (
-          <PromoGridCard key={idx} title={block.title} items={block.items} />
+          <div key={idx} className="w-[85vw] sm:w-[350px] md:w-auto flex-shrink-0 md:flex-shrink md:block snap-center">
+            <PromoGridCard title={block.title} items={block.items} />
+          </div>
         ))}
       </div>
     </div>

@@ -128,6 +128,21 @@ export const getTicketDetails = async (req, res) => {
       
     if (!ticket) return res.status(404).json({ error: "Ticket not found" });
 
+    // Mark unread messages as read by admin
+    const now = new Date();
+    await ChatMessage.updateMany(
+      {
+        ticketId,
+        from: { $ne: req.user._id },
+        readBy: { $ne: req.user._id },
+        messageType: { $ne: 'note' }
+      },
+      {
+        $addToSet: { readBy: req.user._id },
+        $set: { readAt: now }
+      }
+    );
+
     const messages = await ChatMessage.find({ ticketId })
       .sort({ createdAt: 1 })
       .populate("from", "name role");
@@ -468,12 +483,14 @@ export const createTicketForUser = async (req, res) => {
       assignedTo: req.user._id,
     });
 
+    const formattedMessage = `Category: ${category.charAt(0).toUpperCase() + category.slice(1)}\nSubject: ${subject}\n\nMessage:\n${message?.trim() || "No message provided."}`;
+
     const chatMsg = await ChatMessage.create({
       ticketId: ticket._id,
       from: req.user._id,
       fromRole: 'admin',
       toRole: targetUser.role,
-      message: message?.trim() || "",
+      message: formattedMessage,
       attachments: attachments || [],
       messageType: 'message',
     });

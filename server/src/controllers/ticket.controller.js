@@ -70,13 +70,16 @@ export const createTicket = async (req, res) => {
       source: 'user',
     });
 
+    const categoryLabel = CATEGORIES.find(c => c.id === category)?.label || category;
+    const formattedMessage = `Category: ${categoryLabel}\nSubject: ${subject}\n\nMessage:\n${message?.trim() || "No message provided."}`;
+
     // Create the first message
     const chatMsg = await ChatMessage.create({
       ticketId: ticket._id,
       from: userId,
       fromRole: req.user.role,
       toRole: 'admin', // target role
-      message: message?.trim() || "",
+      message: formattedMessage,
       attachments: attachments || [],
       messageType: 'message',
     });
@@ -166,6 +169,22 @@ export const getTicket = async (req, res) => {
   try {
     // Ticket access is verified by middleware `req.ticket`
     const ticket = req.ticket;
+    const userId = req.user._id;
+
+    // Mark unread messages as read by user
+    const now = new Date();
+    await ChatMessage.updateMany(
+      {
+        ticketId: ticket._id,
+        from: { $ne: userId },
+        readBy: { $ne: userId },
+        messageType: { $ne: 'note' }
+      },
+      {
+        $addToSet: { readBy: userId },
+        $set: { readAt: now }
+      }
+    );
 
     // Users should not see 'note' messageTypes
     const messages = await ChatMessage.find({ 
