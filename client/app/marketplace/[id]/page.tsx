@@ -6,10 +6,11 @@ import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
 import AuthModal from "@/app/components/AuthModal";
 import toast from "react-hot-toast";
-import { cartAPI } from "@/lib/api";
+import { cartAPI, wishlistAPI } from "@/lib/api";
 import ProductReviews from "./components/ProductReviews";
 import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
-import { Heart, ShoppingCart, Info, Archive, CheckCircle, BadgeCheck, Star, Sparkles, Download, FileText } from "lucide-react";
+import { Heart, ShoppingCart, Info, Archive, CheckCircle, BadgeCheck, Star, Sparkles, Download, FileText, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 function TrustRow({ label, active }: { label: string; active: boolean }) {
   return (
@@ -35,6 +36,7 @@ export default function ProductDetailsPage() {
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [isInCart, setIsInCart] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [showFees, setShowFees] = useState(false);
   const router = useRouter();
   
   const { 
@@ -48,15 +50,14 @@ export default function ProductDetailsPage() {
   } = useAuth();
 
   useEffect(() => {
-    const saved = localStorage.getItem("wishlist");
-    if (saved) {
-      try {
-        setWishlist(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse wishlist", e);
-      }
+    if (isAuthenticated) {
+      wishlistAPI.getWishlist()
+        .then((data) => {
+          setWishlist(data.wishlist || []);
+        })
+        .catch(console.error);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -92,19 +93,23 @@ export default function ProductDetailsPage() {
   }, [id, isAuthenticated]);
 
   const toggleWishlist = () => {
-    requireAuth("add to wishlist", () => {
-      const isAlreadyInWishlist = wishlist.includes(id as string);
-      const updated = isAlreadyInWishlist
-        ? wishlist.filter(pid => pid !== id)
-        : [...wishlist, id as string];
-      
-      setWishlist(updated);
-      localStorage.setItem("wishlist", JSON.stringify(updated));
-      
-      if (isAlreadyInWishlist) {
-        toast.success("Removed from wishlist");
-      } else {
-        toast.success("Added to wishlist");
+    requireAuth("add to wishlist", async () => {
+      try {
+        await wishlistAPI.toggleWishlist(id as string);
+        const isAlreadyInWishlist = wishlist.includes(id as string);
+        const updated = isAlreadyInWishlist
+          ? wishlist.filter(pid => pid !== id)
+          : [...wishlist, id as string];
+        
+        setWishlist(updated);
+        
+        if (isAlreadyInWishlist) {
+          toast.success("Removed from wishlist");
+        } else {
+          toast.success("Added to wishlist");
+        }
+      } catch (error) {
+        toast.error("Failed to update wishlist");
       }
     });
   };
@@ -145,8 +150,8 @@ export default function ProductDetailsPage() {
     return 0;
   };
 
-  const calculateGST = () => finalPrice * 0.05;
-  const calculatePlatformFee = () => finalPrice * 0.02;
+  const calculateGST = () => calculateOriginalPrice() * 0.05;
+  const calculatePlatformFee = () => calculateOriginalPrice() * 0.02;
 
   const calculateFinalTotal = () => {
     return finalPrice + calculateGST() + calculatePlatformFee();
@@ -463,14 +468,48 @@ export default function ProductDetailsPage() {
                           <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                           Discount ({product.discount}%)
                         </span>
-                        <span className="text-xs sm:text-sm font-bold">-₹{calculateDiscount().toLocaleString()}</span>
+                        <span className="text-xs sm:text-sm font-bold">-₹{calculateDiscount().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </div>
                     )}
 
+                    {/* Fees Breakdown Toggle */}
+                    <button
+                      onClick={() => setShowFees(!showFees)}
+                      className="w-full flex items-center justify-between text-xs sm:text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 transition-colors py-1"
+                    >
+                      <span className="flex items-center gap-1">
+                        Taxes & Fees <ChevronDown className={`w-4 h-4 transition-transform ${showFees ? 'rotate-180' : ''}`} />
+                      </span>
+                      <span>+₹{(calculateGST() + calculatePlatformFee()).toFixed(2)}</span>
+                    </button>
+                    
+                    {/* Fees Breakdown Content */}
+                    <AnimatePresence>
+                      {showFees && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pt-2 pb-1 space-y-2 border-l-2 border-slate-200 dark:border-white/10 ml-2 pl-3">
+                            <div className="flex justify-between items-center text-slate-500 dark:text-slate-400 text-xs">
+                              <span>GST (5%)</span>
+                              <span>₹{calculateGST().toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-slate-500 dark:text-slate-400 text-xs">
+                              <span>Platform Fee (2%)</span>
+                              <span>₹{calculatePlatformFee().toFixed(2)}</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
                     <div className="pt-3 sm:pt-4 border-t border-gray-200 dark:border-white/10 flex justify-between items-center">
                       <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">Final Total</span>
-                      <span className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-indigo-600 dark:from-cyan-400 dark:to-indigo-400">
-                        ₹{calculateFinalTotal().toLocaleString()}
+                      <span className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-indigo-600 dark:from-cyan-400 dark:to-indigo-400 flex items-baseline">
+                        ₹{Number(calculateFinalTotal().toFixed(2).split('.')[0]).toLocaleString()}<span className="text-lg sm:text-xl">.{calculateFinalTotal().toFixed(2).split('.')[1]}</span>
                       </span>
                     </div>
                   </div>

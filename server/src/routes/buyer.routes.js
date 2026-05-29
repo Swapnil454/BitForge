@@ -5,9 +5,11 @@ import {
   getBuyerSpendingOverTime,
   getWishlistCount,
   getAllBuyerTransactions,
+  getBuyerTransactionAnalytics,
   getBuyerTransactionDetails,
   getAllBuyerPurchases,
   getBuyerPurchaseDetails,
+  getBuyerPurchaseAnalytics,
   getPurchasedProductDetails,
 } from "../controllers/buyer.controller.js";
 
@@ -28,11 +30,17 @@ router.get("/wishlist-count", getWishlistCount);
 // Get all buyer transactions
 router.get("/transactions", getAllBuyerTransactions);
 
+// Get transaction analytics
+router.get("/transactions/analytics", getBuyerTransactionAnalytics);
+
 // Get single transaction details
 router.get("/transactions/:orderId", getBuyerTransactionDetails);
 
 // Get all buyer purchases (paid orders only)
 router.get("/purchases", getAllBuyerPurchases);
+
+// Get purchase analytics
+router.get("/purchases/analytics", getBuyerPurchaseAnalytics);
 
 // Get single purchase details
 router.get("/purchases/:purchaseId", getBuyerPurchaseDetails);

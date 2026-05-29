@@ -15,17 +15,19 @@ import {
   ShieldAlert,
   Upload,
   X,
+  Check,
+  Loader2
 } from "lucide-react";
 import api from "@/lib/api";
 import toast from "react-hot-toast";
 
 const CATEGORIES = [
-  { value: "item_not_delivered", label: "Item not delivered", icon: Package, color: "text-amber-400" },
-  { value: "wrong_item", label: "Wrong item received", icon: AlertTriangle, color: "text-orange-400" },
-  { value: "quality_issue", label: "Quality issue", icon: ShieldAlert, color: "text-yellow-400" },
-  { value: "not_as_described", label: "Not as described", icon: BadgeAlert, color: "text-blue-400" },
-  { value: "payment_issue", label: "Payment issue", icon: CreditCard, color: "text-purple-400" },
-  { value: "other", label: "Other", icon: HelpCircle, color: "text-slate-400 dark:text-white/50" },
+  { value: "item_not_delivered", label: "Item not delivered", icon: Package, color: "text-amber-500 dark:text-amber-400" },
+  { value: "wrong_item", label: "Wrong item received", icon: AlertTriangle, color: "text-orange-500 dark:text-orange-400" },
+  { value: "quality_issue", label: "Quality issue", icon: ShieldAlert, color: "text-yellow-600 dark:text-yellow-400" },
+  { value: "not_as_described", label: "Not as described", icon: BadgeAlert, color: "text-blue-500 dark:text-blue-400" },
+  { value: "payment_issue", label: "Payment issue", icon: CreditCard, color: "text-purple-500 dark:text-purple-400" },
+  { value: "other", label: "Other", icon: HelpCircle, color: "text-slate-500 dark:text-white/50" },
 ];
 
 const MAX_FILES = 3;
@@ -130,48 +132,199 @@ function ModalShell({ isOpen, onClose, orderId, orderNumber, productName, onSucc
     }
   };
 
-  const sharedProps = { submitted, submitting, category, setCategory, description, setDescription, files, addFiles, removeFile, errors, dragging, setDragging, fileInputRef, orderNumber, productName, handleClose, handleSubmit };
-
   return (
     <>
       {/* Backdrop */}
       <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         onClick={handleClose}
-        className="fixed inset-0 z-50 bg-white dark:bg-black/70 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/20 dark:bg-black/50 backdrop-blur-sm z-[900]"
       />
 
-      {/* Desktop Modal */}
+      {/* Drawer */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 12 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.96, y: 12 }}
-        transition={{ type: "spring", stiffness: 340, damping: 28 }}
-        role="dialog" aria-modal="true"
-        className="fixed inset-0 z-50 m-auto hidden sm:flex flex-col w-full max-w-lg max-h-[90vh] overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-[#10121a] shadow-[0_32px_80px_rgba(0,0,0,0.6)]"
-        style={{ height: "fit-content" }}
+        initial={{ x: "100%" }}
+        animate={{ x: 0 }}
+        exit={{ x: "100%" }}
+        transition={{ type: "tween", duration: 0.3 }}
+        className="fixed inset-y-0 right-0 h-[100dvh] w-full sm:w-[480px] bg-white dark:bg-[#16161e] shadow-2xl border-l border-slate-200 dark:border-white/10 z-[1000] flex flex-col"
       >
-        <ModalContent {...sharedProps} />
-      </motion.div>
+        {submitted ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6 py-10 text-center">
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20"
+            >
+              <CheckCircle2 className="h-8 w-8 text-emerald-500 dark:text-emerald-400" />
+            </motion.div>
+            <div>
+              <p className="text-lg font-semibold text-slate-900 dark:text-white">Dispute Submitted</p>
+              <p className="mt-1.5 text-sm text-slate-500 dark:text-white/50 leading-relaxed">
+                We've received your dispute. Our team will review it within 24–48 hours.
+              </p>
+            </div>
+            <div className="mt-4 w-full rounded-xl border border-slate-200 dark:border-white/8 bg-slate-50 dark:bg-white/[0.03] px-4 py-3 text-left text-sm">
+              <div className="flex justify-between gap-2 text-slate-400 dark:text-white/35 text-[11px] mb-1.5 uppercase tracking-wider">
+                <span>Order</span><span>#{orderNumber}</span>
+              </div>
+              <p className="text-slate-700 dark:text-white/70 font-medium truncate">{productName}</p>
+              <div className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-2 py-0.5 text-[11px] text-amber-600 dark:text-amber-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 dark:bg-amber-400" /> Pending Review
+              </div>
+            </div>
+            <button onClick={handleClose} className="mt-4 w-full px-4 py-2.5 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-900 dark:text-white rounded-lg font-semibold text-sm transition-colors">
+              Close
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Drawer header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-white/10 shrink-0 bg-slate-50 dark:bg-[#16161e]">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-red-500" />
+                  Raise a Dispute
+                </h2>
+                <p className="text-xs text-slate-500 mt-1 line-clamp-1">Tell us what went wrong.</p>
+              </div>
+              <button
+                onClick={handleClose}
+                disabled={submitting}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 transition-colors disabled:opacity-50"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-      {/* Mobile Bottom Sheet */}
-      <motion.div
-        initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-        transition={{ type: "spring", stiffness: 380, damping: 34 }}
-        role="dialog" aria-modal="true"
-        className="fixed bottom-0 left-0 right-0 z-50 flex sm:hidden flex-col max-h-[92dvh] overflow-hidden rounded-t-3xl border-t border-slate-200 dark:border-white/10 bg-[#10121a] shadow-[0_-16px_60px_rgba(0,0,0,0.55)]"
-      >
-        <div className="flex justify-center pt-3 pb-1 shrink-0">
-          <div className="h-1 w-10 rounded-full bg-white/20" />
-        </div>
-        <ModalContent {...sharedProps} />
+            {/* Drawer body */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              {/* Context pill */}
+              <div className="flex items-center gap-3 rounded-xl border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/5 px-4 py-3">
+                <AlertCircle className="h-5 w-5 text-red-500 dark:text-red-400/70 shrink-0" />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-slate-800 dark:text-white/90">{productName}</p>
+                  <p className="text-xs text-slate-500 dark:text-white/40 mt-0.5">Order #{orderNumber}</p>
+                </div>
+              </div>
+
+              {/* Category */}
+              <div>
+                <label className="block text-slate-900 dark:text-white font-semibold text-sm mb-2">
+                  Issue Type <span className="text-red-400">*</span>
+                </label>
+                <CategoryDropdown value={category} onChange={setCategory} error={errors.category} />
+                {errors.category && <p className="mt-1.5 text-xs text-red-500">{errors.category}</p>}
+              </div>
+
+              {/* Description */}
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <label className="text-slate-900 dark:text-white font-semibold text-sm">
+                    Describe your issue <span className="text-red-400">*</span>
+                  </label>
+                  <span className={`text-xs tabular-nums ${description.length > MAX_CHARS ? "text-red-500" : "text-slate-400 dark:text-white/40"}`}>
+                    {description.length}/{MAX_CHARS}
+                  </span>
+                </div>
+                <textarea
+                  value={description}
+                  onChange={(e) => { if (e.target.value.length <= MAX_CHARS) setDescription(e.target.value); }}
+                  rows={4}
+                  placeholder="Explain what happened, when it occurred, and what you expected."
+                  className={`
+                    w-full resize-none rounded-xl border px-4 py-3 text-sm
+                    bg-slate-50 dark:bg-[#0a0a0f] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30 outline-none transition
+                    focus:ring-1
+                    ${errors.description
+                      ? "border-red-500/50 focus:border-red-400 focus:ring-red-400/20"
+                      : "border-slate-200 dark:border-white/10 focus:border-cyan-500/50 focus:ring-cyan-400/10"}
+                  `}
+                />
+                {errors.description
+                  ? <p className="mt-1.5 text-xs text-red-500">{errors.description}</p>
+                  : <p className="mt-1.5 text-xs text-slate-500 dark:text-white/40">Be as specific as possible for faster resolution.</p>}
+              </div>
+
+              {/* File Upload */}
+              <div>
+                <label className="block text-slate-900 dark:text-white font-semibold text-sm mb-2">
+                  Proof Upload <span className="text-slate-400 dark:text-white/40 font-normal">(optional)</span>
+                </label>
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={(e) => { e.preventDefault(); setDragging(false); addFiles(e.dataTransfer.files); }}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-6 cursor-pointer transition-all ${dragging ? "border-cyan-400/50 bg-cyan-50 dark:bg-cyan-400/5" : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] hover:border-slate-300 dark:hover:border-white/20 hover:bg-slate-100 dark:hover:bg-white/[0.04]"}`}
+                >
+                  <Upload className="h-6 w-6 text-slate-400 dark:text-white/25" />
+                  <div className="text-center">
+                    <p className="text-sm text-slate-600 dark:text-white/60"><span className="text-cyan-600 dark:text-cyan-400 font-medium">Click to upload</span> or drag & drop</p>
+                    <p className="mt-1 text-xs text-slate-400 dark:text-white/40">JPG, PNG, PDF · Max 5MB · Up to 3 files</p>
+                  </div>
+                </div>
+                <input ref={fileInputRef} type="file" accept=".jpg,.jpeg,.png,.pdf" multiple className="hidden" onChange={(e) => e.target.files && addFiles(e.target.files)} />
+                {errors.files && <p className="mt-1.5 text-xs text-red-500">{errors.files}</p>}
+                
+                {files.length > 0 && (
+                  <div className="mt-4 flex flex-col gap-2">
+                    {files.map((f, i) => (
+                      <div key={i} className="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.03] px-3 py-2.5">
+                        {f.preview
+                          ? <img src={f.preview} alt="" className="h-10 w-10 rounded-lg object-cover shrink-0 border border-slate-200 dark:border-white/10" />
+                          : <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-200 dark:bg-white/5 border border-slate-200 dark:border-white/10 shrink-0"><Paperclip className="h-4 w-4 text-slate-500 dark:text-white/40" /></div>}
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-slate-700 dark:text-white/80">{f.file.name}</p>
+                          <p className="text-xs text-slate-500 dark:text-white/40">{(f.file.size / 1024).toFixed(0)} KB</p>
+                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); removeFile(i); }} className="shrink-0 rounded-lg p-1.5 text-slate-400 dark:text-white/40 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-red-500 transition">
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Drawer Footer */}
+            <div className="p-5 pb-8 sm:pb-5 border-t border-slate-200 dark:border-white/10 shrink-0 bg-slate-50 dark:bg-[#16161e] flex gap-3">
+              <button
+                onClick={handleClose}
+                disabled={submitting}
+                className="flex-1 px-4 py-2.5 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-slate-900 dark:text-white rounded-lg font-semibold text-sm transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="flex-[2] px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 shadow-lg shadow-red-500/20"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Submit Dispute
+                  </>
+                )}
+              </button>
+            </div>
+          </>
+        )}
       </motion.div>
     </>
   );
 }
 
-/* ─── Custom Category Dropdown (centered panel, no scrim) ─── */
+/* ─── Custom Category Dropdown ─── */
 
 function CategoryDropdown({
   value,
@@ -186,7 +339,6 @@ function CategoryDropdown({
   const panelRef = useRef<HTMLDivElement>(null);
   const selected = CATEGORIES.find((c) => c.value === value);
 
-  // Close on click outside the panel
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -194,7 +346,6 @@ function CategoryDropdown({
         setOpen(false);
       }
     };
-    // slight delay so the open-click doesn't immediately close
     const id = setTimeout(() => document.addEventListener("mousedown", handler), 50);
     return () => {
       clearTimeout(id);
@@ -210,7 +361,7 @@ function CategoryDropdown({
         onClick={() => setOpen((o) => !o)}
         className={`
           w-full flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm
-          bg-white/[0.04] outline-none transition-all duration-200
+          bg-slate-50 dark:bg-white/[0.04] outline-none transition-all duration-200
           ${open
             ? "border-cyan-500/50 ring-1 ring-cyan-400/10"
             : error
@@ -224,10 +375,10 @@ function CategoryDropdown({
             <span className="text-slate-900 dark:text-white font-medium truncate">{selected.label}</span>
           </span>
         ) : (
-          <span className="text-slate-300 dark:text-white/30">Select an option</span>
+          <span className="text-slate-500 dark:text-white/40">Select an option</span>
         )}
         <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
-          <ChevronDown className="h-4 w-4 text-slate-300 dark:text-white/30 shrink-0" />
+          <ChevronDown className="h-4 w-4 text-slate-400 dark:text-white/40 shrink-0" />
         </motion.div>
       </button>
 
@@ -235,86 +386,81 @@ function CategoryDropdown({
       <AnimatePresence>
         {open && (
           <>
-            {/* Dark overlay — instant, no fade, so form never shows through during panel animation */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0 }}
               onClick={() => setOpen(false)}
-              className="fixed inset-0 z-[60] bg-[#06070b]/80"
+              className="fixed inset-0 z-[1050] bg-black/20 dark:bg-black/60 backdrop-blur-[1px]"
             />
 
-            {/* Centered floating panel */}
             <motion.div
               ref={panelRef}
-              initial={{ opacity: 0, scale: 0.93, y: 10 }}
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.93, y: 10 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ type: "spring", stiffness: 420, damping: 30 }}
               className="
-                fixed z-[61]
+                fixed z-[1060]
                 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
                 w-[min(320px,88vw)]
                 overflow-hidden rounded-2xl
                 border border-slate-200 dark:border-white/10
-                bg-[#13151f]
-                shadow-[0_24px_80px_rgba(0,0,0,0.9)]
+                bg-white dark:bg-[#16161e]
+                shadow-[0_24px_80px_rgba(0,0,0,0.2)] dark:shadow-[0_24px_80px_rgba(0,0,0,0.9)]
               "
             >
-              {/* Panel header */}
-              <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-400 dark:text-white/35">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 px-4 py-3 bg-slate-50 dark:bg-[#16161e]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500 dark:text-white/40">
                   Select Issue Type
                 </p>
                 <button
                   onClick={() => setOpen(false)}
-                  className="rounded-md p-1 text-slate-300 dark:text-white/30 hover:bg-white/8 hover:text-slate-600 dark:hover:text-white/70 transition"
+                  className="rounded-md p-1 text-slate-400 dark:text-white/40 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-600 dark:hover:text-white transition"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
 
-              {/* Options */}
-              <div className="py-1">
+              <div className="py-2 px-2 max-h-[300px] overflow-y-auto">
                 {CATEGORIES.map((cat, idx) => {
                   const isSelected = value === cat.value;
                   return (
                     <motion.button
                       key={cat.value}
                       type="button"
-                      initial={{ opacity: 0, x: -6 }}
+                      initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.028, duration: 0.18 }}
+                      transition={{ delay: idx * 0.03, duration: 0.2 }}
                       onClick={() => { onChange(cat.value); setOpen(false); }}
                       className={`
-                        w-full flex items-center justify-between gap-3 px-3.5 py-2.5 text-sm
-                        transition-all duration-150 group
-                        ${isSelected ? "bg-white/[0.07]" : "hover:bg-white/[0.04]"}
+                        w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-sm
+                        transition-all duration-150 group mb-1 last:mb-0
+                        ${isSelected ? "bg-slate-100 dark:bg-white/10" : "hover:bg-slate-50 dark:hover:bg-white/5"}
                       `}
                     >
-                      <span className="flex items-center gap-2.5 min-w-0">
+                      <span className="flex items-center gap-3 min-w-0">
                         <span className={`
-                          flex h-7 w-7 items-center justify-center rounded-lg shrink-0 transition-colors
-                          ${isSelected ? "bg-slate-200 dark:bg-white/10" : "bg-slate-100 dark:bg-white/[0.03] group-hover:bg-white/[0.06]"}
+                          flex h-8 w-8 items-center justify-center rounded-lg shrink-0 transition-colors
+                          ${isSelected ? "bg-white dark:bg-white/10 shadow-sm" : "bg-slate-100 dark:bg-white/5 group-hover:bg-white dark:group-hover:bg-white/10"}
                         `}>
-                          <cat.icon className={`h-3.5 w-3.5 transition-colors ${isSelected ? cat.color : "text-slate-300 dark:text-white/30 group-hover:text-white/55"}`} />
+                          <cat.icon className={`h-4 w-4 transition-colors ${isSelected ? cat.color : "text-slate-500 dark:text-white/40 group-hover:text-slate-700 dark:group-hover:text-white/80"}`} />
                         </span>
-                        <span className={`font-medium text-sm truncate transition-colors ${isSelected ? "text-slate-900 dark:text-white" : "text-white/55 group-hover:text-white/85"}`}>
+                        <span className={`font-medium text-sm truncate transition-colors ${isSelected ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-white/60 group-hover:text-slate-900 dark:group-hover:text-white/90"}`}>
                           {cat.label}
                         </span>
                       </span>
 
-                      {/* Radio */}
                       <span className={`
                         shrink-0 flex h-4 w-4 items-center justify-center rounded-full border-2 transition-all duration-200
-                        ${isSelected ? "border-cyan-400 bg-cyan-400" : "border-white/15 group-hover:border-white/30"}
+                        ${isSelected ? "border-cyan-500 bg-cyan-500 dark:border-cyan-400 dark:bg-cyan-400" : "border-slate-300 dark:border-white/20 group-hover:border-cyan-400"}
                       `}>
                         {isSelected && (
                           <motion.span
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            className="h-1.5 w-1.5 rounded-full bg-[#0d0f16] block"
+                            className="h-1.5 w-1.5 rounded-full bg-white dark:bg-[#0d0f16] block"
                           />
                         )}
                       </span>
@@ -326,186 +472,7 @@ function CategoryDropdown({
           </>
         )}
       </AnimatePresence>
-
-
-      {error && <p className="mt-1.5 text-xs text-red-400">{error}</p>}
     </>
   );
 }
 
-/* ─── Modal content ──────────────────────────────────────── */
-
-
-type ContentProps = {
-  submitted: boolean; submitting: boolean;
-  category: string; setCategory: (v: string) => void;
-  description: string; setDescription: (v: string) => void;
-  files: UploadedFile[]; addFiles: (f: FileList | File[]) => void; removeFile: (i: number) => void;
-  errors: { category?: string; description?: string; files?: string };
-  dragging: boolean; setDragging: (v: boolean) => void;
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
-  orderNumber: string; productName: string;
-  handleClose: () => void; handleSubmit: () => void;
-};
-
-function ModalContent(p: ContentProps) {
-  if (p.submitted) {
-    return (
-      <div className="flex flex-col items-center gap-4 px-6 py-10 text-center">
-        <motion.div
-          initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20"
-        >
-          <CheckCircle2 className="h-8 w-8 text-emerald-400" />
-        </motion.div>
-        <div>
-          <p className="text-lg font-semibold text-slate-900 dark:text-white">Dispute Submitted</p>
-          <p className="mt-1.5 text-sm text-slate-400 dark:text-white/50 leading-relaxed">
-            We've received your dispute. Our team will review it within 24–48 hours.
-          </p>
-        </div>
-        <div className="mt-1 w-full rounded-xl border border-white/8 bg-slate-100 dark:bg-white/[0.03] px-4 py-3 text-left text-sm">
-          <div className="flex justify-between gap-2 text-slate-400 dark:text-white/35 text-[11px] mb-1.5 uppercase tracking-wider">
-            <span>Order</span><span>#{p.orderNumber}</span>
-          </div>
-          <p className="text-slate-600 dark:text-white/70 font-medium truncate">{p.productName}</p>
-          <div className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[11px] text-amber-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Pending Review
-          </div>
-        </div>
-        <button onClick={p.handleClose} className="mt-1 w-full rounded-xl bg-white/8 border border-slate-200 dark:border-white/10 py-3 text-sm font-medium text-slate-700 dark:text-white/80 hover:bg-white/12 hover:text-slate-900 dark:hover:text-white transition">
-          Close
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3 border-b border-white/8 px-5 py-4 shrink-0">
-        <div>
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white">Raise a Dispute</h2>
-          <p className="mt-0.5 text-xs text-slate-400 dark:text-white/40">Tell us what went wrong with your purchase.</p>
-        </div>
-        <button onClick={p.handleClose} className="shrink-0 mt-0.5 rounded-lg p-1.5 text-slate-400 dark:text-white/35 hover:bg-white/8 hover:text-slate-700 dark:hover:text-white/80 transition" aria-label="Close">
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-
-      {/* Context pill */}
-      <div className="mx-5 mt-4 shrink-0 flex items-center gap-2.5 rounded-xl border border-white/8 bg-slate-100 dark:bg-white/[0.03] px-3.5 py-2.5">
-        <AlertCircle className="h-4 w-4 text-red-400/70 shrink-0" />
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-slate-700 dark:text-white/80">{p.productName}</p>
-          <p className="text-[11px] text-slate-300 dark:text-white/30">Order #{p.orderNumber}</p>
-        </div>
-      </div>
-
-      {/* Scrollable body */}
-      <div className="overflow-y-auto px-5 pb-4 mt-4 flex flex-col gap-4">
-
-        {/* Category — Custom Dropdown */}
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-white/55 uppercase tracking-wider">
-            Issue Type <span className="text-red-400">*</span>
-          </label>
-          <CategoryDropdown value={p.category} onChange={p.setCategory} error={p.errors.category} />
-        </div>
-
-        {/* Description */}
-        <div>
-          <div className="mb-1.5 flex items-center justify-between">
-            <label className="text-xs font-medium text-white/55 uppercase tracking-wider">
-              Describe your issue <span className="text-red-400">*</span>
-            </label>
-            <span className={`text-xs tabular-nums ${p.description.length > MAX_CHARS ? "text-red-400" : "text-white/25"}`}>
-              {p.description.length}/{MAX_CHARS}
-            </span>
-          </div>
-          <textarea
-            value={p.description}
-            onChange={(e) => { if (e.target.value.length <= MAX_CHARS) p.setDescription(e.target.value); }}
-            rows={4}
-            placeholder="Explain what happened, when it occurred, and what you expected."
-            className={`
-              w-full resize-none rounded-xl border px-4 py-3 text-sm
-              bg-white/[0.04] text-slate-900 dark:text-white placeholder-white/20 outline-none transition
-              focus:ring-1
-              ${p.errors.description
-                ? "border-red-500/50 focus:border-red-400 focus:ring-red-400/20"
-                : "border-slate-200 dark:border-white/10 focus:border-cyan-500/50 focus:ring-cyan-400/10"}
-            `}
-          />
-          {p.errors.description
-            ? <p className="mt-1.5 text-xs text-red-400">{p.errors.description}</p>
-            : <p className="mt-1.5 text-xs text-white/25">Be as specific as possible for faster resolution.</p>}
-        </div>
-
-        {/* File Upload */}
-        <div>
-          <label className="mb-1.5 block text-xs font-medium text-white/55 uppercase tracking-wider">
-            Proof Upload <span className="text-slate-200 dark:text-white/20">(optional)</span>
-          </label>
-          <div
-            onDragOver={(e) => { e.preventDefault(); p.setDragging(true); }}
-            onDragLeave={() => p.setDragging(false)}
-            onDrop={(e) => { e.preventDefault(); p.setDragging(false); p.addFiles(e.dataTransfer.files); }}
-            onClick={() => p.fileInputRef.current?.click()}
-            className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-5 cursor-pointer transition-all ${p.dragging ? "border-cyan-400/50 bg-cyan-400/5" : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] hover:border-slate-300 dark:hover:border-white/20 hover:bg-white/[0.04]"}`}
-          >
-            <Upload className="h-5 w-5 text-white/25" />
-            <div className="text-center">
-              <p className="text-sm text-white/45"><span className="text-cyan-400 font-medium">Click to upload</span> or drag & drop</p>
-              <p className="mt-0.5 text-xs text-slate-200 dark:text-white/20">JPG, PNG, PDF · Max 5MB · Up to 3 files</p>
-            </div>
-          </div>
-          <input ref={p.fileInputRef} type="file" accept=".jpg,.jpeg,.png,.pdf" multiple className="hidden" onChange={(e) => e.target.files && p.addFiles(e.target.files)} />
-          {p.errors.files && <p className="mt-1.5 text-xs text-red-400">{p.errors.files}</p>}
-          {p.files.length > 0 && (
-            <div className="mt-3 flex flex-col gap-2">
-              {p.files.map((f, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-xl border border-white/8 bg-slate-100 dark:bg-white/[0.03] px-3 py-2.5">
-                  {f.preview
-                    ? <img src={f.preview} alt="" className="h-9 w-9 rounded-lg object-cover shrink-0 border border-slate-200 dark:border-white/10" />
-                    : <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 shrink-0"><Paperclip className="h-4 w-4 text-slate-400 dark:text-white/35" /></div>}
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-white/75">{f.file.name}</p>
-                    <p className="text-xs text-white/25">{(f.file.size / 1024).toFixed(0)} KB</p>
-                  </div>
-                  <button onClick={(e) => { e.stopPropagation(); p.removeFile(i); }} className="shrink-0 rounded-lg p-1.5 text-white/25 hover:bg-white/8 hover:text-red-400 transition">
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Action bar */}
-      <div className="shrink-0 border-t border-white/8 px-5 py-4 flex gap-3">
-        <button
-          onClick={p.handleClose} disabled={p.submitting}
-          className="flex-1 rounded-xl border border-slate-200 dark:border-white/10 bg-white/[0.04] py-3 text-sm font-medium text-white/55 hover:bg-white/8 hover:text-white/85 transition disabled:opacity-40"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={p.handleSubmit} disabled={p.submitting}
-          className="flex-[2] rounded-xl bg-red-500 py-3 text-sm font-semibold text-slate-900 dark:text-white hover:bg-red-400 transition disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2"
-        >
-          {p.submitting ? (
-            <>
-              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-              </svg>
-              Submitting…
-            </>
-          ) : "Submit Dispute"}
-        </button>
-      </div>
-    </div>
-  );
-}

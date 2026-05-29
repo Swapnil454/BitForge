@@ -36,21 +36,21 @@ export const createReview = async (req, res) => {
       });
     }
 
-    // Get product to find seller
+    // Get product to find seller and check if deleted
     const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+    if (!product || product.isDeleted) {
+      return res.status(404).json({ message: "Product not found or has been deleted" });
     }
 
-    // Check if review already exists
+    // Check if review already exists for this order
     const existingReview = await Review.findOne({
-      productId: productId,
+      orderId: orderId,
       buyerId: req.user.id
     });
 
     if (existingReview) {
       return res.status(400).json({ 
-        message: "You have already reviewed this product. You can edit your existing review." 
+        message: "You have already reviewed this purchase. You can edit your existing review." 
       });
     }
 
@@ -256,27 +256,44 @@ export const canReview = async (req, res) => {
   try {
     const { productId } = req.params;
 
-    // Check if user has purchased the product
-    const order = await Order.findOne({
+    const { orderId } = req.query;
+
+    const orderQuery = {
       buyerId: req.user.id,
       productId: productId,
       status: { $in: ["completed", "delivered", "paid", "success"] }
-    });
+    };
+    if (orderId) {
+      orderQuery._id = orderId;
+    }
+
+    // Check if user has purchased the product
+    const order = await Order.findOne(orderQuery);
 
     if (!order) {
       return res.json({ canReview: false, reason: "You haven't purchased this product" });
     }
 
-    // Check if review already exists
-    const existingReview = await Review.findOne({
-      productId: productId,
-      buyerId: req.user.id
-    });
+    const product = await Product.findById(productId);
+    if (!product || product.isDeleted) {
+      return res.json({ canReview: false, reason: "Product is no longer available for review" });
+    }
+
+    // Check if review already exists for this order
+    const reviewQuery = {
+      buyerId: req.user.id,
+      productId: productId
+    };
+    if (orderId) {
+      reviewQuery.orderId = orderId;
+    }
+
+    const existingReview = await Review.findOne(reviewQuery);
 
     if (existingReview) {
       return res.json({ 
         canReview: false, 
-        reason: "You have already reviewed this product",
+        reason: "You have already reviewed this purchase",
         existingReview 
       });
     }
