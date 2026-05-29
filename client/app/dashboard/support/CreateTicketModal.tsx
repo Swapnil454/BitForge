@@ -61,7 +61,8 @@ export default function CreateTicketModal({ onClose, onSuccess, token }: any) {
 
       if (res.ok) {
         toast.success("Ticket created successfully");
-        onSuccess();
+        const data = await res.json();
+        onSuccess(data.ticket._id);
       } else {
         const error = await res.json();
         toast.error(error.error || "Failed to create ticket");

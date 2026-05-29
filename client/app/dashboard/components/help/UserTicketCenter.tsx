@@ -7,13 +7,12 @@ import TicketSidebar from "./TicketSidebar";
 import TicketWindow from "./TicketWindow";
 import EmptyState from "./EmptyState";
 import { toast } from "react-hot-toast";
+import CreateTicketModal from "../../support/CreateTicketModal";
 
 export default function UserTicketCenter({ 
-  onNewTicket, 
   urlId,
   onChatOpenChange 
 }: { 
-  onNewTicket: () => void; 
   urlId?: string | null;
   onChatOpenChange?: (isOpen: boolean) => void;
 }) {
@@ -23,6 +22,7 @@ export default function UserTicketCenter({
   const [tickets, setTickets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   
@@ -61,9 +61,9 @@ export default function UserTicketCenter({
 
     const socketUrl = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace("/api", "") : "http://localhost:5000";
     const newSocket = io(socketUrl, {
-      path: "/socket.io",
+      path: "/api/socket.io",
       auth: { token },
-      transports: ["websocket", "polling"],
+      transports: ["polling", "websocket"],
     });
 
     newSocket.on("ticket:new-message", (newMsg: any) => {
@@ -73,17 +73,27 @@ export default function UserTicketCenter({
           if (prev.some(m => m._id === newMsg._id)) return prev;
           return [...prev, newMsg];
         });
-        setTickets(prev => prev.map(t => 
-          t._id === newMsg.ticketId 
-            ? { ...t, updatedAt: newMsg.createdAt, lastMessageText: newMsg.message, lastMessageAttachments: newMsg.attachments } 
-            : t
-        ));
+        setTickets(prev => {
+          const updated = prev.map(t => 
+            t._id === newMsg.ticketId 
+              ? { ...t, updatedAt: newMsg.createdAt, lastMessageText: newMsg.message, lastMessageAttachments: newMsg.attachments } 
+              : t
+          );
+          return updated.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        });
+
+        if (newMsg.from !== user?._id) {
+          newSocket.emit('ticket:mark-read', { ticketId: newMsg.ticketId, msgIds: [newMsg._id] });
+        }
       } else {
-        setTickets(prev => prev.map(t => 
-          t._id === newMsg.ticketId 
-            ? { ...t, unreadCount: (t.unreadCount || 0) + 1, updatedAt: newMsg.createdAt, lastMessageText: newMsg.message, lastMessageAttachments: newMsg.attachments } 
-            : t
-        ));
+        setTickets(prev => {
+          const updated = prev.map(t => 
+            t._id === newMsg.ticketId 
+              ? { ...t, unreadCount: (t.unreadCount || 0) + 1, updatedAt: newMsg.createdAt, lastMessageText: newMsg.message, lastMessageAttachments: newMsg.attachments } 
+              : t
+          );
+          return updated.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        });
       }
     });
 
@@ -126,9 +136,17 @@ export default function UserTicketCenter({
 
   useEffect(() => {
     if (!socket || !selectedTicketId) return;
-    socket.emit("join-ticket", selectedTicketId);
+    
+    const joinRoom = () => {
+      socket.emit("join-ticket", selectedTicketId);
+    };
+    
+    joinRoom(); // Join immediately if already connected
+    socket.on('connect', joinRoom); // Rejoin if socket reconnects
+    
     return () => {
       socket.emit("leave-ticket", selectedTicketId);
+      socket.off('connect', joinRoom);
     };
   }, [socket, selectedTicketId]);
 
@@ -188,7 +206,7 @@ export default function UserTicketCenter({
       if (res.ok) {
         const data = await res.json();
         setMessages(data.messages || []);
-        setTickets((prev) => prev.map(t => t._id === tId ? data.ticket : t));
+        setTickets((prev) => prev.map(t => t._id === tId ? { ...t, ...data.ticket, unreadCount: 0 } : t));
       } else if (res.status === 404) {
         toast.error("Ticket not found");
         setSelectedTicketId(null);
@@ -234,7 +252,7 @@ export default function UserTicketCenter({
         setStatusFilter={setStatusFilter}
         page={page}
         isAdmin={false}
-        onNewTicket={onNewTicket}
+        onNewTicket={() => setIsCreateModalOpen(true)}
       />
       
       <div className={`flex-1 min-w-0 ${mobileView === "sidebar" ? "hidden md:flex" : "flex"}`}>
@@ -254,6 +272,19 @@ export default function UserTicketCenter({
           <EmptyState />
         )}
       </div>
+
+      {isCreateModalOpen && (
+        <CreateTicketModal
+          token={token}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={(ticketId: string) => {
+            setIsCreateModalOpen(false);
+            setStatusFilter('all');
+            fetchTickets(1);
+            handleSelectTicket(ticketId);
+          }}
+        />
+      )}
     </div>
   );
 }
