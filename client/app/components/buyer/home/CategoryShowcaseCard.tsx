@@ -19,10 +19,17 @@ export default function CategoryShowcaseCard({ title, categoryId, items, linkTex
   const router = useRouter();
 
   return (
-    <div className="bg-white dark:bg-[#0B1221] p-4 sm:p-5 h-full flex flex-col hover:shadow-xl transition-shadow border border-transparent dark:border-white/5">
-      <div className="flex items-center justify-between mb-3 sm:mb-4">
+    <div className="h-full flex flex-col">
+      {/* Mobile Title - Outside the box */}
+      <div className="md:hidden flex items-center justify-between mb-2.5 px-0.5 ml-[3px]">
         <h3 className="font-bold text-[19px] sm:text-[21px] text-[#0F1111] dark:text-white tracking-tight">{title}</h3>
       </div>
+
+      <div className="bg-white dark:bg-[#0B1221] p-4 sm:p-5 h-full flex flex-col hover:shadow-xl transition-shadow border border-transparent dark:border-white/5 rounded-xl md:rounded-none">
+        {/* Desktop Title - Inside the box */}
+        <div className="hidden md:flex items-center justify-between mb-3 sm:mb-4">
+          <h3 className="font-bold text-[19px] sm:text-[21px] text-[#0F1111] dark:text-white tracking-tight">{title}</h3>
+        </div>
       
       {/* 2x2 Grid */}
       <div className="grid grid-cols-2 gap-x-3 sm:gap-x-4 gap-y-5 sm:gap-y-6 mb-6 flex-grow">
@@ -52,6 +59,7 @@ export default function CategoryShowcaseCard({ title, categoryId, items, linkTex
       >
         {linkText}
       </button>
+      </div>
     </div>
   );
 }

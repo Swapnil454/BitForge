@@ -10,8 +10,8 @@ import {
 import { searchAPI } from "@/lib/api";
 
 const TRENDING = [
-  "JavaScript", "Python", "Figma Templates", "React",
-  "Node.js", "UI Kit", "Machine Learning", "Excel Sheets",
+  "Admin Dashboard", "React Course", "Next.js Template", "SQL Query",
+  "UI Kit", "Landing Page", "ES6 Notes", "React Query",
 ];
 
 const CATEGORIES = [

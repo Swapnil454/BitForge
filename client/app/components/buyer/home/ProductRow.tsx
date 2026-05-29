@@ -28,11 +28,31 @@ export default function ProductRow({
   if (!isLoading && products.length === 0) return null;
 
   return (
-    <div className="w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 mb-8 sm:mb-10">
-      <div className="bg-white dark:bg-[#0B1221] p-4 sm:p-5 relative group hover:shadow-xl transition-shadow border border-transparent dark:border-white/5">
+    <div className="w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 mb-8 sm:mb-10 flex flex-col">
+      {/* Mobile Header (Outside box) */}
+      <div className="md:hidden flex justify-between items-center mb-2.5 px-0.5 ml-[3px]">
+        <div>
+          <h2 className="text-[19px] sm:text-[21px] font-bold text-[#0F1111] dark:text-white tracking-tight">
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-0.5">{subtitle}</p>
+          )}
+        </div>
+        {onSeeAll && (
+          <button
+            onClick={onSeeAll}
+            className="text-[13px] sm:text-[14px] font-medium text-[#007185] dark:text-[#52a6b8] hover:text-[#c7511f] dark:hover:text-[#e47911] hover:underline transition-colors mt-1"
+          >
+            See all
+          </button>
+        )}
+      </div>
 
-        {/* Header */}
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-white dark:bg-[#0B1221] p-4 sm:p-5 relative group hover:shadow-xl transition-shadow border border-transparent dark:border-white/5 rounded-xl md:rounded-none">
+
+        {/* Desktop Header (Inside box) */}
+        <div className="hidden md:flex justify-between items-center mb-4">
           <div>
             <h2 className="text-[19px] sm:text-[21px] font-bold text-[#0F1111] dark:text-white tracking-tight">
               {title}

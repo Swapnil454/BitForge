@@ -9,7 +9,7 @@ const NAV_ROUTES = [
   "/dashboard/admin/products",
   "/dashboard/admin/promotions",
   "/dashboard/admin/security",
-  "/dashboard/admin/help-center"
+  "/dashboard/admin/inquiries",
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

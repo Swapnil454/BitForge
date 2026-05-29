@@ -60,7 +60,7 @@ export default function SearchDropdown({
     setLoadingHistory(true);
     searchAPI
       .getHistory()
-      .then((d) => setHistory(d.history || []))
+      .then((d) => setHistory((d.history || []).slice(0, 4)))
       .catch(() => {})
       .finally(() => setLoadingHistory(false));
   }, [isAuthenticated]);
@@ -79,7 +79,7 @@ export default function SearchDropdown({
     debounceRef.current = setTimeout(async () => {
       try {
         const data = await searchAPI.getSuggestions(query.trim());
-        setSuggestions((data.suggestions || []).slice(0, 8)); // suggestions still capped at 8 on frontend
+        setSuggestions((data.suggestions || []).slice(0, 4)); // cap at 4 rows
       } catch {
         setSuggestions([]);
       } finally {

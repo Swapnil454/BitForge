@@ -136,7 +136,7 @@ export default function BuyerHeader({
         <div className="max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 relative">
 
           {/* Desktop & Tablet Header */}
-          <div className="flex items-center justify-between h-16 gap-4">
+          <div className="flex items-center justify-between h-[52px] md:h-16 gap-4">
 
             {/* Logo area */}
             <div className="flex items-center shrink-0 gap-2 sm:gap-4">
@@ -159,7 +159,7 @@ export default function BuyerHeader({
                     priority
                   />
                 </div>
-                <span className="text-lg sm:text-xl -ml-8 font-black text-slate-900 dark:text-white hidden sm:block tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                <span className="text-lg sm:text-xl -ml-8 font-black text-slate-900 dark:text-white tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                   BitForge
                 </span>
               </button>
@@ -226,13 +226,7 @@ export default function BuyerHeader({
             {/* Right: Actions */}
             <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
 
-              {/* Mobile Search Icon — opens full-screen page on small devices */}
-              <button
-                className="md:hidden p-2.5 text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-                onClick={() => setMobileSearchOpen(true)}
-              >
-                <Search size={22} />
-              </button>
+
 
               {/* Wishlist */}
               <button

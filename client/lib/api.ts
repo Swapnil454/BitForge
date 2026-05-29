@@ -832,6 +832,22 @@ export const contactAPI = {
     }
 };
 
+// Admin inquiry API
+export const inquiryAPI = {
+    getAll: async (params?: { page?: number; limit?: number; type?: string; search?: string }) => {
+        const response = await api.get('/contact/admin', { params });
+        return response.data;
+    },
+    deleteOne: async (id: string) => {
+        const response = await api.delete(`/contact/admin/${id}`);
+        return response.data;
+    },
+    markRead: async (id: string) => {
+        const response = await api.patch(`/contact/admin/${id}/read`);
+        return response.data;
+    },
+};
+
 // Promotion API functions
 export const promotionAPI = {
     createSellerPromotion: async (formData: FormData) => {
