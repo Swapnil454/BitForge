@@ -90,18 +90,20 @@ export default function TicketSidebar({
         mobileHidden ? "hidden md:flex" : "flex"
       } ${isDark ? "bg-[#0B141A] md:border-white/5" : "bg-slate-50 md:border-slate-200"}`}
     >
-      <div className={`px-4 py-3 flex items-center justify-between shrink-0 ${isDark ? "bg-[#0B141A]" : "bg-slate-50"}`}>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
-            className={`p-2 rounded-full transition-all ${isDark ? "bg-white/5 hover:bg-white/10 text-white/70 hover:text-white" : "bg-white shadow-sm hover:shadow text-slate-600 hover:text-slate-900"}`}
-            aria-label="Go back"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <h2 className={`text-lg font-extrabold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Support Tickets</h2>
+      {isAdmin && (
+        <div className={`px-4 py-3 flex items-center justify-between shrink-0 ${isDark ? "bg-[#0B141A]" : "bg-slate-50"}`}>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.back()}
+              className={`p-2 rounded-full transition-all ${isDark ? "bg-white/5 hover:bg-white/10 text-white/70 hover:text-white" : "bg-white shadow-sm hover:shadow text-slate-600 hover:text-slate-900"}`}
+              aria-label="Go back"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <h2 className={`text-lg font-extrabold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>Support Tickets</h2>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className={`flex flex-col gap-3 px-4 py-2 shrink-0 ${isDark ? "bg-[#0B141A]" : "bg-slate-50"}`}>
         <div className={`relative flex items-center w-full rounded-2xl px-3 py-2.5 transition-all shadow-sm border ${

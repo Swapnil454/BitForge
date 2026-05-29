@@ -3,12 +3,12 @@ import multer from "multer";
 // Use memory storage for uploading to Cloudinary
 const storage = multer.memoryStorage();
 
-// File filter to accept only images
+// File filter to accept only images and PDFs
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
+  if (file.mimetype.startsWith("image/") || file.mimetype === "application/pdf") {
     cb(null, true);
   } else {
-    cb(new Error("Only image files are allowed"), false);
+    cb(new Error("Only image and PDF files are allowed"), false);
   }
 };
 

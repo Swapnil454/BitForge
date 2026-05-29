@@ -22,18 +22,18 @@ interface SearchDropdownProps {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Course: "bg-violet-500/15 text-violet-400 border-violet-500/20",
-  eBook: "bg-cyan-500/15 text-cyan-400 border-cyan-500/20",
-  Template: "bg-amber-500/15 text-amber-400 border-amber-500/20",
-  Software: "bg-green-500/15 text-green-400 border-green-500/20",
-  "Design Asset": "bg-pink-500/15 text-pink-400 border-pink-500/20",
-  default: "bg-indigo-500/15 text-indigo-400 border-indigo-500/20",
+  Course: "text-violet-600 dark:text-violet-400 ",
+  eBook: "text-cyan-600 dark:text-cyan-400 ",
+  Template: "text-amber-600 dark:text-amber-400 ",
+  Software: "text-green-600 dark:text-green-400 ",
+  "Design Asset": "text-pink-600 dark:text-pink-400 ",
+  default: "text-indigo-600 dark:text-indigo-400 ",
 };
 
 function CategoryBadge({ category }: { category: string }) {
   const cls = CATEGORY_COLORS[category] || CATEGORY_COLORS.default;
   return (
-    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md border ${cls} shrink-0`}>
+    <span className={`text-[10px] font-semibold ${cls} shrink-0`}>
       {category}
     </span>
   );
@@ -167,7 +167,6 @@ export default function SearchDropdown({
         <div className="p-2">
           {/* Header */}
           <div className="flex items-center gap-2 px-3 pt-2 pb-1.5">
-            <Sparkles size={13} className="text-indigo-400 shrink-0" />
             <span className="text-[11px] font-semibold text-gray-400 dark:text-slate-500 uppercase tracking-wider">
               Suggestions
             </span>
@@ -177,7 +176,10 @@ export default function SearchDropdown({
           {loadingSuggestions && (
             <div className="space-y-1 px-1 pb-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-9 rounded-xl bg-gray-100 dark:bg-white/5 animate-pulse" />
+                <div key={i} className="flex items-center gap-3 px-2 py-2">
+                  <div className="w-7 h-7 rounded-lg bg-slate-200 dark:bg-slate-700 animate-pulse shrink-0" />
+                  <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded animate-pulse w-3/4" />
+                </div>
               ))}
             </div>
           )}
@@ -204,7 +206,7 @@ export default function SearchDropdown({
                 `}>
                   <Search size={13} className={`transition-colors ${activeIndex === idx ? "text-indigo-500" : "text-gray-400 dark:text-slate-500 group-hover:text-indigo-400"}`} />
                 </div>
-                <span className="flex-1 text-sm font-medium text-gray-800 dark:text-slate-200 truncate">
+                <span className="flex-1 text-[15px] font-semibold text-slate-900 dark:text-white truncate">
                   {highlightMatch(s.text, query)}
                 </span>
                 <CategoryBadge category={s.category} />
@@ -240,7 +242,10 @@ export default function SearchDropdown({
           {loadingHistory && (
             <div className="space-y-1 px-1 pb-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-9 rounded-xl bg-gray-100 dark:bg-white/5 animate-pulse" />
+                <div key={i} className="flex items-center gap-3 px-2 py-2">
+                  <div className="w-7 h-7 rounded-lg bg-slate-200 dark:bg-slate-700 animate-pulse shrink-0" />
+                  <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded animate-pulse w-2/3" />
+                </div>
               ))}
             </div>
           )}

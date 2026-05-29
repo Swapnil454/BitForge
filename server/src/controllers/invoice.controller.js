@@ -18,10 +18,10 @@ export const getInvoice = async (req, res) => {
     }
 
     // Populate missing fields from Order/User collections for old invoices
-    const needsPopulation = !invoice.buyerName || !invoice.sellerName || 
-                            !invoice.productName || !invoice.razorpayPaymentId ||
-                            !invoice.originalPrice;
-    
+    const needsPopulation = !invoice.buyerName || !invoice.sellerName ||
+      !invoice.productName || !invoice.razorpayPaymentId ||
+      !invoice.originalPrice;
+
     if (needsPopulation) {
       const order = await Order.findById(invoice.orderId)
         .populate('buyerId', 'name email')
@@ -36,12 +36,12 @@ export const getInvoice = async (req, res) => {
         if (!invoice.buyerEmail && order.buyerId?.email) {
           invoice.buyerEmail = order.buyerId.email;
         }
-        
+
         // Populate seller info
         if (!invoice.sellerName && order.sellerId?.name) {
           invoice.sellerName = order.sellerId.name;
         }
-        
+
         // Populate product info
         if (!invoice.productName && (order.productId?.title || order.productName)) {
           invoice.productName = order.productId?.title || order.productName;
@@ -49,7 +49,7 @@ export const getInvoice = async (req, res) => {
         if (!invoice.productDescription && order.productId?.description) {
           invoice.productDescription = order.productId.description.substring(0, 100);
         }
-        
+
         // Populate payment info from order
         if (!invoice.razorpayPaymentId && order.razorpayPaymentId) {
           invoice.razorpayPaymentId = order.razorpayPaymentId;
@@ -57,7 +57,7 @@ export const getInvoice = async (req, res) => {
         if (!invoice.razorpayOrderId && order.razorpayOrderId) {
           invoice.razorpayOrderId = order.razorpayOrderId;
         }
-        
+
         // Populate pricing for old invoices
         if (!invoice.originalPrice && !invoice.productPrice && order.amount) {
           invoice.productPrice = order.amount;
@@ -99,10 +99,10 @@ export const viewInvoice = async (req, res) => {
 
   const formatDate = (date) => {
     if (!date) return 'N/A';
-    return new Date(date).toLocaleDateString('en-IN', { 
+    return new Date(date).toLocaleDateString('en-IN', {
       day: '2-digit',
-      month: 'long', 
-      year: 'numeric' 
+      month: 'long',
+      year: 'numeric'
     });
   };
 
@@ -310,7 +310,7 @@ export const viewInvoice = async (req, res) => {
       <div class="company-details">
         <h3>BitForge Technologies</h3>
         <p>Pune, Maharashtra, India</p>
-        <p>Email: support@bitforge.in</p>
+        <p>Email: support@bittforge.in</p>
         <p>Website: www.bittforge.in</p>
       </div>
       <div class="invoice-details">
@@ -405,7 +405,7 @@ export const viewInvoice = async (req, res) => {
 
     <ul class="notes">
       <li>This is a digitally generated invoice. No physical signature is required.</li>
-      <li>For refund queries, please contact support@bitforge.in within 7 days of purchase.</li>
+      <li>For refund queries, please contact support@bittforge.in within 7 days of purchase.</li>
       <li>All digital products are non-transferable and for personal use only.</li>
       <li>Transaction ID: ${invoice.razorpayPaymentId || 'N/A'}</li>
     </ul>

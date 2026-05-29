@@ -171,12 +171,16 @@ export default function MobileSearchPage({ isAuthenticated, onSearch, onClose }:
           <div className="pt-3 pb-1">
             {/* Section label */}
             <div className="flex items-center gap-1.5 px-4 mb-1">
-              <Sparkles size={11} className="text-indigo-400" />
               <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Suggestions</span>
             </div>
 
             {loadingSug
-              ? [1,2,3].map(i => <div key={i} className="mx-3 mb-0.5 h-9 rounded-lg bg-gray-100 dark:bg-white/[0.05] animate-pulse" />)
+              ? [1,2,3].map(i => (
+                  <div key={i} className="flex items-center gap-3 px-4 py-2">
+                    <div className="w-4 h-4 rounded bg-slate-200 dark:bg-slate-700 animate-pulse shrink-0" />
+                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded animate-pulse w-3/4" />
+                  </div>
+                ))
               : suggestions.length > 0
                 ? suggestions.map((s, i) => (
                     <button
@@ -184,7 +188,7 @@ export default function MobileSearchPage({ isAuthenticated, onSearch, onClose }:
                       className="w-full flex items-center gap-2.5 px-4 py-2 hover:bg-gray-50 dark:hover:bg-white/[0.04] text-left transition-colors group"
                     >
                       <Search size={13} className="text-gray-400 dark:text-slate-500 shrink-0" />
-                      <span className="flex-1 text-[13px] font-medium text-gray-800 dark:text-slate-200 truncate">
+                      <span className="flex-1 text-[13px] font-semibold text-slate-900 dark:text-white truncate">
                         <Highlight text={s.text} query={query} />
                       </span>
                       <span className="text-[10px] text-gray-400 dark:text-slate-500 shrink-0">{s.category}</span>
@@ -222,7 +226,7 @@ export default function MobileSearchPage({ isAuthenticated, onSearch, onClose }:
                 className="flex items-center gap-2.5 px-4 py-2 hover:bg-gray-50 dark:hover:bg-white/[0.04] cursor-pointer group transition-colors"
               >
                 <Clock size={13} className="text-gray-400 dark:text-slate-600 shrink-0" />
-                <span className="flex-1 text-[13px] font-medium text-gray-800 dark:text-slate-200 truncate">{item.query}</span>
+                <span className="flex-1 text-[13px] font-semibold text-slate-900 dark:text-white truncate">{item.query}</span>
                 <button
                   onClick={e => deleteItem(e, item.query)}
                   className="text-gray-300 dark:text-slate-700 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all shrink-0 p-0.5"

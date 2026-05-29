@@ -79,9 +79,9 @@ export default function InvoicePage() {
     const originalTitle = document.title;
     const filename = `${(invoice?.productName || "Invoice").replace(/[^a-zA-Z0-9\s]/g, "")} Invoice`;
     document.title = filename;
-    
+
     window.print();
-    
+
     // Restore title after print dialog closes
     setTimeout(() => {
       document.title = originalTitle;
@@ -172,7 +172,7 @@ export default function InvoicePage() {
               <div className="h-10 w-full sm:w-32 bg-cyan-400/20 rounded-xl animate-pulse"></div>
             </div>
           </div>
-          
+
           <div className="rounded-[30px] border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c]/50 h-[600px] animate-pulse"></div>
         </main>
       </div>
@@ -416,7 +416,7 @@ export default function InvoicePage() {
 
             <div className="border-b border-slate-200 px-5 py-5 sm:px-8">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Notes</p>
-              <p className="mt-3 text-sm leading-6 text-slate-600">This is a digitally generated invoice. No physical signature is required. For invoice support, contact support@bitforge.in.</p>
+              <p className="mt-3 text-sm leading-6 text-slate-600">This is a digitally generated invoice. No physical signature is required. For invoice support, contact support@bittforge.in.</p>
             </div>
 
             <div className="bg-slate-50 px-5 py-4 text-center text-sm text-slate-600 sm:px-8">

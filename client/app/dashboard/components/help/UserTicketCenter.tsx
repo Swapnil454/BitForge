@@ -8,7 +8,15 @@ import TicketWindow from "./TicketWindow";
 import EmptyState from "./EmptyState";
 import { toast } from "react-hot-toast";
 
-export default function UserTicketCenter({ onNewTicket, urlId }: { onNewTicket: () => void, urlId?: string | null }) {
+export default function UserTicketCenter({ 
+  onNewTicket, 
+  urlId,
+  onChatOpenChange 
+}: { 
+  onNewTicket: () => void; 
+  urlId?: string | null;
+  onChatOpenChange?: (isOpen: boolean) => void;
+}) {
   const { auth, user } = useAuth();
   const token = auth.token;
   
@@ -28,6 +36,12 @@ export default function UserTicketCenter({ onNewTicket, urlId }: { onNewTicket: 
   const [socket, setSocket] = useState<any>(null);
   
   const [mobileView, setMobileView] = useState<"sidebar" | "chat">(urlId ? "chat" : "sidebar");
+
+  useEffect(() => {
+    if (onChatOpenChange) {
+      onChatOpenChange(mobileView === "chat");
+    }
+  }, [mobileView, onChatOpenChange]);
 
   useEffect(() => {
     selectedTicketIdRef.current = selectedTicketId;

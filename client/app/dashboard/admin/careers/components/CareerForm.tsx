@@ -87,7 +87,7 @@ export default function CareerForm({ initialData, isEditing = false, onSuccess, 
     salary: initialData?.salary || { min: null, max: null, currency: "INR" },
     status: initialData?.status || "draft",
     applyUrl: initialData?.applyUrl || "",
-    applyEmail: initialData?.applyEmail || "careers@bitforge.in",
+    applyEmail: initialData?.applyEmail || "careers@bittforge.in",
     featured: initialData?.featured || false,
     openings: initialData?.openings || 1,
   });
