@@ -74,7 +74,7 @@ export default function AdminTicketCenter() {
     const newSocket = io(socketUrl, {
       auth: { token },
       path: "/socket.io",
-      transports: ["websocket", "polling"],
+      transports: ["polling", "websocket"],
       upgrade: true,
       withCredentials: true,
     });
