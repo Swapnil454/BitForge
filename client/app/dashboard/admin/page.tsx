@@ -29,6 +29,7 @@ import {
   TrendingUp,
   Receipt,
   FileText,
+  MessageSquare,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { clearAuthStorage, getStoredUser, setCookie, getCookie } from "@/lib/cookies";
@@ -385,6 +386,14 @@ export default function AdminDashboard() {
                       onClick={() => {
                         cacheInvalidator.invalidateChatUnread();
                         router.push("/dashboard/admin/help-center");
+                        setProfileOpen(false);
+                      }} 
+                    />
+                    <MenuItem 
+                      label="Inquiries" 
+                      icon={<MessageSquare className="h-4 w-4" />}
+                      onClick={() => {
+                        router.push("/dashboard/admin/inquiries");
                         setProfileOpen(false);
                       }} 
                     />

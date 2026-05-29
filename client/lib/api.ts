@@ -4,10 +4,7 @@ import { getCookie, removeCookie } from "./cookies";
 
 const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL,
-    withCredentials: true,
-    headers: {
-        "Content-Type": "application/json"
-    }
+    withCredentials: true
 });
 
 // Add token to requests
@@ -18,10 +15,6 @@ api.interceptors.request.use(
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
             }
-        }
-        // Don't set Content-Type for FormData (let browser set it)
-        if (config.data instanceof FormData) {
-            delete config.headers["Content-Type"];
         }
         return config;
     },
@@ -839,6 +832,22 @@ export const contactAPI = {
     }
 };
 
+// Admin inquiry API
+export const inquiryAPI = {
+    getAll: async (params?: { page?: number; limit?: number; type?: string; search?: string }) => {
+        const response = await api.get('/contact/admin', { params });
+        return response.data;
+    },
+    deleteOne: async (id: string) => {
+        const response = await api.delete(`/contact/admin/${id}`);
+        return response.data;
+    },
+    markRead: async (id: string) => {
+        const response = await api.patch(`/contact/admin/${id}/read`);
+        return response.data;
+    },
+};
+
 // Promotion API functions
 export const promotionAPI = {
     createSellerPromotion: async (formData: FormData) => {
@@ -1085,11 +1094,7 @@ export const userAPI = {
 // Report API functions
 export const reportAPI = {
     submitReport: async (formData: FormData) => {
-        const response = await api.post('/reports', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            }
-        });
+        const response = await api.post('/reports', formData);
         return response.data;
     },
 

@@ -72,9 +72,9 @@ export default function AdminTicketCenter() {
 
     const socketUrl = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace("/api", "") : "http://localhost:5000";
     const newSocket = io(socketUrl, {
-      path: "/socket.io",
+      path: "/api/socket.io",
       auth: { token },
-      transports: ["websocket", "polling"],
+      transports: ["polling", "websocket"],
     });
 
     newSocket.on("ticket:new", ({ ticket, message }) => {
@@ -88,17 +88,27 @@ export default function AdminTicketCenter() {
           if (prev.some(m => m._id === newMsg._id)) return prev;
           return [...prev, newMsg];
         });
-        setTickets(prev => prev.map(t =>
-          t._id === newMsg.ticketId
-            ? { ...t, updatedAt: newMsg.createdAt, lastMessageText: newMsg.message, lastMessageAttachments: newMsg.attachments }
-            : t
-        ));
+        setTickets(prev => {
+          const updated = prev.map(t =>
+            t._id === newMsg.ticketId
+              ? { ...t, updatedAt: newMsg.createdAt, lastMessageText: newMsg.message, lastMessageAttachments: newMsg.attachments }
+              : t
+          );
+          return updated.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        });
+        
+        if (newMsg.from !== user?._id) {
+          newSocket.emit('ticket:mark-read', { ticketId: newMsg.ticketId, msgIds: [newMsg._id] });
+        }
       } else {
-        setTickets(prev => prev.map(t =>
-          t._id === newMsg.ticketId
-            ? { ...t, unreadCount: (t.unreadCount || 0) + 1, updatedAt: newMsg.createdAt, lastMessageText: newMsg.message, lastMessageAttachments: newMsg.attachments }
-            : t
-        ));
+        setTickets(prev => {
+          const updated = prev.map(t =>
+            t._id === newMsg.ticketId
+              ? { ...t, unreadCount: (t.unreadCount || 0) + 1, updatedAt: newMsg.createdAt, lastMessageText: newMsg.message, lastMessageAttachments: newMsg.attachments }
+              : t
+          );
+          return updated.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        });
       }
     });
 
@@ -158,9 +168,17 @@ export default function AdminTicketCenter() {
 
   useEffect(() => {
     if (!socket || !selectedTicketId) return;
-    socket.emit("join-ticket", selectedTicketId);
+    
+    const joinRoom = () => {
+      socket.emit("join-ticket", selectedTicketId);
+    };
+    
+    joinRoom(); // Join immediately if already connected
+    socket.on('connect', joinRoom); // Rejoin if socket reconnects
+    
     return () => {
       socket.emit("leave-ticket", selectedTicketId);
+      socket.off('connect', joinRoom);
     };
   }, [socket, selectedTicketId]);
 
@@ -210,7 +228,8 @@ export default function AdminTicketCenter() {
       if (res.ok) {
         const data = await res.json();
         setMessages(data.messages || []);
-        setTickets((prev) => prev.map(t => t._id === tId ? data.ticket : t));
+        // Update the specific ticket in the list while preserving computed fields
+        setTickets(prev => prev.map(t => t._id === tId ? { ...t, ...data.ticket, unreadCount: 0 } : t));
       } else if (res.status === 404) {
         toast.error("Ticket not found. Redirecting...");
         setSelectedTicketId(null);

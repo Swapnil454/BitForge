@@ -6,8 +6,11 @@ import { cartAPI, searchAPI, wishlistAPI } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
 import { useInfiniteProducts } from "@/lib/useInfiniteProducts";
 import toast from "react-hot-toast";
+import Image from "next/image";
+import { Search } from "lucide-react";
 
 import BuyerHeader from "@/app/components/buyer/layout/BuyerHeader";
+import SearchDropdown from "@/app/components/buyer/search/SearchDropdown";
 import BuyerFooter from "@/app/components/buyer/layout/BuyerFooter";
 import HeroAds from "@/app/components/buyer/home/HeroAds";
 import HeroSkeleton from "@/app/components/buyer/home/HeroSkeleton";
@@ -36,6 +39,10 @@ function InfiniteProductGrid({
   category,
   sort,
   search,
+  searchTerm,
+  setSearchTerm,
+  handleSearch,
+  isAuthenticated,
   wishlist,
   cartItems,
   addingToCart,
@@ -48,6 +55,10 @@ function InfiniteProductGrid({
   category?: string;
   sort?: "newest" | "trending" | "rating";
   search?: string;
+  searchTerm?: string;
+  setSearchTerm?: (term: string) => void;
+  handleSearch?: (term?: string) => void;
+  isAuthenticated?: boolean;
   wishlist: string[];
   cartItems: string[];
   addingToCart: string | null;
@@ -57,6 +68,19 @@ function InfiniteProductGrid({
 }) {
   const { products, isLoading, isFetchingMore, hasMore, error, sentinelRef } =
     useInfiniteProducts({ category, sort, search });
+
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const searchContainerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    function handleOutsideClick(e: MouseEvent) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
   if (isLoading) return <GridSkeleton />;
 
@@ -70,16 +94,27 @@ function InfiniteProductGrid({
 
   if (products.length === 0) {
     return (
-      <div className="py-24 flex flex-col items-center text-center">
-        <div className="w-20 h-20 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 text-4xl">🔍</div>
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">No products found</h3>
-        <p className="text-gray-500 dark:text-slate-400 max-w-sm">Try adjusting your search or browsing a different category.</p>
+      <div className="pt-10 -mt-8 pb-32 flex flex-col items-center justify-center text-center px-4">
+        <div className="mb-1 relative w-64 h-64 md:w-80 md:h-80">
+          <Image 
+            src="/no_product_found_placeholder.png" 
+            alt="No products found" 
+            fill
+            className="object-contain drop-shadow-md"
+            priority
+          />
+        </div>
+        <h3 className="text-2xl -mt-6 font-black text-gray-900 dark:text-white mb-2 tracking-tight">No products found</h3>
+        <p className="text-gray-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+          We couldn't find anything matching your current filters. Try adjusting your search or exploring a different category!
+        </p>
       </div>
     );
   }
 
   return (
     <div>
+
       {(title || subtitle) && (
         <div className="mb-6">
           {title && <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">{title}</h2>}
@@ -228,8 +263,10 @@ function HomeView({
 
 // ─── Main Client ──────────────────────────────────────────────────────────────
 export default function MarketplaceClient() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get("search") || "";
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [cartItems, setCartItems] = useState<string[]>([]);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
@@ -249,7 +286,13 @@ export default function MarketplaceClient() {
 
   const { isAuthenticated, requireAuth } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
+
+  // Sync URL search param to local state (for when navigating from MobileSearchPage)
+  const searchParamValue = searchParams.get("search") || "";
+  useEffect(() => {
+    setSearchTerm(searchParamValue);
+    setSearchQuery(searchParamValue);
+  }, [searchParamValue]);
 
   const categoryParam = searchParams.get("category") || undefined;
   const collectionParam = searchParams.get("collection") || undefined;
@@ -388,7 +431,14 @@ export default function MarketplaceClient() {
 
       <main className="flex-grow">
         {/* Global Hero Ads and Category Pills */}
-        {!searchQuery && <HeroAds />}
+        {!searchQuery && (
+          <HeroAds 
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            handleSearch={handleSearch}
+            isAuthenticated={isAuthenticated}
+          />
+        )}
         {!searchQuery && (
           <div className="mt-0 mb-1 sm:mb-2 relative z-10">
             <CategoryPills products={homeProducts} />
@@ -397,13 +447,17 @@ export default function MarketplaceClient() {
 
         {/* Grid view: search / category / collection / all */}
         {isGridView ? (
-          <div className="relative z-10 w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 py-6">
+          <div className="relative z-10 w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 pt-1 pb-24 md:pt-6 md:pb-6">
             <InfiniteProductGrid
                 title={gridTitle()}
                 subtitle={gridSubtitle()}
                 category={categoryParam}
                 sort={collectionSort()}
                 search={searchQuery || undefined}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                handleSearch={handleSearch}
+                isAuthenticated={isAuthenticated}
                 wishlist={wishlist}
                 cartItems={cartItems}
                 addingToCart={addingToCart}

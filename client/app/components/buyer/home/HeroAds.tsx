@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { promotionAPI } from "@/lib/api";
 import type { ActivePromotionBanner } from "@/lib/promotions";
 import HeroSkeleton from "./HeroSkeleton";
 import { getAutoTextColor, isValidHexColor } from "@/lib/colorUtils";
+import SearchDropdown from "@/app/components/buyer/search/SearchDropdown";
 
 export interface Banner {
   id: string;
@@ -69,15 +70,44 @@ const defaultBanners: Banner[] = [
 
 interface HeroAdsProps {
   banners?: Banner[];
+  searchTerm?: string;
+  setSearchTerm?: (term: string) => void;
+  handleSearch?: (term?: string) => void;
+  isAuthenticated?: boolean;
 }
 
-export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
+export default function HeroAds({ 
+  banners = defaultBanners,
+  searchTerm,
+  setSearchTerm,
+  handleSearch,
+  isAuthenticated
+}: HeroAdsProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [liveBanners, setLiveBanners] = useState<Banner[]>(banners);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+  const [mobileTranslateIndex, setMobileTranslateIndex] = useState(1);
+  const [isTransitioning, setIsTransitioning] = useState(true);
+  const prevIndexRef = useRef(0);
   const [loading, setLoading] = useState(!banners || banners === defaultBanners);
   const [autoRotate, setAutoRotate] = useState(true);
   const router = useRouter();
   const trackedPromotionsRef = useRef<Set<string>>(new Set());
+
+  // Search dropdown state
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleOutsideClick(e: MouseEvent) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
   useEffect(() => {
     let ignore = false;
@@ -166,6 +196,26 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
     return () => clearInterval(timer);
   }, [autoRotate, resolvedBanners.length]);
 
+  // Sync mobileTranslateIndex with currentIndex for infinite scroll
+  useEffect(() => {
+    const prev = prevIndexRef.current;
+    const n = resolvedBanners.length;
+    
+    if (prev !== currentIndex) {
+      setIsTransitioning(true);
+      
+      if (prev === n - 1 && currentIndex === 0) {
+        setMobileTranslateIndex(n + 1);
+      } else if (prev === 0 && currentIndex === n - 1) {
+        setMobileTranslateIndex(0);
+      } else {
+        setMobileTranslateIndex(currentIndex + 1);
+      }
+      
+      prevIndexRef.current = currentIndex;
+    }
+  }, [currentIndex, resolvedBanners.length]);
+
   useEffect(() => {
     if (currentIndex >= resolvedBanners.length) {
       setCurrentIndex(0);
@@ -217,7 +267,75 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
     setCurrentIndex((prev) => (prev + 1) % resolvedBanners.length);
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEndX(null);
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX === null || touchEndX === null) return;
+    const distance = touchStartX - touchEndX;
+    const minSwipeDistance = 50;
+    
+    if (distance > minSwipeDistance) {
+      nextSlide();
+    } else if (distance < -minSwipeDistance) {
+      prevSlide();
+    }
+  };
+
   const currentBanner = resolvedBanners[currentIndex];
+
+  const handleTransitionEnd = () => {
+    const n = resolvedBanners.length;
+    if (mobileTranslateIndex === n + 1) {
+      setIsTransitioning(false);
+      setMobileTranslateIndex(1);
+    } else if (mobileTranslateIndex === 0) {
+      setIsTransitioning(false);
+      setMobileTranslateIndex(n);
+    }
+  };
+
+  const renderMobileBanner = (banner: Banner, keySuffix: string | number) => {
+    if (!banner) return <div key={`empty-${keySuffix}`} className="w-full flex-shrink-0 px-4" />;
+    
+    const mobileImgUrl = banner.bannerImage
+      ? banner.bannerImage
+      : banner.adImages?.[0]?.url
+        ? (banner.adImages[0].url.includes("cloudinary.com")
+            ? banner.adImages[0].url.replace("/upload/", "/upload/f_auto,q_auto,w_800/")
+            : banner.adImages[0].url)
+        : null;
+
+    if (!mobileImgUrl) return (
+      <div key={`noimg-${keySuffix}`} className="w-full flex-shrink-0 px-4" />
+    );
+
+    return (
+      <div key={`banner-${keySuffix}`} className="w-full flex-shrink-0 px-4">
+        <button
+          onClick={async () => {
+            if (banner.promotionId) {
+              void promotionAPI.trackPromotionClick(banner.promotionId).catch(() => {});
+            }
+            router.push(banner.link);
+          }}
+          className="w-full flex flex-col rounded-[16px] shadow-sm active:scale-[0.98] transition-transform duration-200 relative bg-transparent overflow-hidden"
+        >
+          <img
+            src={mobileImgUrl}
+            alt={banner.title}
+            className="w-full h-[140px] sm:h-[160px] object-cover"
+          />
+        </button>
+      </div>
+    );
+  };
 
   const handleBannerClick = async () => {
     if (currentBanner.promotionId) {
@@ -256,20 +374,57 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
   const adImages = currentBanner.adImages ? [...currentBanner.adImages].sort((a, b) => a.position - b.position) : [];
 
   return (
-    <div className="relative z-0 w-full mb-0 sm:mb-2">
+    <div className="relative z-40 md:z-0 w-full mb-0 sm:mb-2 pt-2 md:pt-0">
+      {/* Mobile Search Bar inside Hero (blends with hero background) */}
+      <div className="md:hidden px-4 pb-3 w-full relative z-[100]" ref={searchContainerRef}>
+        <div className="flex items-center gap-3 w-full px-4 py-2.5 bg-white dark:bg-slate-800/90 border border-gray-200/50 dark:border-white/10 rounded-2xl shadow-sm transition-all focus-within:ring-2 focus-within:ring-indigo-500/20">
+          <Search size={18} className="text-gray-500 dark:text-slate-400 shrink-0" />
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchTerm || ""}
+            onChange={(e) => {
+              if (setSearchTerm) setSearchTerm(e.target.value);
+              setDropdownOpen(true);
+            }}
+            onFocus={() => setDropdownOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && handleSearch) {
+                handleSearch(searchTerm);
+                setDropdownOpen(false);
+              }
+            }}
+            className="w-full bg-transparent text-[15px] font-medium text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none"
+          />
+        </div>
+        
+        {dropdownOpen && (
+          <SearchDropdown
+            query={searchTerm || ""}
+            isAuthenticated={!!isAuthenticated}
+            onSelect={(term) => {
+              if (setSearchTerm) setSearchTerm(term);
+              if (handleSearch) handleSearch(term);
+              setDropdownOpen(false);
+            }}
+            onClose={() => setDropdownOpen(false)}
+          />
+        )}
+      </div>
+
       {/* Background bleed layer (fades across the entire initial screen view) */}
       {hasModernStyling && (
         <div 
-          className="absolute top-0 left-0 w-full h-[600px] sm:h-[700px] md:h-[850px] pointer-events-none -z-10 transition-colors duration-700" 
+          className="absolute top-0 left-0 w-full h-[280px] sm:h-[320px] md:h-[850px] pointer-events-none -z-10 transition-colors duration-700" 
           style={{ 
             backgroundColor: bgColor || 'transparent',
-            WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
-            maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)'
+            WebkitMaskImage: 'linear-gradient(to bottom, black 30%, transparent 100%)',
+            maskImage: 'linear-gradient(to bottom, black 30%, transparent 100%)'
           }}
         />
       )}
       <div 
-        className={`relative w-full transition-all duration-700 flex items-center group ${
+        className={`hidden md:flex relative w-full transition-all duration-700 items-center group ${
           !hasModernStyling 
             ? `bg-gradient-to-r ${currentBanner.gradientClass} h-[180px] sm:h-[220px] md:h-[260px] overflow-hidden` 
             : layout === "fullImage"
@@ -511,35 +666,43 @@ export default function HeroAds({ banners = defaultBanners }: HeroAdsProps) {
         ))}
       </div>
 
-      {/* ── Mobile-Only Sponsored Card ── inside the wrapper so mb-8 comes after it */}
-      {hasModernStyling && (() => {
-        const mobileImgUrl = currentBanner.bannerImage
-          ? currentBanner.bannerImage
-          : adImages[0]?.url
-            ? (adImages[0].url.includes("cloudinary.com")
-                ? adImages[0].url.replace("/upload/", "/upload/f_auto,q_auto,w_800/")
-                : adImages[0].url)
-            : null;
-
-        if (!mobileImgUrl) return null;
-
-        return (
-          <div className="md:hidden px-3 pt-3">
-            <button
-              onClick={handleBannerClick}
-              className="w-full block overflow-hidden rounded-2xl shadow-xl active:scale-[0.98] transition-transform duration-200"
-              style={{ backgroundColor: bgColor || "#111" }}
-            >
-              <img
-                src={mobileImgUrl}
-                alt={currentBanner.title}
-                className="w-full object-cover"
-                style={{ aspectRatio: "16/7", display: "block" }}
-              />
-            </button>
+      {/* ── Mobile-Only Sponsored Card ── */}
+      {hasModernStyling && (
+        <div 
+          className="md:hidden w-full relative overflow-hidden pt-0 pb-8"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div 
+            className={`flex ${isTransitioning ? "transition-transform duration-700 ease-in-out" : ""}`}
+            style={{ transform: `translateX(-${mobileTranslateIndex * 100}%)` }}
+            onTransitionEnd={handleTransitionEnd}
+          >
+            {resolvedBanners.length > 0 && renderMobileBanner(resolvedBanners[resolvedBanners.length - 1], "clone-last")}
+            
+            {resolvedBanners.map((banner, idx) => renderMobileBanner(banner, banner.id || idx))}
+            
+            {resolvedBanners.length > 0 && renderMobileBanner(resolvedBanners[0], "clone-first")}
           </div>
-        );
-      })()}
+
+          {/* Mobile Dots */}
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 z-30">
+            {resolvedBanners.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentIndex(idx)}
+                className={`h-1.5 rounded-full transition-all duration-300 shadow-sm ${
+                  idx === currentIndex 
+                    ? `w-4 ${isDarkText ? "bg-slate-800" : "bg-cyan-500"}` 
+                    : `w-1.5 ${isDarkText ? "bg-slate-800/30 hover:bg-slate-800/50" : "bg-white/40 hover:bg-white/60"}`
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

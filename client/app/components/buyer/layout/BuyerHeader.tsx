@@ -133,23 +133,17 @@ export default function BuyerHeader({
   return (
     <>
       <header className="sticky top-0 z-50 w-full bg-white/90 dark:bg-[#05050a]/90 border-b border-gray-200/50 dark:border-white/5 shadow-sm backdrop-blur-xl transition-all duration-300">
-        {heroBgColor && (
-          <div 
-            className="absolute inset-0 w-full h-full pointer-events-none transition-colors duration-700" 
-            style={{ backgroundColor: heroBgColor, opacity: heroIsDarkText ? 0.12 : 0.18 }}
-          />
-        )}
         <div className="max-w-[1440px] mx-auto px-4 md:px-6 lg:px-8 relative">
 
           {/* Desktop & Tablet Header */}
-          <div className="flex items-center justify-between h-16 sm:h-20 gap-4">
+          <div className="flex items-center justify-between h-[52px] md:h-16 gap-4">
 
             {/* Logo area */}
             <div className="flex items-center shrink-0 gap-2 sm:gap-4">
               {onBackClick && (
                 <button
                   onClick={onBackClick}
-                  className="inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-50 dark:bg-white/5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10 transition mr-1 sm:mr-2"
+                  className="inline-flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 -ml-3 text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10 transition mr-1 sm:mr-2"
                   aria-label="Back"
                 >
                   <ChevronLeft className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={2.5} />
@@ -165,7 +159,7 @@ export default function BuyerHeader({
                     priority
                   />
                 </div>
-                <span className="text-lg sm:text-xl -ml-8 font-black text-slate-900 dark:text-white hidden sm:block tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                <span className="text-lg sm:text-xl -ml-8 font-black text-slate-900 dark:text-white tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                   BitForge
                 </span>
               </button>
@@ -232,13 +226,7 @@ export default function BuyerHeader({
             {/* Right: Actions */}
             <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
 
-              {/* Mobile Search Icon — opens full-screen page on small devices */}
-              <button
-                className="md:hidden p-2.5 text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-                onClick={() => setMobileSearchOpen(true)}
-              >
-                <Search size={22} />
-              </button>
+
 
               {/* Wishlist */}
               <button

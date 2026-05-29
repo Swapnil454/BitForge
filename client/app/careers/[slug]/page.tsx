@@ -57,27 +57,27 @@ export default function JobDetailPage() {
   const fetchJobDetail = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch all careers and find the one matching the slug
       const response = await api.get("/careers");
       const allCareers = response.data.data || [];
-      
+
       // Generate slug from title and find matching career
       const job = allCareers.find((c: Career) => generateSlug(c.title) === slug);
-      
+
       if (!job) {
         notFound();
         return;
       }
-      
+
       setCareer(job);
-      
+
       // Find related jobs in the same department
       const related = allCareers
         .filter((c: Career) => c.department === job.department && c._id !== job._id)
         .slice(0, 3);
       setRelatedJobs(related);
-      
+
     } catch (error) {
       console.error("Error fetching job detail:", error);
       notFound();
@@ -97,7 +97,7 @@ export default function JobDetailPage() {
     if (career?.applyUrl) {
       window.open(career.applyUrl, "_blank");
     } else {
-      const email = career?.applyEmail || "careers@bitforge.in";
+      const email = career?.applyEmail || "careers@bittforge.in";
       const subject = `Application: ${career?.title}`;
       window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}`;
     }
@@ -204,7 +204,7 @@ export default function JobDetailPage() {
               ⭐ Featured role
             </div>
           )}
-          
+
           <h1 className="text-4xl font-bold text-slate-900 dark:text-white md:text-5xl mb-4 leading-tight">
             {career.title}
           </h1>
@@ -401,7 +401,7 @@ export default function JobDetailPage() {
             <div className="max-w-2xl mx-auto">
               <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Interested in This Position?</h2>
               <p className="text-slate-700 dark:text-white/80 text-base mb-3">
-                Apply now and join our team building the future of digital commerce. 
+                Apply now and join our team building the future of digital commerce.
                 We review all applications carefully and typically respond within 3-5 business days.
               </p>
               <p className="text-slate-600 dark:text-white/70 text-sm mb-6">
@@ -418,10 +418,10 @@ export default function JobDetailPage() {
                 <p className="text-sm text-slate-600 dark:text-white/70">
                   Have questions?{" "}
                   <a
-                    href="mailto:careers@bitforge.in"
+                    href="mailto:careers@bittforge.in"
                     className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#05050a]"
                   >
-                    Contact us at careers@bitforge.in
+                    Contact us at careers@bittforge.in
                   </a>
                 </p>
               </div>

@@ -37,6 +37,7 @@ const accountReportSchema = new mongoose.Schema(
         "account_restricted",
         "login_issue",
         "data_privacy",
+        "payment_issue",
         "technical_issue",
         "other",
       ],

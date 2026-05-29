@@ -156,7 +156,7 @@ export default function CareersPage() {
                 you can browse all openings on the next page.
               </p>
             </div>
-            
+
           </div>
 
           {loading ? (
@@ -167,7 +167,7 @@ export default function CareersPage() {
             <div className="mt-6 text-center py-12 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
               <p className="text-slate-500 dark:text-white/60 mb-2">No open positions at the moment.</p>
               <p className="text-gray-950 dark:text-white/50 text-sm">
-                Check back soon or reach out at careers@bitforge.in.
+                Check back soon or reach out at careers@bittforge.in.
               </p>
             </div>
           ) : (
@@ -246,7 +246,7 @@ export default function CareersPage() {
             Don&apos;t see a role that matches you? We&apos;re always happy to hear from exceptional
             people across product, engineering, design, and operations. Share your portfolio and a
             short note about what you&apos;d like to work on at
-            <Link href="mailto:careers@bittforge.in?subject=Joining%20BitForge" className="ml-1 font-bold  text-shadow-sky-950">careers@bitforge.in</Link>.
+            <Link href="mailto:careers@bittforge.in?subject=Joining%20BitForge" className="ml-1 font-bold  text-shadow-sky-950">careers@bittforge.in</Link>.
           </div>
         </section>
 

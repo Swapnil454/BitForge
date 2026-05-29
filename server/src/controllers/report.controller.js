@@ -9,6 +9,9 @@ import cloudinary from "../config/cloudinary.js";
 export const submitReport = async (req, res) => {
   try {
     const { reporterEmail, reporterName, issueType, description, reportedUserId } = req.body;
+    console.log("[submitReport] Headers:", req.headers['content-type']);
+    console.log("[submitReport] Body:", req.body);
+    console.log("[submitReport] Files:", req.files?.length);
 
     // Validate required fields
     if (!reporterEmail || !issueType || !description) {

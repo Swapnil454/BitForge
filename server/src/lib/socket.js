@@ -13,8 +13,9 @@ export const initSocket = (httpServer) => {
     : undefined;
 
   const io = new Server(httpServer, {
+    path: "/api/socket.io",
     cors: {
-      origin: allowedOrigins,
+      origin: true,
       methods: ["GET", "POST"],
       credentials: true,
     },
