@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { io, Socket } from "socket.io-client";
+import { type Socket } from "socket.io-client";
+import { createSocket } from "@/lib/socket";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -253,14 +254,9 @@ export default function BuyerDashboard() {
     if (!user) return;
     if (typeof window === "undefined") return;
 
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-    const socketUrl = apiBase.replace(/\/api$/, "");
     const token = getCookie("token");
 
-    const socket = io(socketUrl, {
-      auth: { token },
-      withCredentials: true,
-    });
+    const socket = createSocket(token);
 
     socketRef.current = socket;
 

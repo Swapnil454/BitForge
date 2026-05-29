@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { io, Socket } from "socket.io-client";
+import { type Socket } from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { chatAPI } from "@/lib/api";
 import { getCookie } from "@/lib/cookies";
+import { createSocket } from "@/lib/socket";
 import toast from "react-hot-toast";
 import {
   MoreVertical,
@@ -223,14 +224,9 @@ export default function SupportChat({ title, subtitle }: SupportChatProps) {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-    const socketUrl = apiBase.replace(/\/api$/, "");
     const token = getCookie("token");
 
-    const socket = io(socketUrl, {
-      auth: { token },
-      withCredentials: true,
-    });
+    const socket = createSocket(token);
 
     socketRef.current = socket;
 
