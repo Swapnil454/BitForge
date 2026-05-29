@@ -59,9 +59,13 @@ export default function UserTicketCenter({
     
     fetchTickets(1);
 
-    const newSocket = io(undefined as any, {
+    const socketUrl = process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace("/api", "") : "http://localhost:5000";
+    const newSocket = io(socketUrl, {
       auth: { token },
-      transports: ["polling", "websocket"],
+      path: "/socket.io",
+      transports: ["websocket", "polling"],
+      upgrade: true,
+      withCredentials: true,
     });
 
     newSocket.on("ticket:new-message", (newMsg: any) => {

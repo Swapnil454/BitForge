@@ -14,7 +14,13 @@ export const initSocket = (httpServer) => {
 
   const io = new Server(httpServer, {
     cors: {
-      origin: true,
+      origin: (origin, callback) => {
+        if (!origin || (allowedOrigins && allowedOrigins.includes(origin))) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
       methods: ["GET", "POST"],
       credentials: true,
     },
