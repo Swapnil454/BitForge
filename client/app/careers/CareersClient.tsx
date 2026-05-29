@@ -149,7 +149,7 @@ export default function CareersPage() {
               </p>
             </div>
             <p className="text-xs text-emerald-300/90">
-              No matching role? Write to us at careers@bitforge.in with your portfolio.
+              No matching role? Write to us at careers@bittforge.in with your portfolio.
             </p>
           </div>
 
@@ -162,7 +162,7 @@ export default function CareersPage() {
               <div className="text-4xl mb-4">💼</div>
               <p className="text-slate-500 dark:text-white/60 mb-2">No open positions at the moment.</p>
               <p className="text-slate-400 dark:text-white/50 text-sm">
-                Check back soon or reach out at careers@bitforge.in.
+                Check back soon or reach out at careers@bittforge.in.
               </p>
             </div>
           ) : (
@@ -241,7 +241,7 @@ export default function CareersPage() {
             Don&apos;t see a role that matches you? We&apos;re always happy to hear from exceptional
             people across product, engineering, design, and operations. Share your portfolio and a
             short note about what you&apos;d like to work on at
-            <span className="ml-1 font-medium text-cyan-200">careers@bitforge.in</span>.
+            <span className="ml-1 font-medium text-cyan-200">careers@bittforge.in</span>.
           </div>
         </section>
 

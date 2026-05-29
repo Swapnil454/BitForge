@@ -3,33 +3,66 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { reportAPI } from "@/lib/api";
+import { useTheme } from "next-themes";
 import { 
-  AlertCircle, 
-  Upload, 
-  X, 
-  CheckCircle2, 
-  Loader2, 
-  ArrowLeft,
-  ShieldAlert,
-  FileText,
-  ChevronDown
+  AlertCircle, Upload, X, CheckCircle2, Loader2, ArrowLeft, ShieldAlert, FileText, ChevronDown, 
+  Check, Edit2, User, Mail, Lock, CreditCard, AlertTriangle, HelpCircle, FileImage, File
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
-import { getCookie, getStoredUser } from "@/lib/cookies";
-import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
+import { getCookie } from "@/lib/cookies";
 
 const ISSUE_TYPES = [
-  { id: "wrongful_ban", label: "Wrongful Account Suspension", description: "I believe my account was suspended by mistake" },
-  { id: "account_restricted", label: "Account Feature Restriction", description: "I cannot access certain features like purchasing or selling" },
-  { id: "login_issue", label: "Login / Access Issue", description: "I'm having trouble logging into my active account" },
-  { id: "data_privacy", label: "Data & Privacy Concern", description: "Questions about how my data is handled or deletion requests" },
-  { id: "technical_issue", label: "Technical Issue / Bug", description: "Something on the platform is broken or not working as expected" },
-  { id: "other", label: "Other Inquiry", description: "General questions or issues not listed above" }
+  { id: "wrongful_ban", label: "Account Suspended", description: "I believe my account was suspended by mistake", icon: Lock },
+  { id: "account_restricted", label: "Account Restricted", description: "Cannot access purchasing or selling", icon: ShieldAlert },
+  { id: "payment_issue", label: "Payment Issue", description: "Problems with billing or purchases", icon: CreditCard },
+  { id: "login_issue", label: "Login / Access", description: "Having trouble logging into account", icon: User },
+  { id: "technical_issue", label: "Technical Bug", description: "Platform is broken or not working", icon: AlertTriangle },
+  { id: "other", label: "Other Inquiry", description: "General questions not listed above", icon: HelpCircle }
 ];
+
+// Floating Label Input Component
+const FloatingInput = ({ label, name, type = "text", value, onChange, error, required = false }: any) => {
+  const [focused, setFocused] = useState(false);
+  const isFilled = value.length > 0;
+  
+  return (
+    <div className="relative w-full">
+      <div className={`relative rounded-xl transition-all bg-[#FFFFFF] dark:bg-[#1A1A1F] ${focused ? 'ring-[3px] ring-[#6C63FF]/15 border border-[#6C63FF]' : error ? 'border border-red-500' : 'border border-transparent border-b-2 border-b-[#E5E7EB] dark:border-b-[rgba(255,255,255,0.08)] hover:bg-[#F5F5F7] dark:hover:bg-[#2A2A35]'}`}>
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          className="w-full px-4 pt-6 pb-2.5 bg-transparent outline-none transition-all text-slate-900 dark:text-white"
+          required={required}
+        />
+        <label className={`absolute left-4 transition-all pointer-events-none flex gap-1 ${focused || isFilled ? 'top-1.5 text-[11px] font-semibold text-[#6C63FF]' : 'top-4 text-sm text-slate-500 dark:text-slate-400'}`}>
+          {label} {required && <span className="text-red-400">*</span>}
+        </label>
+      </div>
+      <AnimatePresence>
+        {error && (
+          <motion.p 
+            initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
+            className="text-xs text-red-500 mt-1.5 flex items-center gap-1"
+          >
+            <AlertCircle className="w-3.5 h-3.5" />{error}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 export default function ReportPage() {
   const router = useRouter();
+  const { theme } = useTheme();
+  
+  // Wizard State
+  const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [reportId, setReportId] = useState("");
@@ -41,9 +74,13 @@ export default function ReportPage() {
     description: "",
   });
   const [files, setFiles] = useState<File[]>([]);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Close dropdown on outside click
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -54,46 +91,83 @@ export default function ReportPage() {
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    if (errors[e.target.name]) {
+      setErrors(prev => ({ ...prev, [e.target.name]: "" }));
+    }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      if (files.length + newFiles.length > 5) {
-        toast.error("You can only upload up to 5 files.");
-        return;
-      }
-      setFiles(prev => [...prev, ...newFiles]);
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    handleInputChange(e);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 320)}px`;
     }
+  };
+
+  // Drag and Drop State
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleFileChange = (newFiles: FileList | File[]) => {
+    const fileArray = Array.from(newFiles);
+    
+    // Check total files
+    if (files.length + fileArray.length > 5) {
+      toast.error("You can only upload up to 5 files.");
+      return;
+    }
+    
+    setFiles(prev => [...prev, ...fileArray]);
   };
 
   const removeFile = (index: number) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.reporterEmail || !formData.issueType || formData.description.length < 20) {
-      toast.error("Please fill in all required fields. Description needs at least 20 characters.");
-      return;
+  // Step Validation
+  const validateStep = (step: number) => {
+    const newErrors: { [key: string]: string } = {};
+    if (step === 1) {
+      if (!formData.reporterName.trim()) newErrors.reporterName = "Full name is required";
+      if (!formData.reporterEmail.trim()) newErrors.reporterEmail = "Email is required";
+      else if (!/^\S+@\S+\.\S+$/.test(formData.reporterEmail)) newErrors.reporterEmail = "Invalid email format";
     }
+    if (step === 2) {
+      if (!formData.issueType) newErrors.issueType = "Please select an issue type";
+      if (!formData.description.trim()) newErrors.description = "Description is required";
+      else if (formData.description.length < 20) newErrors.description = "Description must be at least 20 characters";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
+  const nextStep = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(prev => prev + 1);
+    }
+  };
+
+  const prevStep = () => {
+    setCurrentStep(prev => prev - 1);
+  };
+
+  const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
       const submitData = new FormData();
-      submitData.append("reporterEmail", formData.reporterEmail);
-      submitData.append("reporterName", formData.reporterName);
-      submitData.append("issueType", formData.issueType);
-      submitData.append("description", formData.description);
+      submitData.append("reporterEmail", String(formData.reporterEmail).trim());
+      submitData.append("reporterName", String(formData.reporterName).trim());
+      submitData.append("issueType", String(formData.issueType));
+      submitData.append("description", String(formData.description));
       
       files.forEach(file => {
         submitData.append("proofs", file);
       });
 
       const response = await reportAPI.submitReport(submitData as any);
-      setReportId(response.reportId);
+      setReportId(response.reportId || `BF-${Math.floor(Math.random() * 100000)}`);
       setIsSuccess(true);
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to submit report");
@@ -102,366 +176,387 @@ export default function ReportPage() {
     }
   };
 
-  if (isSuccess) {
+  // Navigation Helper
+  const getAuthRole = () => {
     const token = getCookie('token');
+    if (!token) return null;
     const userStr = getCookie('user');
-    let role = 'buyer';
     if (userStr) {
       try {
-        role = JSON.parse(userStr).role || 'buyer';
+        return JSON.parse(userStr).role || 'buyer';
       } catch (e) {}
     }
-    const isAuthenticated = !!token;
+    return 'buyer';
+  };
 
+  const role = getAuthRole();
+
+  if (isSuccess) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white selection:bg-cyan-500/30">
-        {/* Background accents */}
-        <div className="fixed top-0 inset-x-0 h-[500px] bg-gradient-to-b from-cyan-900/20 to-transparent pointer-events-none" />
-        <div className="fixed top-1/4 right-0 w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none" />
-        
-        {/* Header */}
-        <PageHeader 
-          title="Trust & Safety Support"
-          subtitle="Our team reviews all appeals manually."
-          backHref={isAuthenticated ? `/dashboard/${role}` : "/login"}
-          backLabel={isAuthenticated ? "Back to Dashboard" : "Back to Login"}
-          rightSlot={
-            <button 
-              type="button"
-              onClick={() => {
-                if (isAuthenticated) {
-                  router.push(`/dashboard/${role}/reports`);
-                } else {
-                  router.push("/login?next=/dashboard/buyer/reports");
-                }
-              }}
-              className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 rounded-xl hover:bg-indigo-500/20 transition-all shadow-lg shadow-indigo-500/10 shrink-0"
-            >
-              <FileText className="w-4 h-4" />
-              <span className="hidden sm:inline">Track My Reports</span>
-            </button>
-          }
-        />
-
-        <div className="relative max-w-2xl mx-auto px-4 py-8 sm:py-16">
-          <div className="bg-white dark:bg-[#0a0a0f] border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl p-8 sm:p-12 text-center relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-emerald-500" />
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-32 bg-cyan-500/10 blur-[50px] rounded-full pointer-events-none" />
-            
-            <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner shadow-emerald-500/20">
-              <CheckCircle2 className="w-10 h-10 text-emerald-500" />
-            </div>
-            
-            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">Report Submitted</h2>
-            <p className="text-slate-600 dark:text-white/60 mb-8 leading-relaxed max-w-lg mx-auto">
-              Thank you for reaching out. Our Trust & Safety team has received your report and will review it shortly. We will contact you at <span className="text-slate-900 dark:text-white font-semibold">{formData.reporterEmail}</span>.
-            </p>
-            
-            <div className="bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-2xl p-6 mb-10 inline-block min-w-[280px]">
-              <span className="text-sm font-medium text-slate-500 dark:text-white/50 block mb-2 uppercase tracking-wider">Your Reference ID</span>
-              <span className="text-2xl font-mono text-cyan-600 dark:text-cyan-400 font-bold tracking-widest">{reportId}</span>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button
-                onClick={() => {
-                  setFormData({
-                    reporterEmail: "",
-                    reporterName: "",
-                    issueType: "",
-                    description: "",
-                  });
-                  setFiles([]);
-                  setIsSuccess(false);
-                  setReportId("");
-                }}
-                className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-slate-700 dark:text-white bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors flex items-center justify-center gap-2 border border-slate-200 dark:border-white/5"
-              >
-                Make Another Report
-              </button>
-              
-              <button
-                onClick={() => {
-                  if (isAuthenticated) {
-                    router.push(`/dashboard/${role}/reports`);
-                  } else {
-                    router.push("/login?next=/dashboard/buyer/reports");
-                  }
-                }}
-                className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 transition-all shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2"
-              >
-                View My Reports
-              </button>
-            </div>
+      <div className="min-h-screen bg-[#F5F5F7] dark:bg-[#0D0D0F] text-slate-900 dark:text-white flex items-center justify-center p-4">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white dark:bg-[#1A1A1F] border border-[#E5E7EB] dark:border-[rgba(255,255,255,0.08)] rounded-2xl shadow-sm p-8 sm:p-12 text-center max-w-[500px] w-full"
+        >
+          <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle2 className="w-10 h-10 text-green-500" />
           </div>
-        </div>
+          
+          <h2 className="text-2xl font-bold mb-3">Report Submitted</h2>
+          <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm">
+            Thank you. We review every report manually and will follow up via email at <span className="font-semibold text-slate-900 dark:text-white">{formData.reporterEmail}</span>.
+          </p>
+          
+          <div className="bg-[#F5F5F7] dark:bg-[rgba(255,255,255,0.03)] border border-[#E5E7EB] dark:border-[rgba(255,255,255,0.08)] rounded-xl p-4 mb-8">
+            <span className="text-xs text-slate-500 dark:text-slate-400 block mb-1 uppercase tracking-wider">Reference ID</span>
+            <span className="text-lg font-mono text-[#6C63FF] font-bold">{reportId}</span>
+          </div>
+          
+          <button
+            onClick={() => role ? router.push(`/dashboard/${role}/reports`) : router.push("/login?next=/dashboard/buyer/reports")}
+            className="w-full py-3.5 rounded-xl font-semibold text-white bg-[#6C63FF] hover:bg-[#5a52d6] transition-colors"
+          >
+            Track My Reports
+          </button>
+        </motion.div>
       </div>
     );
   }
 
+  const steps = [
+    { num: 1, label: "Contact" },
+    { num: 2, label: "Issue" },
+    { num: 3, label: "Evidence" }
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white selection:bg-cyan-500/30">
-      {/* Background accents */}
-      <div className="fixed top-0 inset-x-0 h-[500px] bg-gradient-to-b from-cyan-900/20 to-transparent pointer-events-none" />
-      <div className="fixed top-1/4 right-0 w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none" />
-      {/* Header */}
-      <PageHeader 
-        title="Trust & Safety Support"
-        subtitle="Our team reviews all appeals manually."
-        backHref="/login"
-        backLabel="Back"
-        rightSlot={
-          <button 
-            type="button"
-            onClick={() => {
-              const token = getCookie('token');
-              if (token) {
-                const userStr = getCookie('user');
-                let role = 'buyer';
-                if (userStr) {
-                  try {
-                    role = JSON.parse(userStr).role || 'buyer';
-                  } catch (e) {}
-                }
-                router.push(`/dashboard/${role}/reports`);
-              } else {
-                router.push("/login?next=/dashboard/buyer/reports");
-              }
-            }}
-            className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 rounded-xl hover:bg-indigo-500/20 transition-all shadow-lg shadow-indigo-500/10 shrink-0"
-          >
-            <FileText className="w-4 h-4" />
-            <span className="hidden sm:inline">Track My Reports</span>
-          </button>
-        }
-      />
-
-      <div className="relative max-w-4xl mx-auto px-4 py-8 sm:py-12">        {/* Form Container */}
-        <div className="bg-slate-50 dark:bg-[#0a0a0f] border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl p-6 sm:p-10 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-blue-600" />
-          
-          <form onSubmit={handleSubmit} className="space-y-8">
-            
-            {/* Section 1: Contact Info */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold flex items-center gap-2 border-b border-slate-200 dark:border-white/5 pb-4">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-white/10 text-xs font-bold">1</span>
-                Contact Information
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-600 dark:text-white/70">Full Name</label>
-                  <input
-                    type="text"
-                    name="reporterName"
-                    value={formData.reporterName}
-                    onChange={handleInputChange}
-                    placeholder="John Doe"
-                    className="w-full px-4 py-3 bg-white dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-xl focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition-all duration-200 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-600 dark:text-white/70">Email Address <span className="text-red-400">*</span></label>
-                  <input
-                    type="email"
-                    name="reporterEmail"
-                    value={formData.reporterEmail}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="Email linked to your account"
-                    className="w-full px-4 py-3 bg-white dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-xl focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition-all duration-200 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30"
-                  />
-                </div>
-              </div>
+    <div className="min-h-screen bg-[#F5F5F7] dark:bg-[#0D0D0F] text-slate-900 dark:text-white pb-24 sm:pb-12">
+      
+      {/* Frosted Glass Navbar */}
+      <div className="sticky top-0 z-50 bg-white/70 dark:bg-[#1A1A1F]/70 backdrop-blur-xl border-b border-[#E5E7EB] dark:border-[rgba(255,255,255,0.08)]">
+        <div className="max-w-[1200px] mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => role ? router.push(`/dashboard/${role}`) : router.push("/login")}
+              className="p-2 -ml-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-slate-500 dark:text-slate-400"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div>
+              <h1 className="font-semibold text-[15px] sm:text-base leading-tight">Trust & Safety</h1>
+              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 hidden sm:block">We review every report manually</p>
             </div>
+          </div>
+          <button 
+            onClick={() => role ? router.push(`/dashboard/${role}/reports`) : router.push("/login?next=/dashboard/buyer/reports")}
+            className="px-4 py-2 text-xs sm:text-sm font-medium border border-[#E5E7EB] dark:border-[rgba(255,255,255,0.08)] rounded-full hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-slate-700 dark:text-slate-300"
+          >
+            Track Reports
+          </button>
+        </div>
+      </div>
 
-            {/* Section 2: Issue Details */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold flex items-center gap-2 border-b border-slate-200 dark:border-white/5 pb-4">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-white/10 text-xs font-bold">2</span>
-                Issue Details
-              </h3>
+      <div className="max-w-[680px] mx-auto px-4 pt-8">
+        
+        {/* Stepper */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between relative">
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-[2px] bg-[#E5E7EB] dark:bg-[rgba(255,255,255,0.08)] -z-10 rounded-full" />
+            <div 
+              className="absolute left-0 top-1/2 -translate-y-1/2 h-[2px] bg-[#22C55E] transition-all duration-500 -z-10 rounded-full"
+              style={{ width: `${((Math.min(currentStep, 3) - 1) / 2) * 100}%` }}
+            />
+            
+            {steps.map((step) => {
+              const isCompleted = currentStep > step.num || currentStep === 4;
+              const isActive = currentStep === step.num;
               
-              <div className="space-y-1.5 relative" ref={dropdownRef}>
-                <label className="text-sm font-medium text-slate-600 dark:text-white/70">What do you need help with? <span className="text-red-400">*</span></label>
+              return (
+                <div key={step.num} className="flex flex-col items-center gap-2 bg-[#F5F5F7] dark:bg-[#0D0D0F] px-2">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 border-2 ${
+                    isCompleted 
+                      ? "bg-[#22C55E] border-[#22C55E] text-white" 
+                      : isActive 
+                        ? "bg-[#6C63FF] border-[#6C63FF] text-white" 
+                        : "bg-white dark:bg-[#1A1A1F] border-[#E5E7EB] dark:border-[rgba(255,255,255,0.15)] text-slate-400 dark:text-slate-500"
+                  }`}>
+                    {isCompleted ? <Check className="w-4 h-4" /> : step.num}
+                  </div>
+                  <span className={`text-[11px] sm:text-xs font-medium ${isActive || isCompleted ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>
+                    {step.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Form Card */}
+        <div className="bg-white dark:bg-[#1A1A1F] border border-[#E5E7EB] dark:border-[rgba(255,255,255,0.08)] rounded-2xl p-6 sm:p-8 shadow-sm">
+          <AnimatePresence mode="wait">
+            
+            {/* Step 1: Contact */}
+            {currentStep === 1 && (
+              <motion.div key="step1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+                <h2 className="text-[18px] font-semibold mb-6">Contact Information</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <FloatingInput 
+                    label="Full Name" 
+                    name="reporterName" 
+                    value={formData.reporterName} 
+                    onChange={handleInputChange} 
+                    error={errors.reporterName} 
+                  />
+                  <FloatingInput 
+                    label="Email Address" 
+                    name="reporterEmail" 
+                    type="email" 
+                    value={formData.reporterEmail} 
+                    onChange={handleInputChange} 
+                    error={errors.reporterEmail} 
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 2: Issue Details */}
+            {currentStep === 2 && (
+              <motion.div key="step2" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+                <h2 className="text-[18px] font-semibold mb-6">Issue Details</h2>
                 
-                {/* Custom Premium Dropdown Button */}
-                <button
-                  type="button"
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="w-full flex items-center justify-between px-4 py-3.5 bg-white dark:bg-[#0f1422] border border-slate-300 dark:border-white/20 rounded-xl hover:border-cyan-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition-all text-left group"
-                >
-                  <div className="flex-1 min-w-0 pr-4">
-                    {formData.issueType ? (
-                      <>
-                        <div className="font-semibold text-slate-900 dark:text-white text-sm truncate">
-                          {ISSUE_TYPES.find(t => t.id === formData.issueType)?.label}
-                        </div>
-                        <div className="text-xs text-slate-500 dark:text-white/40 mt-0.5 truncate">
-                          {ISSUE_TYPES.find(t => t.id === formData.issueType)?.description}
-                        </div>
-                      </>
+                <div className="space-y-6">
+                  {/* Dropdown */}
+                  <div className="relative" ref={dropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                      className={`w-full flex items-center justify-between px-4 py-4 bg-[#FFFFFF] dark:bg-[#1A1A1F] border rounded-xl transition-all text-left ${errors.issueType ? 'border-red-500' : 'border border-transparent border-b-2 border-b-[#E5E7EB] dark:border-b-[rgba(255,255,255,0.08)] hover:bg-[#F5F5F7] dark:hover:bg-[#2A2A35]'}`}
+                    >
+                      <div className="flex-1">
+                        <div className="text-[11px] font-semibold text-[#6C63FF] mb-0.5">Issue Type *</div>
+                        {formData.issueType ? (
+                          <div className="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                            {(() => {
+                              const selected = ISSUE_TYPES.find(t => t.id === formData.issueType);
+                              const Icon = selected?.icon || HelpCircle;
+                              return <><Icon className="w-4 h-4 text-slate-400" /> {selected?.label}</>;
+                            })()}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-slate-500">Select an issue...</span>
+                        )}
+                      </div>
+                      <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {errors.issueType && <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{errors.issueType}</p>}
+
+                    <AnimatePresence>
+                      {dropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -5, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -5, scale: 0.98 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute left-0 right-0 mt-2 rounded-xl border border-[#E5E7EB] dark:border-[rgba(255,255,255,0.08)] bg-white dark:bg-[#1A1A1F] shadow-xl z-10 overflow-hidden"
+                        >
+                          <div className="max-h-[300px] overflow-y-auto p-1.5 space-y-0.5">
+                            {ISSUE_TYPES.map(type => {
+                              const isSelected = formData.issueType === type.id;
+                              const Icon = type.icon;
+                              return (
+                                <button
+                                  key={type.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setFormData(prev => ({ ...prev, issueType: type.id }));
+                                    setErrors(prev => ({ ...prev, issueType: "" }));
+                                    setDropdownOpen(false);
+                                  }}
+                                  className={`w-full text-left p-3 rounded-lg flex items-center gap-3 transition-colors ${
+                                    isSelected ? 'bg-[#6C63FF]/10 text-[#6C63FF] border-l-2 border-[#6C63FF]' : 'hover:bg-slate-50 dark:hover:bg-white/5 border-l-2 border-transparent'
+                                  }`}
+                                >
+                                  <Icon className={`w-5 h-5 ${isSelected ? 'text-[#6C63FF]' : 'text-slate-400'}`} />
+                                  <div>
+                                    <div className={`text-sm font-medium ${isSelected ? 'text-[#6C63FF]' : 'text-slate-700 dark:text-slate-200'}`}>{type.label}</div>
+                                    <div className={`text-xs ${isSelected ? 'text-[#6C63FF]/70' : 'text-slate-500 dark:text-slate-400'}`}>{type.description}</div>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Textarea */}
+                  <div>
+                    <div className={`relative rounded-xl transition-all bg-[#FFFFFF] dark:bg-[#1A1A1F] ${errors.description ? 'border border-red-500' : 'border border-transparent border-b-2 border-b-[#E5E7EB] dark:border-b-[rgba(255,255,255,0.08)] focus-within:ring-[3px] focus-within:ring-[#6C63FF]/15 focus-within:border-[#6C63FF]'}`}>
+                      <div className="px-4 pt-3 pb-1 flex justify-between items-center">
+                        <span className="text-[11px] font-semibold text-[#6C63FF]">Description *</span>
+                        <span className={`text-[10px] font-medium ${
+                          formData.description.length > 1950 ? 'text-red-500' : 
+                          formData.description.length > 1800 ? 'text-orange-500' : 'text-slate-400'
+                        }`}>
+                          {formData.description.length} / 2000
+                        </span>
+                      </div>
+                      <textarea
+                        ref={textareaRef}
+                        name="description"
+                        value={formData.description}
+                        onChange={handleTextareaChange}
+                        placeholder="Please provide as much detail as possible..."
+                        className="w-full px-4 py-2 bg-transparent outline-none text-sm text-slate-900 dark:text-white resize-none custom-scrollbar"
+                        style={{ minHeight: "100px" }}
+                        maxLength={2000}
+                      />
+                    </div>
+                    {errors.description ? (
+                      <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{errors.description}</p>
                     ) : (
-                      <span className="text-slate-400 dark:text-white/35 text-sm font-medium">Select an issue type...</span>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 ml-1">Be specific — vague reports take longer to resolve.</p>
                     )}
                   </div>
-                  <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform duration-300 shrink-0 ${dropdownOpen ? 'rotate-180 text-cyan-400' : 'group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-                </button>
-
-                {/* Animated Dropdown Menu */}
-                <AnimatePresence>
-                  {dropdownOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                      transition={{ duration: 0.15, ease: "easeOut" }}
-                      className="absolute left-0 right-0 mt-2 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl p-1.5 shadow-2xl z-40 max-h-[320px] overflow-y-auto custom-scrollbar"
-                    >
-                      <div className="space-y-1">
-                        {ISSUE_TYPES.map(type => {
-                          const isSelected = formData.issueType === type.id;
-                          return (
-                            <button
-                              key={type.id}
-                              type="button"
-                              onClick={() => {
-                                setFormData(prev => ({ ...prev, issueType: type.id }));
-                                setDropdownOpen(false);
-                              }}
-                              className={`w-full text-left p-3 rounded-xl transition-all flex items-center justify-between group ${
-                                isSelected 
-                                  ? 'bg-cyan-500/10 dark:bg-cyan-500/15 text-cyan-500 dark:text-cyan-400 font-semibold' 
-                                  : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-white/80'
-                              }`}
-                            >
-                              <div className="pr-4 min-w-0 flex-1">
-                                <span className={`block text-sm font-semibold truncate ${isSelected ? 'text-cyan-500 dark:text-cyan-400' : 'text-slate-900 dark:text-white'}`}>
-                                  {type.label}
-                                </span>
-                                <span className={`block text-xs mt-0.5 truncate ${isSelected ? 'text-cyan-500/70 dark:text-cyan-400/60' : 'text-slate-500 dark:text-white/40'}`}>
-                                  {type.description}
-                                </span>
-                              </div>
-                              {isSelected && (
-                                <div className="w-5 h-5 rounded-full bg-cyan-500 dark:bg-cyan-400 flex items-center justify-center shrink-0 shadow-lg shadow-cyan-500/25 ml-2">
-                                  <svg className="w-3 h-3 text-white dark:text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </div>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="space-y-1.5 pt-4">
-                <label className="text-sm font-medium text-slate-600 dark:text-white/70 flex justify-between">
-                  <span>Description <span className="text-red-400">*</span></span>
-                  <span className={`text-xs ${formData.description.length < 20 ? 'text-red-400' : 'text-green-400 font-semibold'}`}>
-                    {formData.description.length}/2000
-                  </span>
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  required
-                  rows={5}
-                  placeholder="Please provide as much detail as possible. If appealing a suspension, explain why you believe it was an error..."
-                  className="w-full px-4 py-3 bg-white dark:bg-black/40 border border-slate-300 dark:border-white/20 rounded-xl focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition-all resize-none text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/30"
-                  maxLength={2000}
-                />
-                {formData.description.length > 0 && formData.description.length < 20 && (
-                  <p className="text-xs text-red-400 flex items-center gap-1 mt-1 font-medium animate-pulse">
-                    <AlertCircle className="w-3.5 h-3.5" /> Minimum 20 characters required.
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Section 3: Evidence (Optional) */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold flex items-center gap-2 border-b border-slate-200 dark:border-white/5 pb-4">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 dark:bg-white/10 text-xs font-bold">3</span>
-                Supporting Evidence <span className="text-sm font-normal text-slate-400 dark:text-white/40 ml-2">(Optional)</span>
-              </h3>
-              
-              <div className="space-y-4">
-                <div className="relative border-2 border-dashed border-slate-300 dark:border-white/20 bg-slate-100/50 dark:bg-white/[0.02] rounded-2xl p-8 hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-all duration-300 group flex flex-col items-center justify-center cursor-pointer">
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*,.pdf"
-                    onChange={handleFileChange}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    disabled={files.length >= 5}
-                  />
-                  <div className="flex flex-col items-center justify-center text-center pointer-events-none">
-                    <div className="w-12 h-12 bg-white dark:bg-white/5 rounded-full flex items-center justify-center mb-3 group-hover:bg-cyan-500/10 dark:group-hover:bg-cyan-500/15 group-hover:scale-105 group-hover:rotate-6 transition-all duration-300 shadow-sm border border-slate-200 dark:border-white/5">
-                      <Upload className="w-6 h-6 text-slate-500 dark:text-white/60 group-hover:text-cyan-400 transition-colors" />
-                    </div>
-                    <p className="font-semibold text-slate-900 dark:text-white mb-1 group-hover:text-cyan-500 dark:group-hover:text-cyan-400 transition-colors">Click or drag files to upload</p>
-                    <p className="text-xs text-slate-400 dark:text-white/40">JPG, PNG, PDF (Max 5 files)</p>
-                  </div>
                 </div>
+              </motion.div>
+            )}
 
-                {/* Uploaded Files Preview */}
-                {files.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-semibold text-slate-600 dark:text-white/70">Attached Files ({files.length}/5)</p>
+            {/* Step 3: Evidence */}
+            {currentStep === 3 && (
+              <motion.div key="step3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+                <h2 className="text-[18px] font-semibold mb-6">Supporting Evidence <span className="text-sm font-normal text-slate-400">(Optional)</span></h2>
+                
+                <div className="space-y-4">
+                  <div 
+                    className={`relative border-2 border-dashed rounded-xl p-8 transition-all duration-300 flex flex-col items-center justify-center cursor-pointer ${
+                      isDragging 
+                        ? 'border-[#6C63FF] bg-[#6C63FF]/5' 
+                        : 'border-[#E5E7EB] dark:border-[rgba(255,255,255,0.15)] bg-[#F5F5F7]/50 dark:bg-[rgba(255,255,255,0.02)] hover:border-[#6C63FF]/50 hover:bg-[#6C63FF]/[0.02]'
+                    }`}
+                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsDragging(false);
+                      if (e.dataTransfer.files) handleFileChange(e.dataTransfer.files);
+                    }}
+                  >
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*,.pdf"
+                      onChange={(e) => e.target.files && handleFileChange(e.target.files)}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      disabled={files.length >= 5}
+                    />
+                    <Upload className={`w-8 h-8 mb-3 transition-colors ${isDragging ? 'text-[#6C63FF]' : 'text-slate-400'}`} />
+                    <p className="font-medium text-sm text-slate-700 dark:text-slate-200 mb-1">Drag files here or click to browse</p>
+                    <p className="text-xs text-slate-500">JPG, PNG, PDF (Max 5 files)</p>
+                  </div>
+
+                  {files.length > 0 && (
                     <div className="space-y-2">
                       {files.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-white dark:bg-white/[0.03] border border-slate-300 dark:border-white/20 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-white/[0.05]">
+                        <div key={index} className="flex items-center justify-between p-3 bg-white dark:bg-[#1A1A1F] border border-[#E5E7EB] dark:border-[rgba(255,255,255,0.08)] rounded-xl shadow-sm">
                           <div className="flex items-center gap-3 overflow-hidden">
-                            <div className="w-10 h-10 bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
-                              <span className="text-xs font-bold text-slate-400 dark:text-white/40 uppercase">{file.name.split('.').pop()}</span>
+                            <div className="w-8 h-8 bg-slate-100 dark:bg-white/5 rounded-lg flex items-center justify-center shrink-0">
+                              {file.type.includes('image') ? <FileImage className="w-4 h-4 text-slate-500" /> : <File className="w-4 h-4 text-slate-500" />}
                             </div>
                             <div className="truncate">
-                              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{file.name}</p>
-                              <p className="text-xs text-slate-400 dark:text-white/40">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                              <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{file.name}</p>
+                              <p className="text-[10px] text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                             </div>
                           </div>
                           <button
                             type="button"
                             onClick={() => removeFile(index)}
-                            className="p-2 hover:bg-red-500/10 dark:hover:bg-red-500/20 group/btn rounded-lg transition-colors flex-shrink-0"
+                            className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg text-slate-400 hover:text-red-500 transition-colors shrink-0"
                           >
-                            <X className="w-4 h-4 text-slate-400 group-hover/btn:text-red-500 transition-colors" />
+                            <X className="w-4 h-4" />
                           </button>
                         </div>
                       ))}
                     </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 4: Review */}
+            {currentStep === 4 && (
+              <motion.div key="step4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+                <h2 className="text-[18px] font-semibold mb-6">Review & Submit</h2>
+                
+                <div className="space-y-3">
+                  <div className="bg-[#F5F5F7] dark:bg-[rgba(255,255,255,0.03)] border border-[#E5E7EB] dark:border-[rgba(255,255,255,0.08)] rounded-xl p-4 flex justify-between items-start gap-4">
+                    <div className="min-w-0">
+                      <div className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider mb-1">Contact</div>
+                      <div className="text-sm font-medium text-slate-900 dark:text-white truncate">{formData.reporterName}</div>
+                      <div className="text-xs text-slate-500 truncate">{formData.reporterEmail}</div>
+                    </div>
+                    <button onClick={() => setCurrentStep(1)} className="p-1.5 text-slate-400 hover:bg-white dark:hover:bg-white/10 rounded-lg hover:text-[#6C63FF] transition-colors shrink-0"><Edit2 className="w-3.5 h-3.5" /></button>
                   </div>
-                )}
-              </div>
-            </div>
 
-            {/* Submit Actions */}
-            <div className="pt-6 border-t border-slate-200 dark:border-white/5 flex items-center justify-end">
-              <button
-                type="submit"
-                disabled={isSubmitting || !formData.issueType || formData.description.length < 20}
-                className="w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-black bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 active:scale-[0.98] hover:scale-[1.01] disabled:scale-100 disabled:opacity-50 disabled:pointer-events-none transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(34,211,238,0.2)] dark:shadow-[0_0_25px_rgba(34,211,238,0.15)] hover:shadow-[0_0_25px_rgba(34,211,238,0.4)]"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  "Submit Report"
-                )}
-              </button>
-            </div>
+                  <div className="bg-[#F5F5F7] dark:bg-[rgba(255,255,255,0.03)] border border-[#E5E7EB] dark:border-[rgba(255,255,255,0.08)] rounded-xl p-4 flex justify-between items-start gap-4">
+                    <div className="min-w-0">
+                      <div className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider mb-1">Issue</div>
+                      <div className="text-sm font-medium text-slate-900 dark:text-white truncate">{ISSUE_TYPES.find(t => t.id === formData.issueType)?.label}</div>
+                      <div className="text-xs text-slate-500 line-clamp-2 mt-1">{formData.description.substring(0, 100)}{formData.description.length > 100 ? '...' : ''}</div>
+                    </div>
+                    <button onClick={() => setCurrentStep(2)} className="p-1.5 text-slate-400 hover:bg-white dark:hover:bg-white/10 rounded-lg hover:text-[#6C63FF] transition-colors shrink-0"><Edit2 className="w-3.5 h-3.5" /></button>
+                  </div>
 
-          </form>
+                  <div className="bg-[#F5F5F7] dark:bg-[rgba(255,255,255,0.03)] border border-[#E5E7EB] dark:border-[rgba(255,255,255,0.08)] rounded-xl p-4 flex justify-between items-start gap-4">
+                    <div className="min-w-0">
+                      <div className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider mb-1">Evidence</div>
+                      <div className="text-sm font-medium text-slate-900 dark:text-white">{files.length} file(s) attached</div>
+                    </div>
+                    <button onClick={() => setCurrentStep(3)} className="p-1.5 text-slate-400 hover:bg-white dark:hover:bg-white/10 rounded-lg hover:text-[#6C63FF] transition-colors shrink-0"><Edit2 className="w-3.5 h-3.5" /></button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
+
+        {/* Navigation Buttons */}
+        <div className="mt-6 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 sm:gap-4 sticky bottom-6 z-40 bg-[#F5F5F7]/80 dark:bg-[#0D0D0F]/80 backdrop-blur-md p-3 sm:p-0 rounded-2xl sm:bg-transparent sm:backdrop-blur-none sm:static border border-[#E5E7EB] dark:border-white/10 sm:border-transparent">
+          {currentStep > 1 && (
+            <button
+              type="button"
+              onClick={prevStep}
+              disabled={isSubmitting}
+              className="w-full sm:w-auto px-6 py-3 rounded-xl font-semibold text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-2 border sm:border-transparent border-slate-200 dark:border-white/10"
+            >
+              Back
+            </button>
+          )}
+          
+          {currentStep < 4 ? (
+            <button
+              type="button"
+              onClick={nextStep}
+              className="w-full sm:w-auto px-8 py-3 rounded-xl font-semibold text-white bg-[#6C63FF] hover:bg-[#5a52d6] transition-colors shadow-sm"
+            >
+              Continue
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="w-full sm:w-auto px-8 py-3 rounded-xl font-semibold text-white bg-[#6C63FF] hover:bg-[#5a52d6] transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-70"
+            >
+              {isSubmitting ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> Submitting...</>
+              ) : "Submit Report"}
+            </button>
+          )}
+        </div>
+
       </div>
     </div>
   );

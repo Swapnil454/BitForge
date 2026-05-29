@@ -51,7 +51,9 @@ import {
   CloudDownload,
   Receipt,
   WalletCards,
-  ClipboardCheck
+  ClipboardCheck,
+  Info,
+  Phone
 } from "lucide-react";
 import { clearAuthStorage, getStoredUser, setCookie, getCookie } from "@/lib/cookies";
 import { notificationAPI, userAPI, wishlistAPI } from "@/lib/api";
@@ -114,6 +116,7 @@ export default function BuyerDashboard() {
 
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const handleThemeChange = (newTheme: string) => {
     setTheme(newTheme);
@@ -135,7 +138,13 @@ export default function BuyerDashboard() {
     });
   };
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const router = useRouter();
   
@@ -822,17 +831,6 @@ export default function BuyerDashboard() {
                 <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Total Spent</span>
               </motion.button>
 
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/buyer/purchases")} className="flex flex-col items-center gap-2 group md:flex-row md:items-center md:gap-0 md:p-3 bg-transparent md:bg-slate-50/70 md:dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/60 md:hover:bg-slate-100 md:dark:hover:bg-slate-800/80 rounded-2xl md:border md:border-slate-200/60 md:dark:border-slate-700/50 md:shadow-sm md:hover:shadow md:transition-all md:duration-200 w-full">
-                <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
-                  <span className="anim-wrapper anim-float delay-5 inline-flex relative z-10"><FolderOpen className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
-                </div>
-                <div className="hidden md:flex flex-col items-start text-left ml-3">
-                  <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Purchases</span>
-                  <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Track your items</span>
-                </div>
-                <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Purchases</span>
-              </motion.button>
-
               <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/buyer/downloads")} className="flex flex-col items-center gap-2 group md:flex-row md:items-center md:gap-0 md:p-3 bg-transparent md:bg-slate-50/70 md:dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/60 md:hover:bg-slate-100 md:dark:hover:bg-slate-800/80 rounded-2xl md:border md:border-slate-200/60 md:dark:border-slate-700/50 md:shadow-sm md:hover:shadow md:transition-all md:duration-200 w-full">
                 <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
                   <span className="anim-wrapper anim-bounce delay-6 inline-flex relative z-10"><CloudDownload className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
@@ -853,6 +851,17 @@ export default function BuyerDashboard() {
                   <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Order history</span>
                 </div>
                 <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Orders</span>
+              </motion.button>
+              
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/support")} className="flex flex-col items-center gap-2 group md:flex-row md:items-center md:gap-0 md:p-3 bg-transparent md:bg-slate-50/70 md:dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/60 md:hover:bg-slate-100 md:dark:hover:bg-slate-800/80 rounded-2xl md:border md:border-slate-200/60 md:dark:border-slate-700/50 md:shadow-sm md:hover:shadow md:transition-all md:duration-200 w-full">
+                <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
+                  <span className="anim-wrapper anim-float delay-5 inline-flex relative z-10"><CircleHelp className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
+                </div>
+                <div className="hidden md:flex flex-col items-start text-left ml-3">
+                  <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Help Center</span>
+                  <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Get support</span>
+                </div>
+                <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Help Center</span>
               </motion.button>
 
             </div>
@@ -939,18 +948,6 @@ export default function BuyerDashboard() {
           <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-3 px-1">Support & Settings</h2>
           <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[24px] border border-white dark:border-slate-800 shadow-[0_8px_30px_rgba(15,23,42,0.06)] dark:shadow-none p-5">
             <div className="grid grid-cols-4 gap-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4 lg:gap-5">
-
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/support")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
-                <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
-                  <span className="anim-wrapper anim-spin delay-8 inline-flex relative z-10"><CircleHelp className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
-                </div>
-                <div className="hidden md:flex flex-col items-start text-left ml-3">
-                  <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Support</span>
-                  <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Get Help</span>
-                </div>
-                <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Support</span>
-              </motion.button>
-
               <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/buyer/reports")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
                 <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
                   <span className="anim-wrapper anim-wiggle delay-2 inline-flex relative z-10"><Ticket className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
@@ -962,15 +959,26 @@ export default function BuyerDashboard() {
                 <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">My Tickets</span>
               </motion.button>
 
-              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/support?tab=messages")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/contact")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
                 <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
-                  <span className="anim-wrapper anim-pulse delay-4 inline-flex relative z-10"><MessageSquare className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
+                  <span className="anim-wrapper anim-pulse delay-4 inline-flex relative z-10"><Phone className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
                 </div>
                 <div className="hidden md:flex flex-col items-start text-left ml-3">
-                  <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Messages</span>
-                  <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">View All</span>
+                  <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Contact Support</span>
+                  <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Reach out to us</span>
                 </div>
-                <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Messages</span>
+                <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Contact Support</span>
+              </motion.button>
+
+              <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/about")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+                <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
+                  <span className="anim-wrapper anim-spin delay-8 inline-flex relative z-10"><Info className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
+                </div>
+                <div className="hidden md:flex flex-col items-start text-left ml-3">
+                  <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">About Us</span>
+                  <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Learn more</span>
+                </div>
+                <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">About Us</span>
               </motion.button>
 
               <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/buyer/settings")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
@@ -998,7 +1006,7 @@ export default function BuyerDashboard() {
                 <BarChart3 className="w-5 h-5 text-indigo-500" />
                 Purchases Per Month
               </h3>
-              <ChartBar data={spendingData} keyName="amount" />
+              <ChartBar data={isMobile && spendingData ? spendingData.slice(-3) : spendingData} keyName="amount" isMobile={isMobile} />
             </div>
 
             <div className="bg-white dark:bg-slate-900 rounded-[28px] border border-slate-100 dark:border-slate-800 shadow-[0_12px_40px_rgba(15,23,42,0.06)] dark:shadow-none p-5 sm:p-6">
@@ -1006,7 +1014,7 @@ export default function BuyerDashboard() {
                 <Wallet className="w-5 h-5 text-emerald-500" />
                 Spending Over Time
               </h3>
-              <ChartArea data={spendingData} keyName="amount" />
+              <ChartArea data={isMobile && spendingData ? spendingData.slice(-3) : spendingData} keyName="amount" />
             </div>
 
           </div>
@@ -1122,6 +1130,7 @@ function ChartArea({ data, keyName }: any) {
         <AreaChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }} style={{ outline: 'none' }}>
           <XAxis 
             dataKey="month" 
+            padding={{ left: 15, right: 15 }}
             axisLine={false} 
             tickLine={false} 
             tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 500 }} 
@@ -1163,7 +1172,7 @@ function ChartArea({ data, keyName }: any) {
   );
 }
 
-function ChartBar({ data, keyName }: any) {
+function ChartBar({ data, keyName, isMobile }: any) {
   const hasData = data && data.length > 0 && data.some((d: any) => d[keyName] > 0);
   
   if (!hasData) {
@@ -1209,7 +1218,8 @@ function ChartBar({ data, keyName }: any) {
             dataKey={keyName} 
             fill="url(#colorPurchases)" 
             radius={[4, 4, 0, 0]}
-            barSize={16}
+            barSize={48}
+            minPointSize={6}
             style={{ outline: 'none' }}
           />
           <defs>

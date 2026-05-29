@@ -6,6 +6,7 @@ import { cartAPI, searchAPI, wishlistAPI } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
 import { useInfiniteProducts } from "@/lib/useInfiniteProducts";
 import toast from "react-hot-toast";
+import Image from "next/image";
 
 import BuyerHeader from "@/app/components/buyer/layout/BuyerHeader";
 import BuyerFooter from "@/app/components/buyer/layout/BuyerFooter";
@@ -70,10 +71,20 @@ function InfiniteProductGrid({
 
   if (products.length === 0) {
     return (
-      <div className="py-24 flex flex-col items-center text-center">
-        <div className="w-20 h-20 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 text-4xl">🔍</div>
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">No products found</h3>
-        <p className="text-gray-500 dark:text-slate-400 max-w-sm">Try adjusting your search or browsing a different category.</p>
+      <div className="pt-10 -mt-8 pb-32 flex flex-col items-center justify-center text-center px-4">
+        <div className="mb-1 relative w-64 h-64 md:w-80 md:h-80">
+          <Image 
+            src="/no_product_found_placeholder.png" 
+            alt="No products found" 
+            fill
+            className="object-contain drop-shadow-md"
+            priority
+          />
+        </div>
+        <h3 className="text-2xl -mt-6 font-black text-gray-900 dark:text-white mb-2 tracking-tight">No products found</h3>
+        <p className="text-gray-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+          We couldn't find anything matching your current filters. Try adjusting your search or exploring a different category!
+        </p>
       </div>
     );
   }
