@@ -12,6 +12,7 @@ import {
 import { useTheme } from "next-themes";
 import { useAuth } from "@/lib/useAuth";
 import { getStoredUser } from "@/lib/cookies";
+import { persistThemePreference, type ThemePreference } from "@/lib/themePreference";
 import { notificationAPI } from "@/lib/api";
 import AuthModal from "@/app/components/AuthModal";
 import LogoutModal from "@/app/dashboard/components/LogoutModal";
@@ -128,7 +129,12 @@ export default function BuyerHeader({
     if (e.key === "Enter") commitSearch();
   };
 
-  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
+  const applyTheme = (nextTheme: ThemePreference) => {
+    setTheme(nextTheme);
+    persistThemePreference(nextTheme);
+  };
+
+  const toggleTheme = () => applyTheme(theme === "dark" ? "light" : "dark");
 
   return (
     <>
@@ -366,14 +372,28 @@ export default function BuyerHeader({
                     <div className="h-px bg-slate-100 dark:bg-white/10 my-1 mx-2" />
 
                     {mounted && (() => {
-                      let nextTheme = resolvedTheme === "dark" ? "light" : "dark";
-                      let label = resolvedTheme === "dark" ? "Light Mode" : "Dark Mode";
-                      let icon = resolvedTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />;
+                      let nextTheme: ThemePreference;
+                      let label: string;
+                      let icon: React.ReactNode;
+
+                      if (theme === "light") {
+                        nextTheme = "dark";
+                        label = "Dark Mode";
+                        icon = <Moon size={16} />;
+                      } else if (theme === "dark") {
+                        nextTheme = "system";
+                        label = "System Theme";
+                        icon = <Monitor size={16} />;
+                      } else {
+                        nextTheme = resolvedTheme === "dark" ? "light" : "dark";
+                        label = resolvedTheme === "dark" ? "Light Mode" : "Dark Mode";
+                        icon = resolvedTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />;
+                      }
 
                       return (
                         <button
                           onClick={() => {
-                            setTheme(nextTheme);
+                            applyTheme(nextTheme);
                             setIsMobileMenuOpen(false);
                           }}
                           className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 dark:text-slate-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-white/10 dark:hover:text-white rounded-xl w-full text-left font-medium transition-all"

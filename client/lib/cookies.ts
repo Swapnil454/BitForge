@@ -20,6 +20,7 @@ function normalizeStoredUser(raw: unknown) {
     avatar: user.avatar,
     phone: user.phone,
     authProvider: user.authProvider,
+    theme: user.theme ?? user.preferences?.theme,
     preferences: user.preferences?.theme
       ? { theme: user.preferences.theme }
       : user.preferences,
