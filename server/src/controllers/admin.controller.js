@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import Product from "../models/Product.js";
 import Payout from "../models/Payout.js";
 import cloudinary from "../config/cloudinary.js";
+import { deleteFromR2 } from "../utils/r2Upload.js";
 import { createNotification } from "./notification.controller.js";
 // import razorpayX from "../config/razorpayx.js"; // Temporarily disabled for manual payouts
 import Dispute from "../models/Dispute.js";
@@ -720,9 +721,13 @@ export const deleteProductByAdmin = async (req, res) => {
       // No purchases - safe to hard delete and remove files
       if (product.fileKey) {
         try {
-          await cloudinary.uploader.destroy(product.fileKey, { resource_type: "raw" });
+          if (product.storageProvider === "r2") {
+            await deleteFromR2(product.fileKey);
+          } else {
+            await cloudinary.uploader.destroy(product.fileKey, { resource_type: "raw" });
+          }
         } catch (err) {
-          console.error("Cloudinary delete error:", err);
+          console.error("Storage delete error:", err);
         }
       }
 

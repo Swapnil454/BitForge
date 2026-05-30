@@ -505,7 +505,7 @@ export default function MyProductsPage() {
                       {new Date(p.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </div>
 
-                    {approved && (
+                    {approved ? (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -515,6 +515,17 @@ export default function MyProductsPage() {
                       >
                         <Megaphone className="h-3 w-3" />
                         Promote
+                      </button>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteClick(p._id);
+                        }}
+                        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-600 dark:text-red-400 transition hover:border-red-300/50 hover:bg-red-500/15"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        Delete
                       </button>
                     )}
                   </div>
@@ -613,7 +624,11 @@ function MenuItem({
   return (
     <div className="relative group">
       <button
-        onClick={disabled ? undefined : onClick}
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          if (!disabled && onClick) onClick();
+        }}
         className={`w-full flex items-center gap-2 text-left px-3 py-2.5 text-sm transition-colors
           ${disabled
             ? "opacity-40 cursor-not-allowed"

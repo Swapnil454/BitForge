@@ -324,8 +324,25 @@ export default function SellerPromotionsPage() {
                 <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme === 'dark' ? '#666' : '#64748b' }} dy={10} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme === 'dark' ? '#666' : '#64748b' }} />
                 <RechartsTooltip 
-                  contentStyle={{ backgroundColor: theme === 'dark' ? '#111' : '#fff', borderColor: theme === 'dark' ? '#333' : '#cbd5e1', borderRadius: '8px', fontSize: '12px' }}
-                  itemStyle={{ color: '#ededed' }}
+                  contentStyle={{ 
+                    backgroundColor: theme === 'dark' ? '#111' : '#fff', 
+                    borderColor: theme === 'dark' ? '#333' : '#e2e8f0', 
+                    borderRadius: '8px', 
+                    fontSize: '12px',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    padding: '10px 14px',
+                    color: theme === 'dark' ? '#e2e8f0' : '#475569'
+                  }}
+                  itemStyle={{ 
+                    color: theme === 'dark' ? '#e2e8f0' : '#334155',
+                    fontWeight: 500,
+                    paddingTop: '4px'
+                  }}
+                  labelStyle={{
+                    fontWeight: 600,
+                    marginBottom: '6px',
+                    color: theme === 'dark' ? '#f8fafc' : '#0f172a'
+                  }}
                 />
                 {activeChartPromotions.map((promo, idx) => (
                   <Line 

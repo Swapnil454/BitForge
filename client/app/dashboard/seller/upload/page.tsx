@@ -18,7 +18,7 @@ import {
 
 /* ================= CONSTANTS ================= */
 
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+const MAX_FILE_SIZE = 1024 * 1024 * 1024; // 1GB
 const SURFACE_CARD_CLASS =
   "group relative overflow-hidden rounded-[20px] sm:rounded-[24px] border border-slate-200/90 bg-white/96 p-4 sm:p-5 shadow-[0_16px_40px_-30px_rgba(15,23,42,0.24)] ring-1 ring-slate-950/5 transition-all duration-300 before:absolute before:inset-x-10 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-cyan-400/45 before:to-transparent hover:border-cyan-200/70 hover:shadow-[0_22px_48px_-34px_rgba(8,145,178,0.2)] dark:border-white/5 dark:bg-[#0c0e14] dark:ring-white/10 dark:before:via-cyan-300/25 dark:hover:border-cyan-400/20";
 
@@ -62,6 +62,12 @@ export default function UploadAndProductsPage() {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  // Upload Progress States
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadSpeed, setUploadSpeed] = useState(0); // bytes per sec
+  const [uploadedBytes, setUploadedBytes] = useState(0);
+  const [totalBytes, setTotalBytes] = useState(0);
 
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState("");
@@ -155,7 +161,7 @@ export default function UploadAndProductsPage() {
     if (!selected) return;
 
     if (selected.size > MAX_FILE_SIZE) {
-      setFileError("File size must be under 100MB");
+      setFileError("File size must be under 1GB");
       setFile(null);
       return;
     }
@@ -227,7 +233,61 @@ export default function UploadAndProductsPage() {
     }
 
     try {
-      const response = await api.post("/products/upload", formData);
+      let lastLoaded = 0;
+      let lastTime = Date.now();
+
+      const response = await new Promise<any>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", `${process.env.NEXT_PUBLIC_API_URL}/products/upload`);
+        xhr.withCredentials = true;
+
+        // Add auth token
+        const cookies = document.cookie.split(";");
+        const tokenCookie = cookies.find((c) => c.trim().startsWith("token="));
+        if (tokenCookie) {
+          const token = tokenCookie.split("=")[1];
+          xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+        }
+
+        xhr.upload.onprogress = (progressEvent) => {
+          if (!progressEvent.lengthComputable) return;
+          const loaded = progressEvent.loaded;
+          const total = progressEvent.total;
+          const percent = Math.floor((loaded * 100) / total);
+          
+          setUploadProgress(percent);
+          setUploadedBytes(loaded);
+          setTotalBytes(total);
+          
+          const now = Date.now();
+          const timeDiff = (now - lastTime) / 1000;
+          if (timeDiff > 0.3) {
+            const bytesDiff = loaded - lastLoaded;
+            setUploadSpeed(bytesDiff / timeDiff);
+            lastLoaded = loaded;
+            lastTime = now;
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              resolve({ data: JSON.parse(xhr.responseText) });
+            } catch (e) {
+              resolve({ data: xhr.responseText });
+            }
+          } else {
+            try {
+              reject({ response: { data: JSON.parse(xhr.responseText) } });
+            } catch (e) {
+              reject(new Error("Upload failed"));
+            }
+          }
+        };
+
+        xhr.onerror = () => reject(new Error("Network Error"));
+        xhr.send(formData);
+      });
 
       showSuccess("Product uploaded successfully!");
       setSubmitted(true);
@@ -252,6 +312,10 @@ export default function UploadAndProductsPage() {
       showError(error.response?.data?.message || "Upload failed");
     } finally {
       setLoading(false);
+      setUploadProgress(0);
+      setUploadSpeed(0);
+      setUploadedBytes(0);
+      setTotalBytes(0);
     }
   };
 
@@ -323,12 +387,6 @@ export default function UploadAndProductsPage() {
 
           {/* Left form column */}
           <div className="min-w-0">
-            {loading ? (
-              <div className="animate-pulse space-y-4">
-                <div className="h-64 bg-white dark:bg-slate-900/40 rounded-[24px] border border-slate-200 dark:border-white/5" />
-                <div className="h-40 bg-white dark:bg-slate-900/40 rounded-[24px] border border-slate-200 dark:border-white/5" />
-              </div>
-            ) : (
               <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
 
                 {/* === CARD 1: BASIC DETAILS === */}
@@ -462,7 +520,7 @@ export default function UploadAndProductsPage() {
                           <div className="flex flex-col items-center justify-center pointer-events-none">
                             <Upload className="w-6 h-6 text-slate-400 mb-2" />
                             <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Click or drag file here</p>
-                            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">PDF, ZIP, DOCX supported - Max 100MB</p>
+                            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">PDF, ZIP, DOCX supported - Max 1GB</p>
                           </div>
                         ) : (
                           <div className="flex flex-col items-center justify-center pointer-events-none z-20">
@@ -583,6 +641,32 @@ export default function UploadAndProductsPage() {
 
                 {/* === SUBMIT ACTIONS === */}
                 <div>
+                  {loading && (
+                    <div className="mb-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
+                      <div className="flex justify-between items-center text-sm font-medium">
+                        <span className="text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                          <Upload className="w-4 h-4 animate-bounce text-cyan-500" /> 
+                          Uploading... {uploadProgress}%
+                        </span>
+                        <span className="text-cyan-600 dark:text-cyan-400 font-bold">
+                          {(uploadedBytes / 1024 / 1024).toFixed(1)} MB <span className="text-slate-400 dark:text-slate-500 font-normal">/ {(totalBytes / 1024 / 1024).toFixed(1)} MB</span>
+                        </span>
+                      </div>
+                      <div className="h-2.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300 relative" style={{ width: `${uploadProgress}%` }}>
+                          <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center text-xs text-slate-500 dark:text-slate-400">
+                        <span className="flex items-center gap-1.5">
+                          <Globe className="w-3.5 h-3.5" /> Speed: {(uploadSpeed / 1024 / 1024).toFixed(1)} MB/s
+                        </span>
+                        <span className="flex items-center gap-1.5 text-emerald-500 dark:text-emerald-400">
+                          <CheckCircle className="w-3.5 h-3.5" /> Full production ready
+                        </span>
+                      </div>
+                    </div>
+                  )}
                   <button
                     type="submit"
                     disabled={!acceptedTerms || !ownershipAccepted || loading}
@@ -601,7 +685,6 @@ export default function UploadAndProductsPage() {
                   )}
                 </div>
               </form>
-            )}
           </div>
 
           <aside className="hidden xl:block xl:sticky xl:top-24 space-y-4">
