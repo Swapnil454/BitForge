@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { ThemeProvider, useTheme } from "next-themes";
 import { getCookie, getStoredUser, setCookie } from "@/lib/cookies";
@@ -131,8 +131,12 @@ export default function AppProviders({ children }: AppProvidersProps) {
 
 function ThemeSync() {
   const { setTheme } = useTheme();
+  const hasSyncedTheme = useRef(false);
 
   useEffect(() => {
+    if (hasSyncedTheme.current) return;
+    hasSyncedTheme.current = true;
+
     try {
       const user = getStoredUser<any>();
       if (!user) return;
