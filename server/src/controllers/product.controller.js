@@ -5,6 +5,7 @@ import Product from "../models/Product.js";
 import User from "../models/User.js";
 import Review from "../models/Review.js";
 import Order from "../models/Order.js";
+import PromotionRequest from "../models/PromotionRequest.js";
 import { createNotification } from "./notification.controller.js";
 import {
   generatePreviewPages,
@@ -193,11 +194,26 @@ const handleApprovedProductUpdate = async (product, req, res, updateData) => {
 };
 
 export const createProduct = async (req, res) => {
-  const product = await Product.create({
-    ...req.body,
-    sellerId: req.user.id,
-  });
-  res.json(product);
+  try {
+    const user = await User.findById(req.user.id);
+    const isApproved = user.approvalStatus === "approved" || user.isApproved;
+
+    if (!isApproved) {
+      const productCount = await Product.countDocuments({ sellerId: req.user.id });
+      if (productCount >= 2) {
+        return res.status(403).json({ message: "Unverified sellers can only upload up to 2 products. Please verify your identity." });
+      }
+    }
+
+    const product = await Product.create({
+      ...req.body,
+      sellerId: req.user.id,
+    });
+    res.json(product);
+  } catch (error) {
+    console.error("Create product error:", error);
+    res.status(500).json({ message: "Failed to create product" });
+  }
 };
 
 export const getSellerProducts = async (req, res) => {
@@ -251,10 +267,16 @@ export const getSellerProducts = async (req, res) => {
          const avgRating = reviews.length ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length) : 0;
          const buyers = await Order.countDocuments({ productId: p._id, status: 'paid' });
 
+         const activePromotion = await PromotionRequest.findOne({
+           productId: p._id,
+           status: { $nin: ["REJECTED", "EXPIRED", "CANCELLED"] }
+         }).lean();
+
          return {
            ...p,
            rating: parseFloat(avgRating.toFixed(1)),
-           buyers: buyers
+           buyers: buyers,
+           hasActivePromotion: !!activePromotion
           };
       }));
       const filteredProducts = productsWithStats.filter(matchesFilters);
@@ -277,10 +299,16 @@ export const getSellerProducts = async (req, res) => {
          const avgRating = reviews.length ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length) : 0;
          const buyers = await Order.countDocuments({ productId: p._id, status: 'paid' });
 
+         const activePromotion = await PromotionRequest.findOne({
+           productId: p._id,
+           status: { $nin: ["REJECTED", "EXPIRED", "CANCELLED"] }
+         }).lean();
+
          return {
            ...p,
            rating: parseFloat(avgRating.toFixed(1)),
-           buyers: buyers
+           buyers: buyers,
+           hasActivePromotion: !!activePromotion
           };
       }));
 

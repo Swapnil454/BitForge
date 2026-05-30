@@ -9,10 +9,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
+import { getStoredUser } from "@/lib/cookies";
 import {
   Upload, FileText, Image as ImageIcon, Tag,
   Globe, FileType, Users, Hash, Pencil, Trash2,
-  CheckCircle, Clock, XCircle, ChevronLeft,
+  CheckCircle, Clock, XCircle, ChevronLeft, ClipboardCheck,
   Package, Star, Calendar, MoreVertical, Eye, Megaphone
 } from "lucide-react";
 
@@ -20,7 +21,7 @@ import {
 
 const MAX_FILE_SIZE = 1024 * 1024 * 1024; // 1GB
 const SURFACE_CARD_CLASS =
-  "group relative overflow-hidden rounded-[20px] sm:rounded-[24px] border border-slate-200/90 bg-white/96 p-4 sm:p-5 shadow-[0_16px_40px_-30px_rgba(15,23,42,0.24)] ring-1 ring-slate-950/5 transition-all duration-300 before:absolute before:inset-x-10 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-cyan-400/45 before:to-transparent hover:border-cyan-200/70 hover:shadow-[0_22px_48px_-34px_rgba(8,145,178,0.2)] dark:border-white/5 dark:bg-[#0c0e14] dark:ring-white/10 dark:before:via-cyan-300/25 dark:hover:border-cyan-400/20";
+  "rounded-2xl sm:rounded-[28px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-sm transition-all";
 
 const categoryColors: Record<string, { pill: string }> = {
   Course: { pill: "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" },
@@ -58,10 +59,15 @@ interface Product {
 
 export default function UploadAndProductsPage() {
   const router = useRouter();
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  useEffect(() => {
+    setUser(getStoredUser());
+  }, []);
 
   // Upload Progress States
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -117,6 +123,9 @@ export default function UploadAndProductsPage() {
   }, []);
 
   /* ================= DERIVED ================= */
+
+  const isApproved = user?.approvalStatus === "approved" || Boolean(user?.isApproved);
+  const showVerificationWarning = user && !isApproved && products.length >= 2;
 
   const finalPrice =
     price && discount ? Math.max(price - (price * discount) / 100, 0) : price;
@@ -345,20 +354,20 @@ export default function UploadAndProductsPage() {
   /* ================= UI CLASSES ================= */
 
   const inputClass =
-    "w-full rounded-xl bg-slate-100 dark:bg-[#05070a] border border-slate-200 dark:border-white/5 px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 hover:border-slate-300 dark:hover:border-white/10 focus:bg-white dark:focus:bg-[#07090d] focus:border-cyan-400 dark:focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-400 dark:focus:ring-cyan-500/50 transition-all shadow-sm dark:shadow-none";
+    "w-full rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 hover:border-slate-300 dark:hover:border-slate-700 focus:bg-white dark:focus:bg-slate-950 focus:border-indigo-500 dark:focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm";
 
   /* ================= RENDER ================= */
 
   return (
     <>
-      <div className="relative isolate min-h-screen overflow-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#f1f5f9_48%,#eef2f7_100%)] dark:bg-[linear-gradient(180deg,#05070c_0%,#0a1220_48%,#05070c_100%)]">
+      <div className="relative isolate min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[280px] overflow-hidden">
-          <div className="absolute left-[12%] top-[-140px] h-56 w-56 rounded-full bg-cyan-200/25 blur-3xl dark:bg-cyan-400/8" />
-          <div className="absolute right-[14%] top-[-60px] h-48 w-48 rounded-full bg-sky-200/25 blur-3xl dark:bg-blue-500/8" />
+          <div className="absolute left-[12%] top-[-140px] h-56 w-56 rounded-full bg-cyan-200/25 blur-3xl dark:hidden" />
+          <div className="absolute right-[14%] top-[-60px] h-48 w-48 rounded-full bg-sky-200/25 blur-3xl dark:hidden" />
         </div>
 
-        <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/92 backdrop-blur-xl dark:border-white/10 dark:bg-[#070b14]/90">
-          <div className="mx-auto max-w-7xl px-4 py-1.5 sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-30 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl">
+          <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
             <div className="relative flex min-h-[40px] sm:min-h-[48px] items-center justify-center">
               <button
                 onClick={() => router.push("/dashboard/seller")}
@@ -387,7 +396,7 @@ export default function UploadAndProductsPage() {
 
           {/* Left form column */}
           <div className="min-w-0">
-              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
 
                 {/* === CARD 1: BASIC DETAILS === */}
                 <div className={SURFACE_CARD_CLASS}>
@@ -458,9 +467,9 @@ export default function UploadAndProductsPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between rounded-xl border border-cyan-100 bg-cyan-50/70 px-4 py-3 dark:border-cyan-500/10 dark:bg-cyan-500/5">
-                    <span className="text-sm font-medium text-cyan-800 dark:text-cyan-400">Final Buyer Price</span>
-                    <span className="text-lg font-bold text-cyan-700 dark:text-cyan-300">&#8377;{finalPrice || 0}</span>
+                  <div className="mt-4 flex items-center justify-between rounded-xl border border-indigo-100 bg-indigo-50/70 px-4 py-3 dark:border-indigo-500/10 dark:bg-indigo-500/5">
+                    <span className="text-sm font-medium text-indigo-800 dark:text-indigo-400">Final Buyer Price</span>
+                    <span className="text-lg font-bold text-indigo-700 dark:text-indigo-300">&#8377;{finalPrice || 0}</span>
                   </div>
                 </div>
 
@@ -508,7 +517,7 @@ export default function UploadAndProductsPage() {
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-slate-700 dark:text-slate-300 block">Product File</label>
 
-                      <div className="relative overflow-hidden flex h-32 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-center transition hover:border-cyan-400 hover:bg-cyan-50/40 dark:border-white/15 dark:bg-slate-900/60 dark:hover:border-cyan-400/60 dark:hover:bg-cyan-500/5">
+                      <div className="relative overflow-hidden flex h-32 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-center transition hover:border-indigo-400 hover:bg-indigo-50/40 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-indigo-500/50 dark:hover:bg-indigo-500/5">
                         <input
                           type="file"
                           name="file"
@@ -725,7 +734,7 @@ export default function UploadAndProductsPage() {
           {loadingProducts ? (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex flex-col bg-white dark:bg-[#0b0b14] border border-gray-100 dark:border-white/5 rounded-2xl overflow-hidden animate-pulse">
+                <div key={i} className="flex flex-col bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl overflow-hidden animate-pulse">
                   <div className="w-full aspect-video bg-slate-100 dark:bg-white/5" />
                   <div className="p-4 flex flex-col flex-1 gap-3">
                     <div className="h-5 bg-slate-200 dark:bg-white/10 rounded-md w-3/4" />
@@ -741,7 +750,7 @@ export default function UploadAndProductsPage() {
               ))}
             </div>
           ) : products.length === 0 ? (
-            <div className="text-center py-16 bg-white dark:bg-[#0f0f17] border border-slate-200 dark:border-white/5 rounded-2xl">
+            <div className="text-center py-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
               <Package className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
               <p className="text-slate-600 dark:text-white/60 font-medium">No products yet</p>
               <p className="text-sm text-slate-400 dark:text-white/40 mt-1">Upload your first product above</p>
@@ -773,6 +782,39 @@ export default function UploadAndProductsPage() {
             </div>
           )}
         </section>
+
+        {/* ================= VERIFICATION WARNING MODAL ================= */}
+        {showVerificationWarning && (
+          <div className="fixed inset-0 bg-white/20 dark:bg-[#05050a]/20 backdrop-blur-sm z-20 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white dark:bg-slate-900 border border-orange-200 dark:border-slate-800 rounded-[28px] p-8 sm:p-12 text-center shadow-xl max-w-lg w-full"
+            >
+              <div className="w-20 h-20 bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center mx-auto mb-6">
+                <ClipboardCheck className="w-10 h-10" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Verification Required</h3>
+              <p className="text-slate-600 dark:text-slate-400 mb-8 max-w-md mx-auto text-lg leading-relaxed">
+                For more product uploads, please verify your identity.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button
+                  onClick={() => router.push("/dashboard/seller")}
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  Go Back
+                </button>
+                <button
+                  onClick={() => router.push("/dashboard/seller/verify-identity")}
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all"
+                >
+                  Verify Identity
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </div>
 
 
@@ -782,7 +824,7 @@ export default function UploadAndProductsPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-[#0b0b14] border border-red-200 dark:border-red-500/20 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-xl"
+            className="bg-white dark:bg-slate-900 border border-red-200 dark:border-red-500/20 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-xl"
           >
             <h2 className="text-lg font-black text-red-400">Delete Product?</h2>
             <p className="text-sm text-slate-500 dark:text-white/60">
@@ -797,6 +839,7 @@ export default function UploadAndProductsPage() {
           </motion.div>
         </div>
       )}
+
     </>
   );
 }
@@ -814,7 +857,7 @@ function SectionHeading({
 }) {
   return (
     <div className="mb-4 flex items-start gap-3">
-      <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200/80 bg-[linear-gradient(180deg,#ffffff_0%,#eef6ff_100%)] text-sm font-semibold text-slate-700 shadow-sm shadow-slate-200/70 ring-1 ring-slate-950/5 dark:border-white/10 dark:bg-[linear-gradient(180deg,#0f1724_0%,#0b1220_100%)] dark:text-slate-200 dark:shadow-none dark:ring-white/10">
+      <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200/80 bg-slate-50 text-sm font-semibold text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:shadow-none">
         {number}
       </div>
       <div>
@@ -1026,10 +1069,9 @@ function ChecklistCard({
 
 function SellerTipsCard() {
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-blue-200/80 bg-[linear-gradient(180deg,rgba(239,246,255,0.96)_0%,rgba(219,234,254,0.9)_100%)] p-5 shadow-[0_20px_55px_-34px_rgba(37,99,235,0.38)] ring-1 ring-blue-200/60 dark:border-blue-500/20 dark:bg-[linear-gradient(180deg,rgba(14,24,40,0.96)_0%,rgba(8,18,34,0.96)_100%)] dark:ring-blue-500/10">
-      <div className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/80 to-transparent" />
-      <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-blue-950 dark:text-blue-200">Seller Tips</h3>
-      <ul className="mt-3 space-y-2 text-sm text-blue-900/85 dark:text-blue-100/80">
+    <div className="relative overflow-hidden rounded-2xl sm:rounded-[28px] border border-blue-200/80 bg-[linear-gradient(180deg,rgba(239,246,255,0.96)_0%,rgba(219,234,254,0.9)_100%)] p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:bg-none">
+      <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-blue-950 dark:text-white">Seller Tips</h3>
+      <ul className="mt-3 space-y-2 text-sm text-blue-900/85 dark:text-slate-400">
         <li>Use a clear, searchable product title.</li>
         <li>Add a clean 16:9 thumbnail image.</li>
         <li>Keep your description short and useful.</li>
@@ -1291,7 +1333,7 @@ function CustomSelect({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between rounded-xl bg-slate-100 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] px-4 py-3 text-sm text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-[#1f1f22] focus:outline-none focus:border-cyan-400 dark:focus:border-zinc-500 focus:ring-1 focus:ring-cyan-400 dark:focus:ring-zinc-500 transition-all shadow-sm dark:shadow-none"
+        className="w-full flex items-center justify-between rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white hover:border-slate-300 dark:hover:border-slate-700 focus:bg-white dark:focus:bg-slate-950 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm dark:shadow-none"
       >
         <span>{value}</span>
         <ChevronLeft className={`w-4 h-4 text-slate-400 dark:text-white/40 transition-transform ${open ? 'rotate-90' : '-rotate-90'}`} />
@@ -1304,7 +1346,7 @@ function CustomSelect({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
             transition={{ duration: 0.15 }}
-            className="absolute z-50 mt-2 w-full rounded-xl border border-slate-200 dark:border-[#27272a] bg-white dark:bg-[#18181b] shadow-xl overflow-hidden"
+            className="absolute z-50 mt-2 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden"
           >
             <div className="max-h-56 overflow-y-auto p-1 custom-scrollbar">
               {options.map((opt) => (
@@ -1315,7 +1357,7 @@ function CustomSelect({
                     onChange(opt);
                     setOpen(false);
                   }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${value === opt ? "bg-slate-100 dark:bg-[#27272a] text-slate-900 dark:text-white font-medium" : "text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-[#27272a] hover:text-slate-900 dark:hover:text-white"
+                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${value === opt ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-medium" : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
                     }`}
                 >
                   {opt}

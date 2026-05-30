@@ -6,7 +6,7 @@ import { sellerAPI } from "@/lib/api";
 import toast from "react-hot-toast";
 import { getStoredUser } from "@/lib/cookies";
 import PageHeader from "../../buyer/transactions/components/PageHeader";
-import { Wallet, IndianRupee, ArrowUpRight, Clock, X, CheckCircle2, Landmark, Image as ImageIcon, Check } from "lucide-react";
+import { Wallet, IndianRupee, ArrowUpRight, Clock, X, CheckCircle2, Landmark, Image as ImageIcon, Check, ClipboardCheck } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface PayoutRecord {
@@ -47,12 +47,17 @@ export default function SellerEarningsPage() {
 
   const router = useRouter();
 
+  const [user, setUser] = useState<any>(null);
+
   useEffect(() => {
-    const parsed = getStoredUser<{ role?: string }>();
+    const parsed = getStoredUser<any>();
     if (!parsed) return router.push("/login");
     if (parsed.role !== "seller") return router.push("/dashboard");
+    setUser(parsed);
     fetchEarnings();
   }, [router]);
+
+  const isApproved = user?.approvalStatus === "approved" || Boolean(user?.isApproved);
 
   const fetchEarnings = async () => {
     try {
@@ -189,38 +194,56 @@ export default function SellerEarningsPage() {
             </div>
 
             <div className="flex-1 flex flex-col justify-center">
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2 ml-1">
-                    Amount to withdraw
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <span className="text-slate-400 font-bold text-lg">₹</span>
-                    </div>
-                    <input
-                      type="number"
-                      placeholder="0.00"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      className="w-full rounded-[16px] bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 pl-10 pr-5 py-4 text-xl font-black text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 hover:border-slate-300 dark:hover:border-white/20 focus:bg-white dark:focus:bg-black/60 focus:border-cyan-500 dark:focus:border-cyan-500 focus:outline-none focus:ring-4 focus:ring-cyan-500/10 transition-all shadow-sm"
-                      disabled={withdrawing}
-                    />
+              {!isApproved ? (
+                <div className="bg-amber-50/50 dark:bg-amber-500/5 border border-amber-200/50 dark:border-amber-500/10 rounded-2xl p-6 text-center shadow-sm">
+                  <div className="w-14 h-14 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ClipboardCheck className="w-7 h-7" />
                   </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Verification Required</h3>
+                  <p className="text-slate-600 dark:text-slate-400 mb-6 text-sm">
+                    You must verify your identity before you can request payouts.
+                  </p>
+                  <button
+                    onClick={() => router.push("/dashboard/seller/verify-identity")}
+                    className="w-full px-5 py-3 rounded-xl font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all"
+                  >
+                    Verify Identity
+                  </button>
                 </div>
+              ) : (
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2 ml-1">
+                      Amount to withdraw
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span className="text-slate-400 font-bold text-lg">₹</span>
+                      </div>
+                      <input
+                        type="number"
+                        placeholder="0.00"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        className="w-full rounded-[16px] bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/10 pl-10 pr-5 py-4 text-xl font-black text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 hover:border-slate-300 dark:hover:border-white/20 focus:bg-white dark:focus:bg-black/60 focus:border-cyan-500 dark:focus:border-cyan-500 focus:outline-none focus:ring-4 focus:ring-cyan-500/10 transition-all shadow-sm"
+                        disabled={withdrawing}
+                      />
+                    </div>
+                  </div>
 
-                <button
-                  onClick={handleWithdraw}
-                  disabled={withdrawing || !data?.availableBalance || data.availableBalance <= 0}
-                  className="w-full mt-2 flex justify-center items-center gap-2 rounded-[16px] bg-gradient-to-r from-cyan-600 via-cyan-500 to-cyan-400 hover:from-cyan-500 hover:via-cyan-400 hover:to-cyan-300 text-slate-950 px-6 py-4 text-base font-black transition-all shadow-[0_8px_20px_rgba(6,182,212,0.3)] hover:shadow-[0_10px_25px_rgba(6,182,212,0.4)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-cyan-600 disabled:hover:to-cyan-400 disabled:hover:-translate-y-0 disabled:hover:shadow-[0_8px_20px_rgba(6,182,212,0.3)] relative overflow-hidden group"
-                >
-                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out rounded-[16px]" />
-                  <span className="relative z-10 flex items-center gap-2">
-                    <Wallet className="w-5 h-5" />
-                    {withdrawing ? "Processing..." : "Submit Request"}
-                  </span>
-                </button>
-              </div>
+                  <button
+                    onClick={handleWithdraw}
+                    disabled={withdrawing || !data?.availableBalance || data.availableBalance <= 0}
+                    className="w-full mt-2 flex justify-center items-center gap-2 rounded-[16px] bg-gradient-to-r from-cyan-600 via-cyan-500 to-cyan-400 hover:from-cyan-500 hover:via-cyan-400 hover:to-cyan-300 text-slate-950 px-6 py-4 text-base font-black transition-all shadow-[0_8px_20px_rgba(6,182,212,0.3)] hover:shadow-[0_10px_25px_rgba(6,182,212,0.4)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-cyan-600 disabled:hover:to-cyan-400 disabled:hover:-translate-y-0 disabled:hover:shadow-[0_8px_20px_rgba(6,182,212,0.3)] relative overflow-hidden group"
+                  >
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out rounded-[16px]" />
+                    <span className="relative z-10 flex items-center gap-2">
+                      <Wallet className="w-5 h-5" />
+                      {withdrawing ? "Processing..." : "Submit Request"}
+                    </span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {data?.pendingWithdrawals ? (

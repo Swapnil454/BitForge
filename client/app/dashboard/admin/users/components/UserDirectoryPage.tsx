@@ -45,6 +45,7 @@ interface User {
   totalSpent?: number;
   lastPurchaseAt?: string;
   recentOrders?: RecentOrder[];
+  identityVerificationStatus?: string;
 }
 
 export interface UserDirectoryConfig {
@@ -746,6 +747,24 @@ export function UserDirectoryPage({ config }: { config: UserDirectoryConfig }) {
                             <span className="inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400">
                               Suspended
                             </span>
+                          ) : u.role === "seller" ? (
+                            u.identityVerificationStatus === "verified" ? (
+                              <span className="inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">
+                                <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> Verified
+                              </span>
+                            ) : u.identityVerificationStatus === "pending" ? (
+                              <span className="inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400">
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Pending
+                              </span>
+                            ) : u.identityVerificationStatus === "rejected" ? (
+                              <span className="inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400">
+                                <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Rejected
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
+                                <div className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Unverified
+                              </span>
+                            )
                           ) : u.isVerified ? (
                             <span className="inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">
                               <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> Verified

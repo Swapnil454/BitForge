@@ -481,19 +481,39 @@ export const createPromotionRequest = async (req, res) => {
         ? req.files.bannerCard[0] || null
         : null;
 
+    let existingAdImages = [];
+    try {
+      if (req.body.existingAdImages) {
+        existingAdImages = JSON.parse(req.body.existingAdImages);
+      }
+    } catch (e) {
+      console.error("Failed to parse existingAdImages", e);
+    }
+
     if (!isValidObjectId(productId)) {
       return res.status(400).json({ message: "Valid product is required" });
+    }
+
+    // Check for existing active/pending promotion for the same product
+    const existingPromotion = await PromotionRequest.findOne({
+      productId,
+      sellerId: req.user.id,
+      status: { $nin: ["REJECTED", "EXPIRED", "CANCELLED"] }
+    });
+
+    if (existingPromotion) {
+      return res.status(400).json({ message: "You already have an active or pending promotion request for this product. You must wait for it to expire, be rejected, or delete it before creating a new one." });
     }
 
     if (req.body.heroLayout !== "fullImage" && (!title?.trim() || !subtitle?.trim())) {
       return res.status(400).json({ message: "Title and subtitle are required" });
     }
 
-    if (uploadedFiles.length === 0) {
+    if (uploadedFiles.length === 0 && existingAdImages.length === 0) {
       return res.status(400).json({ message: "At least one image is required" });
     }
 
-    if (uploadedFiles.length > 3) {
+    if (uploadedFiles.length + existingAdImages.length > 3) {
       return res.status(400).json({ message: "Maximum 3 images allowed" });
     }
 
@@ -519,8 +539,8 @@ export const createPromotionRequest = async (req, res) => {
         })
       : null;
 
-    const adImages = await Promise.all(
-      uploadedFiles.map(async (file, index) => {
+    const uploadedAdImages = await Promise.all(
+      uploadedFiles.map(async (file) => {
         const uploadResult = await uploadBuffer({
           buffer: file.buffer,
           folder: "bitforge/promotions/banners",
@@ -529,13 +549,26 @@ export const createPromotionRequest = async (req, res) => {
         return {
           url: uploadResult.secure_url,
           key: uploadResult.public_id,
-          position: index,
           type: "transparent"
         };
       })
     );
 
-    const promotion = await PromotionRequest.create({
+    const existingMapped = existingAdImages.map((url) => ({
+      url: url,
+      key: url.split('/').pop() || 'existing',
+      type: "transparent"
+    }));
+
+    const adImages = [...existingMapped, ...uploadedAdImages].map((img, index) => ({
+      ...img,
+      position: index
+    }));
+
+    const finalBannerImage = bannerImageUpload?.secure_url || req.body.existingBannerImage || null;
+    const finalBannerImageKey = bannerImageUpload?.public_id || req.body.existingBannerImageKey || null;
+
+    const promotionData = {
       sellerId: req.user.id,
       sellerName: req.user.name,
       productId: product._id,
@@ -544,8 +577,8 @@ export const createPromotionRequest = async (req, res) => {
       placement,
       title: title?.trim() || "",
       subtitle: subtitle?.trim() || "",
-      bannerImage: bannerImageUpload?.secure_url || null,
-      bannerImageKey: bannerImageUpload?.public_id || null,
+      bannerImage: finalBannerImage,
+      bannerImageKey: finalBannerImageKey,
       adImages,
       buttonText: buttonText?.trim() || "View Product",
       targetLink: normalizeTargetLink(targetLink, product._id),
@@ -560,7 +593,45 @@ export const createPromotionRequest = async (req, res) => {
       heroButtonBgColor: req.body.heroButtonBgColor || "",
       heroButtonTextColor: req.body.heroButtonTextColor || "",
       heroFontFamily: req.body.heroFontFamily || "inherit",
-    });
+      status: "PENDING_REVIEW"
+    };
+
+    let promotion;
+    if (req.body.renewId) {
+      promotion = await PromotionRequest.findOneAndUpdate(
+        { _id: req.body.renewId, sellerId: req.user.id },
+        { 
+          $set: {
+            ...promotionData,
+            paymentStatus: "NOT_REQUIRED",
+            paymentMethod: "RAZORPAY",
+            impressions: 0,
+            clicks: 0
+          },
+          $unset: { 
+            amount: "", 
+            paymentProofImage: "", 
+            paymentProofImageKey: "", 
+            transactionId: "", 
+            razorpayOrderId: "",
+            razorpayPaymentId: "",
+            razorpaySignature: "",
+            rejectionReason: "", 
+            startDate: "", 
+            endDate: "", 
+            approvedDurationDays: "",
+            paidAt: "",
+            activatedAt: ""
+          }
+        },
+        { new: true }
+      );
+      if (!promotion) {
+        return res.status(404).json({ message: "Promotion to renew not found" });
+      }
+    } else {
+      promotion = await PromotionRequest.create(promotionData);
+    }
 
     await notifyAdmins(
       "New Promotion Request",
@@ -1659,4 +1730,55 @@ export const startPromotionExpiryJob = () => {
       console.error("Promotion expiry job error:", error);
     });
   }, 60 * 60 * 1000);
+};
+
+export const deleteSellerPromotion = async (req, res) => {
+  try {
+    const promotionId = req.params.id;
+
+    if (!isValidObjectId(promotionId)) {
+      return res.status(400).json({ message: "Valid promotion ID is required" });
+    }
+
+    const promotion = await PromotionRequest.findOne({
+      _id: promotionId,
+      sellerId: req.user.id
+    });
+
+    if (!promotion) {
+      return res.status(404).json({ message: "Promotion not found or unauthorized" });
+    }
+
+    // Allow deletion only if the promotion is not live
+    const deletableStatuses = [
+      "PENDING_REVIEW",
+      "APPROVED_WAITING_PAYMENT",
+      "PAYMENT_PENDING",
+      "REJECTED",
+      "EXPIRED",
+      "CANCELLED"
+    ];
+
+    if (!deletableStatuses.includes(promotion.status)) {
+      return res.status(400).json({ message: `Cannot delete promotion in ${promotion.status} status. Only non-live promotions can be deleted.` });
+    }
+
+    // Cloudinary cleanup
+    if (promotion.bannerImageKey) {
+      await cloudinary.uploader.destroy(promotion.bannerImageKey).catch(err => console.error("Cloudinary delete error:", err));
+    }
+    
+    if (promotion.adImages && promotion.adImages.length > 0) {
+      await Promise.all(promotion.adImages.map(img => 
+        cloudinary.uploader.destroy(img.key).catch(err => console.error("Cloudinary delete error:", err))
+      ));
+    }
+
+    await PromotionRequest.findByIdAndDelete(promotionId);
+
+    res.json({ message: "Promotion request deleted successfully" });
+  } catch (error) {
+    console.error("Delete promotion error:", error);
+    res.status(500).json({ message: "Failed to delete promotion request" });
+  }
 };

@@ -215,37 +215,29 @@ export default function SellerPromotionDetailPage() {
   let currentStep = 1;
   if (promotion.status === "PENDING_REVIEW") currentStep = 2;
   else if (promotion.status === "APPROVED_WAITING_PAYMENT" || promotion.status === "PAYMENT_PENDING") currentStep = 4;
-  else if (promotion.status === "ACTIVE") currentStep = 5;
-  else if (promotion.status === "EXPIRED") currentStep = 6;
+  else if (promotion.status === "ACTIVE") currentStep = 6;
+  else if (promotion.status === "EXPIRED") currentStep = 7;
 
   const isCancelled = promotion.status === "CANCELLED" || promotion.status === "REJECTED";
 
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-20">
-      <PageHeader backHref="/dashboard/seller/promotions" backLabel="Promotions" title="Promotion Detail" />
+      <PageHeader 
+        backHref="/dashboard/seller/promotions" 
+        backLabel="Promotions" 
+        title="Promotion Detail" 
+        rightSlot={
+          promotion.status === "EXPIRED" ? (
+            <button
+              onClick={() => router.push(`/dashboard/seller/promotions/create?renewId=${promotion._id}`)}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+            >
+              Renew Promotion
+            </button>
+          ) : undefined
+        }
+      />
 
-      {/* 1. Journey Bar */}
-      {!isCancelled ? (
-        <div className="border-b border-slate-200 bg-white px-4 py-4 dark:border-white/10 dark:bg-[#0a0a0f]">
-          <div className="mx-auto flex max-w-4xl items-center justify-between gap-2 overflow-x-auto pb-2 text-sm md:pb-0">
-            <JourneyStep label="Submitted" active={currentStep >= 1} done={currentStep > 1} />
-            <JourneyConnector done={currentStep > 1} />
-            <JourneyStep label="Under Review" active={currentStep >= 2} done={currentStep > 2} />
-            <JourneyConnector done={currentStep > 2} />
-            <JourneyStep label="Approved" active={currentStep >= 3} done={currentStep > 3} />
-            <JourneyConnector done={currentStep > 3} />
-            <JourneyStep label="Payment" active={currentStep >= 4} done={currentStep > 4} />
-            <JourneyConnector done={currentStep > 4} />
-            <JourneyStep label="Live" active={currentStep >= 5} done={currentStep > 5} />
-            <JourneyConnector done={currentStep > 5} />
-            <JourneyStep label="Completed" active={currentStep >= 6} done={currentStep > 6} />
-          </div>
-        </div>
-      ) : (
-        <div className="border-b border-red-500/20 bg-red-500/5 px-4 py-4 text-center text-red-500">
-          <p className="font-semibold">{promotion.status === "REJECTED" ? "Promotion Request Rejected" : "Promotion Cancelled"}</p>
-        </div>
-      )}
 
       <div className="mx-auto max-w-7xl px-4 py-8 space-y-6">
         
@@ -323,6 +315,10 @@ export default function SellerPromotionDetailPage() {
           <h3 className="mb-6 text-lg font-bold">Activity Timeline</h3>
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between relative">
             <div className="hidden md:block absolute top-3 left-6 right-6 h-[2px] bg-slate-100 dark:bg-white/5 z-0" />
+            <div 
+              className="hidden md:block absolute top-3 left-6 h-[2px] bg-cyan-500 z-0 transition-all duration-500" 
+              style={{ width: `calc(${Math.min(100, Math.max(0, (currentStep - 1) * 16.66))}% - 24px)` }} 
+            />
             <TimelineNode 
               label="Submitted" 
               date={formatPromotionDate(promotion.createdAt)} 
@@ -350,8 +346,13 @@ export default function SellerPromotionDetailPage() {
             />
             <TimelineNode 
               label="Live" 
-              date={promotion.status === "ACTIVE" ? `Until ${formatPromotionDate(promotion.endDate)}` : ""} 
+              date={promotion.status === "ACTIVE" ? `Until ${formatPromotionDate(promotion.endDate)}` : promotion.status === "EXPIRED" ? `Ended ${formatPromotionDate(promotion.endDate)}` : ""} 
               state={promotion.status === "ACTIVE" ? "active" : promotion.status === "EXPIRED" ? "filled" : isCancelled ? "cancelled" : "future"} 
+            />
+            <TimelineNode 
+              label="Expired" 
+              date={promotion.status === "EXPIRED" ? "Campaign has concluded" : ""} 
+              state={promotion.status === "EXPIRED" ? "filled" : isCancelled ? "cancelled" : "future"} 
             />
           </div>
         </section>
@@ -762,6 +763,7 @@ function StatusPill({ status }: { status: string }) {
   const isPaymentPending = status === "PAYMENT_PENDING";
   const isActive = status === "ACTIVE";
   const isCompleted = status === "COMPLETED";
+  const isExpired = status === "EXPIRED";
   const isRejected = status === "REJECTED" || status === "CANCELLED";
 
   let color = "bg-slate-100 text-slate-600 border-slate-200 dark:bg-white/10 dark:text-white/70 dark:border-white/20";
@@ -773,6 +775,7 @@ function StatusPill({ status }: { status: string }) {
   if (isPaymentPending) { color = "bg-indigo-50 text-indigo-600 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20"; text = "Payment Verifying"; }
   if (isActive) { color = "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"; icon = <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />; text = "Live"; }
   if (isCompleted) { text = "Completed"; }
+  if (isExpired) { color = "bg-slate-100 text-slate-600 border-slate-200 dark:bg-white/10 dark:text-white/40 dark:border-white/20"; text = "Expired"; icon = <Clock className="h-3.5 w-3.5 mr-1.5" />; }
   if (isRejected) { color = "bg-red-50 text-red-600 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20"; icon = <XCircle className="h-3.5 w-3.5 mr-1.5" />; text = status === "REJECTED" ? "Rejected" : "Cancelled"; }
 
   return <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider ${color}`}>{icon}{text}</span>;

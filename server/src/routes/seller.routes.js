@@ -12,6 +12,7 @@ import {
   getSellerTransactions,
   getAllSales,
   getGrowthAnalytics,
+  getAllTransactionsForSeller,
 } from "../controllers/seller.controller.js";
 import {
   cancelSellerPromotion,
@@ -21,6 +22,7 @@ import {
   getSellerPromotions,
   verifyPromotionPayment,
   uploadPromotionPaymentProof,
+  deleteSellerPromotion,
 } from "../controllers/promotion.controller.js";
 
 const router = express.Router();
@@ -30,6 +32,7 @@ router.use(auth, requireRole(["seller"]));
 router.get("/dashboard-stats", getSellerDashboardStats);
 router.get("/earnings", getSellerEarnings);
 router.get("/transactions", getSellerTransactions);
+router.get("/transactions/all", getAllTransactionsForSeller);
 router.get("/sales", getAllSales);
 router.get("/growth-analytics", getGrowthAnalytics);
 router.post("/withdraw", requestWithdrawal);
@@ -44,6 +47,7 @@ router.post(
 );
 router.get("/promotions", getSellerPromotions);
 router.get("/promotions/:id", getSellerPromotionById);
+router.delete("/promotions/:id", deleteSellerPromotion);
 router.patch("/promotions/:id/cancel", cancelSellerPromotion);
 router.post("/promotions/:id/create-payment-order", createPromotionPaymentOrder);
 router.post("/promotions/:id/verify-payment", verifyPromotionPayment);

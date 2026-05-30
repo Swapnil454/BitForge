@@ -16,29 +16,88 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/useAuth';
 import { promotionAPI } from '@/lib/api';
 import { showError } from '@/lib/toast';
+import { useSearchParams } from 'next/navigation';
 
 export function FormOrchestrator() {
   const store = usePromotionFormStore();
   const { user } = useAuth(); // or equivalent to get userId
   const userId = user?._id || 'temp-user';
+  const searchParams = useSearchParams();
+  const renewId = searchParams?.get('renewId');
   
   const [isMobilePreviewOpen, setIsMobilePreviewOpen] = useState(false);
   const [submissionState, setSubmissionState] = useState<'idle' | 'submitting' | 'success' | 'error' | 'duplicate'>('idle');
   const [submittedPromotionId, setSubmittedPromotionId] = useState<string | null>(null);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [lastHydratedRenewId, setLastHydratedRenewId] = useState<string | null>(null);
 
   // Leave Guard
   useLeaveGuard(store.draftSaveState === 'idle' && store.formCompletion > 0 && submissionState !== 'success');
 
-  // Initial Draft Hydration
+  // Renew Hydration
   useEffect(() => {
-    if (store.selectedProductId && userId) {
+    if (renewId && renewId !== lastHydratedRenewId) {
+      setLastHydratedRenewId(renewId);
+      promotionAPI.getSellerPromotion(renewId).then(data => {
+        const p = data.promotion;
+        if (!p) return;
+        
+        const productId = typeof p.productId === 'string' ? p.productId : p.productId?._id;
+        const productMeta = typeof p.productId === 'object' ? p.productId : { title: p.productTitle, status: 'active' };
+        
+        const initialAssetSlot = { uploadState: 'empty' as const, progress: 0 };
+        const floatingImages: any = [
+          { ...initialAssetSlot },
+          { ...initialAssetSlot },
+          { ...initialAssetSlot }
+        ];
+
+        if (p.adImages && Array.isArray(p.adImages)) {
+          p.adImages.forEach((imgObj: any, idx: number) => {
+            if (idx < 3) {
+              const url = typeof imgObj === 'string' ? imgObj : imgObj?.url;
+              if (url) {
+                floatingImages[idx] = { ...initialAssetSlot, url, uploadState: 'success' as const };
+              }
+            }
+          });
+        }
+        
+        const mobileBanner = p.bannerImage 
+          ? { ...initialAssetSlot, url: p.bannerImage, uploadState: 'success' as const }
+          : { ...initialAssetSlot };
+        
+        usePromotionFormStore.setState({
+          selectedProductId: productId,
+          selectedProductMeta: productMeta,
+          bannerTitle: p.title || '',
+          bannerSubtitle: p.subtitle || '',
+          targetLink: p.targetLink || '',
+          promotionGoal: p.promotionGoal || '',
+          requestedDuration: p.approvedDurationDays || p.requestedDurationDays || 7,
+          layoutType: p.heroLayout === 'fullImage' ? 'fullImage' : 'modern',
+          colorToken: {
+            bg: p.heroBgColor || '#2563EB',
+            textColor: p.heroTitleColor || '#FFFFFF',
+            ctaBg: p.heroButtonBgColor || '#FFFFFF'
+          },
+          customHex: p.heroBgColor || '#2563EB',
+          floatingImages,
+          mobileBanner
+        });
+      }).catch(console.error);
+    }
+  }, [renewId, lastHydratedRenewId]);
+
+  // Initial Draft Hydration (only if no renewId)
+  useEffect(() => {
+    if (store.selectedProductId && userId && !renewId) {
       const draft = DraftService.getDraft(userId, store.selectedProductId);
       if (draft) {
         store.hydrateFromDraft(draft);
       }
     }
-  }, [store.selectedProductId, userId]);
+  }, [store.selectedProductId, userId, renewId]);
 
   // Auto-save Draft
   useEffect(() => {
@@ -71,6 +130,9 @@ export function FormOrchestrator() {
     setSubmissionState('submitting');
     try {
       const formData = new FormData();
+      if (renewId) {
+        formData.append('renewId', renewId);
+      }
       formData.append('productId', store.selectedProductId);
       formData.append('placement', 'MARKETPLACE_HERO');
       if (store.layoutType !== 'fullImage') {
@@ -95,15 +157,25 @@ export function FormOrchestrator() {
       formData.append('heroLayout', store.layoutType === 'fullImage' ? 'fullImage' : 'floating');
 
       // Append floating images
+      const existingAdImages: string[] = [];
       store.floatingImages.forEach((img) => {
         if (img.file) {
           formData.append('adImages', img.file);
+        } else if (img.url && !img.url.startsWith('blob:')) {
+          existingAdImages.push(img.url);
         }
       });
+      
+      if (existingAdImages.length > 0) {
+        formData.append('existingAdImages', JSON.stringify(existingAdImages));
+      }
 
-      // Append mobile banner
-      if (store.mobileBanner.file) {
-        formData.append('bannerCard', store.mobileBanner.file);
+      if (store.layoutType !== 'fullImage' && store.mobileBanner.url) {
+        if (store.mobileBanner.file) {
+          formData.append('bannerCard', store.mobileBanner.file);
+        } else if (!store.mobileBanner.url.startsWith('blob:')) {
+          formData.append('existingBannerImage', store.mobileBanner.url);
+        }
       }
 
       const response = await promotionAPI.createSellerPromotion(formData);

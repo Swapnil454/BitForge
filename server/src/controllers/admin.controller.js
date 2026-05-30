@@ -12,6 +12,7 @@ import Notification from "../models/Notification.js";
 import PDFDocument from 'pdfkit';
 import Review from "../models/Review.js";
 import ModerationLog from "../models/ModerationLog.js";
+import PromotionRequest from "../models/PromotionRequest.js";
 import { sendApprovalEmail, sendRejectionEmail, sendChangesRequestedEmail, sendThreatNotificationEmail } from "../utils/moderationEmails.js";
 import { scanFileWithVirusTotal } from "../utils/virusTotalScanner.js";
 import mongoose from "mongoose";
@@ -3034,8 +3035,22 @@ export const getAllTransactions = async (req, res) => {
     }
     if (dateQuery) payoutFilter.createdAt = dateQuery;
 
+    // Build filters for Promotions
+    const promotionFilter = {};
+    if (normalizedStatus !== "all") {
+      if (normalizedStatus === "success") promotionFilter.paymentStatus = { $in: ["PAID"] };
+      else if (normalizedStatus === "failed") promotionFilter.paymentStatus = { $in: ["FAILED"] };
+      else promotionFilter.paymentStatus = { $in: ["PENDING"] };
+    } else {
+      // Exclude NOT_REQUIRED by default if status is all, or just include all?
+      // Actually we only want to show promotions that have some payment activity
+      promotionFilter.paymentStatus = { $in: ["PAID", "FAILED", "PENDING"] };
+    }
+    if (dateQuery) promotionFilter.createdAt = dateQuery;
+
     let orders = [];
     let payouts = [];
+    let promotions = [];
 
     // Fetch Orders if type is 'all' or 'buyer_to_admin'
     if (normalizedType === "all" || normalizedType === "buyer_to_admin") {
@@ -3081,6 +3096,26 @@ export const getAllTransactions = async (req, res) => {
         .sort({ createdAt: -1 });
     }
 
+    // Fetch Promotions if type is 'all' or 'seller_to_admin'
+    if (normalizedType === "all" || normalizedType === "seller_to_admin") {
+      const query = { ...promotionFilter };
+      
+      if (userId && scopedUser?.role === "seller") {
+        query.sellerId = userId;
+      }
+
+      if (search) {
+        query.$or = [
+          { productTitle: { $regex: search, $options: "i" } },
+          { razorpayOrderId: { $regex: search, $options: "i" } },
+          { transactionId: { $regex: search, $options: "i" } }
+        ];
+      }
+      promotions = await PromotionRequest.find(query)
+        .populate("sellerId", "name email")
+        .sort({ createdAt: -1 });
+    }
+
     // Format and Combine
     const buyerTransactions = orders.map(order => ({
       _id: order._id,
@@ -3114,7 +3149,24 @@ export const getAllTransactions = async (req, res) => {
       errorReason: payout.rejectionReason
     }));
 
-    let allTransactions = [...buyerTransactions, ...sellerTransactions];
+    const sellerPromotionTransactions = promotions.map(promo => ({
+      _id: promo._id,
+      type: "seller_to_admin",
+      orderId: promo.razorpayOrderId || promo.transactionId || promo._id.toString(),
+      sellerName: promo.sellerName || promo.sellerId?.name || "Unknown Seller",
+      sellerEmail: promo.sellerId?.email || "Unknown",
+      buyerName: "BitForge Settlement Account", // To align with the UI
+      productName: `Promotion: ${promo.productTitle}`,
+      amount: promo.amount || 0,
+      status: promo.paymentStatus === "PAID" ? "success" : promo.paymentStatus === "FAILED" ? "failed" : "pending",
+      date: promo.paidAt || promo.paymentSubmittedAt || promo.createdAt,
+      createdAt: promo.createdAt,
+      paymentMethod: promo.paymentMethod || "RAZORPAY",
+      razorpayOrderId: promo.razorpayOrderId,
+      razorpayPaymentId: promo.razorpayPaymentId || promo.transactionId,
+    }));
+
+    let allTransactions = [...buyerTransactions, ...sellerTransactions, ...sellerPromotionTransactions];
 
     // Apply normalized UI filters after combining both collections so the
     // table always matches the dropdown values, even if source statuses differ.

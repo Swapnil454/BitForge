@@ -42,6 +42,7 @@ interface Sale {
   date: string;
   razorpayPaymentId?: string;
   razorpayOrderId?: string;
+  thumbnailUrl?: string | null;
 }
 
 const PAGE_SIZE = 10;
@@ -61,6 +62,10 @@ function SellerSalesPageContent() {
   const [filterStatus, setFilterStatus] = useState<SalesFilterOption>("all");
   const [sortBy, setSortBy] = useState<SalesSortOption>("newest");
   const [page, setPage] = useState(1);
+  const [month, setMonth] = useState(() => {
+    const date = new Date();
+    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}`;
+  });
 
   const observerTarget = useRef<HTMLDivElement>(null);
 
@@ -79,7 +84,7 @@ function SellerSalesPageContent() {
     setPage(1);
     setHasMore(true);
     fetchSales(1, true);
-  }, [filterStatus, debouncedSearch, sortBy]);
+  }, [filterStatus, debouncedSearch, sortBy, month]);
 
   useEffect(() => {
     if (page > 1) {
@@ -97,6 +102,7 @@ function SellerSalesPageContent() {
         limit: PAGE_SIZE,
         status: filterStatus === "all" ? undefined : filterStatus,
         search: debouncedSearch || undefined,
+        month: month || undefined,
       });
       
       const newSales = res.sales || [];
@@ -254,8 +260,8 @@ function SellerSalesPageContent() {
       <PageHeader
         backHref="/dashboard/seller"
         backLabel="Dashboard"
-        title="Sales History"
-        subtitle="Track all your sales in one place"
+        title="Monthly Sales"
+        subtitle="Track your sales and earnings over time"
         rightSlot={
           <div className="relative shrink-0 flex items-center gap-2" ref={headerMenuRef}>
             <button
@@ -309,6 +315,8 @@ function SellerSalesPageContent() {
           onFilterChange={handleFilterChange}
           sortBy={sortBy}
           onSortChange={handleSortChange}
+          month={month}
+          onMonthChange={(m) => { setMonth(m); setPage(1); }}
         />
 
         {/* ─── LIST ─── */}
@@ -360,60 +368,100 @@ function SellerSalesPageContent() {
                 return (
                   <motion.article
                     key={sale._id}
-                    initial={{ opacity: 0, y: 12 }}
+                    initial={{ opacity: 0, y: 14 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ delay: index * 0.02 }}
-                    onClick={() => setSelectedSale(sale)}
-                    className="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c] p-4 sm:p-5 cursor-pointer text-left transition-all duration-300 hover:bg-slate-50 dark:hover:bg-[#181a25] hover:border-slate-200 dark:hover:border-white/10 hover:shadow-xl hover:shadow-black/50 group"
+                    transition={{ duration: 0.25, delay: Math.min(index * 0.04, 0.2) }}
+                    className="group flex flex-row items-center sm:items-stretch p-3 sm:p-5 gap-3 sm:gap-6 rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-[#12141c] hover:border-slate-300 dark:hover:border-white/[0.12] transition-all duration-300 relative overflow-hidden shadow-sm hover:shadow-md dark:shadow-none"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-xl leading-tight font-semibold text-slate-900 dark:text-white group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors truncate">
-                          {sale.productName}
-                        </h3>
-                        <p className="text-sm text-slate-500 dark:text-white/65 mt-1.5">
-                          Bought by <span className="text-slate-800 dark:text-white/90 font-semibold">{sale.buyerName}</span>
+                    {/* Left Side: Thumbnail */}
+                    <div className="w-20 sm:w-44 shrink-0">
+                      <Thumbnail title={sale.productName} url={sale.thumbnailUrl} />
+                    </div>
+
+                    {/* Right Side: Details */}
+                    <div className="flex flex-col flex-1 min-w-0 justify-between py-0.5 sm:py-0">
+                      <div>
+                        <div className="flex justify-between items-start gap-2">
+                          <h2 className="text-sm font-bold text-slate-900 dark:text-white sm:text-xl truncate">
+                            {sale.productName}
+                          </h2>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setSelectedSale(sale); }}
+                            className="p-1 -mr-1 -mt-1 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors shrink-0"
+                            title="View Details"
+                          >
+                             <MoreVertical className="w-4 h-4 sm:w-5 sm:h-5" />
+                          </button>
+                        </div>
+                        
+                        <p className="mt-0.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">
+                          Bought by <span className="font-semibold text-slate-900 dark:text-white">{sale.buyerName}</span>
                         </p>
-                        <div className="mt-3 flex flex-wrap items-center gap-2.5 text-xs text-slate-400 dark:text-white/50">
-                          <span className="inline-flex items-center gap-1.5">
-                            <CalendarDays className="h-3.5 w-3.5" />
-                            {new Date(sale.date).toLocaleDateString("en-IN", {
+
+                        <div className="mt-1 sm:mt-2 flex flex-wrap items-center gap-y-1 gap-x-2 text-[10px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">
+                          <div className="flex items-center gap-1">
+                            <CalendarDays className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                            <span>{new Date(sale.date).toLocaleDateString("en-IN", {
                               day: "numeric", month: "short", year: "numeric",
-                            })}
-                          </span>
-                          <span className="hidden sm:inline">•</span>
-                          <span className="inline-flex items-center gap-1.5 font-mono">
-                            ID: {sale.orderId.slice(-8)}
-                            <button
-                              type="button"
+                            })}</span>
+                          </div>
+                          <span className="hidden sm:inline text-slate-300 dark:text-slate-600">•</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-slate-400 dark:text-slate-500">ID:</span>
+                            <span className="font-mono text-slate-600 dark:text-slate-300">{sale.orderId.slice(-8)}</span>
+                            <button 
                               onClick={(e) => handleCopyOrderId(e, sale.orderId)}
-                              className="p-1 rounded hover:bg-slate-200 dark:hover:bg-white/10 transition"
-                              title="Copy Order ID"
+                              className="ml-1 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
+                              title="Copy ID"
                             >
                               {copiedId === sale.orderId ? (
-                                <Check className="h-3.5 w-3.5 text-emerald-400" />
+                                <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-emerald-400" />
                               ) : (
-                                <Copy className="h-3.5 w-3.5 text-slate-500 dark:text-white/65" />
+                                <Copy className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                               )}
                             </button>
-                          </span>
+                          </div>
+                        </div>
+
+                        <div className="mt-2 sm:mt-4 flex items-center gap-2 sm:gap-3">
+                          <div className="text-base sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                            ₹{sale.amount.toLocaleString()}
+                          </div>
+                          <div className={`flex items-center gap-1 px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider ${
+                            sale.status === "paid" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20" :
+                            sale.status === "failed" ? "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400 border border-red-200 dark:border-red-500/20" :
+                            "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20"
+                          }`}>
+                            <statusConfig.Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                            {statusConfig.label}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2.5">
-                        <div className="text-right">
-                          <p className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">₹{sale.amount.toLocaleString()}</p>
+                      <div className="hidden sm:flex mt-6 pt-4 border-t border-slate-100 dark:border-white/5 flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <button
+                          onClick={() => setSelectedSale(sale)}
+                          className="text-sm font-bold text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors text-left"
+                        >
+                          View Details
+                        </button>
+                        
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
                           {sale.status === "paid" && (
-                            <p className="text-xs text-emerald-400 font-medium mt-0.5">
-                              Earned: ₹{sale.sellerAmount.toLocaleString()}
-                            </p>
+                            <div className="flex flex-col gap-1 flex-1 sm:w-36 text-left">
+                              <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                <span>Earned</span>
+                                <span className="text-emerald-500">₹{sale.sellerAmount.toLocaleString()}</span>
+                              </div>
+                              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-white/5">
+                                <div
+                                  className="h-full rounded-full transition-all duration-500 bg-emerald-500 dark:bg-emerald-400"
+                                  style={{ width: `${Math.min(100, Math.max((sale.sellerAmount / sale.amount) * 100, 0))}%` }}
+                                />
+                              </div>
+                            </div>
                           )}
                         </div>
-                        <span className={`inline-flex items-center gap-1.5 text-sm ${statusConfig.badgeClass}`}>
-                          <statusConfig.Icon className="w-4 h-4" />
-                          {statusConfig.label}
-                        </span>
                       </div>
                     </div>
                   </motion.article>
@@ -454,7 +502,7 @@ function SellerSalesPageContent() {
               initial={{ opacity: 0, y: 100, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 100, scale: 0.95 }}
-              className="fixed inset-x-0 bottom-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 z-[101] bg-white dark:bg-[#0b0b14] w-full sm:w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-white/10 p-6 flex flex-col max-h-[90vh]"
+              className="fixed inset-x-0 bottom-0 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 z-[1001] bg-white dark:bg-[#0b0b14] w-full sm:w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-white/10 p-6 flex flex-col max-h-[90vh]"
             >
               {/* Modal Header */}
               <div className="flex items-center justify-between mb-6 shrink-0">
@@ -541,19 +589,19 @@ function SellerSalesPageContent() {
 
       <AnimatePresence>
         {isExportModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-0 sm:p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsExportModalOpen(false)}
-              className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 z-[1000] bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-white dark:bg-[#0a0a0f] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 p-6 sm:p-8 z-10"
+              className="relative w-full max-w-md bg-white dark:bg-[#0a0a0f] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 p-6 sm:p-8 z-[1001]"
             >
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -648,6 +696,24 @@ function SellerSalesFallback() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#05050a]">
       <div className="h-12 w-12 border-4 border-slate-300 dark:border-white/20 border-t-cyan-400 rounded-full animate-spin" />
+    </div>
+  );
+}
+
+/* ================= THUMBNAIL ================= */
+
+function Thumbnail({ title, url }: { title: string; url?: string | null }) {
+  if (url) {
+    return (
+      <div className="h-20 w-20 sm:h-36 sm:w-full shrink-0 overflow-hidden rounded-xl border border-slate-200 dark:border-white/5 bg-slate-100 dark:bg-slate-900/50">
+        <img src={url} alt={title || "Product thumbnail"} className="h-full w-full object-cover" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-20 w-20 sm:h-36 sm:w-full shrink-0 items-end rounded-xl border border-slate-200 dark:border-white/5 bg-gradient-to-br from-cyan-100 dark:from-cyan-500/10 to-slate-200 dark:to-slate-900/50 p-2 sm:p-4 text-[10px] font-medium uppercase tracking-widest text-slate-500 dark:text-slate-400">
+      <span className="hidden sm:inline">Sale</span>
     </div>
   );
 }

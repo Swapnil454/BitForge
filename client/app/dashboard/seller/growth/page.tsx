@@ -111,7 +111,7 @@ export default function RevenueGrowthPage() {
           title="Revenue Growth"
           subtitle="Monthly trends & insights"
         />
-        <main className="max-w-3xl mx-auto px-4 py-6 space-y-4 animate-pulse">
+        <main className="max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 py-6 space-y-4 animate-pulse">
           <div className="h-28 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5" />
           <div className="grid grid-cols-3 gap-3">
             {[1, 2, 3].map((i) => <div key={i} className="h-16 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5" />)}
@@ -151,7 +151,7 @@ export default function RevenueGrowthPage() {
         subtitle="Monthly trends & insights"
       />
 
-      <main className="max-w-3xl mx-auto px-4 py-5 space-y-4">
+      <main className="max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 py-5 space-y-4">
 
         {/* ── HERO KPI ── */}
         <motion.div

@@ -456,11 +456,27 @@ export const sellerAPI = {
         return response.data;
     },
     
+    getAllTransactions: async (params?: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        type?: string;
+        status?: string;
+        sortBy?: string;
+        dateRange?: string;
+        startDate?: string;
+        endDate?: string;
+    }) => {
+        const response = await api.get('/seller/transactions/all', { params });
+        return response.data;
+    },
+
     getTransactions: async (params?: {
         page?: number;
         limit?: number;
         status?: "all" | "completed" | "pending" | "cancelled";
         search?: string;
+        month?: string;
     }) => {
         const response = await api.get('/seller/transactions', { params });
         return response.data;
@@ -471,6 +487,8 @@ export const sellerAPI = {
         limit?: number;
         status?: "all" | "paid" | "failed" | "created";
         search?: string;
+        month?: string;
+        sortBy?: string;
     }) => {
         const response = await api.get('/seller/sales', { params });
         return response.data;
@@ -871,6 +889,11 @@ export const promotionAPI = {
 
     cancelSellerPromotion: async (id: string) => {
         const response = await api.patch(`/seller/promotions/${id}/cancel`);
+        return response.data;
+    },
+
+    deleteSellerPromotion: async (id: string) => {
+        const response = await api.delete(`/seller/promotions/${id}`);
         return response.data;
     },
 
