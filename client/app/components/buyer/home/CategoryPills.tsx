@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { BookOpen, Book, LayoutTemplate, Box, Palette, Sparkles } from "lucide-react";
 import { ProductType } from "../product/ProductCard";
 
@@ -14,7 +15,6 @@ const categories = [
 ];
 
 export default function CategoryPills({ products = [] }: { products?: ProductType[] }) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const currentCategory = searchParams.get("category");
   const isAllActive = searchParams.get("collection") === "All";
@@ -28,8 +28,8 @@ export default function CategoryPills({ products = [] }: { products?: ProductTyp
     <div className="relative z-10 w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6">
       <div className="py-1 sm:py-1.5">
         <div className="flex overflow-x-auto gap-2.5 pb-1 scrollbar-hide snap-x">
-          <button
-            onClick={() => router.push(`/marketplace?collection=All`)}
+          <Link
+            href="/marketplace?collection=All"
             className={isAllActive ? activeClasses : getInactiveClasses("hover:border-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20")}
           >
             <div className="flex flex-col items-start leading-tight">
@@ -42,14 +42,14 @@ export default function CategoryPills({ products = [] }: { products?: ProductTyp
                 </span>
               )}
             </div>
-          </button>
+          </Link>
           {categories.map((cat) => {
             const count = getCount(cat.id);
             const isActive = currentCategory === cat.id;
             return (
-              <button
+              <Link
                 key={cat.id}
-                onClick={() => router.push(`/marketplace?category=${encodeURIComponent(cat.id)}`)}
+                href={`/marketplace?category=${encodeURIComponent(cat.id)}`}
                 className={isActive ? activeClasses : getInactiveClasses(cat.hover)}
               >
                 <div className="flex flex-col items-start leading-tight">
@@ -62,7 +62,7 @@ export default function CategoryPills({ products = [] }: { products?: ProductTyp
                     </span>
                   )}
                 </div>
-              </button>
+              </Link>
             );
           })}
         </div>
