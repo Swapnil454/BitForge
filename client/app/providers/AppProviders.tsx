@@ -3,7 +3,7 @@
 import { ReactNode, useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { ThemeProvider, useTheme } from "next-themes";
-import { getCookie, setCookie } from "@/lib/cookies";
+import { getCookie, getStoredUser, setCookie } from "@/lib/cookies";
 import QueryProvider from "./QueryProvider";
 import BannedModal from "@/app/components/BannedModal";
 import ReactivationModal from "@/app/components/ReactivationModal";
@@ -91,22 +91,10 @@ export default function AppProviders({ children }: AppProvidersProps) {
     // Hard refresh to reload current page with active status
     window.location.reload();
   };
-
-  // Check authentication status to force dark theme for unauthenticated users
-  const isClient = typeof window !== "undefined";
-  let isAuthenticated = false;
-  if (isClient) {
-    try {
-      const userStr = getCookie("user");
-      isAuthenticated = !!userStr && userStr !== '""';
-    } catch (e) {
-      isAuthenticated = false;
-    }
-  }
-
-  // Force dark theme for unauthenticated users OR specific public pages (homepage, auth)
+  // Force dark only on public brand/auth pages. Do not tie forcedTheme to auth
+  // cookie detection; production cookies can be unavailable while localStorage
+  // still has a valid user, and forcedTheme makes setTheme() intentionally inert.
   const isForceDarkRoute = pathname === "/" || pathname === "/login" || pathname === "/register" || pathname === "/forgot-password" || pathname === "/reset-password";
-  const forcedTheme = (!isAuthenticated || isForceDarkRoute) ? "dark" : undefined;
 
   return (
     <ThemeProvider 
@@ -114,7 +102,7 @@ export default function AppProviders({ children }: AppProvidersProps) {
       defaultTheme="system" 
       enableSystem={true}
       disableTransitionOnChange
-      forcedTheme={forcedTheme}
+      forcedTheme={isForceDarkRoute ? "dark" : undefined}
     >
       <QueryProvider>
         {children}
@@ -146,10 +134,8 @@ function ThemeSync() {
 
   useEffect(() => {
     try {
-      const userStr = getCookie("user");
-      if (!userStr || userStr === '""') return;
-      const user = JSON.parse(userStr);
-
+      const user = getStoredUser<any>();
+      if (!user) return;
       const theme = user?.preferences?.theme || user?.theme;
       if (theme) {
         setTheme(theme);

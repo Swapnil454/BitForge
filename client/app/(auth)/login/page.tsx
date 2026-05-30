@@ -146,7 +146,7 @@ function LoginPageContent() {
         const isMarketplaceNext = nextPath && nextPath.startsWith("/marketplace/");
 
         if (nextPath && role === "buyer") {
-          router.push(nextPath);
+          router.replace(nextPath);
           return;
         }
 
@@ -154,7 +154,7 @@ function LoginPageContent() {
           toast.error("Please log in as a buyer to purchase. Redirecting to your dashboard.");
         }
 
-        router.push(getDefaultRouteForUser(response.user));
+        router.replace(getDefaultRouteForUser(response.user));
       }, 1400);
     } catch (err: any) {
       const errResponse = err.response?.data;
