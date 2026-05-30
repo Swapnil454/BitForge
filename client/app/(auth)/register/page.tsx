@@ -10,7 +10,9 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { authAPI } from "@/lib/api";
+import { getCookie, getStoredUser } from "@/lib/cookies";
 import Image from "next/image";
+import { useEffect } from "react";
 
 function RegisterForm() {
   const router = useRouter();
@@ -24,6 +26,15 @@ function RegisterForm() {
   const [role, setRole] = useState(roleFromQuery === "seller" ? "seller" : "buyer");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const token = getCookie("token");
+    const user = getStoredUser<{ role?: string }>();
+    if (token && user) {
+      const role = user.role || "buyer";
+      router.replace(role === "buyer" ? "/marketplace" : `/dashboard/${role}`);
+    }
+  }, [router]);
 
   const handleRegister = async () => {
     if (!name || !email || !password) {

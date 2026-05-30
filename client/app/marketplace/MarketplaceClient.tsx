@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { cartAPI, searchAPI, wishlistAPI } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
 import { useInfiniteProducts } from "@/lib/useInfiniteProducts";
+import { useDoubleBackToExit } from "@/lib/hooks/useDoubleBackToExit";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { Search } from "lucide-react";
@@ -26,7 +27,7 @@ import { marketplaceSections } from "@/app/components/buyer/data/marketplaceSect
 // ─── Skeleton grid used in loading states ────────────────────────────────────
 function GridSkeleton({ count = 8 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
       {Array(count).fill(0).map((_, i) => <ProductCardSkeleton key={i} />)}
     </div>
   );
@@ -94,7 +95,7 @@ function InfiniteProductGrid({
 
   if (products.length === 0) {
     return (
-      <div className="pt-10 -mt-8 pb-32 flex flex-col items-center justify-center text-center px-4">
+      <div className="pt-2 pb-32 flex flex-col items-center justify-center text-center px-4">
         <div className="mb-1 relative w-64 h-64 md:w-80 md:h-80">
           <Image 
             src="/no_product_found_placeholder.png" 
@@ -215,12 +216,9 @@ function HomeView({
 
   if (homeLoading) {
     return (
-      <>
-        <HeroSkeleton />
-        <div className="w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 mt-10">
-          <GridSkeleton />
-        </div>
-      </>
+      <div className="w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 mt-4">
+        <GridSkeleton />
+      </div>
     );
   }
 
@@ -286,6 +284,10 @@ export default function MarketplaceClient() {
 
   const { isAuthenticated, requireAuth } = useAuth();
   const router = useRouter();
+
+  useDoubleBackToExit({
+    enabled: !searchParams.toString(),
+  });
 
   // Sync URL search param to local state (for when navigating from MobileSearchPage)
   const searchParamValue = searchParams.get("search") || "";
@@ -426,7 +428,7 @@ export default function MarketplaceClient() {
         cartCount={cartItems.length}
         wishlistCount={wishlist.length}
         isCollectionPage={isGridView}
-        onBackClick={() => router.back()}
+        onBackClick={() => router.push("/marketplace")}
       />
 
       <main className="flex-grow">
@@ -440,7 +442,7 @@ export default function MarketplaceClient() {
           />
         )}
         {!searchQuery && (
-          <div className="mt-0 mb-1 sm:mb-2 relative z-10">
+          <div className="mt-0 mb-1 sm:mb-2 relative z-20">
             <CategoryPills products={homeProducts} />
           </div>
         )}

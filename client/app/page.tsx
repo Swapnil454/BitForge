@@ -94,8 +94,19 @@ export default function LandingPage() {
   const [activePlan, setActivePlan] = useState("Pro");
   const [featuredProduct, setFeaturedProduct] = useState<MarketplaceProduct | null>(null);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const router = useRouter();
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    const user = getStoredUser<{ role?: string }>();
+    if (user) {
+      const role = user.role || "buyer";
+      router.replace(role === "buyer" ? "/marketplace" : `/dashboard/${role}`);
+    } else {
+      setCurrentUser(null);
+    }
+  }, [router]);
 
   /* header visuals - only compute on desktop */
   const headerBg = useTransform(
@@ -256,27 +267,29 @@ export default function LandingPage() {
             </div>
 
             <div className="flex items-center gap-4">
-              <Link
-                href="/login"
-                className=" text-sm text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
-              >
-                Login
-              </Link>
-
-              <Link
-                href="/register"
-                className="
-                  rounded-lg
-                  bg-linear-to-r from-cyan-400 to-indigo-500
-                  px-3 sm:px-4
-                  py-2
-                  text-sm font-bold
-                  text-black
-                  shadow-[0_0_30px_rgba(56,189,248,0.6)]
-                "
-              >
-                Join BitForge
-              </Link>
+              {currentUser ? (
+                <Link
+                  href={currentUser.role === 'buyer' ? '/marketplace' : `/dashboard/${currentUser.role}`}
+                  className="rounded-lg bg-linear-to-r from-cyan-400 to-indigo-500 px-3 sm:px-4 py-2 text-sm font-bold text-black shadow-[0_0_30px_rgba(56,189,248,0.6)]"
+                >
+                  Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className=" text-sm text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="rounded-lg bg-linear-to-r from-cyan-400 to-indigo-500 px-3 sm:px-4 py-2 text-sm font-bold text-black shadow-[0_0_30px_rgba(56,189,248,0.6)]"
+                  >
+                    Join BitForge
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
         </header>
@@ -324,28 +337,30 @@ export default function LandingPage() {
             </div>
 
             <div className="flex items-center gap-4">
-              <Link
-                href="/login"
-                className=" text-sm text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
-              >
-                Login
-              </Link>
-
-            <Link
-              href="/register"
-              className="
-                rounded-lg
-                bg-linear-to-r from-cyan-400 to-indigo-500
-                px-3 sm:px-4
-                py-2
-                text-sm font-bold
-                text-black
-                shadow-[0_0_30px_rgba(56,189,248,0.6)]
-              "
-            >
-              Join BitForge
-            </Link>
-          </div>
+              {currentUser ? (
+                <Link
+                  href={currentUser.role === 'buyer' ? '/marketplace' : `/dashboard/${currentUser.role}`}
+                  className="rounded-lg bg-linear-to-r from-cyan-400 to-indigo-500 px-3 sm:px-4 py-2 text-sm font-bold text-black shadow-[0_0_30px_rgba(56,189,248,0.6)]"
+                >
+                  Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className=" text-sm text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="rounded-lg bg-linear-to-r from-cyan-400 to-indigo-500 px-3 sm:px-4 py-2 text-sm font-bold text-black shadow-[0_0_30px_rgba(56,189,248,0.6)]"
+                  >
+                    Join BitForge
+                  </Link>
+                </>
+              )}
+            </div>
         </nav>
       </motion.header>
       )}
