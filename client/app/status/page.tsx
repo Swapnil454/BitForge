@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import DynamicHeader from "@/app/components/DynamicHeader";
 import { useState } from "react";
 
 type StatusLevel = "operational" | "degraded" | "partial" | "major" | "maintenance";
@@ -143,36 +143,7 @@ export default function StatusPage() {
 
   return (
     <main className="relative min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white overflow-x-hidden">
-      {/* HEADER */}
-      <header className="fixed top-0 left-0 right-0 z-40 h-16 sm:h-20 border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#05050a]/80 backdrop-blur-xl shadow-sm dark:shadow-none">
-        <nav className="mx-auto flex h-full max-w-7xl items-center justify-between px-5 md:px-6">
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/bitforge_logo1.png"
-              alt="BitForge logo"
-              width={256}
-              height={256}
-              className="h-10 w-auto sm:h-12 drop-shadow-[0_0_20px_rgba(56,189,248,0.45)]"
-              priority
-            />
-            <span className="-ml-3 text-lg font-bold tracking-tight sm:-ml-4 sm:text-2xl bg-linear-to-r from-indigo-600 to-cyan-500 dark:from-cyan-400 dark:to-indigo-400 bg-clip-text text-transparent leading-tight">
-              BitForge
-            </span>
-          </Link>
-
-          <div className="flex items-center gap-4 text-sm">
-            <Link href="/docs" className="hidden text-slate-600 dark:text-white/70 hover:text-indigo-600 dark:hover:text-white sm:inline-flex transition-colors">
-              Docs
-            </Link>
-            <Link
-              href="/login"
-              className="rounded-lg border border-slate-200 dark:border-white/20 bg-white dark:bg-transparent px-3 py-1.5 text-slate-700 dark:text-white/80 hover:border-indigo-200 hover:bg-indigo-50 dark:hover:border-cyan-400 hover:text-indigo-700 dark:hover:text-white transition-all shadow-sm dark:shadow-none"
-            >
-              Sign in
-            </Link>
-          </div>
-        </nav>
-      </header>
+      <DynamicHeader title="System Status" />
 
       {/* BACKGROUND GLOW (Dark Mode Only) */}
       <div className="pointer-events-none fixed inset-0 z-0 opacity-60 hidden dark:block">
@@ -184,7 +155,7 @@ export default function StatusPage() {
         {/* HERO */}
         <section className="mb-8">
           <div className="mb-2">
-            <p className="text-xl font-bold uppercase tracking-[0.1em] text-black">
+            <p className="text-xl font-bold uppercase tracking-[0.1em] text-slate-900 dark:text-white">
               System Status
             </p>
           </div>

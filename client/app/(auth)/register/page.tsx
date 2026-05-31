@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import Link from "next/link";
@@ -68,7 +67,7 @@ function RegisterForm() {
       <div className="absolute top-1/2 -right-40 w-150 h-150 rounded-full bg-cyan-500/20 blur-[180px]" />
 
       {/* CARD */}
-      <div className="relative z-10 my-4 sm:my-auto w-full max-w-md rounded-3xl p-6 sm:p-8 bg-slate-100 dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-[0_30px_120px_rgba(56,189,248,0.25)] -mt-12 sm:-mt-20">
+      <div className="relative z-10 my-4 sm:my-auto w-full max-w-md rounded-3xl p-6 sm:p-8 bg-slate-100 dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-[0_30px_120px_rgba(56,189,248,0.25)]">
 
         {/* LOGO */}
         <div className="flex flex-col items-center justify-center ">
@@ -88,19 +87,19 @@ function RegisterForm() {
         </p>
 
         {/* NAME */}
-        <div className="mb-2">
+        <div className="mb-3">
           <label className="text-xs text-slate-500 dark:text-white/60">Name</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name"
-            className="w-full mt-0.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)] transition text-sm"
+            className="w-full mt-1 px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)] transition text-sm"
           />
         </div>
 
         {/* ROLE */}
-        <div className="mb-2">
-          <label className="text-xs text-slate-500 dark:text-white/60 mb-1 block">
+        <div className="mb-3">
+          <label className="text-xs text-slate-500 dark:text-white/60 mb-1.5 block">
             Account type
           </label>
 
@@ -113,7 +112,7 @@ function RegisterForm() {
                 key={r.v}
                 type="button"
                 onClick={() => setRole(r.v)}
-                className={`rounded-xl px-2 py-1.5 border transition flex items-center justify-center gap-1.5 ${
+                className={`rounded-xl px-2 py-2 border transition flex items-center justify-center gap-1.5 ${
                   role === r.v
                     ? "bg-cyan-400/10 border-cyan-400 text-cyan-400 shadow-[0_0_20px_rgba(56,189,248,0.35)]"
                     : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/60 hover:bg-slate-200 dark:hover:bg-white/10"
@@ -129,33 +128,33 @@ function RegisterForm() {
         </div>
 
         {/* EMAIL */}
-        <div className="mb-2">
+        <div className="mb-3">
           <label className="text-xs text-slate-500 dark:text-white/60">Email</label>
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email address"
-            className="w-full mt-0.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)] transition text-sm"
+            className="w-full mt-1 px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)] transition text-sm"
           />
         </div>
 
         {/* PASSWORD */}
-        <div className="mb-3">
+        <div className="mb-4">
           <label className="text-xs text-slate-500 dark:text-white/60">Password</label>
-          <div className="relative mt-0.5">
+          <div className="relative mt-1">
             <input
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Create password"
               disabled={loading}
-              className="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 pr-10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)] transition disabled:opacity-50 text-sm"
+              className="w-full px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 pr-10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)] transition disabled:opacity-50 text-sm"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               disabled={loading}
-              className="absolute right-3 mt-0.5 top-2 text-white/50"
+              className="absolute right-3 mt-1 top-2.5 text-white/50"
             >
               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
@@ -172,19 +171,19 @@ function RegisterForm() {
         </button>
 
         {/* DIVIDER */}
-        <div className="flex items-center gap-3 my-3">
+        <div className="flex items-center gap-3 my-4">
           <div className="flex-1 h-px bg-slate-200 dark:bg-white/10" />
           <span className="text-xs text-slate-400 dark:text-white/40">OR</span>
           <div className="flex-1 h-px bg-slate-200 dark:bg-white/10" />
         </div>
 
         {/* OAUTH */}
-        <div className="space-y-2">
-          <OAuthButton label="Google" role={role} />
-          <OAuthButton label="GitHub" role={role} />
+        <div className="space-y-3">
+          <OAuthButton icon={<FcGoogle size={20} />} label="Google" role={role} />
+          <OAuthButton icon={<FaGithub size={20} />} label="GitHub" role={role} />
         </div>
 
-        <p className="text-center text-sm text-slate-500 dark:text-white/60 mt-3">
+        <p className="text-center text-sm text-slate-500 dark:text-white/60 mt-4">
           Already have an account?{" "}
           <Link href="/login" className="text-cyan-400 font-semibold">
             Login
@@ -196,16 +195,17 @@ function RegisterForm() {
 }
 
 
-function OAuthButton({ label, role }: any) {
+function OAuthButton({ icon, label, role }: any) {
   return (
     <button
       onClick={() =>
         (window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/oauth/${label.toLowerCase()}?role=${role}`)
       }
-      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] transition text-sm"
+      type="button"
+      className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] transition"
     >
-      {label === "Google" ? <FcGoogle size={14} /> : <FaGithub size={14} />}
-      Continue with {label}
+      {icon}
+      <span className="text-sm font-semibold">Continue with {label}</span>
     </button>
   );
 }

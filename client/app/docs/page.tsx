@@ -252,6 +252,7 @@ export default function DocsPage() {
   };
   return (
     <main className="relative min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white overflow-x-hidden">
+      
       {/* BACKGROUND GLOW */}
       <div className="pointer-events-none fixed inset-0 z-0 opacity-60 hidden dark:block">
         <div className="absolute -left-40 top-10 h-80 w-80 rounded-full bg-cyan-500/20 blur-3xl" />

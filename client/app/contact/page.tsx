@@ -29,7 +29,7 @@ export default async function ContactPage() {
       {/* Content */}
       <div className="relative z-10 mx-auto max-w-6xl px-4 pt-16 sm:pt-20 pb-12 md:px-6 md:pb-16 lg:pb-24">
         {/* Hero */}
-        <section className="mb-10 md:mb-14 text-left max-w-4xl pt-4">
+        <section className="mb-10 md:mb-14 text-left mt-7 max-w-4xl pt-4">
           <h1 className="text-4xl font-black tracking-tight leading-[1.1] sm:text-5xl md:text-6xl text-slate-900 dark:text-white mb-2">
             Talk to the BitForge team{" "}
             <span className="block mt-2 bg-linear-to-r from-indigo-600 to-cyan-500 dark:from-cyan-400 dark:to-indigo-400 bg-clip-text text-transparent">

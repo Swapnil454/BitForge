@@ -7,6 +7,9 @@ import { motion, useScroll, useTransform, useSpring, MotionValue } from "framer-
 import { useEffect, useState, useMemo, type MouseEvent, type ReactNode } from "react";
 import { marketplaceAPI } from "@/lib/api";
 import { getStoredUser } from "@/lib/cookies";
+import GlobalHeader from "./components/GlobalHeader";
+import TrendingProductsMarquee from "./components/TrendingProductsMarquee";
+import FaqSection from "./components/FaqSection";
 
 type MarketplaceProduct = {
   _id: string;
@@ -92,8 +95,6 @@ function MagneticButton({
 export default function LandingPage() {
   const { scrollY } = useScroll();
   const [activePlan, setActivePlan] = useState("Pro");
-  const [featuredProduct, setFeaturedProduct] = useState<MarketplaceProduct | null>(null);
-  const [loadingFeatured, setLoadingFeatured] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const router = useRouter();
   const isMobile = useIsMobile();
@@ -141,53 +142,7 @@ export default function LandingPage() {
     return () => window.removeEventListener("mousemove", move as any);
   }, [mouseX, mouseY, isMobile]);
 
-  useEffect(() => {
-    const loadFeatured = async () => {
-      try {
-        const data = await marketplaceAPI.getAllProducts();
-        const list = (data?.products || data || []) as MarketplaceProduct[];
 
-        if (Array.isArray(list) && list.length > 0) {
-          const randomIndex = Math.floor(Math.random() * list.length);
-          setFeaturedProduct(list[randomIndex]);
-        } else {
-          setFeaturedProduct(null);
-        }
-      } catch (error) {
-        console.error("Failed to load featured product", error);
-        setFeaturedProduct(null);
-      } finally {
-        setLoadingFeatured(false);
-      }
-    };
-
-    loadFeatured();
-  }, []);
-
-  const handleFeaturedBuy = () => {
-    if (!featuredProduct) return;
-
-    const target = `/marketplace/${featuredProduct._id}`;
-    const user = getStoredUser<{ role?: string }>();
-
-    if (!user) {
-      const next = encodeURIComponent(target);
-      router.push(`/login?next=${next}`);
-      return;
-    }
-
-    const role = user.role || "buyer";
-
-    if (role !== "buyer") {
-      if (typeof window !== "undefined") {
-        window.alert("Please log in as a buyer to purchase. Redirecting to your dashboard.");
-      }
-      router.push(`/dashboard/${role}`);
-      return;
-    }
-
-    router.push(target);
-  };
 
   const handleFooterMarketplaceClick = () => {
     const target = "/marketplace";
@@ -221,546 +176,122 @@ export default function LandingPage() {
 
       <ParallaxBackground scrollY={scrollY} isMobile={isMobile} />
 
-      {/* ================= HEADER (TRUE STICKY) ================= */}
-      {isMobile ? (
-        <header
-          className="
-            fixed top-0 left-0 right-0 z-100
-            h-16 sm:h-20
-            backdrop-blur-xl
-            border-b border-slate-200 dark:border-white/10
-            bg-[rgba(5,5,10,0.95)]
-            shadow-[0_10px_40px_rgba(0,0,0,0.75)]
-          "
-        >
-          <nav className="max-w-7xl mx-auto px-5 md:px-6 h-full flex items-center justify-between">
-            <div className="flex items-center">
-              <Image
-                src="/bitforge_logo1.png"
-                alt="BitForge logo"
-                width={256}
-                height={256}
-                className="
-                  h-10 sm:h-20
-                  w-auto
-                  object-contain
-                  drop-shadow-[0_0_20px_rgba(56,189,248,0.45)]
-                "
-                priority
-              />
+      <GlobalHeader />
 
-              <span
-                className="
-                  -ml-3 sm:-ml-6
-                  text-lg sm:text-3xl
-                  font-bold
-                  tracking-tight
-                  bg-linear-to-r from-cyan-400 to-indigo-400
-                  bg-clip-text text-transparent
-                  leading-tight
-                  translate-y-px
-                  pb-0.5
-                "
-              >
-                BitForge
-              </span>
+      <section className="relative z-10 max-w-4xl mx-auto px-5 md:px-6 pt-24 pb-10 md:pt-28 md:pb-12 flex flex-col items-center text-center">
+        {/* Trust Badge */}
+        <div className="mt-4 mb-5 inline-flex flex-row items-center gap-2 sm:gap-3 rounded-full border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/5 px-3 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-sm font-medium shadow-sm backdrop-blur-md whitespace-nowrap">
+          <div className="flex -space-x-2">
+            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Creator" className="h-5 w-5 sm:h-6 sm:w-6 rounded-full border-2 border-white dark:border-[#05050a] object-cover" />
+            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Creator" className="h-5 w-5 sm:h-6 sm:w-6 rounded-full border-2 border-white dark:border-[#05050a] object-cover" />
+            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Creator" className="h-5 w-5 sm:h-6 sm:w-6 rounded-full border-2 border-white dark:border-[#05050a] object-cover" />
+            <img src="https://randomuser.me/api/portraits/men/46.jpg" alt="Creator" className="h-5 w-5 sm:h-6 sm:w-6 rounded-full border-2 border-white dark:border-[#05050a] object-cover" />
+            <div className="flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full border-2 border-white dark:border-[#05050a] bg-slate-100 dark:bg-slate-800 text-[8px] font-bold text-slate-600 dark:text-white">
+              +
             </div>
-
-            <div className="flex items-center gap-4">
-              {currentUser ? (
-                <Link
-                  href={currentUser.role === 'buyer' ? '/marketplace' : `/dashboard/${currentUser.role}`}
-                  className="rounded-lg bg-linear-to-r from-cyan-400 to-indigo-500 px-3 sm:px-4 py-2 text-sm font-bold text-black shadow-[0_0_30px_rgba(56,189,248,0.6)]"
-                >
-                  Dashboard
-                </Link>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className=" text-sm text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="rounded-lg bg-linear-to-r from-cyan-400 to-indigo-500 px-3 sm:px-4 py-2 text-sm font-bold text-black shadow-[0_0_30px_rgba(56,189,248,0.6)]"
-                  >
-                    Join BitForge
-                  </Link>
-                </>
-              )}
-            </div>
-          </nav>
-        </header>
-      ) : (
-        <motion.header
-          style={{ background: headerBg, boxShadow: headerShadow }}
-          className="
-            fixed top-0 left-0 right-0 z-100
-            h-16 sm:h-20
-            backdrop-blur-xl
-            border-b border-slate-200 dark:border-white/10
-          "
-        >
-          <nav className="max-w-7xl mx-auto px-5 md:px-6 h-full flex items-center justify-between">
-            <div className="flex items-center">
-              <Image
-                src="/bitforge_logo1.png"
-                alt="BitForge logo"
-                width={256}
-                height={256}
-                className="
-                  h-10 sm:h-20
-                  w-auto
-                  object-contain
-                  drop-shadow-[0_0_20px_rgba(56,189,248,0.45)]
-                "
-                priority
-              />
-
-              <span
-                className="
-                  -ml-3 sm:-ml-6
-                  text-lg sm:text-3xl
-                  font-bold
-                  tracking-tight
-                  bg-linear-to-r from-cyan-400 to-indigo-400
-                  bg-clip-text text-transparent
-                  leading-tight
-                  translate-y-px
-                  pb-0.5
-                "
-              >
-                BitForge
-              </span>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {currentUser ? (
-                <Link
-                  href={currentUser.role === 'buyer' ? '/marketplace' : `/dashboard/${currentUser.role}`}
-                  className="rounded-lg bg-linear-to-r from-cyan-400 to-indigo-500 px-3 sm:px-4 py-2 text-sm font-bold text-black shadow-[0_0_30px_rgba(56,189,248,0.6)]"
-                >
-                  Dashboard
-                </Link>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className=" text-sm text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="rounded-lg bg-linear-to-r from-cyan-400 to-indigo-500 px-3 sm:px-4 py-2 text-sm font-bold text-black shadow-[0_0_30px_rgba(56,189,248,0.6)]"
-                  >
-                    Join BitForge
-                  </Link>
-                </>
-              )}
-            </div>
-        </nav>
-      </motion.header>
-      )}
-
-      <section className="relative z-10 mt-4 max-w-7xl mx-auto px-5 md:px-6 pt-20 md:pt-28 pb-20 md:pb-28 grid grid-cols-1 md:grid-cols-2 gap-14 md:gap-20 items-center">
-        <div>
-          <h1 className="text-[36px] sm:text[36px] md:text-[64px] font-black leading-tight">
-            Where Digital Products
-            <span className="block mt-2 bg-linear-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
-              Take Shape
-            </span>
-          </h1>
-
-          <p className="mt-5 text-base md:text-lg text-slate-600 dark:text-white/70 max-w-xl">
-            A modern marketplace where creators launch digital products and buyers find what matters.
-            Secure access, instant downloads, and real-time support — all in one place.
-          </p>
+          </div>
+          <span className="text-slate-600 dark:text-white/80 pr-1">Over 500+ creators trust BitForge.</span>
         </div>
 
-        {/* FEATURE CARD - Static on mobile, animated on desktop */}
-        {isMobile ? (
-          <div className="rounded-3xl bg-linear-to-br from-white/10 to-white/5 backdrop-blur-xl border border-slate-300 dark:border-white/20 shadow-[0_30px_100px_rgba(56,189,248,0.35)] p-6 transition-transform duration-300 hover:-translate-y-2">
-            <div className="h-1 w-16 rounded-full bg-linear-to-r from-cyan-400 to-indigo-400 mb-3" />
-            <p className="text-sm text-slate-500 dark:text-white/60">Featured Product</p>
+        {/* Main Headline */}
+        <h1 className="font-black leading-tight tracking-tight mb-6 flex flex-col items-center">
+          <span className="text-[32px] sm:text-[44px] md:text-[56px] text-slate-900 dark:text-white mb-1">
+            Meet the Best
+          </span>
+          <span className="text-[44px] sm:text-[56px] md:text-[72px] leading-tight text-center">
+            <span className="text-cyan-400">BitForge </span>
+            <span className="text-indigo-400">
+              digital product marketplace.
+            </span>
+          </span>
+        </h1>
 
-            {loadingFeatured && !featuredProduct && (
-              <div className="mt-4 h-24 rounded-2xl bg-slate-200 dark:bg-white/10 animate-pulse" />
-            )}
-
-            {!loadingFeatured && !featuredProduct && (
-              <>
-                <h3 className="mt-3 text-xl font-semibold">
-                  Discover Amazing Products
-                </h3>
-                <p className="mt-2 text-slate-600 dark:text-white/70 text-sm">
-                  New creators are joining every day. Explore the marketplace to find trending and newly launched products.
-                </p>
-                <div className="mt-5 flex justify-end">
-                  <button
-                    onClick={() => router.push("/marketplace")}
-                    className="bg-indigo-500 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-600 transition"
-                  >
-                    Explore Marketplace
-                  </button>
-                </div>
-              </>
-            )}
-
-            {featuredProduct && (
-              <>
-                {featuredProduct.thumbnailUrl && (
-                  <div className="w-full h-40 mt-4 mb-3 bg-white dark:bg-black/20 rounded-2xl overflow-hidden flex items-center justify-center">
-                    <img
-                      src={featuredProduct.thumbnailUrl}
-                      alt={featuredProduct.title}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                )}
-
-                <h3 className="mt-1 text-xl font-semibold line-clamp-1">
-                  {featuredProduct.title}
-                </h3>
-                <p className="mt-2 text-slate-600 dark:text-white/70 text-sm line-clamp-3">
-                  {featuredProduct.description}
-                </p>
-
-                <div className="mt-5 mb-1">
-                  {featuredProduct.discount > 0 ? (
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-slate-400 dark:text-white/40 line-through">
-                          ₹{featuredProduct.price.toLocaleString()}
-                        </span>
-                        <span className="text-xs bg-linear-to-r from-red-500 to-rose-500 text-slate-900 dark:text-white px-2 py-0.5 rounded-full font-semibold shadow-lg shadow-red-500/30">
-                          -{featuredProduct.discount}% OFF
-                        </span>
-                      </div>
-                      <div className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-cyan-300 to-indigo-300">
-                        ₹{(() => {
-                          const price = featuredProduct.price || 0;
-                          const discount = featuredProduct.discount || 0;
-                          const final =
-                            discount > 0
-                              ? Math.max(price - (price * discount) / 100, 0)
-                              : price;
-                          return final.toLocaleString();
-                        })()}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-cyan-300 to-indigo-300">
-                      ₹{featuredProduct.price.toLocaleString()}
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-2 flex justify-end items-center">
-                  <button
-                    onClick={handleFeaturedBuy}
-                    className="bg-indigo-500 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-600 transition"
-                  >
-                    Buy Now
-                  </button>
-                </div>
-              </>
-            )}
+        {/* Checkmarks */}
+        <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-3 mb-12 text-sm sm:text-base font-medium text-slate-600 dark:text-white/80">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+            Low platform fees
           </div>
-        ) : (
-          <motion.div
-            whileHover={{ y: -8 }}
-            transition={{ type: "spring", stiffness: 180, damping: 18 }}
-            className="rounded-3xl bg-linear-to-br from-white/10 to-white/5 backdrop-blur-xl border border-slate-300 dark:border-white/20 shadow-[0_30px_100px_rgba(56,189,248,0.35)] p-6"
-          >
-            <div className="h-1 w-16 rounded-full bg-linear-to-r from-cyan-400 to-indigo-400 mb-3" />
-            <p className="text-sm text-slate-500 dark:text-white/60">Featured Product</p>
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+            Instant delivery
+          </div>
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+            Secure payments
+          </div>
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+            Creator analytics
+          </div>
+        </div>
 
-            {loadingFeatured && !featuredProduct && (
-              <div className="mt-4 h-24 rounded-2xl bg-slate-200 dark:bg-white/10 animate-pulse" />
-            )}
-
-            {!loadingFeatured && !featuredProduct && (
-              <>
-                <h3 className="mt-3 text-xl font-semibold">
-                  Discover Amazing Products
-                </h3>
-                <p className="mt-2 text-slate-600 dark:text-white/70 text-sm">
-                  New creators are joining every day. Explore the marketplace to find trending and newly launched products.
-                </p>
-                <div className="mt-5 flex justify-end">
-                  <button
-                    onClick={() => router.push("/marketplace")}
-                    className="bg-indigo-500 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-600 transition"
-                  >
-                    Explore Marketplace
-                  </button>
-                </div>
-              </>
-            )}
-
-            {featuredProduct && (
-              <>
-                {featuredProduct.thumbnailUrl && (
-                  <div className="w-full h-40 mt-4 mb-3 bg-white dark:bg-black/20 rounded-2xl overflow-hidden flex items-center justify-center">
-                    <img
-                      src={featuredProduct.thumbnailUrl}
-                      alt={featuredProduct.title}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                )}
-
-                <h3 className="mt-1 text-xl font-semibold line-clamp-1">
-                  {featuredProduct.title}
-                </h3>
-                <p className="mt-2 text-slate-600 dark:text-white/70 text-sm line-clamp-3">
-                  {featuredProduct.description}
-                </p>
-
-                <div className="mt-5 mb-1">
-                  {featuredProduct.discount > 0 ? (
-                    <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-slate-400 dark:text-white/40 line-through">
-                        ₹{featuredProduct.price.toLocaleString()}
-                      </span>
-                      <span className="text-xs bg-linear-to-r from-red-500 to-rose-500 text-slate-900 dark:text-white px-2 py-0.5 rounded-full font-semibold shadow-lg shadow-red-500/30">
-                        -{featuredProduct.discount}% OFF
-                      </span>
-                    </div>
-                    <div className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-cyan-300 to-indigo-300">
-                      ₹{(() => {
-                        const price = featuredProduct.price || 0;
-                        const discount = featuredProduct.discount || 0;
-                        const final =
-                          discount > 0
-                            ? Math.max(price - (price * discount) / 100, 0)
-                            : price;
-                        return final.toLocaleString();
-                      })()}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-cyan-300 to-indigo-300">
-                    ₹{featuredProduct.price.toLocaleString()}
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-2 flex justify-end items-center">
-                <button
-                  onClick={handleFeaturedBuy}
-                  className="bg-indigo-500 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-600 transition"
-                >
-                  Buy Now
-                </button>
-              </div>
-            </>
-          )}
-        </motion.div>
-        )}
+        {/* Primary CTA */}
+        <Link
+          href="/marketplace"
+          className="inline-block rounded-full bg-gradient-to-r from-cyan-400 to-indigo-500 px-6 py-3 sm:px-8 sm:py-4 text-base sm:text-lg font-bold text-white shadow-[0_0_30px_rgba(56,189,248,0.4)] hover:from-cyan-300 hover:to-indigo-400 hover:shadow-[0_0_40px_rgba(56,189,248,0.6)] hover:-translate-y-1 transition-all duration-300"
+        >
+          Start exploring now
+        </Link>
       </section>
 
-      <section className="relative z-10 py-16 sm:py-20 -mt-24 sm:-mt-32">
+      <TrendingProductsMarquee />
+
+      <section className="relative z-10 py-16 sm:py-20">
         <h2 className="text-center text-3xl md:text-4xl font-black mb-10 sm:mb-12">
           Built for Buyers & Sellers
         </h2>
 
         <div className="max-w-5xl mx-auto px-5 md:px-6 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-          {/* BUYER CARD - Static on mobile, animated on desktop */}
-          {isMobile ? (
-            <div
-              className="
-                rounded-2xl
-                p-6 sm:p-8
-                border border-slate-200 dark:border-white/10
-                bg-slate-100 dark:bg-white/5 backdrop-blur-xl
-                hover:border-cyan-400
-                transition-all duration-300
-                hover:-translate-y-1.5
-              "
-            >
-              <h3 className="text-xl sm:text-2xl font-bold mb-2">
-                For Buyers
-              </h3>
-
-              <p className="text-sm sm:text-base text-slate-500 dark:text-white/60 mb-5 sm:mb-6">
-                Discover and access digital products with zero friction.
+          {/* BUYER CARD */}
+          <div className="flex flex-col rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-[#12121a] backdrop-blur-xl hover:border-cyan-400/50 transition-all duration-300 md:hover:-translate-y-1.5 shadow-sm">
+            <h3 className="text-xl sm:text-2xl font-bold mb-2">Buyers</h3>
+            <p className="text-sm sm:text-base text-slate-500 dark:text-white/60 mb-5 sm:mb-6">
+              Discover and access digital products with zero friction.
+            </p>
+            <ul className="space-y-3 text-sm sm:text-base text-slate-700 dark:text-white/80">
+              <li className="flex items-center gap-3"><span className="text-indigo-500 font-bold text-lg leading-none">✔</span> 800+ products available right now</li>
+              <li className="flex items-center gap-3"><span className="text-indigo-500 font-bold text-lg leading-none">✔</span> 4,200+ successful purchases</li>
+              <li className="flex items-center gap-3"><span className="text-indigo-500 font-bold text-lg leading-none">✔</span> Instant Access</li>
+              <li className="flex items-center gap-3"><span className="text-indigo-500 font-bold text-lg leading-none">✔</span> Verified Products</li>
+            </ul>
+            <div className="mt-auto pt-8">
+              <p className="text-cyan-400 text-sm mb-4 font-medium">
+                Browse as guest — no account needed to explore
               </p>
-
-              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-slate-700 dark:text-white/80">
-                <li>✔ No extra fees for buyers</li>
-                <li>✔ Secure payments & instant downloads</li>
-                <li>✔ Live help when you need it</li>
-              </ul>
-
-              <div className=" flex items-center justify-center">
-                <MagneticButton
-                  isMobile={isMobile}
-                  className="
-                    mt-6 sm:mt-8
-                    w-50
-                    rounded-xl
-                    bg-linear-to-r from-cyan-400 to-indigo-500
-                    px-6 py-3
-                    text-sm sm:text-base
-                    font-bold
-                    text-black
-                    shadow-[0_0_40px_rgba(56,189,248,0.6)]
-                  "
-                >
-                  <Link href="register">
-                    Browse Products
-                  </Link>
-                </MagneticButton>
-              </div>
+              <Link href="/marketplace" className="block w-full text-center rounded-xl bg-slate-800 dark:bg-white/10 hover:bg-slate-700 dark:hover:bg-white/20 px-6 py-4 text-sm font-bold text-white transition-all">
+                Browse Marketplace →
+              </Link>
+              <p className="text-center text-xs opacity-0 mt-3 font-medium pointer-events-none select-none">
+                Placeholder
+              </p>
             </div>
-          ) : (
-            <motion.div
-              whileHover={{ y: -6 }}
-              className="
-                rounded-2xl
-                p-6 sm:p-8
-                border border-slate-200 dark:border-white/10
-                bg-slate-100 dark:bg-white/5 backdrop-blur-xl
-                hover:border-cyan-400
-                transition-all duration-300
-              "
-            >
-              <h3 className="text-xl sm:text-2xl font-bold mb-2">
-                For Buyers
-              </h3>
+          </div>
 
-              <p className="text-sm sm:text-base text-slate-500 dark:text-white/60 mb-5 sm:mb-6">
-                Discover and access digital products with zero friction.
+          {/* SELLER CARD */}
+          <div className="flex flex-col rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-[#12121a] backdrop-blur-xl hover:border-indigo-400/50 transition-all duration-300 md:hover:-translate-y-1.5 shadow-sm">
+            <h3 className="text-xl sm:text-2xl font-bold mb-2">Sellers</h3>
+            <p className="text-sm sm:text-base text-slate-500 dark:text-white/60 mb-5 sm:mb-6">
+              Launch, sell, and scale your digital products with ease.
+            </p>
+            <ul className="space-y-3 text-sm sm:text-base text-slate-700 dark:text-white/80">
+              <li className="flex items-center gap-3"><span className="text-indigo-500 font-bold text-lg leading-none">✔</span> ₹12L+ paid out to sellers</li>
+              <li className="flex items-center gap-3"><span className="text-indigo-500 font-bold text-lg leading-none">✔</span> Avg seller earns ₹4,200/month</li>
+              <li className="flex items-center gap-3"><span className="text-indigo-500 font-bold text-lg leading-none">✔</span> Low Platform Fees</li>
+              <li className="flex items-center gap-3"><span className="text-indigo-500 font-bold text-lg leading-none">✔</span> Instant Publishing</li>
+            </ul>
+            <div className="mt-auto pt-8">
+              <p className="text-indigo-400 text-sm mb-4 font-medium">
+                First product live in under 10 minutes
               </p>
-
-              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-slate-700 dark:text-white/80">
-                <li>✔ No extra fees for buyers</li>
-                <li>✔ Secure payments & instant downloads</li>
-                <li>✔ Live help when you need it</li>
-              </ul>
-
-              <div className=" flex items-center justify-center">
-                <MagneticButton
-                  className="
-                    mt-6 sm:mt-8
-                    w-50
-                    rounded-xl
-                    bg-linear-to-r from-cyan-400 to-indigo-500
-                    px-6 py-3
-                    text-sm sm:text-base
-                    font-bold
-                    text-black
-                    shadow-[0_0_40px_rgba(56,189,248,0.6)]
-                  "
-                >
-                  <Link href="register">
-                    Browse Products
-                  </Link>
-                </MagneticButton>
-              </div>
-            </motion.div>
-          )}
-
-          {/* SELLER CARD - Static on mobile, animated on desktop */}
-          {isMobile ? (
-            <div
-              className="
-                rounded-2xl
-                p-6 sm:p-8
-                border border-slate-200 dark:border-white/10
-                bg-slate-100 dark:bg-white/5 backdrop-blur-xl
-                hover:border-indigo-400
-                transition-all duration-300
-                hover:-translate-y-1.5
-              "
-            >
-              <h3 className="text-xl sm:text-2xl font-bold mb-2">
-                For Sellers
-              </h3>
-
-              <p className="text-sm sm:text-base text-slate-500 dark:text-white/60 mb-5 sm:mb-6">
-                Launch, sell, and scale your digital products with ease.
+              <Link href="/register?role=seller" className="block w-full text-center rounded-xl bg-gradient-to-r from-cyan-400 to-indigo-500 hover:from-cyan-300 hover:to-indigo-400 px-6 py-4 text-sm font-bold text-white shadow-[0_0_20px_rgba(56,189,248,0.3)] transition-all">
+                Start Selling Free →
+              </Link>
+              <p className="text-center text-xs text-slate-500 dark:text-slate-400 mt-3 font-medium">
+                1,200 Creators Already Selling
               </p>
-
-              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-slate-700 dark:text-white/80">
-                <li>✔ Low, transparent platform fees</li>
-                <li>✔ Instant withdrawals & automated payouts</li>
-                <li>✔ Live help when you need it</li>
-              </ul>
-
-              <div className=" flex items-center justify-center">
-                <MagneticButton
-                  isMobile={isMobile}
-                  className="
-                    mt-6 sm:mt-8
-                    w-50
-                    rounded-xl
-                    bg-linear-to-r from-cyan-400 to-indigo-500
-                    px-6 py-3
-                    text-sm sm:text-base
-                    font-bold
-                    text-black
-                    shadow-[0_0_40px_rgba(56,189,248,0.6)]
-                  "
-                >
-                  <Link href="/register?role=seller">
-                    Start Selling
-                  </Link>
-                </MagneticButton>
-              </div>
             </div>
-          ) : (
-            <motion.div
-              whileHover={{ y: -6 }}
-              className="
-                rounded-2xl
-                p-6 sm:p-8
-                border border-slate-200 dark:border-white/10
-                bg-slate-100 dark:bg-white/5 backdrop-blur-xl
-                hover:border-indigo-400
-                transition-all duration-300
-              "
-            >
-              <h3 className="text-xl sm:text-2xl font-bold mb-2">
-                For Sellers
-              </h3>
-
-              <p className="text-sm sm:text-base text-slate-500 dark:text-white/60 mb-5 sm:mb-6">
-                Launch, sell, and scale your digital products with ease.
-              </p>
-
-              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base text-slate-700 dark:text-white/80">
-                <li>✔ Low, transparent platform fees</li>
-                <li>✔ Instant withdrawals & automated payouts</li>
-                <li>✔ Live help when you need it</li>
-              </ul>
-
-              <div className=" flex items-center justify-center">
-                <MagneticButton
-                  className="
-                    mt-6 sm:mt-8
-                    w-50
-                    rounded-xl
-                    bg-linear-to-r from-cyan-400 to-indigo-500
-                    px-6 py-3
-                    text-sm sm:text-base
-                    font-bold
-                    text-black
-                    shadow-[0_0_40px_rgba(56,189,248,0.6)]
-                  "
-                >
-                  <Link href="/register?role=seller">
-                    Start Selling
-                  </Link>
-                </MagneticButton>
-              </div>
-            </motion.div>
-          )}
+          </div>
         </div>
       </section>
 
@@ -799,16 +330,18 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="relative z-10 py-24 text-center -mt-32">
+      <FaqSection />
+
+      <section className="relative z-10 pt-6 pb-24 text-center px-5">
         <h2 className="text-4xl md:text-5xl font-black">
-          Build your digital empire
+          Ready to turn your skills into<br className="hidden sm:block" /> income?
         </h2>
-        <p className="mt-4 text-slate-600 dark:text-white/70">
-          Join creators building the future of digital commerce.
+        <p className="mt-4 text-slate-600 dark:text-white/70 max-w-2xl mx-auto">
+          Join 800+ creators building their digital empire on BitForge. Start selling your digital products to a global audience today.
         </p>
 
         <MagneticButton isMobile={isMobile} className="mt-8 rounded-xl bg-linear-to-r from-cyan-400 to-indigo-500 px-9 py-4 text-lg font-bold text-black shadow-[0_0_60px_rgba(56,189,248,0.6)]">
-          <Link href={"/marketplace"} >Enter Marketplace</Link>
+          <Link href={"/register?role=seller"}>Create Your Free Store</Link>
         </MagneticButton>
       </section>
 

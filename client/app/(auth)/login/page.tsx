@@ -231,7 +231,7 @@ function LoginPageContent() {
         </div>
 
         <h1 className="text-2xl font-black text-center -mt-5 sm:-mt-8 lg:-mt-12 leading-none">Welcome back</h1>
-        <p className="text-center text-sm text-slate-500 dark:text-white/60 mb-6 mt-1">
+        <p className="text-center text-sm text-slate-500 dark:text-white/60 mb-4 mt-1">
           Login to your <span className="font-semibold">BitForge</span> account
         </p>
 

@@ -26,7 +26,7 @@ export default async function RefundCancellationPolicyPage() {
       <div className="relative z-10 mx-auto max-w-4xl px-5 pb-20 pt-16 sm:pt-20 md:pb-28">
 
         {/* HERO */}
-        <section className="mb-6 border-b border-slate-200 dark:border-white/10 pb-6 pt-2">
+        <section className="mb-6 mt-7 border-b border-slate-200 dark:border-white/10 pb-6 pt-2">
           <h1 className="text-3xl font-black tracking-tight leading-tight sm:text-4xl md:text-[42px] text-slate-900 dark:text-white mb-1">
             Refund &amp; Cancellation Policy
           </h1>
