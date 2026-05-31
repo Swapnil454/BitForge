@@ -23,7 +23,7 @@ export default function SupportHelpCenterPage({ params }: any) {
     <main className={`h-[100dvh] md:h-screen flex flex-col overflow-hidden ${isDark ? "bg-[#0b1016]" : "bg-white"}`}>
       <div className={`shrink-0 px-4 py-3 md:px-6 md:py-4 border-b items-center gap-3 ${isDark ? "bg-[#202C33] border-white/10" : "bg-white border-slate-200"} ${isChatOpen ? "hidden md:flex" : "flex"}`}>
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push(`/dashboard/${auth?.user?.role || 'buyer'}`)}
           className={`p-2 rounded-full transition-all ${isDark ? "bg-white/5 hover:bg-white/10 text-white/70 hover:text-white" : "bg-white shadow-sm hover:shadow text-slate-600 hover:text-slate-900"}`}
           aria-label="Go back"
         >

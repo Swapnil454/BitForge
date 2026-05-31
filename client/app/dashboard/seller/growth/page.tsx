@@ -104,7 +104,7 @@ export default function RevenueGrowthPage() {
   /* ─── SKELETON ─── */
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-28 md:pb-8">
         <PageHeader
           backHref="/dashboard/seller"
           backLabel="Dashboard"
@@ -133,16 +133,16 @@ export default function RevenueGrowthPage() {
 
   /* ─── INSIGHT banner ─── */
   const insight = (() => {
-    if (data.revenueGrowth > 20) return { emoji: "🎉", label: "Excellent Growth", msg: "Revenue increased significantly this month.", border: "border-emerald-500/20", bg: "bg-emerald-500/8" };
+    if (data.revenueGrowth > 20) return { emoji: "", label: "Excellent Growth", msg: "Revenue increased significantly this month.", border: "border-emerald-500/20", bg: "bg-emerald-500/8" };
     if (data.revenueGrowth > 0) return { emoji: "", label: "Positive Growth", msg: "Revenue is trending upward.", border: "border-cyan-500/20", bg: "bg-cyan-500/8" };
     if (data.revenueGrowth < 0) return { emoji: "", label: "Revenue Decline", msg: "Review pricing or marketing strategy.", border: "border-red-500/20", bg: "bg-red-500/8" };
-    return { emoji: "➖", label: "No Change", msg: "No completed sales found for comparison.", border: "border-slate-200 dark:border-white/10", bg: "bg-slate-100 dark:bg-white/5" };
+    return { emoji: "", label: "No Change", msg: "No completed sales found for comparison.", border: "border-slate-200 dark:border-white/10", bg: "bg-slate-100 dark:bg-white/5" };
   })();
 
   /* ================= UI ================= */
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-28 md:pb-8">
       {/* ── HEADER ── */}
       <PageHeader
         backHref="/dashboard/seller"
@@ -172,8 +172,8 @@ export default function RevenueGrowthPage() {
             {/* Right: This month */}
             <div className="px-5 py-4 text-right flex flex-col justify-center min-w-[130px]">
               <p className="text-[11px] uppercase tracking-widest text-slate-400 dark:text-white/40 font-semibold mb-1">This Month</p>
-              <p className="text-2xl font-bold text-cyan-300">₹{data.currentMonthRevenue.toLocaleString()}</p>
-              <p className="text-xs text-slate-300 dark:text-white/30 mt-1">Last: ₹{data.lastMonthRevenue.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-black dark:text-white">₹{data.currentMonthRevenue.toLocaleString()}</p>
+              <p className="text-xs text-slate-500 dark:text-white/30 mt-1">Last: ₹{data.lastMonthRevenue.toLocaleString()}</p>
             </div>
           </div>
 
@@ -321,7 +321,7 @@ export default function RevenueGrowthPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-white/5">
-                {data.monthlyData.map((m, i) => (
+                {[...data.monthlyData].reverse().map((m, i) => (
                   <tr key={i} className="group hover:bg-slate-50/80 dark:hover:bg-white/[0.03] transition-colors">
                     <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white/90 sticky left-0 z-10 bg-white dark:bg-[#12141c] group-hover:bg-slate-50/80 dark:group-hover:bg-[#161822] transition-colors border-r border-slate-200 dark:border-white/10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
                       {m.month}
@@ -330,7 +330,7 @@ export default function RevenueGrowthPage() {
                     <td className="py-3 px-4 text-right font-medium text-slate-600 dark:text-white/70">{m.sales}</td>
                     <td className="py-3 px-4 text-right font-medium text-slate-600 dark:text-white/70">₹{m.sales ? Math.round(m.revenue / m.sales).toLocaleString() : 0}</td>
                     <td className="py-3 px-4 text-right">
-                      <span className={`inline-flex items-center justify-end gap-1 px-2.5 py-1 rounded-md text-xs font-bold border ${growthBg(m.growth)}`}>
+                      <span className={`inline-flex items-center justify-end gap-1 text-sm font-bold ${growthColor(m.growth)}`}>
                         <GrowthIcon v={m.growth} />
                         {Math.abs(m.growth).toFixed(1)}%
                       </span>

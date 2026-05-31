@@ -261,12 +261,11 @@ function SellerSalesPageContent() {
         backHref="/dashboard/seller"
         backLabel="Dashboard"
         title="Monthly Sales"
-        subtitle="Track your sales and earnings over time"
+        subtitle="Track sales and earnings over time"
         rightSlot={
           <div className="relative shrink-0 flex items-center gap-2" ref={headerMenuRef}>
             <button
               onClick={() => setHeaderMenuOpen((prev) => !prev)}
-              className="h-10 w-10 rounded-xl border border-slate-200 dark:border-white/15 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 hover:border-slate-300 dark:hover:border-white/30 inline-flex items-center justify-center transition shadow-sm dark:shadow-none"
               aria-label="Open actions"
             >
               <MoreVertical className="h-5 w-5 text-slate-700 dark:text-white/80" />

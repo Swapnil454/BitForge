@@ -72,6 +72,12 @@ export default function SellerPromotionDetailPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   const fetchPromotion = useCallback(async () => {
+    if (!params.id || params.id === "undefined") {
+      showError("Invalid promotion link");
+      router.replace("/dashboard/seller/promotions");
+      return;
+    }
+    
     try {
       setLoading(true);
       const data = await promotionAPI.getSellerPromotion(params.id);
@@ -80,9 +86,15 @@ export default function SellerPromotionDetailPage() {
       // Reset states
       setRazorpayFailed(data.promotion?.paymentStatus === "FAILED");
       setShowManualPayment(data.promotion?.paymentStatus === "FAILED");
-    } catch {
-      showError("Failed to load promotion");
-      router.push("/dashboard/seller/promotions");
+    } catch (error: any) {
+      if (error?.response?.status === 404) {
+        showError("This promotion has been deleted or no longer exists");
+      } else if (error?.response?.status === 400) {
+        showError("Invalid promotion link");
+      } else {
+        showError("Failed to load promotion");
+      }
+      router.replace("/dashboard/seller/promotions");
     } finally {
       setLoading(false);
     }
@@ -230,23 +242,23 @@ export default function SellerPromotionDetailPage() {
           promotion.status === "EXPIRED" ? (
             <button
               onClick={() => router.push(`/dashboard/seller/promotions/create?renewId=${promotion._id}`)}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+              className="inline-flex items-center justify-center gap-1 md:gap-2 rounded-lg md:rounded-xl bg-slate-900 px-2.5 py-1 md:px-4 md:py-2 text-[10px] md:text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
             >
-              Renew Promotion
+              Renew
             </button>
           ) : undefined
         }
       />
 
 
-      <div className="mx-auto max-w-7xl px-4 py-8 space-y-6">
+      <div className="mx-auto max-w-7xl px-4 py-2 md:py-8 space-y-4 md:space-y-6">
         
         {/* 2. Hero Section */}
-        <section className="grid overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/5 lg:grid-cols-[1.5fr_1fr]">
-          <div className="flex flex-col justify-center p-6 lg:p-10">
-            <div className="mb-4 flex items-center gap-2 text-sm text-slate-500 dark:text-white/50">
+        <section className="grid overflow-hidden rounded-none md:rounded-[2rem] border-0 md:border md:border-slate-200 bg-transparent md:bg-white md:shadow-sm md:dark:border-white/10 md:dark:bg-white/5 lg:grid-cols-[1.5fr_1fr]">
+          <div className="flex flex-col justify-center p-0 py-4 md:p-6 lg:p-10">
+            <div className="mb-4 flex items-center gap-2 text-[10px] md:text-sm text-slate-500 dark:text-white/50">
               <span>Promotions</span>
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
               <span className="text-slate-900 dark:text-white">{promotion.productTitle}</span>
             </div>
             
@@ -254,22 +266,22 @@ export default function SellerPromotionDetailPage() {
               <StatusPill status={promotion.status} />
             </div>
             
-            <h1 className="text-3xl font-black md:text-4xl">{promotion.title}</h1>
-            <p className="mt-2 max-w-lg text-slate-500 dark:text-white/65">{promotion.subtitle}</p>
+            <h1 className="text-2xl font-black md:text-4xl">{promotion.title}</h1>
+            <p className="mt-2 text-sm md:text-base max-w-lg text-slate-500 dark:text-white/65">{promotion.subtitle}</p>
             
-            <div className="mt-6 inline-flex w-fit items-center rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:bg-white/10 dark:text-white/70">
+            <div className="mt-4 md:mt-6 inline-flex w-fit items-center rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:bg-white/10 dark:text-white/70">
               <Megaphone className="mr-2 h-3.5 w-3.5" />
               {PLACEMENT_LABELS[promotion.placement]}
             </div>
             
-            <div className="mt-6 flex flex-wrap items-center gap-4 text-sm font-medium text-slate-600 dark:text-white/60">
+            <div className="mt-4 md:mt-6 flex flex-wrap items-center gap-3 md:gap-4 text-xs md:text-sm font-medium text-slate-600 dark:text-white/60">
               <span className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4" />
+                <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />
                 {promotion.approvedDurationDays || promotion.requestedDurationDays} days
               </span>
               <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-white/20" />
               <span className="flex items-center gap-1.5">
-                <Wallet className="h-4 w-4" />
+                <Wallet className="h-3.5 w-3.5 md:h-4 md:w-4" />
                 {promotion.amount ? formatPromotionCurrency(promotion.amount, promotion.currency) : "Pending Review"}
               </span>
               <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-white/20" />
@@ -277,9 +289,9 @@ export default function SellerPromotionDetailPage() {
             </div>
           </div>
           
-          <div className="flex items-center justify-center border-t border-slate-100 bg-slate-50 p-6 dark:border-white/5 dark:bg-[#0a0a0f] lg:border-l lg:border-t-0">
+          <div className="flex items-center justify-center border-t border-slate-100 md:bg-slate-50 py-6 md:p-6 dark:border-white/5 md:dark:bg-[#0a0a0f] lg:border-l lg:border-t-0">
             <div className="w-full max-w-sm">
-              <p className="mb-3 text-center text-xs font-semibold uppercase tracking-widest text-slate-400">Mobile Banner Preview</p>
+              <p className="mb-3 text-center text-[10px] md:text-xs font-semibold uppercase tracking-widest text-slate-400">Mobile Banner Preview</p>
               <div className="aspect-video w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-white/10 dark:bg-white/5">
                 {promotion.bannerImage ? (
                   <img src={promotion.bannerImage} alt="Banner Preview" className="h-full w-full object-cover" />
@@ -311,13 +323,20 @@ export default function SellerPromotionDetailPage() {
         />
 
         {/* 4. Full-Width Timeline */}
-        <section className="mt-8 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
-          <h3 className="mb-6 text-lg font-bold">Activity Timeline</h3>
+        <section className="mt-4 md:mt-8 rounded-none md:rounded-[2rem] border-t md:border-t-0 border-slate-100 md:border md:border-slate-200 bg-transparent md:bg-white p-0 py-6 md:p-6 md:shadow-sm dark:border-white/5 md:dark:border-white/10 md:dark:bg-white/5">
+          <h3 className="mb-4 md:mb-6 text-lg font-bold">Activity Timeline</h3>
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between relative">
+            {/* Horizontal lines for md+ */}
             <div className="hidden md:block absolute top-3 left-6 right-6 h-[2px] bg-slate-100 dark:bg-white/5 z-0" />
             <div 
               className="hidden md:block absolute top-3 left-6 h-[2px] bg-cyan-500 z-0 transition-all duration-500" 
               style={{ width: `calc(${Math.min(100, Math.max(0, (currentStep - 1) * 16.66))}% - 24px)` }} 
+            />
+            {/* Vertical lines for mobile */}
+            <div className="block md:hidden absolute left-3 top-3 bottom-3 w-[2px] bg-slate-100 dark:bg-white/5 z-0" />
+            <div 
+              className="block md:hidden absolute left-3 top-3 w-[2px] bg-cyan-500 z-0 transition-all duration-500" 
+              style={{ height: `calc(${Math.min(100, Math.max(0, (currentStep - 1) * 16.66))}% - 12px)` }} 
             />
             <TimelineNode 
               label="Submitted" 
@@ -361,9 +380,9 @@ export default function SellerPromotionDetailPage() {
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           
           {/* Left Column */}
-          <div className="space-y-6">
-            <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
-              <h3 className="mb-6 text-lg font-bold">Campaign Details</h3>
+          <div className="space-y-4 md:space-y-6">
+            <section className="rounded-none md:rounded-[2rem] border-t md:border-t-0 border-slate-100 md:border md:border-slate-200 bg-transparent md:bg-white p-0 py-5 md:p-6 md:shadow-sm dark:border-white/5 md:dark:border-white/10 md:dark:bg-white/5">
+              <h3 className="mb-4 md:mb-6 text-lg font-bold">Campaign Details</h3>
               <dl className="divide-y divide-slate-100 dark:divide-white/5">
                 <DetailRow label="Banner Title" value={promotion.title} />
                 <DetailRow label="Placement" value={PLACEMENT_LABELS[promotion.placement]} />
@@ -377,8 +396,8 @@ export default function SellerPromotionDetailPage() {
               </dl>
             </section>
             
-            <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
-              <h3 className="mb-4 text-xs font-bold text-slate-400 uppercase tracking-wider">What Happens Next</h3>
+            <section className="rounded-none md:rounded-[2rem] border-t md:border-t-0 border-slate-100 md:border md:border-slate-200 bg-transparent md:bg-white p-0 py-5 md:p-6 md:shadow-sm dark:border-white/5 md:dark:border-white/10 md:dark:bg-white/5">
+              <h3 className="mb-3 md:mb-4 text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider">What Happens Next</h3>
               <ol className="space-y-4 text-sm">
                 <li className="flex gap-3 items-start"><span className="font-mono text-xs font-bold text-cyan-500 mt-0.5 shrink-0">01</span><span className="text-slate-600 dark:text-white/60">Complete payment via Razorpay</span></li>
                 <li className="flex gap-3 items-start"><span className="font-mono text-xs font-bold text-cyan-500 mt-0.5 shrink-0">02</span><span className="text-slate-600 dark:text-white/60">Admin verifies within 2–4 hours</span></li>
@@ -389,10 +408,10 @@ export default function SellerPromotionDetailPage() {
           </div>
 
           {/* Right Column */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             
-            <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
-              <h3 className="mb-3 text-sm font-bold text-slate-400 uppercase tracking-wider">Target Product</h3>
+            <section className="rounded-none md:rounded-[2rem] border-t md:border-t-0 border-slate-100 md:border md:border-slate-200 bg-transparent md:bg-white p-0 py-5 md:p-5 md:shadow-sm dark:border-white/5 md:dark:border-white/10 md:dark:bg-white/5">
+              <h3 className="mb-2 md:mb-3 text-[10px] md:text-sm font-bold text-slate-400 uppercase tracking-wider">Target Product</h3>
               <div className="flex items-center gap-3">
                 {product?.thumbnailUrl ? (
                   <img src={product.thumbnailUrl} alt="" className="h-14 w-14 rounded-xl object-cover" />
@@ -414,8 +433,8 @@ export default function SellerPromotionDetailPage() {
               </button>
             </section>
 
-            <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5">
-              <h3 className="mb-4 text-sm font-bold text-slate-400 uppercase tracking-wider">Actions</h3>
+            <section className="rounded-none md:rounded-[2rem] border-t md:border-t-0 border-slate-100 md:border md:border-slate-200 bg-transparent md:bg-white p-0 py-5 md:p-6 md:shadow-sm dark:border-white/5 md:dark:border-white/10 md:dark:bg-white/5">
+              <h3 className="mb-3 md:mb-4 text-[10px] md:text-sm font-bold text-slate-400 uppercase tracking-wider">Actions</h3>
               <div className="flex flex-col gap-3">
                 {["ACTIVE", "COMPLETED"].includes(promotion.status) && (
                   <>

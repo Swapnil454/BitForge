@@ -125,7 +125,7 @@ export function FormOrchestrator() {
   ]);
 
   const handleSubmit = async () => {
-    if (store.formCompletion < 100) return;
+    if (store.formCompletion < 100 || submissionState === 'submitting') return;
     
     setSubmissionState('submitting');
     try {
@@ -241,12 +241,12 @@ export function FormOrchestrator() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6 pb-4">
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-3 md:gap-6 pb-4">
         
         {/* Left Column: Form Cards */}
-        <div className="space-y-4">
-          <CardProductSelection />
-          <div className={`space-y-4 transition-all duration-500 ${isLocked ? 'opacity-50 grayscale-[30%] pointer-events-none' : ''}`}>
+        <div className="space-y-2 md:space-y-4">
+          <CardProductSelection isRenewing={!!renewId} />
+          <div className={`space-y-2 md:space-y-4 transition-all duration-500 ${isLocked ? 'opacity-50 grayscale-[30%] pointer-events-none' : ''}`}>
             {store.layoutType === 'modern' && <CardBannerContent locked={isLocked} />}
             <CardCampaignDetails locked={isLocked} />
             {store.layoutType === 'modern' && <CardBannerStyle locked={isLocked} />}
@@ -265,6 +265,7 @@ export function FormOrchestrator() {
       <StickyActionBar 
         onSubmit={handleSubmit} 
         onPreviewMobile={() => setIsMobilePreviewOpen(true)} 
+        isSubmitting={submissionState === 'submitting'}
       />
 
       <PreviewBottomSheet 

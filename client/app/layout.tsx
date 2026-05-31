@@ -73,14 +73,18 @@ export default function RootLayout({
         <Toaster 
           position="top-center"
           toastOptions={{
-            duration: 4000,
+            duration: 3000,
             style: {
-              background: '#fff',
-              color: '#363636',
-              borderRadius: '12px',
-              padding: '16px',
-              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+              background: 'rgba(255, 255, 255, 0.95)',
+              color: '#0f172a',
+              borderRadius: '100px',
+              padding: '8px 16px',
+              fontSize: '14px',
+              fontWeight: '500',
+              boxShadow: '0 8px 32px -8px rgba(0, 0, 0, 0.15)',
               maxWidth: '400px',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(0, 0, 0, 0.05)',
             },
             success: {
               iconTheme: {

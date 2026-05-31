@@ -46,7 +46,7 @@ export const approveSeller = async (req, res) => {
     await createNotification(
       seller._id,
       "seller_account_approved",
-      'Seller Account Approved! 🎉',
+      'Seller Account Approved!',
       'Congratulations! Your seller account has been approved. You can now start listing and selling products on our platform.',
       seller._id,
       'User'
@@ -859,7 +859,7 @@ export const approveProduct = async (req, res) => {
     await createNotification(
       product.sellerId,
       "product_approved",
-      "Product Approved! 🎉",
+      "Product Approved!",
       `Your product "${product.title}" has been approved and is now live on the marketplace`,
       product._id,
       "Product",

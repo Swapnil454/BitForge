@@ -221,8 +221,12 @@ export default function EditProductPage() {
                 <input value={language} onChange={(e) => setLanguage(e.target.value)} className={inputClass} placeholder="e.g. English" />
               </div>
 
-              <div>
-                <label className={labelClass}>Pages / Duration</label>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  {category === "Course" ? "Lesson Count (Optional)" : 
+                   (format === "ZIP" || category === "Software" || category === "Design Asset") ? "File Count (Optional)" : 
+                   "Page Count (Optional)"}
+                </label>
                 <input type="number" value={pageCount} onChange={(e) => setPageCount(Number(e.target.value))} className={inputClass} />
               </div>
 

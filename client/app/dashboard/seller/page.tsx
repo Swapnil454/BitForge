@@ -321,7 +321,7 @@ export default function Dashboard() {
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">
       <header className="sticky top-0 z-50 bg-white dark:bg-gradient-to-r dark:from-black dark:via-slate-900 dark:to-black backdrop-blur-xl border-b border-slate-200 dark:border-white/10 shadow-sm dark:shadow-lg dark:shadow-black/50">
-        <div className="max-w-7xl mx-auto h-16 px-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto h-12 md:h-14 px-3 md:px-4 flex items-center justify-between">
           <BitForgeBrand role="Seller" />
 
           <div className="flex items-center gap-2 md:gap-3">
@@ -472,7 +472,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-            <section className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+            <section className="max-w-7xl mx-auto px-4 pt-3 pb-6 md:pt-6 space-y-6">
         {/* === Custom Live Animations === */}
         <style>{`
           @keyframes drawAnim {

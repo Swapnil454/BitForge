@@ -498,7 +498,11 @@ export default function UploadAndProductsPage() {
                       <CustomSelect value={intendedAudience} onChange={setIntendedAudience} options={["Beginner", "Intermediate", "Advanced", "All Levels"]} />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Page Count (Optional)</label>
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {category === "Course" ? "Lesson Count (Optional)" : 
+                         (format === "ZIP" || category === "Software" || category === "Design Asset") ? "File Count (Optional)" : 
+                         "Page Count (Optional)"}
+                      </label>
                       <input type="number" min="1" value={pageCount || ""} onChange={(e) => setPageCount(+e.target.value)} placeholder="e.g. 50" className={inputClass} />
                     </div>
                   </div>

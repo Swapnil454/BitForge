@@ -12,6 +12,21 @@ const NAV_ROUTES = [
   "/dashboard/admin/inquiries",
 ];
 
+const isHorizontallyScrollable = (element: HTMLElement | null): boolean => {
+  if (!element || element === document.body || element === document.documentElement) return false;
+  
+  const style = window.getComputedStyle(element);
+  const isOverflow = style.overflowX === 'auto' || style.overflowX === 'scroll';
+  
+  if (isOverflow && element.scrollWidth > element.clientWidth) {
+    return true;
+  }
+  
+  if (element.classList.contains('no-swipe')) return true;
+  
+  return isHorizontallyScrollable(element.parentElement);
+};
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -30,8 +45,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setTouchEndPos(e.targetTouches[0].clientX);
   };
 
-  const onTouchEndHandler = () => {
+  const onTouchEndHandler = (e: React.TouchEvent) => {
     if (!touchStartPos || !touchEndPos) return;
+    
+    // Ignore horizontal scrolling elements
+    if (isHorizontallyScrollable(e.target as HTMLElement)) return;
     
     const distance = touchStartPos - touchEndPos;
     const isLeftSwipe = distance > minSwipeDistance;

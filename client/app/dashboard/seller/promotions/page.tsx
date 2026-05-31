@@ -131,7 +131,7 @@ export default function SellerPromotionsPage() {
 
   const activeChartPromotions = useMemo(() => {
     if (selectedChartPromo === "LATEST_2") {
-      return promotions.slice(0, 2);
+      return promotions.filter(p => p.status === "ACTIVE").slice(0, 2);
     }
     return promotions.filter(p => p._id === selectedChartPromo);
   }, [promotions, selectedChartPromo]);
@@ -281,22 +281,7 @@ export default function SellerPromotionsPage() {
           </div>
         </div>
 
-        {/* Quick Filters */}
-        <div className="flex overflow-x-auto gap-2 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 sm:flex-wrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          {TABS.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => setActiveTab(tab.value)}
-              className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition ${
-                activeTab === tab.value
-                  ? "bg-slate-800 text-white dark:bg-white dark:text-slate-900"
-                  : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 dark:bg-[#13131a] dark:text-white/60 dark:border-white/10 dark:hover:bg-white/5"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+
 
         {/* Main Impressions Chart */}
         <div className="rounded-xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-[#13131a] p-5 shadow-sm">
@@ -397,6 +382,23 @@ export default function SellerPromotionsPage() {
               </LineChart>
             </ResponsiveContainer>
           </div>
+        </div>
+
+        {/* Quick Filters */}
+        <div className="flex overflow-x-auto gap-2 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 sm:flex-wrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          {TABS.map((tab) => (
+            <button
+              key={tab.value}
+              onClick={() => setActiveTab(tab.value)}
+              className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition ${
+                activeTab === tab.value
+                  ? "bg-slate-800 text-white dark:bg-white dark:text-slate-900"
+                  : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 dark:bg-[#13131a] dark:text-white/60 dark:border-white/10 dark:hover:bg-white/5"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* Main Content: Swimlanes */}

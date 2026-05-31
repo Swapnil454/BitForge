@@ -801,6 +801,11 @@ export const notificationAPI = {
         return response.data;
     },
 
+    bulkDeleteNotifications: async (notificationIds: string[]) => {
+        const response = await api.post('/notifications/bulk-delete', { notificationIds });
+        return response.data;
+    },
+
     getPreferences: async () => {
         const response = await api.get("/notifications/preferences");
         return response.data;

@@ -30,36 +30,36 @@ function UploadSlot({
       onDragStart={onDragStart}
       onDragOver={(e) => e.preventDefault()}
       onDrop={onDrop}
-      className={`relative flex flex-col items-center justify-center gap-3 rounded-2xl border p-4 text-center transition h-32 ${
+      className={`relative flex flex-col items-center justify-center gap-1.5 md:gap-3 rounded-xl md:rounded-2xl border p-2 md:p-4 text-center transition h-20 md:h-32 ${
         slot.uploadState === 'error' ? 'border-red-300 bg-red-50 dark:border-red-500/30 dark:bg-red-500/10' :
         slot.url ? 'border-slate-200 bg-white hover:border-cyan-400 dark:border-white/10 dark:bg-[#0a0a0f]' :
         'border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-cyan-400 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10'
       }`}
     >
-      <div className="absolute top-2 left-2 cursor-grab text-slate-400 hover:text-slate-600 dark:hover:text-white">
-        <GripVertical className="h-4 w-4" />
+      <div className="absolute top-1 md:top-2 left-1 md:left-2 cursor-grab text-slate-400 hover:text-slate-600 dark:hover:text-white">
+        <GripVertical className="h-3 w-3 md:h-4 md:w-4" />
       </div>
       
       {slot.url ? (
         <>
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100 dark:bg-white/5">
+          <div className="flex h-8 w-8 md:h-16 md:w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg md:rounded-xl bg-slate-100 dark:bg-white/5">
             <img src={slot.url} alt={`Slot ${index + 1}`} className="h-full w-full object-contain" />
           </div>
-          <div className="w-full">
+          <div className="w-full hidden md:block">
             <p className="text-xs font-bold text-slate-900 dark:text-white truncate">Image {index + 1}</p>
             {slot.file && <p className="text-[10px] text-slate-500 dark:text-white/50">{(slot.file.size / 1024 / 1024).toFixed(2)} MB</p>}
           </div>
-          <button onClick={onRemove} className="absolute top-2 right-2 text-slate-400 hover:text-red-500 transition bg-white/80 dark:bg-black/50 rounded-full p-1" title="Remove">
-            <Trash2 className="h-3.5 w-3.5" />
+          <button onClick={onRemove} className="absolute top-1 md:top-2 right-1 md:right-2 text-slate-400 hover:text-red-500 transition bg-white/80 dark:bg-black/50 rounded-full p-1 md:p-1.5" title="Remove">
+            <Trash2 className="h-3 w-3 md:h-3.5 md:w-3.5" />
           </button>
         </>
       ) : (
-        <label className="flex flex-col items-center gap-2 cursor-pointer w-full h-full justify-center">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm">
-            <ImagePlus className={`h-4 w-4 ${slot.uploadState === 'error' ? 'text-red-500' : 'text-slate-400'}`} />
+        <label className="flex flex-col items-center gap-1 md:gap-2 cursor-pointer w-full h-full justify-center">
+          <div className="flex h-6 w-6 md:h-10 md:w-10 shrink-0 items-center justify-center rounded-lg md:rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm">
+            <ImagePlus className={`h-3 w-3 md:h-4 md:w-4 ${slot.uploadState === 'error' ? 'text-red-500' : 'text-slate-400'}`} />
           </div>
-          <div>
-            <p className={`text-xs font-bold ${slot.uploadState === 'error' ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-white/80'}`}>
+          <div className="hidden md:block">
+            <p className={`text-[10px] md:text-xs font-bold ${slot.uploadState === 'error' ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-white/80'}`}>
               {slot.uploadState === 'error' ? 'Failed' : `Upload ${index + 1}`}
             </p>
           </div>
@@ -76,12 +76,12 @@ export function CardDesktopImages({ locked }: { locked: boolean }) {
   const handleUpload = (index: number, file: File) => {
     // Basic validation
     if (!["image/png", "image/webp", "image/jpeg", "image/jpg"].includes(file.type)) {
-      updateFloatingImage(index, { uploadState: 'error', errorMessage: 'Invalid image format.' });
+      updateFloatingImage(index, { uploadState: 'error', errorMessage: 'Invalid format' });
       return;
     }
     
     if (file.size > 9 * 1024 * 1024) {
-      updateFloatingImage(index, { uploadState: 'error', errorMessage: 'File exceeds 9MB limit.' });
+      updateFloatingImage(index, { uploadState: 'error', errorMessage: 'Max 9MB' });
       return;
     }
 
@@ -91,7 +91,7 @@ export function CardDesktopImages({ locked }: { locked: boolean }) {
     img.onload = () => {
       if (layoutType === 'fullImage') {
         if (img.width !== 3000 || img.height !== 1200) {
-          updateFloatingImage(index, { uploadState: 'error', errorMessage: `Must be exactly 3000x1200. Got ${img.width}x${img.height}.` });
+          updateFloatingImage(index, { uploadState: 'error', errorMessage: `Got ${img.width}x${img.height}` });
           URL.revokeObjectURL(url);
           return;
         }
@@ -101,7 +101,7 @@ export function CardDesktopImages({ locked }: { locked: boolean }) {
     };
     
     img.onerror = () => {
-      updateFloatingImage(index, { uploadState: 'error', errorMessage: 'Failed to read image.' });
+      updateFloatingImage(index, { uploadState: 'error', errorMessage: 'Failed read' });
       URL.revokeObjectURL(url);
     };
     
@@ -127,44 +127,42 @@ export function CardDesktopImages({ locked }: { locked: boolean }) {
 
   return (
     <SectionCard stepNumber={layoutType === 'fullImage' ? 4 : 5} title={layoutType === 'fullImage' ? "Desktop Banner Image" : "Desktop Floating Images"} locked={locked}>
-      <div className="space-y-6">
+      <div className="space-y-3 md:space-y-6">
         
-        <details className="group rounded-2xl border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5 [&_summary::-webkit-details-marker]:hidden">
-          <summary className="flex cursor-pointer items-center justify-between p-4 font-semibold text-slate-700 dark:text-white/90">
+        <details className="group rounded-xl md:rounded-2xl border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5 [&_summary::-webkit-details-marker]:hidden">
+          <summary className="flex cursor-pointer items-center justify-between p-2 md:p-4 text-xs md:text-sm font-semibold text-slate-700 dark:text-white/90">
             Seller Guidelines for {layoutType === 'fullImage' ? 'Full Banners' : 'Premium Ads'}
             <span className="transition group-open:rotate-180">
-              <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+              <svg fill="none" height="16" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="16" className="md:w-6 md:h-6"><path d="M6 9l6 6 6-6"></path></svg>
             </span>
           </summary>
-          <div className="p-4 pt-0 text-sm text-slate-600 dark:text-white/70">
-            <ul className="list-disc pl-5 space-y-1">
+          <div className="p-2 pt-0 md:p-4 md:pt-0 text-[10px] md:text-sm text-slate-600 dark:text-white/70">
+            <ul className="list-disc pl-4 md:pl-5 space-y-0.5 md:space-y-1">
               {layoutType === 'fullImage' ? (
                 <>
                   <li><strong className="text-red-500">Must be exactly 3000 x 1200 pixels.</strong></li>
                   <li>Use high quality JPEGs or PNGs without transparent backgrounds.</li>
-                  <li>This image will be displayed edge-to-edge on large devices.</li>
+                  <li>Displayed edge-to-edge on large devices.</li>
                 </>
               ) : (
                 <>
-                  <li>Use transparent PNG or WEBP images for the best floating effect.</li>
-                  <li>Avoid text near the edges of your images.</li>
-                  <li>Square or portrait crops work best.</li>
-                  <li>Max 9MB per image. You can reorder images by dragging them.</li>
+                  <li>Transparent PNG or WEBP images for floating effect.</li>
+                  <li>Max 9MB per image. Drag to reorder.</li>
                 </>
               )}
             </ul>
             {layoutType !== 'fullImage' && (
-              <div className="mt-4 flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <p className="text-xs font-medium leading-relaxed">
-                  Ensure your image has a transparent background. WEBP transparency cannot be auto-detected, so double-check your files. These floating images appear on large screens (desktop/tablet) only.
+              <div className="mt-2 md:mt-4 flex items-start gap-1.5 md:gap-2 rounded-lg md:rounded-xl bg-amber-50 p-1.5 md:p-3 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
+                <AlertCircle className="w-3 h-3 md:w-4 md:h-4 shrink-0 md:mt-0.5" />
+                <p className="text-[9px] md:text-xs font-medium leading-snug md:leading-relaxed">
+                  WEBP transparency cannot be auto-detected, double-check your files.
                 </p>
               </div>
             )}
           </div>
         </details>
 
-        <div className={`grid grid-cols-1 ${layoutType === 'fullImage' ? 'sm:grid-cols-1 max-w-md mx-auto' : 'sm:grid-cols-3'} gap-3`}>
+        <div className={`grid grid-cols-3 ${layoutType === 'fullImage' ? 'sm:grid-cols-1 max-w-md mx-auto' : 'sm:grid-cols-3'} gap-2 md:gap-3`}>
           {floatingImages.slice(0, layoutType === 'fullImage' ? 1 : 3).map((slot, index) => (
             <UploadSlot 
               key={`slot-${index}`}
