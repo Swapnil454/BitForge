@@ -144,7 +144,7 @@ const productSchema = new mongoose.Schema({
   
   status: {
     type: String,
-    enum: ["pending", "approved", "rejected"],
+    enum: ["pending", "processing", "approved", "rejected"],
     default: "pending",
   },
   // Soft delete - product remains accessible to buyers who purchased

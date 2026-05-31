@@ -109,45 +109,21 @@ export default function PurchasesPage() {
     setDownloadingOrderId(orderId);
 
     try {
-      const response = await api.get(`/download/${orderId}`, { responseType: "blob" });
+      const response = await api.get(`/download/${orderId}`);
 
-      const contentType = response.headers["content-type"] || "application/pdf";
-      
-      if (contentType.includes("application/json")) {
-        const text = await response.data.text();
-        const data = JSON.parse(text);
-        if (data.mode === "redirect" && data.downloadUrl) {
-          window.location.href = data.downloadUrl;
-          toast.dismiss(loadingToast);
-          toast.success("Redirecting to secure download...");
-          void fetchPage(1, true);
-          return;
-        }
+      if (response.data?.mode === "redirect" && response.data?.downloadUrl) {
+        const link = document.createElement("a");
+        link.href = response.data.downloadUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        toast.dismiss(loadingToast);
+        toast.success("Download started securely!");
+        void fetchPage(1, true);
+      } else {
+        throw new Error("Invalid download response format");
       }
-
-      const blob = new Blob([response.data], { type: contentType });
-      const url = window.URL.createObjectURL(blob);
-
-      const contentDisposition = response.headers["content-disposition"];
-      let filename = "download.pdf";
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename="(.+?)"|filename=([^;\s]+)/);
-        if (match) filename = match[1] || match[2];
-      }
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      toast.dismiss(loadingToast);
-      toast.success("Download started successfully");
-
-      // Refresh the current visible list in-place (don't reset scroll)
-      void fetchPage(1, true);
     } catch (error: any) {
       toast.dismiss(loadingToast);
 

@@ -89,8 +89,6 @@ app.use(session({
 // Initialize passport
 app.use(passport.initialize());
 app.use(passport.session());
-
-
 app.use(
   cors({
     origin: corsOrigin,
@@ -104,21 +102,20 @@ app.use(
 app.use("/api/webhooks", webhookRoutes);
 app.use("/api/webhooks", payoutWebhookRoutes);
 
-app.use(express.json());
-app.use(express.urlencoded({extended: false}))
-
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 app.get("/", (req, res) => {
     res.send({
         "status": "ok",
     })
-})
+});
 
 app.get("/health", (req, res) => {
     res.send({
         "status": "healthy",
     })
-})
+});
 
 // Add test endpoint
 app.post("/api/test", (req, res) => {

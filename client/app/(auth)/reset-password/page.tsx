@@ -140,9 +140,9 @@ function ResetPasswordPageContent() {
       )}
 
       {/* CARD */}
-      <div className="relative z-10 w-full max-w-md rounded-3xl p-8
+      <div className="relative z-10 w-full max-w-md rounded-3xl p-6 sm:p-8
         bg-slate-100 dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10
-        shadow-[0_30px_120px_rgba(56,189,248,0.25)]
+        shadow-[0_30px_120px_rgba(56,189,248,0.25)] -mt-10 sm:-mt-16
       ">
 
         {/* LOGO */}
@@ -172,12 +172,12 @@ function ResetPasswordPageContent() {
           <span className="text-cyan-400 font-semibold">{email}</span>
         </p>
 
-        <form onSubmit={handleResetPassword} className="space-y-5">
+        <form onSubmit={handleResetPassword} className="space-y-3.5">
 
           {/* OTP */}
           <div>
-            <label className="text-xs text-slate-500 dark:text-white/60 mb-2 block">Reset code</label>
-            <div className="flex justify-center gap-2">
+            <label className="text-xs text-slate-500 dark:text-white/60 mb-1.5 block">Reset code</label>
+            <div className="flex justify-center gap-1.5 sm:gap-2">
               {otp.map((d, i) => (
                 <input
                   key={i}
@@ -192,7 +192,7 @@ function ResetPasswordPageContent() {
                   inputMode="numeric"
                   disabled={isLoading}
                   className="
-                    w-11 h-12 text-center text-lg font-bold
+                    w-9 h-11 sm:w-11 sm:h-12 text-center text-lg font-bold
                     rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10
                     outline-none focus:border-cyan-400
                     focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)]
@@ -204,36 +204,36 @@ function ResetPasswordPageContent() {
           </div>
 
           {/* PASSWORD */}
-          <div className="relative">
+          <div className="relative mt-1">
             <input
               type={showPassword ? "text" : "password"}
               placeholder="New password"
               value={newPassword}
               onChange={e => setNewPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 pr-10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)]"
+              className="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 pr-10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)]"
             />
             <button
               type="button"
               onClick={() => setShowPassword(v => !v)}
-              className="absolute right-3 top-3 text-white/50"
+              className="absolute right-3 top-3.5 text-white/50"
             >
               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
 
           {/* CONFIRM */}
-          <div className="relative">
+          <div className="relative mt-1">
             <input
               type={showConfirmPassword ? "text" : "password"}
               placeholder="Confirm password"
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 pr-10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)]"
+              className="w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 pr-10 outline-none focus:border-cyan-400 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)]"
             />
             <button
               type="button"
               onClick={() => setShowConfirmPassword(v => !v)}
-              className="absolute right-3 top-3 text-white/50"
+              className="absolute right-3 top-3.5 text-white/50"
             >
               {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
@@ -243,7 +243,7 @@ function ResetPasswordPageContent() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 rounded-xl font-bold text-black
+            className="w-full py-2.5 rounded-xl font-bold text-black
               bg-gradient-to-r from-cyan-400 to-indigo-500
               shadow-[0_0_40px_rgba(56,189,248,0.6)]
               hover:scale-[1.02] transition"
@@ -266,7 +266,7 @@ function ResetPasswordPageContent() {
           )}
         </p>
 
-        <p className="text-center text-sm text-slate-500 dark:text-white/60 mt-4">
+        <p className="text-center text-sm text-slate-500 dark:text-white/60 mt-1">
           <Link href="/login" className="text-cyan-400 font-semibold">
             Back to login
           </Link>

@@ -605,8 +605,23 @@ export default function MyProductsPage() {
               <button onClick={() => setDeletingProductId(null)} className="flex-1 py-2 bg-slate-200 dark:bg-white/10 rounded-lg text-sm font-medium">
                 Cancel
               </button>
-              <button onClick={handleConfirmDelete} className="flex-1 py-2 bg-red-600/20 border border-red-500/30 rounded-lg text-red-600 dark:text-red-400 text-sm font-medium">
-                Delete
+              <button 
+                onClick={handleConfirmDelete} 
+                disabled={deleteLoading}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  deleteLoading 
+                    ? "bg-red-500/10 border border-red-500/20 text-red-400/70 cursor-not-allowed"
+                    : "bg-red-600/20 border border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/30"
+                }`}
+              >
+                {deleteLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    Deleting...
+                  </span>
+                ) : (
+                  "Delete"
+                )}
               </button>
             </div>
           </motion.div>

@@ -68,6 +68,12 @@ export function CardProductSelection({ isRenewing = false }: { isRenewing?: bool
     }
   }, [productLoadingState, products, queryProductId, selectedProductId, setProduct, setBannerContent]);
 
+  useEffect(() => {
+    if (selectedProductId && isRenewing && isEditing) {
+      setIsEditing(false);
+    }
+  }, [selectedProductId, isRenewing, isEditing]);
+
   const handleSelect = (id: string) => {
     const p = products.find(p => p._id === id);
     if (!p) return;

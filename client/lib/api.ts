@@ -512,6 +512,16 @@ export const productAPI = {
         return response.data;
     },
     
+    getUploadPresignedUrl: async (data: { fileName: string; contentType: string; productId: string }) => {
+        const response = await api.post('/products/upload/presign', data);
+        return response.data;
+    },
+
+    confirmProductUpload: async (data: any) => {
+        const response = await api.post('/products/upload/confirm', data);
+        return response.data;
+    },
+    
     uploadProductFile: async (formData: FormData) => {
         const response = await api.post('/products/upload', formData, {
             headers: {
