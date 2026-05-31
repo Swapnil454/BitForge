@@ -109,58 +109,22 @@ export default function BuyerDownloadsPage() {
     try {
       setDownloading(download._id);
 
-      const response = await api.get(`/download/${download._id}`, {
-        responseType: "blob",
-      });
+      const response = await api.get(`/download/${download._id}`);
 
-      const contentType = response.headers["content-type"] || "application/pdf";
-      
-      if (contentType.includes("application/json")) {
-        const text = await response.data.text();
-        const data = JSON.parse(text);
-        if (data.mode === "redirect" && data.downloadUrl) {
-          window.location.href = data.downloadUrl;
-          toast.dismiss(loadingToast);
-          toast.success("Redirecting to secure download...");
-          void fetchPage(1, true);
-          return;
-        }
-      }
+      if (response.data?.mode === "redirect" && response.data?.downloadUrl) {
+        const link = document.createElement("a");
+        link.href = response.data.downloadUrl;
+        // Don't set link.download property so browser relies on the server's Content-Disposition header
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-      const blob = new Blob([response.data], { type: contentType });
-      const url = window.URL.createObjectURL(blob);
-
-      const contentDisposition = response.headers["content-disposition"];
-      let filename = "download.pdf";
-
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="(.+?)"|filename=([^;\s]+)/);
-        if (filenameMatch) {
-          filename = filenameMatch[1] || filenameMatch[2];
-        }
-      }
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      const nextCount = response.headers["x-download-count"];
-      const limit = response.headers["x-download-limit"];
-
-      toast.dismiss(loadingToast);
-
-      if (nextCount && limit) {
-        const remaining = Math.max(parseInt(limit, 10) - parseInt(nextCount, 10), 0);
-        toast.success(`Download started! ${remaining} downloads remaining.`);
+        toast.dismiss(loadingToast);
+        toast.success("Download started securely!");
+        void fetchPage(1, true);
       } else {
-        toast.success("Download started successfully!");
+        throw new Error("Invalid download response format");
       }
-
-      void fetchPage(1, true);
     } catch (error: any) {
       toast.dismiss(loadingToast);
 

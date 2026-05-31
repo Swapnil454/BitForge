@@ -64,9 +64,7 @@ export default function SellerGuard() {
     // Only on root tab pages
     if (!SELLER_ROOTS.has(pathname || "")) return;
 
-    // ⚡ Skip entirely on desktop — never intercept back navigation there
-    if (!isMobileDevice()) return;
-
+    // ⚡ removed mobile-only skip so desktop users can use mouse back-button to exit
     const handlePopState = () => {
       if (backPressedRef.current) {
         // Second press within window — let the browser navigate away naturally

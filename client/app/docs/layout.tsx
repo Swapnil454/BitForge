@@ -158,8 +158,12 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                     BitForge
                   </span>
                 </Link>
-                <span className="hidden md:block text-sm text-slate-400 dark:text-white/40"><Link href="/docs">/ Docs</Link></span>
+                <span className="hidden lg:block text-sm text-slate-400 dark:text-white/40"><Link href="/docs">/ Docs</Link></span>
               </div>
+
+              <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:block text-lg sm:text-xl lg:text-2xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 to-cyan-500 dark:from-cyan-400 dark:via-sky-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                {currentHeaderTitle}
+              </h1>
 
               <div className="flex items-center gap-2">
                 <button

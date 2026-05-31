@@ -47,9 +47,9 @@ export default function ForgotPasswordPage() {
       <div className="absolute top-1/2 -right-40 w-[600px] h-[600px] rounded-full bg-cyan-500/20 blur-[180px]" />
 
       {/* CARD */}
-      <div className="relative z-10 w-full max-w-md rounded-3xl p-8
+      <div className="relative z-10 w-full max-w-md rounded-3xl p-6 sm:p-8
         bg-slate-100 dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10
-        shadow-[0_30px_120px_rgba(56,189,248,0.25)]
+        shadow-[0_30px_120px_rgba(56,189,248,0.25)] -mt-20 sm:-mt-32
       ">
 
         {/* LOGO */}
@@ -126,10 +126,10 @@ export default function ForgotPasswordPage() {
         </form>
 
         {/* BACK TO LOGIN */}
-        <p className="text-center text-sm text-slate-500 dark:text-white/60 mt-6">
-          Remembered your password?{" "}
+        <p className="text-center text-xs sm:text-sm text-slate-500 dark:text-white/60 mt-6">
+          Remember your password?{" "}
           <Link href="/login" className="text-cyan-400 font-semibold">
-            Back to login
+            Login
           </Link>
         </p>
       </div>

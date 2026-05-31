@@ -1,4 +1,5 @@
-import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { v4 as uuidv4 } from "uuid";
 import r2Client, { R2_BUCKET_NAME } from "../config/r2.js";
 
@@ -55,4 +56,35 @@ export const deleteFromR2 = async (fileKey) => {
     console.error(`Failed to delete ${fileKey} from R2:`, error);
     throw error;
   }
+};
+
+/**
+ * Generates a presigned URL for direct-to-cloud browser uploads.
+ * @param {String} key - The R2 object key (path)
+ * @param {String} contentType - The MIME type of the file being uploaded
+ * @returns {Promise<String>} The presigned upload URL
+ */
+export const getPresignedUploadUrl = async (key, contentType) => {
+  const command = new PutObjectCommand({
+    Bucket: R2_BUCKET_NAME,
+    Key: key,
+    ContentType: contentType,
+  });
+  // URL expires in 15 minutes (900 seconds)
+  return getSignedUrl(r2Client, command, { expiresIn: 900 });
+};
+
+/**
+ * Generates a presigned URL for direct-from-cloud browser downloads.
+ * @param {String} key - The R2 object key (path)
+ * @returns {Promise<String>} The presigned download URL
+ */
+export const getPresignedDownloadUrl = async (key) => {
+  const command = new GetObjectCommand({
+    Bucket: R2_BUCKET_NAME,
+    Key: key,
+    ResponseContentDisposition: `attachment`,
+  });
+  // URL expires in 15 minutes (900 seconds)
+  return getSignedUrl(r2Client, command, { expiresIn: 900 });
 };

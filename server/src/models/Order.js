@@ -67,6 +67,9 @@ const orderSchema = new mongoose.Schema({
     userAgent: String,
   }],
 
+  // For direct-to-cloud downloads
+  watermarkedR2Key: String,
+
 }, { timestamps: true });
 
 export default mongoose.model("Order", orderSchema);

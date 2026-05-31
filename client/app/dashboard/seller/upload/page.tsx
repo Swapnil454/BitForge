@@ -7,7 +7,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import api from "@/lib/api";
+import api, { productAPI } from "@/lib/api";
+import axios from "axios";
 import { showError, showSuccess } from "@/lib/toast";
 import { getStoredUser } from "@/lib/cookies";
 import {
@@ -226,40 +227,33 @@ export default function UploadAndProductsPage() {
 
     setLoading(true);
 
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("price", String(price));
-    formData.append("discount", String(discount || 0));
-    formData.append("language", language);
-    formData.append("format", format);
-    formData.append("intendedAudience", intendedAudience);
-    formData.append("pageCount", String(pageCount));
-    formData.append("category", category);
-    formData.append("file", file);
-    if (thumbnail) {
-      formData.append("thumbnail", thumbnail);
-    }
-
     try {
+      // 1. Generate local ObjectId for the product
+      const generateObjectId = () => {
+        const timestamp = Math.floor(new Date().getTime() / 1000).toString(16);
+        return timestamp + 'xxxxxxxxxxxxxxxx'.replace(/[x]/g, () => Math.floor(Math.random() * 16).toString(16)).toLowerCase();
+      };
+      const productId = generateObjectId();
+
+      // 2. Get Presigned URL from Backend
+      const presignResponse = await productAPI.getUploadPresignedUrl({
+        fileName: file.name,
+        contentType: file.type || "application/octet-stream",
+        productId
+      });
+
+      const { uploadUrl, r2Key } = presignResponse;
+
+      // 3. Upload File Directly to R2
       let lastLoaded = 0;
       let lastTime = Date.now();
 
-      const response = await new Promise<any>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", `${process.env.NEXT_PUBLIC_API_URL}/products/upload`);
-        xhr.withCredentials = true;
-
-        // Add auth token
-        const cookies = document.cookie.split(";");
-        const tokenCookie = cookies.find((c) => c.trim().startsWith("token="));
-        if (tokenCookie) {
-          const token = tokenCookie.split("=")[1];
-          xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-        }
-
-        xhr.upload.onprogress = (progressEvent) => {
-          if (!progressEvent.lengthComputable) return;
+      await axios.put(uploadUrl, file, {
+        headers: {
+          'Content-Type': file.type || "application/octet-stream"
+        },
+        onUploadProgress: (progressEvent) => {
+          if (!progressEvent.lengthComputable || !progressEvent.total) return;
           const loaded = progressEvent.loaded;
           const total = progressEvent.total;
           const percent = Math.floor((loaded * 100) / total);
@@ -276,38 +270,55 @@ export default function UploadAndProductsPage() {
             lastLoaded = loaded;
             lastTime = now;
           }
-        };
-
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              resolve({ data: JSON.parse(xhr.responseText) });
-            } catch (e) {
-              resolve({ data: xhr.responseText });
-            }
-          } else {
-            try {
-              reject({ response: { data: JSON.parse(xhr.responseText) } });
-            } catch (e) {
-              reject(new Error("Upload failed"));
-            }
-          }
-        };
-
-        xhr.onerror = () => reject(new Error("Network Error"));
-        xhr.send(formData);
+        }
       });
 
-      showSuccess("Product uploaded successfully!");
+      // 4. Convert Custom Thumbnail (if provided) to Base64
+      let thumbnailBase64 = null;
+      if (thumbnail) {
+        thumbnailBase64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(thumbnail);
+        });
+      }
+
+      // 5. Confirm Upload with Backend
+      const confirmData = {
+        productId,
+        r2Key,
+        fileName: file.name,
+        fileType: file.type || "application/octet-stream",
+        fileSize: file.size,
+        title,
+        description,
+        price,
+        discount: discount || 0,
+        language,
+        format,
+        intendedAudience,
+        pageCount,
+        category,
+        thumbnailBase64
+      };
+
+      const response = await productAPI.confirmProductUpload(confirmData);
+
+      showSuccess("Product uploaded securely! Background processing started.");
       setSubmitted(true);
 
-      // Add the new product to the list
-      setProducts((prev) => [response.data.product, ...prev]);
+      // Add the new product to the list (it will show as 'processing')
+      if (response.product) {
+        setProducts((prev) => [response.product, ...prev]);
+      }
 
       e.target.reset();
       setFile(null);
       setThumbnail(null);
       setThumbnailPreview(null);
+      setTitle("");
+      setDescription("");
       setPrice(0);
       setDiscount(0);
       setLanguage("English");
@@ -316,9 +327,10 @@ export default function UploadAndProductsPage() {
       setPageCount(1);
       setCategory("eBook");
       setAcceptedTerms(false);
+      setOwnershipAccepted(false);
     } catch (error: any) {
       console.error("Upload error:", error);
-      showError(error.response?.data?.message || "Upload failed");
+      showError(error.response?.data?.message || error.message || "Failed to upload product");
     } finally {
       setLoading(false);
       setUploadProgress(0);
@@ -327,8 +339,6 @@ export default function UploadAndProductsPage() {
       setTotalBytes(0);
     }
   };
-
-
 
   const handleDeleteClick = (productId: string) => {
     setDeletingProductId(productId);
@@ -497,14 +507,16 @@ export default function UploadAndProductsPage() {
                       <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Intended Audience</label>
                       <CustomSelect value={intendedAudience} onChange={setIntendedAudience} options={["Beginner", "Intermediate", "Advanced", "All Levels"]} />
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        {category === "Course" ? "Lesson Count (Optional)" : 
-                         (format === "ZIP" || category === "Software" || category === "Design Asset") ? "File Count (Optional)" : 
-                         "Page Count (Optional)"}
-                      </label>
-                      <input type="number" min="1" value={pageCount || ""} onChange={(e) => setPageCount(+e.target.value)} placeholder="e.g. 50" className={inputClass} />
-                    </div>
+                    {format !== "ZIP" && (
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          {category === "Course" ? "Lesson Count (Optional)" : 
+                           (category === "Software" || category === "Design Asset") ? "File Count (Optional)" : 
+                           "Page Count (Optional)"}
+                        </label>
+                        <input type="number" min="1" value={pageCount || ""} onChange={(e) => setPageCount(+e.target.value)} placeholder="e.g. 50" className={inputClass} />
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -658,8 +670,17 @@ export default function UploadAndProductsPage() {
                     <div className="mb-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-5 border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
                       <div className="flex justify-between items-center text-sm font-medium">
                         <span className="text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                          <Upload className="w-4 h-4 animate-bounce text-cyan-500" /> 
-                          Uploading... {uploadProgress}%
+                          {uploadProgress < 100 ? (
+                            <>
+                              <Upload className="w-4 h-4 animate-bounce text-cyan-500" /> 
+                              Uploading... {uploadProgress}%
+                            </>
+                          ) : (
+                            <>
+                              <div className="w-4 h-4 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin"></div>
+                              Processing & Scanning...
+                            </>
+                          )}
                         </span>
                         <span className="text-cyan-600 dark:text-cyan-400 font-bold">
                           {(uploadedBytes / 1024 / 1024).toFixed(1)} MB <span className="text-slate-400 dark:text-slate-500 font-normal">/ {(totalBytes / 1024 / 1024).toFixed(1)} MB</span>

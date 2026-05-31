@@ -409,9 +409,12 @@ const emitRealtimeNotification = (userId, notification) => {
 const deliverPushIfEligible = async (user, notification, options = {}) => {
   const browserPushEnabled = user.notificationSettings?.browserPushEnabled !== false;
   const categoryEnabled = getUserSettingForCategory(user, notification.category);
-  const tokens = (user.pushSubscriptions || [])
-    .filter((entry) => entry.isActive && entry.token)
-    .map((entry) => entry.token);
+  // Deduplicate tokens — same FCM token registered across multiple entries would cause double pushes
+  const tokens = [...new Set(
+    (user.pushSubscriptions || [])
+      .filter((entry) => entry.isActive && entry.token)
+      .map((entry) => entry.token)
+  )];
 
   if (!browserPushEnabled || !categoryEnabled) {
     return {

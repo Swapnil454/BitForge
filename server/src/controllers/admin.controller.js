@@ -816,6 +816,15 @@ export const approveProduct = async (req, res) => {
   const { id } = req.params;
   const { adminNote } = req.body;
 
+  const existingProduct = await Product.findById(id);
+  if (!existingProduct) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+  
+  if (existingProduct.status === "approved") {
+    return res.json({ message: "Product is already approved" });
+  }
+
   const product = await Product.findByIdAndUpdate(id, {
     status: "approved",
     rejectionReason: null,
@@ -843,18 +852,29 @@ export const approveProduct = async (req, res) => {
     };
     writeModerationLog(logData);
 
-    // Send email
+    // Send email — guard against duplicates via ModerationLog
     if (seller) {
       try {
-        await sendApprovalEmail(seller, product);
-        ModerationLog.findOneAndUpdate(
-          { productId: product._id, action: 'approved', timestamp: { $gte: new Date(Date.now() - 5000) } },
-          { $set: { emailSent: true, emailSentAt: new Date() } }
-        ).catch(e => console.error('Failed to update log with emailSent:', e.message));
+        const alreadySent = await ModerationLog.findOne({
+          productId: product._id,
+          action: 'approved',
+          emailSent: true,
+        }).select('_id').lean();
+
+        if (!alreadySent) {
+          await sendApprovalEmail(seller, product);
+          ModerationLog.findOneAndUpdate(
+            { productId: product._id, action: 'approved', timestamp: { $gte: new Date(Date.now() - 30000) } },
+            { $set: { emailSent: true, emailSentAt: new Date() } }
+          ).catch(e => console.error('Failed to update log with emailSent:', e.message));
+        } else {
+          console.log('[Email] Approval email already sent for product:', product._id, '— skipping duplicate.');
+        }
       } catch (emailErr) {
         console.error('Email send failed:', emailErr.message);
       }
     }
+
 
     await createNotification(
       product.sellerId,
