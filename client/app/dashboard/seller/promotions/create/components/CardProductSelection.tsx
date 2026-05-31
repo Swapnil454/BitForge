@@ -1,11 +1,14 @@
 import { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { usePromotionFormStore, ProductMeta } from '../store';
 import { SectionCard } from './SectionCard';
 import { Megaphone, CheckCircle2, ChevronDown, Check, AlertCircle } from 'lucide-react';
 import { productAPI } from "@/lib/api";
 import { showError } from "@/lib/toast";
 
-export function CardProductSelection() {
+export function CardProductSelection({ isRenewing = false }: { isRenewing?: boolean }) {
+  const searchParams = useSearchParams();
+  const queryProductId = searchParams.get('productId');
   const { selectedProductId, setProduct, setProductLoadingState, productLoadingState, targetLink, setBannerContent } = usePromotionFormStore();
   const [products, setProducts] = useState<{ _id: string; title: string; thumbnailUrl?: string; status: string }[]>([]);
   const [isEditing, setIsEditing] = useState(!selectedProductId);
@@ -50,6 +53,21 @@ export function CardProductSelection() {
     }
   }, [productLoadingState, setProductLoadingState]);
 
+  useEffect(() => {
+    if (productLoadingState === 'success' && products.length > 0 && queryProductId && !selectedProductId) {
+      const p = products.find(p => p._id === queryProductId);
+      if (p) {
+        setProduct(p._id, {
+          title: p.title,
+          image: p.thumbnailUrl,
+          status: p.status
+        });
+        setBannerContent({ targetLink: `/marketplace/${p._id}` });
+        setIsEditing(false);
+      }
+    }
+  }, [productLoadingState, products, queryProductId, selectedProductId, setProduct, setBannerContent]);
+
   const handleSelect = (id: string) => {
     const p = products.find(p => p._id === id);
     if (!p) return;
@@ -87,7 +105,7 @@ export function CardProductSelection() {
         </div>
       )}
 
-      {productLoadingState === 'success' && products.length === 0 && (
+      {productLoadingState === 'success' && products.length === 0 && (!selectedProductId || isEditing) && (
         <div className="rounded-3xl border border-dashed border-slate-300 px-6 py-14 text-center dark:border-white/15">
           <Megaphone className="mx-auto h-10 w-10 text-cyan-400" />
           <h3 className="mt-4 text-xl font-bold text-slate-900 dark:text-white">No approved products yet</h3>
@@ -97,10 +115,18 @@ export function CardProductSelection() {
           <a href="/dashboard/seller/products/new" className="mt-6 inline-block font-semibold text-cyan-600 hover:text-cyan-500">
             Upload a product &rarr;
           </a>
+          {selectedProductId && (
+             <button 
+               onClick={() => setIsEditing(false)} 
+               className="mt-4 ml-4 inline-block font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+             >
+               Cancel
+             </button>
+          )}
         </div>
       )}
 
-      {productLoadingState === 'success' && products.length > 0 && (isEditing || !selectedProduct) && (
+      {productLoadingState === 'success' && products.length > 0 && (isEditing || !selectedProductId) && (
         <div className="space-y-4">
           <label className="block text-sm font-bold text-slate-900 dark:text-white">
             Choose an approved product
@@ -114,7 +140,7 @@ export function CardProductSelection() {
               }`}
             >
               <span className={selectedProductId ? "text-slate-900 dark:text-white font-medium truncate" : "text-slate-500 dark:text-white/50"}>
-                {selectedProductId ? products.find(p => p._id === selectedProductId)?.title : "Select a product..."}
+                {selectedProductId ? (products.find(p => p._id === selectedProductId)?.title || usePromotionFormStore.getState().selectedProductMeta?.title || "Selected Product") : "Select a product..."}
               </span>
               <ChevronDown className={`w-5 h-5 text-slate-400 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -144,39 +170,57 @@ export function CardProductSelection() {
               </div>
             )}
           </div>
+          {selectedProductId && (
+             <button 
+               onClick={() => setIsEditing(false)} 
+               className="mt-2 text-sm font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+             >
+               Cancel Change
+             </button>
+          )}
         </div>
       )}
 
-      {productLoadingState === 'success' && products.length > 0 && !isEditing && selectedProduct && (
-        <div className="flex items-center justify-between rounded-2xl border border-cyan-200 bg-cyan-50/50 p-4 dark:border-cyan-500/20 dark:bg-cyan-500/5">
-          <div className="flex items-center gap-4">
-            {selectedProduct.thumbnailUrl ? (
-              <img src={selectedProduct.thumbnailUrl} alt={selectedProduct.title} className="w-16 h-16 rounded-xl object-cover bg-white dark:bg-slate-900" />
+      {productLoadingState === 'success' && !isEditing && selectedProductId && (
+        <div className="flex items-center justify-between rounded-xl md:rounded-2xl border border-cyan-200 bg-cyan-50/50 p-2 md:p-4 dark:border-cyan-500/20 dark:bg-cyan-500/5">
+          <div className="flex items-center gap-2 md:gap-4 overflow-hidden">
+            {usePromotionFormStore.getState().selectedProductMeta?.image ? (
+              <img src={usePromotionFormStore.getState().selectedProductMeta!.image} alt={usePromotionFormStore.getState().selectedProductMeta?.title} className="w-10 h-10 md:w-16 md:h-16 rounded-lg md:rounded-xl object-cover bg-white dark:bg-slate-900 shrink-0" />
             ) : (
-              <div className="w-16 h-16 rounded-xl bg-slate-200 dark:bg-white/10 flex items-center justify-center">
-                <Megaphone className="w-6 h-6 text-slate-400" />
+              <div className="w-10 h-10 md:w-16 md:h-16 rounded-lg md:rounded-xl bg-slate-200 dark:bg-white/10 flex items-center justify-center shrink-0">
+                <Megaphone className="w-4 h-4 md:w-6 md:h-6 text-slate-400" />
               </div>
             )}
-            <div>
-              <p className="font-bold text-slate-900 dark:text-white text-lg">{selectedProduct.title}</p>
-              <div className="flex items-center gap-1.5 mt-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                <CheckCircle2 className="w-4 h-4" /> Approved
+            <div className="min-w-0 flex-1">
+              <p className="font-bold text-slate-900 dark:text-white text-sm md:text-lg truncate">
+                {usePromotionFormStore.getState().selectedProductMeta?.title || 'Selected Product'}
+              </p>
+              <div className="flex items-center gap-1 mt-0.5 md:mt-1 text-[10px] md:text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                <CheckCircle2 className="w-3 h-3 md:w-4 md:h-4" /> Approved
               </div>
+              {isRenewing && (
+                <p className="text-[9px] md:text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-0.5">
+                  Locked – product cannot be changed during renewal
+                </p>
+              )}
             </div>
           </div>
-          <button 
-            onClick={() => setIsEditing(true)}
-            className="text-sm font-semibold text-cyan-600 dark:text-cyan-400 hover:underline"
-          >
-            Change
-          </button>
+          {!isRenewing && (
+            <button 
+              onClick={() => setIsEditing(true)}
+              className="text-xs md:text-sm font-bold text-cyan-600 dark:text-cyan-400 hover:underline shrink-0 ml-2"
+            >
+              Change
+            </button>
+          )}
         </div>
       )}
       
+      
       {/* Readonly Ad Placement */}
-      <div className="mt-6 pt-6 border-t border-slate-100 dark:border-white/5">
-        <label className="block text-sm font-semibold text-slate-400 dark:text-white/40 mb-2">Ad Placement (Locked)</label>
-        <div className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-white/5 dark:bg-white/5 dark:text-white/50 cursor-not-allowed">
+      <div className="mt-3 md:mt-6 pt-3 md:pt-6 border-t border-slate-100 dark:border-white/5">
+        <label className="block text-xs md:text-sm font-semibold text-slate-400 dark:text-white/40 mb-1.5 md:mb-2">Ad Placement (Locked)</label>
+        <div className="w-full rounded-xl md:rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 md:px-4 md:py-3 text-xs md:text-sm text-slate-500 dark:border-white/5 dark:bg-white/5 dark:text-white/50 cursor-not-allowed">
           Marketplace Hero Banner
         </div>
       </div>

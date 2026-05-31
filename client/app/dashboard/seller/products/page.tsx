@@ -22,6 +22,7 @@ interface Product {
   category?: string;
   rating?: number;
   buyers?: number;
+  hasActivePromotion?: boolean;
   changeRequest?: "none" | "pending_update" | "pending_deletion";
   fileUrl: string;
   fileKey: string;
@@ -505,16 +506,38 @@ export default function MyProductsPage() {
                       {new Date(p.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </div>
 
-                    {approved && (
+                    {approved ? (
+                      !p.hasActivePromotion ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/dashboard/seller/promotions/create?productId=${p._id}`);
+                          }}
+                          className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-600 dark:text-cyan-300 transition hover:border-cyan-300/50 hover:bg-cyan-500/15"
+                        >
+                          <Megaphone className="h-3 w-3" />
+                          Promote
+                        </button>
+                      ) : (
+                        <button
+                          disabled
+                          title="This product already has an active or pending promotion."
+                          className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-400 dark:text-slate-500 cursor-not-allowed"
+                        >
+                          <Megaphone className="h-3 w-3" />
+                          Promote
+                        </button>
+                      )
+                    ) : (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          router.push(`/dashboard/seller/promotions/create?productId=${p._id}`);
+                          handleDeleteClick(p._id);
                         }}
-                        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-600 dark:text-cyan-300 transition hover:border-cyan-300/50 hover:bg-cyan-500/15"
+                        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-600 dark:text-red-400 transition hover:border-red-300/50 hover:bg-red-500/15"
                       >
-                        <Megaphone className="h-3 w-3" />
-                        Promote
+                        <Trash2 className="h-3 w-3" />
+                        Delete
                       </button>
                     )}
                   </div>
@@ -611,9 +634,13 @@ function MenuItem({
   tooltip?: string;
 }) {
   return (
-    <div className="relative group">
+    <div className="relative group/menu">
       <button
-        onClick={disabled ? undefined : onClick}
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          if (!disabled && onClick) onClick();
+        }}
         className={`w-full flex items-center gap-2 text-left px-3 py-2.5 text-sm transition-colors
           ${disabled
             ? "opacity-40 cursor-not-allowed"
@@ -626,7 +653,7 @@ function MenuItem({
         {label}
       </button>
       {tooltip && (
-        <div className="absolute hidden group-hover:block bottom-full right-0 mb-2 w-max text-[10px] uppercase font-bold tracking-wider bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-xl">
+        <div className="absolute hidden group-hover/menu:block bottom-full right-0 mb-2 w-max text-[10px] uppercase font-bold tracking-wider bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-xl">
           {tooltip}
         </div>
       )}

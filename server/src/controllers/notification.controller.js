@@ -649,6 +649,27 @@ export const deleteNotification = async (req, res) => {
   }
 };
 
+export const deleteBulkNotifications = async (req, res) => {
+  try {
+    const { notificationIds } = req.body;
+    const userId = req.user.id;
+
+    if (!notificationIds || !Array.isArray(notificationIds) || notificationIds.length === 0) {
+      return res.status(400).json({ message: "No notification IDs provided" });
+    }
+
+    const result = await Notification.deleteMany({
+      _id: { $in: notificationIds },
+      userId,
+    });
+
+    res.json({ message: `${result.deletedCount} notifications deleted` });
+  } catch (error) {
+    console.error("Error bulk deleting notifications:", error);
+    res.status(500).json({ message: "Failed to delete notifications" });
+  }
+};
+
 export const getNotificationPreferences = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("notificationSettings pushSubscriptions");

@@ -97,7 +97,7 @@ export default function MyReportsPage() {
         backHref="/dashboard/seller"
         backLabel="Dashboard"
         title="My Reports"
-        subtitle="Track the status of your submitted reports"
+        subtitle="Track the status of submitted reports"
         rightSlot={
           <button
             onClick={() => router.push("/report")}

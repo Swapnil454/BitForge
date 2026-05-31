@@ -1,7 +1,7 @@
 import { usePromotionFormStore } from '../store';
 import { Sparkles, Save, Eye, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 
-export function StickyActionBar({ onSubmit, onPreviewMobile }: { onSubmit: () => void, onPreviewMobile: () => void }) {
+export function StickyActionBar({ onSubmit, onPreviewMobile, isSubmitting = false }: { onSubmit: () => void, onPreviewMobile: () => void, isSubmitting?: boolean }) {
   const { draftSaveState, lastSavedAt, formCompletion } = usePromotionFormStore();
 
   const isReady = formCompletion === 100;
@@ -38,7 +38,8 @@ export function StickyActionBar({ onSubmit, onPreviewMobile }: { onSubmit: () =>
           
           <button 
             onClick={onPreviewMobile}
-            className="flex-1 sm:hidden inline-flex items-center justify-center px-4 py-2.5 sm:px-4 sm:py-2.5 rounded-[10px] sm:rounded-xl text-sm font-bold bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/20 transition"
+            disabled={isSubmitting}
+            className="flex-1 sm:hidden inline-flex items-center justify-center px-4 py-2.5 sm:px-4 sm:py-2.5 rounded-[10px] sm:rounded-xl text-sm font-bold bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-white/20 transition disabled:opacity-50"
           >
             Preview
           </button>
@@ -46,13 +47,20 @@ export function StickyActionBar({ onSubmit, onPreviewMobile }: { onSubmit: () =>
           <div className="group relative flex-1 sm:flex-none">
             <button
               onClick={onSubmit}
-              disabled={!isReady}
-              className="w-full inline-flex items-center justify-center rounded-[10px] sm:rounded-xl bg-cyan-500 px-4 py-2.5 sm:px-8 sm:py-3 text-sm sm:text-base font-bold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-200 dark:disabled:bg-white/10 dark:disabled:text-white/40"
+              disabled={!isReady || isSubmitting}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-[10px] sm:rounded-xl bg-cyan-500 px-4 py-2.5 sm:px-8 sm:py-3 text-sm sm:text-base font-bold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-200 dark:disabled:bg-white/10 dark:disabled:text-white/40"
             >
-              Submit
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                "Submit"
+              )}
             </button>
             
-            {!isReady && (
+            {!isReady && !isSubmitting && (
               <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold px-3 py-2 rounded-lg shadow-xl">
                 Complete all required fields to submit
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 dark:bg-white rotate-45"></div>

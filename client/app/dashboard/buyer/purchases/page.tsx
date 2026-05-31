@@ -112,6 +112,19 @@ export default function PurchasesPage() {
       const response = await api.get(`/download/${orderId}`, { responseType: "blob" });
 
       const contentType = response.headers["content-type"] || "application/pdf";
+      
+      if (contentType.includes("application/json")) {
+        const text = await response.data.text();
+        const data = JSON.parse(text);
+        if (data.mode === "redirect" && data.downloadUrl) {
+          window.location.href = data.downloadUrl;
+          toast.dismiss(loadingToast);
+          toast.success("Redirecting to secure download...");
+          void fetchPage(1, true);
+          return;
+        }
+      }
+
       const blob = new Blob([response.data], { type: contentType });
       const url = window.URL.createObjectURL(blob);
 

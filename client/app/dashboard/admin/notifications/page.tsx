@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCheck, Filter, Bell, Loader2 } from "lucide-react";
+import { CheckCheck, Filter, Bell, Loader2, Trash2, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { notificationAPI } from "@/lib/api";
 import { getStoredUser } from "@/lib/cookies";
@@ -25,6 +25,9 @@ export default function AdminNotificationsPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [filter, setFilter] = useState<string>("all");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const selectionMode = selectedIds.length > 0;
+  const [actionLoading, setActionLoading] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
@@ -135,6 +138,38 @@ export default function AdminNotificationsPage() {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    try {
+      setActionLoading(true);
+      await notificationAPI.bulkDeleteNotifications(selectedIds);
+      
+      const deletedCount = selectedIds.length;
+      let unreadDeleted = 0;
+      
+      setNotifications((prev) => {
+        const remaining = [];
+        for (const n of prev) {
+          if (selectedIds.includes(n._id)) {
+            if (!n.isRead) unreadDeleted++;
+          } else {
+            remaining.push(n);
+          }
+        }
+        return remaining;
+      });
+      
+      setUnreadCount((prev) => Math.max(prev - unreadDeleted, 0));
+      setSelectedIds([]);
+      showSuccess(`${deletedCount} notifications deleted`);
+    } catch (error) {
+      console.error("Failed to delete notifications:", error);
+      showError("Failed to delete notifications");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (!user) return null;
 
   return (
@@ -144,6 +179,30 @@ export default function AdminNotificationsPage() {
         backHref="/dashboard/admin" 
         backLabel="Dashboard" 
       />
+
+      {/* Bulk Action Bar */}
+      {selectionMode && (
+        <div className="fixed top-0 left-0 right-0 z-[100] bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-white/10 h-16 shadow-sm animate-in slide-in-from-top-full duration-300">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 h-full flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setSelectedIds([])} className="p-2 -ml-2 rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-white transition">
+                <X className="w-5 h-5" />
+              </button>
+              <span className="font-semibold text-slate-900 dark:text-white text-base">
+                {selectedIds.length} selected
+              </span>
+            </div>
+            <button
+              onClick={handleBulkDelete}
+              disabled={actionLoading}
+              className="px-4 py-2 rounded-full bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/20 text-sm font-semibold transition disabled:opacity-50 flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete
+            </button>
+          </div>
+        </div>
+      )}
 
       <main className="mx-auto max-w-6xl px-4 py-4 sm:px-6">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -189,6 +248,21 @@ export default function AdminNotificationsPage() {
               <NotificationCard
                 key={notification._id}
                 notification={notification}
+                actionLoading={actionLoading}
+                selectionMode={selectionMode}
+                isSelected={selectedIds.includes(notification._id)}
+                onSelectToggle={() => {
+                  setSelectedIds((prev) => 
+                    prev.includes(notification._id)
+                      ? prev.filter((id) => id !== notification._id)
+                      : [...prev, notification._id]
+                  );
+                }}
+                onLongPress={() => {
+                  if (!selectionMode) {
+                    setSelectedIds([notification._id]);
+                  }
+                }}
                 onClick={() => {
                   if (!notification.isRead) {
                     void handleMarkAsRead(notification._id);

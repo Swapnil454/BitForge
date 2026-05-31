@@ -12,6 +12,7 @@ interface AdminSummary {
   total: number;
   buyerPayments: number;
   sellerPayouts: number;
+  promotionPayments: number;
   totalAmount: number;
 }
 
@@ -20,6 +21,7 @@ export default function AdminTransactionAnalyticsPage() {
     total: 0,
     buyerPayments: 0,
     sellerPayouts: 0,
+    promotionPayments: 0,
     totalAmount: 0,
   });
   const [panelSummary, setPanelSummary] = useState<any>(null);
@@ -28,17 +30,19 @@ export default function AdminTransactionAnalyticsPage() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const data = await adminAPI.getAllTransactions();
+        const data = await adminAPI.getAllTransactions({ limit: 1000 }); // Increase limit to fetch all for summary if needed
         const txs = data.transactions || [];
         
         const buyerPayments = txs.filter((t: any) => t.type === "buyer_to_admin").length;
         const sellerPayouts = txs.filter((t: any) => t.type === "admin_to_seller").length;
+        const promotionPayments = txs.filter((t: any) => t.type === "seller_to_admin").length;
         const totalAmount = txs.filter((t: any) => t.status === "success").reduce((s: number, t: any) => s + t.amount, 0);
 
         setSummary({
           total: txs.length,
           buyerPayments,
           sellerPayouts,
+          promotionPayments,
           totalAmount,
         });
         setPanelSummary(data.summary);

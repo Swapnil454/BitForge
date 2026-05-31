@@ -17,8 +17,16 @@ const productSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  fileKey: String, // Cloudinary public_id
-  fileUrl: String, // Cloudinary secure_url
+  fileKey: String, // Cloudinary public_id or R2 object key
+  fileUrl: String, // Cloudinary secure_url (legacy)
+  fileName: String,
+  fileSize: Number,
+  fileType: String,
+  storageProvider: {
+    type: String,
+    enum: ["cloudinary", "r2"],
+    default: "r2",
+  },
   thumbnailKey: String, // Cloudinary public_id for thumbnail
   thumbnailUrl: String, // Cloudinary secure_url for thumbnail
   previewPdfKey: String, // Cloudinary public_id for preview PDF

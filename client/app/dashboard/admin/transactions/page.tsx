@@ -14,7 +14,7 @@ import TransactionSummaryPanel from "./components/TransactionSummaryPanel";
 
 interface Transaction {
   _id: string;
-  type: "buyer_to_admin" | "admin_to_seller";
+  type: "buyer_to_admin" | "admin_to_seller" | "seller_to_admin";
   orderId: string;
   buyerName?: string;
   buyerEmail?: string;
@@ -193,8 +193,8 @@ function TransactionsPageContent() {
       }
 
       const rows = data.transactions.map((t: Transaction) => {
-        const fromName = t.type === "admin_to_seller" ? "BitForge Settlement Account" : (t.buyerName || "Unknown Buyer");
-        const toName = t.type === "buyer_to_admin" ? "BitForge Settlement Account" : (t.sellerName || "Unknown Seller");
+        const fromName = t.type === "admin_to_seller" ? "BitForge Settlement Account" : t.type === "seller_to_admin" ? (t.sellerName || "Unknown Seller") : (t.buyerName || "Unknown Buyer");
+        const toName = t.type === "buyer_to_admin" || t.type === "seller_to_admin" ? "BitForge Settlement Account" : (t.sellerName || "Unknown Seller");
         
         return {
           "Transaction ID": t.orderId,
@@ -450,7 +450,7 @@ function TransactionsPageContent() {
                   onClick={() => { setTypeDropdownOpen(!typeDropdownOpen); setStatusDropdownOpen(false); }}
                   className="h-12 px-4 text-sm font-medium bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-white/10 transition"
                 >
-                  {typeFilter === "all" ? "All Types" : typeFilter === "buyer_to_admin" ? "Buyer Payments" : "Seller Payouts"}
+                  {typeFilter === "all" ? "All Types" : typeFilter === "buyer_to_admin" ? "Buyer Payments" : typeFilter === "seller_to_admin" ? "Promotion Payments" : "Seller Payouts"}
                   <ChevronDown className="h-4 w-4 shrink-0" />
                 </button>
                 {typeDropdownOpen && (
@@ -458,7 +458,8 @@ function TransactionsPageContent() {
                     {[
                       { val: "all", label: "All Types" },
                       { val: "buyer_to_admin", label: "Buyer Payments" },
-                      { val: "admin_to_seller", label: "Seller Payouts" }
+                      { val: "admin_to_seller", label: "Seller Payouts" },
+                      { val: "seller_to_admin", label: "Promotion Payments" }
                     ].map(opt => (
                       <button
                         key={opt.val}
@@ -505,6 +506,7 @@ function TransactionsPageContent() {
             {[
               { val: "buyer_to_admin", label: "Buyer Payments", isType: true },
               { val: "admin_to_seller", label: "Seller Payouts", isType: true },
+              { val: "seller_to_admin", label: "Promotion Payments", isType: true },
               { separator: true },
               { val: "success", label: "Success", isStatus: true },
               { val: "pending", label: "Pending", isStatus: true },
@@ -625,19 +627,23 @@ function TransactionsPageContent() {
                           <span className="inline-flex px-1.5 sm:px-2 py-0.5 rounded text-[8px] sm:text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">
                             Buyer → Admin
                           </span>
+                        ) : t.type === "admin_to_seller" ? (
+                          <span className="inline-flex px-1.5 sm:px-2 py-0.5 rounded text-[8px] sm:text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
+                            Admin → Seller
+                          </span>
                         ) : (
                           <span className="inline-flex px-1.5 sm:px-2 py-0.5 rounded text-[8px] sm:text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20">
-                            Admin → Seller
+                            Seller → Admin
                           </span>
                         )}
                       </td>
                       <td className={`px-1.5 sm:px-4 ${rowHeightClass}`}>
                         <div className="flex flex-col">
                           <span className="text-[10px] sm:text-sm font-medium text-slate-900 dark:text-white/90 truncate max-w-[110px] sm:max-w-[200px]">
-                            {t.type === "admin_to_seller" ? "BitForge Settlement Account" : (t.buyerName || "Unknown Buyer")}
+                            {t.type === "admin_to_seller" ? "BitForge Settlement Account" : t.type === "seller_to_admin" ? (t.sellerName || "Unknown Seller") : (t.buyerName || "Unknown Buyer")}
                           </span>
                           <span className="text-[8px] sm:text-xs text-slate-400 dark:text-white/40">
-                            → {t.type === "buyer_to_admin" ? "BitForge Settlement Account" : (t.sellerName || "Unknown Seller")}
+                            → {t.type === "buyer_to_admin" || t.type === "seller_to_admin" ? "BitForge Settlement Account" : (t.sellerName || "Unknown Seller")}
                           </span>
                         </div>
                       </td>

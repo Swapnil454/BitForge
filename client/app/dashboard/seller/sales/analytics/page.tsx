@@ -58,7 +58,7 @@ export default function SalesAnalyticsPage() {
           backHref="/dashboard/seller/sales"
           backLabel="Sales"
           title="Sales Analytics"
-          subtitle="Your complete sales performance breakdown"
+          subtitle="Sales performance breakdown"
         />
         <main className="max-w-2xl mx-auto px-4 py-8 space-y-4">
           <div className="h-52 rounded-3xl bg-slate-100 dark:bg-white/5 animate-pulse border border-slate-200 dark:border-white/5" />
@@ -79,7 +79,7 @@ export default function SalesAnalyticsPage() {
         backHref="/dashboard/seller/sales"
         backLabel="Sales"
         title="Sales Analytics"
-        subtitle="Your complete sales performance breakdown"
+        subtitle="Sales performance breakdown"
       />
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
