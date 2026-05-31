@@ -262,8 +262,12 @@ export default function ProductDetailsPage() {
                     <div className="text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">Format</div>
                     <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-200">{product.format ?? "-"}</div>
                   </div>
-                  <div className="bg-gray-50 dark:bg-[#12141c] border border-gray-100 dark:border-white/5 rounded-lg sm:rounded-xl p-2.5 sm:p-4 transition-colors hover:border-indigo-200 dark:hover:border-indigo-500/30">
-                    <div className="text-slate-500 dark:text-slate-400 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider mb-0.5">Pages</div>
+                  <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700/50">
+                    <div className="text-slate-500 dark:text-slate-400 text-[10px] font-semibold uppercase tracking-wider mb-1">
+                      {product.category === "Course" ? "Lessons" : 
+                       (product.format === "ZIP" || product.category === "Software" || product.category === "Design Asset") ? "Files" : 
+                       "Pages"}
+                    </div>
                     <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-200">{product.pageCount ?? "-"}</div>
                   </div>
                   <div className="bg-gray-50 dark:bg-[#12141c] border border-gray-100 dark:border-white/5 rounded-lg sm:rounded-xl p-2.5 sm:p-4 transition-colors hover:border-indigo-200 dark:hover:border-indigo-500/30">

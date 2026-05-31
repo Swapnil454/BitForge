@@ -5,6 +5,7 @@ import Order from "../models/Order.js";
 import Payout from "../models/Payout.js";
 import Product from "../models/Product.js";
 import User from "../models/User.js";
+import PromotionRequest from "../models/PromotionRequest.js";
 
 export const getSellerDashboardStats = async (req, res) => {
   try {
@@ -154,6 +155,13 @@ export const getSellerEarnings = async (req, res) => {
 
 export const requestWithdrawal = async (req, res) => {
   const sellerId = req.user.id;
+  
+  const user = await User.findById(sellerId);
+  const isApproved = user.approvalStatus === "approved" || user.isApproved;
+  if (!isApproved) {
+    return res.status(403).json({ message: "Unverified sellers cannot request payouts. Please verify your identity first." });
+  }
+
   const { amount } = req.body;
 
   const orders = await Order.find({
@@ -251,12 +259,60 @@ export const cancelPayoutRequest = async (req, res) => {
 export const getSellerTransactions = async (req, res) => {
   try {
     const sellerId = req.user.id;
+    const { page = 1, limit = 10, status, search, month } = req.query;
 
-    // Fetch all paid orders for this seller
-    const orders = await Order.find({ sellerId, status: "paid" })
-      .populate("productId", "title")
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+
+    // Build query
+    const query = { sellerId };
+
+    // 1. Status Filter
+    if (status && status !== "all") {
+      // Map frontend status to backend status if needed
+      if (status === "completed") query.status = "paid";
+      else if (status === "pending") query.status = "created";
+      else if (status === "cancelled") query.status = "failed";
+      else query.status = status;
+    } else {
+      // Default behavior from before: only return paid if no status is specified
+      // Wait, let's keep returning paid if status is not provided so we don't break other things, 
+      // but if status === 'all', we might want to return all. Let's return all paid for now if 'all'.
+      // The previous code always used status: 'paid'
+      query.status = "paid";
+    }
+
+    // 2. Month Filter (YYYY-MM)
+    if (month && month !== "all") {
+      const [yearStr, monthStr] = month.split("-");
+      const yearNum = parseInt(yearStr);
+      const monthIdx = parseInt(monthStr) - 1; // 0-indexed for Date
+      const startDate = new Date(yearNum, monthIdx, 1);
+      const endDate = new Date(yearNum, monthIdx + 1, 0, 23, 59, 59, 999);
+      query.createdAt = { $gte: startDate, $lte: endDate };
+    }
+
+    // 3. Search Filter
+    // Searching across orderId, productName, and buyerEmail
+    if (search && search.trim() !== "") {
+      const searchRegex = new RegExp(search.trim(), "i");
+      query.$or = [
+        { razorpayOrderId: searchRegex },
+        { productName: searchRegex },
+      ];
+      // Since buyerName and email are in User model, populated search is complex.
+      // We'll stick to orderId and productName for simple filtering to avoid complex aggregation.
+      // Or we can fetch user IDs matching the email/name first.
+    }
+
+    // Execute paginated query
+    const totalOrders = await Order.countDocuments(query);
+    const orders = await Order.find(query)
+      .populate("productId", "title thumbnailUrl")
       .populate("buyerId", "name email")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip((pageNum - 1) * limitNum)
+      .limit(limitNum);
 
     // Format transactions with breakdown
     const transactions = orders.map(order => {
@@ -270,6 +326,7 @@ export const getSellerTransactions = async (req, res) => {
         _id: order._id,
         orderId: order.razorpayOrderId || order._id.toString(),
         productName: order.productName || order.productId?.title || "Unknown Product",
+        thumbnailUrl: order.productId?.thumbnailUrl || null,
         buyerName: order.buyerId?.name || "Unknown Buyer",
         buyerEmail: order.buyerId?.email || "Unknown Email",
         saleAmount: Number(saleAmount.toFixed(2)),
@@ -283,8 +340,14 @@ export const getSellerTransactions = async (req, res) => {
 
     res.json({
       transactions,
+      pagination: {
+        total: totalOrders,
+        page: pageNum,
+        limit: limitNum,
+        pages: Math.ceil(totalOrders / limitNum)
+      },
       summary: {
-        total: transactions.length,
+        total: totalOrders,
         totalRevenue: Number(transactions.reduce((sum, t) => sum + t.saleAmount, 0).toFixed(2)),
         totalPlatformFee: Number(transactions.reduce((sum, t) => sum + t.platformFee, 0).toFixed(2)),
         totalGST: Number(transactions.reduce((sum, t) => sum + t.gstOnFee, 0).toFixed(2)),
@@ -298,15 +361,289 @@ export const getSellerTransactions = async (req, res) => {
 };
 
 // Get all sales (including failed, pending, and paid)
+export const getAllTransactionsForSeller = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      type = "all",
+      status = "all",
+      sortBy = "date_desc",
+      dateRange,
+      startDate,
+      endDate,
+    } = req.query;
+    const normalizedType = typeof type === "string" ? type.toLowerCase() : "all";
+    const normalizedStatus = typeof status === "string" ? status.toLowerCase() : "all";
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const sellerId = req.user.id;
+    
+    let dateQuery = null;
+    if (dateRange && dateRange !== "all") {
+      const now = new Date();
+      if (dateRange === "7d") dateQuery = { $gte: new Date(now.setDate(now.getDate() - 7)) };
+      else if (dateRange === "30d") dateQuery = { $gte: new Date(now.setDate(now.getDate() - 30)) };
+      else if (dateRange === "90d") dateQuery = { $gte: new Date(now.setDate(now.getDate() - 90)) };
+    } else if (startDate && endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      dateQuery = { $gte: new Date(startDate), $lte: end };
+    } else if (startDate) {
+      dateQuery = { $gte: new Date(startDate) };
+    } else if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      dateQuery = { $lte: end };
+    }
+
+    const orderFilter = { sellerId };
+    if (normalizedStatus !== "all") {
+      if (normalizedStatus === "success") orderFilter.status = { $in: ["paid"] };
+      else if (normalizedStatus === "failed") orderFilter.status = { $in: ["failed"] };
+      else orderFilter.status = { $in: ["created"] };
+    }
+    if (dateQuery) orderFilter.createdAt = dateQuery;
+    
+    const payoutFilter = { sellerId };
+    if (normalizedStatus !== "all") {
+      if (normalizedStatus === "success") payoutFilter.status = { $in: ["paid"] };
+      else if (normalizedStatus === "failed") payoutFilter.status = { $in: ["rejected"] };
+      else payoutFilter.status = { $in: ["pending", "processing"] };
+    }
+    if (dateQuery) payoutFilter.createdAt = dateQuery;
+
+    // Build filters for Promotions
+    const promotionFilter = { sellerId };
+    if (normalizedStatus !== "all") {
+      if (normalizedStatus === "success") promotionFilter.paymentStatus = { $in: ["PAID"] };
+      else if (normalizedStatus === "failed") promotionFilter.paymentStatus = { $in: ["FAILED"] };
+      else promotionFilter.paymentStatus = { $in: ["PENDING"] };
+    } else {
+      promotionFilter.paymentStatus = { $in: ["PAID", "FAILED", "PENDING"] };
+    }
+    if (dateQuery) promotionFilter.createdAt = dateQuery;
+
+    let orders = [];
+    let payouts = [];
+    let promotions = [];
+
+    if (normalizedType === "all" || normalizedType === "buyer_to_admin") {
+      const query = { ...orderFilter };
+      if (search) {
+        query.$or = [
+          { productName: { $regex: search, $options: "i" } },
+          { razorpayOrderId: { $regex: search, $options: "i" } }
+        ];
+      }
+      orders = await Order.find(query)
+        .populate("buyerId", "name email")
+        .populate("productId", "title")
+        .sort({ createdAt: -1 });
+    }
+
+    if (normalizedType === "all" || normalizedType === "admin_to_seller") {
+      const query = { ...payoutFilter };
+      if (search) {
+        query.$or = [
+          { paymentReference: { $regex: search, $options: "i" } },
+          { rejectionReason: { $regex: search, $options: "i" } }
+        ];
+      }
+      payouts = await Payout.find(query)
+        .populate("sellerId", "name email")
+        .sort({ createdAt: -1 });
+    }
+
+    if (normalizedType === "all" || normalizedType === "seller_to_admin") {
+      const query = { ...promotionFilter };
+      if (search) {
+        query.$or = [
+          { productTitle: { $regex: search, $options: "i" } },
+          { razorpayOrderId: { $regex: search, $options: "i" } },
+          { transactionId: { $regex: search, $options: "i" } }
+        ];
+      }
+      promotions = await PromotionRequest.find(query).sort({ createdAt: -1 });
+    }
+
+    const buyerTransactions = orders.map(order => ({
+      _id: order._id,
+      type: "buyer_to_admin",
+      orderId: order.razorpayOrderId || order._id.toString(),
+      buyerName: order.buyerId?.name || "Unknown Buyer",
+      buyerEmail: order.buyerId?.email || "Unknown",
+      productName: order.productName || order.productId?.title || "Unknown Product",
+      amount: order.sellerAmount || (order.amount ? order.amount / 1.07 : 0),
+      status: order.status === "paid" ? "success" : order.status === "failed" ? "failed" : "pending",
+      date: order.createdAt,
+      createdAt: order.createdAt,
+      paymentMethod: "razorpay",
+      razorpayPaymentId: order.razorpayPaymentId,
+      razorpayOrderId: order.razorpayOrderId
+    }));
+
+    const sellerTransactions = payouts.map(payout => ({
+      _id: payout._id,
+      type: "admin_to_seller",
+      orderId: payout._id.toString(),
+      sellerName: payout.sellerId?.name || "Unknown Seller",
+      sellerEmail: payout.sellerId?.email || "Unknown",
+      productName: "Bank Withdrawal",
+      amount: payout.netPayableAmount || payout.amount || 0,
+      status: payout.status === "paid" ? "success" : payout.status === "rejected" ? "failed" : "pending",
+      date: payout.paidAt || payout.createdAt,
+      createdAt: payout.paidAt || payout.createdAt,
+      paymentMethod: payout.paymentMethod || "manual",
+      paymentReference: payout.paymentReference,
+      razorpayPaymentId: payout.paymentReference, // For UI compatibility
+      errorReason: payout.rejectionReason
+    }));
+
+    const sellerPromotionTransactions = promotions.map(promo => ({
+      _id: promo._id,
+      type: "seller_to_admin",
+      orderId: promo.razorpayOrderId || promo.transactionId || promo._id.toString(),
+      sellerName: promo.sellerName || "You",
+      sellerEmail: req.user.email,
+      buyerName: "BitForge Settlement Account", // To align with the UI
+      productName: `Promotion: ${promo.productTitle}`,
+      amount: promo.amount || 0,
+      status: promo.paymentStatus === "PAID" ? "success" : promo.paymentStatus === "FAILED" ? "failed" : "pending",
+      date: promo.paidAt || promo.paymentSubmittedAt || promo.createdAt,
+      createdAt: promo.createdAt,
+      paymentMethod: promo.paymentMethod || "RAZORPAY",
+      razorpayOrderId: promo.razorpayOrderId,
+      razorpayPaymentId: promo.razorpayPaymentId || promo.transactionId,
+    }));
+
+    let allTransactions = [...buyerTransactions, ...sellerTransactions, ...sellerPromotionTransactions];
+
+    if (normalizedType !== "all") allTransactions = allTransactions.filter((t) => t.type === normalizedType);
+    if (normalizedStatus !== "all") allTransactions = allTransactions.filter((t) => t.status === normalizedStatus);
+
+    if (search) {
+      const s = search.toLowerCase();
+      allTransactions = allTransactions.filter(t => 
+        (t.buyerName?.toLowerCase().includes(s)) ||
+        (t.productName?.toLowerCase().includes(s)) ||
+        (t.orderId?.toLowerCase().includes(s))
+      );
+    }
+
+    allTransactions.sort((a, b) => {
+      if (sortBy === "date_desc") return new Date(b.date) - new Date(a.date);
+      if (sortBy === "date_asc") return new Date(a.date) - new Date(b.date);
+      if (sortBy === "amount_desc") return b.amount - a.amount;
+      if (sortBy === "amount_asc") return a.amount - b.amount;
+      return new Date(b.date) - new Date(a.date);
+    });
+
+    const paginatedTransactions = allTransactions.slice(skip, skip + parseInt(limit));
+
+    const successfulAmount = allTransactions
+      .filter((t) => t.status === "success")
+      .reduce((sum, t) => sum + t.amount, 0);
+    const successfulCount = allTransactions.filter((t) => t.status === "success").length;
+
+    const pendingAmount = allTransactions
+      .filter((t) => t.status === "pending")
+      .reduce((sum, t) => sum + t.amount, 0);
+    const pendingCount = allTransactions.filter((t) => t.status === "pending").length;
+
+    const failedAmount = allTransactions
+      .filter((t) => t.status === "failed")
+      .reduce((sum, t) => sum + t.amount, 0);
+    const failedCount = allTransactions.filter((t) => t.status === "failed").length;
+
+    res.json({
+      transactions: paginatedTransactions,
+      pagination: {
+        total: allTransactions.length,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(allTransactions.length / parseInt(limit))
+      },
+      summary: {
+        total: {
+          count: allTransactions.length,
+          amount: allTransactions.reduce((sum, t) => sum + t.amount, 0)
+        },
+        success: { count: successfulCount, amount: successfulAmount },
+        pending: { count: pendingCount, amount: pendingAmount },
+        failed: { count: failedCount, amount: failedAmount }
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching all transactions for seller:", error);
+    res.status(500).json({ message: "Failed to fetch transactions" });
+  }
+};
+
 export const getAllSales = async (req, res) => {
   try {
     const sellerId = req.user.id;
+    const { page = 1, limit = 10, status, search, month, sortBy = "date_desc" } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    // Fetch ALL orders for this seller (paid, failed, created)
-    const orders = await Order.find({ sellerId })
-      .populate("productId", "title")
+    // Build query object
+    const query = { sellerId };
+
+    if (status && status !== "all") {
+      query.status = status;
+    }
+
+    // Month filter
+    if (month) {
+      // month is expected to be in "YYYY-MM" format
+      const [year, monthStr] = month.split("-");
+      if (year && monthStr) {
+        const startDate = new Date(parseInt(year), parseInt(monthStr) - 1, 1);
+        const endDate = new Date(parseInt(year), parseInt(monthStr), 0, 23, 59, 59, 999);
+        query.createdAt = {
+          $gte: startDate,
+          $lte: endDate,
+        };
+      }
+    }
+
+    // Determine sort
+    let sortConfig = { createdAt: -1 };
+    if (sortBy === "date_asc") {
+      sortConfig = { createdAt: 1 };
+    }
+
+    // Since we need to search by buyer name/email or product name, we might have to fetch and then filter
+    // Or we can do a populate match if possible. Given the scale, fetching and filtering might be required
+    // if search is provided. However, let's first get the count without search for pagination.
+    // If search is provided, we fetch more and filter in memory, or we can use aggregation.
+    // For simplicity, if search is present, we will fetch all matching the query and filter in memory.
+    
+    let ordersQuery = Order.find(query)
+      .populate("productId", "title thumbnailUrl")
       .populate("buyerId", "name email")
-      .sort({ createdAt: -1 });
+      .sort(sortConfig);
+
+    let orders = await ordersQuery.lean();
+
+    // In-memory search filter
+    if (search) {
+      const s = search.toLowerCase();
+      orders = orders.filter(o => 
+        (o.productName?.toLowerCase().includes(s)) ||
+        (o.productId?.title?.toLowerCase().includes(s)) ||
+        (o.buyerId?.name?.toLowerCase().includes(s)) ||
+        (o.buyerId?.email?.toLowerCase().includes(s)) ||
+        (o.razorpayOrderId?.toLowerCase().includes(s)) ||
+        (o._id?.toString().toLowerCase().includes(s))
+      );
+    }
+
+    const totalCount = orders.length;
+    
+    // Apply pagination in memory since we might have filtered by search
+    orders = orders.slice(skip, skip + parseInt(limit));
 
     // Format sales with breakdown
     const sales = orders.map(order => {
@@ -321,6 +658,7 @@ export const getAllSales = async (req, res) => {
         orderId: order.razorpayOrderId || order._id.toString(),
         productName: order.productName || order.productId?.title || "Unknown Product",
         productId: order.productId?._id || null,
+        thumbnailUrl: order.productId?.thumbnailUrl || null,
         buyerName: order.buyerId?.name || "Unknown Buyer",
         buyerEmail: order.buyerId?.email || "Unknown Email",
         amount: Number(saleAmount.toFixed(2)),
@@ -334,7 +672,13 @@ export const getAllSales = async (req, res) => {
     });
 
     res.json({
-      sales
+      sales,
+      pagination: {
+        total: totalCount,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(totalCount / parseInt(limit))
+      }
     });
   } catch (error) {
     console.error("Error fetching all sales:", error);

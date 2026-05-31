@@ -75,27 +75,21 @@ export default function PurchaseDetailsPage() {
 
     try {
       setDownloading(true);
-      const response = await api.get(`/download/${purchase._id}`, { responseType: "blob" });
-      const contentType = response.headers["content-type"] || "application/pdf";
-      const blob = new Blob([response.data], { type: contentType });
-      const url = window.URL.createObjectURL(blob);
+      const response = await api.get(`/download/${purchase._id}`);
+      
+      if (response.data?.mode === "redirect" && response.data?.downloadUrl) {
+        const link = document.createElement("a");
+        link.href = response.data.downloadUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-      const contentDisposition = response.headers["content-disposition"];
-      let filename = "download.pdf";
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename="(.+?)"|filename=([^;\s]+)/);
-        if (match) filename = match[1] || match[2];
+        setDownloading(false);
+        toast.success("Download started securely!");
+        void fetchPurchaseDetails();
+      } else {
+        throw new Error("Invalid download response format");
       }
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      toast.success("Download started!");
     } catch (error: any) {
       console.error("Download error", error);
 

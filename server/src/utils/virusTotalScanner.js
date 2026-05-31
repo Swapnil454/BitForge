@@ -188,14 +188,14 @@ async function uploadFileForScanning(fileBuffer, filename) {
  */
 function performBasicFileCheck(fileBuffer, filename) {
   try {
-    // Check file size
-    const maxSize = 500 * 1024 * 1024; // 500MB
+    // Check file size matches our platform limit
+    const maxSize = 1024 * 1024 * 1024; // 1GB
     if (fileBuffer.length > maxSize) {
       return {
         scanned: true,
         clean: false,
         scanDate: new Date(),
-        reason: "File too large (max 500MB)",
+        reason: "File too large (max 1GB)",
         basicCheckOnly: true
       };
     }

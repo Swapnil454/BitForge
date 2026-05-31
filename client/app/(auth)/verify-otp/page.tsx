@@ -14,11 +14,7 @@ function VerifyOtpPageContent() {
 
   const getDefaultRouteForUser = (user: any) => {
     const role = user?.role || "buyer";
-    const isSellerApproved =
-      user?.approvalStatus === "approved" || user?.isApproved === true;
-
     if (role === "buyer") return "/marketplace";
-    if (role === "seller" && !isSellerApproved) return "/pending-approval";
     return `/dashboard/${role}`;
   };
   

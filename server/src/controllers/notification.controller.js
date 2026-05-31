@@ -409,9 +409,12 @@ const emitRealtimeNotification = (userId, notification) => {
 const deliverPushIfEligible = async (user, notification, options = {}) => {
   const browserPushEnabled = user.notificationSettings?.browserPushEnabled !== false;
   const categoryEnabled = getUserSettingForCategory(user, notification.category);
-  const tokens = (user.pushSubscriptions || [])
-    .filter((entry) => entry.isActive && entry.token)
-    .map((entry) => entry.token);
+  // Deduplicate tokens — same FCM token registered across multiple entries would cause double pushes
+  const tokens = [...new Set(
+    (user.pushSubscriptions || [])
+      .filter((entry) => entry.isActive && entry.token)
+      .map((entry) => entry.token)
+  )];
 
   if (!browserPushEnabled || !categoryEnabled) {
     return {
@@ -646,6 +649,27 @@ export const deleteNotification = async (req, res) => {
   } catch (error) {
     console.error("Error deleting notification:", error);
     res.status(500).json({ message: "Failed to delete notification" });
+  }
+};
+
+export const deleteBulkNotifications = async (req, res) => {
+  try {
+    const { notificationIds } = req.body;
+    const userId = req.user.id;
+
+    if (!notificationIds || !Array.isArray(notificationIds) || notificationIds.length === 0) {
+      return res.status(400).json({ message: "No notification IDs provided" });
+    }
+
+    const result = await Notification.deleteMany({
+      _id: { $in: notificationIds },
+      userId,
+    });
+
+    res.json({ message: `${result.deletedCount} notifications deleted` });
+  } catch (error) {
+    console.error("Error bulk deleting notifications:", error);
+    res.status(500).json({ message: "Failed to delete notifications" });
   }
 };
 

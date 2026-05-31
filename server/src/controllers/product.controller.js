@@ -1,9 +1,14 @@
-
+import mongoose from "mongoose";
 import cloudinary from "../config/cloudinary.js";
+import { uploadToR2, deleteFromR2, getPresignedUploadUrl } from "../utils/r2Upload.js";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import r2Client, { R2_BUCKET_NAME } from "../config/r2.js";
+import { v4 as uuidv4 } from "uuid";
 import Product from "../models/Product.js";
 import User from "../models/User.js";
 import Review from "../models/Review.js";
 import Order from "../models/Order.js";
+import PromotionRequest from "../models/PromotionRequest.js";
 import { createNotification } from "./notification.controller.js";
 import {
   generatePreviewPages,
@@ -41,6 +46,10 @@ const handleApprovedProductUpdate = async (product, req, res, updateData) => {
     let previewPages = product.previewPages;
     let actualPageCount = product.pageCount;
 
+    let fileType = product.fileType;
+    let fileName = product.fileName;
+    let storageProvider = product.storageProvider;
+
     // Handle file upload if provided
     if (req.files && req.files.file && req.files.file[0]) {
       try {
@@ -51,23 +60,16 @@ const handleApprovedProductUpdate = async (product, req, res, updateData) => {
         fileSizeBytes = metadata.fileSizeBytes;
         actualPageCount = metadata.pageCount || actualPageCount;
 
-        const uploadResult = await new Promise((resolve, reject) => {
-          const result = cloudinary.uploader.upload_stream(
-            {
-              resource_type: "raw",
-              type: "authenticated",  // Secure - not publicly accessible
-              folder: "sellify/products",
-            },
-            (error, uploadResult) => {
-              if (error) reject(error);
-              else resolve(uploadResult);
-            }
-          );
-          result.end(file.buffer);
-        });
+        // Upload file to Cloudflare R2
+        console.log("Uploading update to R2:", file.originalname);
+        const uploadResult = await uploadToR2(file, product._id.toString());
+        console.log("R2 upload successful:", uploadResult.fileKey);
 
-        fileKey = uploadResult.public_id;
-        fileUrl = uploadResult.secure_url;
+        fileKey = uploadResult.fileKey;
+        fileUrl = ""; // No direct public url for R2
+        fileName = uploadResult.fileName;
+        fileType = uploadResult.fileType;
+        storageProvider = uploadResult.storageProvider;
 
         // 🚀 AUTOMATIC PREVIEW GENERATION
         if (file.mimetype.includes('pdf')) {
@@ -76,7 +78,7 @@ const handleApprovedProductUpdate = async (product, req, res, updateData) => {
 
             const previewResult = await generateAutomaticPreviewPDF(
               file.buffer,
-              uploadResult.public_id
+              fileKey
             );
 
             previewPdfKey = previewResult.previewPdfKey;
@@ -90,8 +92,8 @@ const handleApprovedProductUpdate = async (product, req, res, updateData) => {
             console.error(" Preview generation failed:", err);
           }
         }
-      } catch (cloudinaryError) {
-        console.error("File upload error:", cloudinaryError);
+      } catch (uploadError) {
+        console.error("File upload error:", uploadError);
         return res.status(500).json({ message: "Failed to upload new file" });
       }
     }
@@ -147,6 +149,10 @@ const handleApprovedProductUpdate = async (product, req, res, updateData) => {
           price: price ? Number(price) : product.price,
           discount: discount !== undefined ? Number(discount) : product.discount,
           fileKey,
+          fileName,
+          fileSize: fileSizeBytes,
+          fileType,
+          storageProvider,
           fileUrl,
           thumbnailKey,
           thumbnailUrl,
@@ -191,11 +197,26 @@ const handleApprovedProductUpdate = async (product, req, res, updateData) => {
 };
 
 export const createProduct = async (req, res) => {
-  const product = await Product.create({
-    ...req.body,
-    sellerId: req.user.id,
-  });
-  res.json(product);
+  try {
+    const user = await User.findById(req.user.id);
+    const isApproved = user.approvalStatus === "approved" || user.isApproved;
+
+    if (!isApproved) {
+      const productCount = await Product.countDocuments({ sellerId: req.user.id });
+      if (productCount >= 2) {
+        return res.status(403).json({ message: "Unverified sellers can only upload up to 2 products. Please verify your identity." });
+      }
+    }
+
+    const product = await Product.create({
+      ...req.body,
+      sellerId: req.user.id,
+    });
+    res.json(product);
+  } catch (error) {
+    console.error("Create product error:", error);
+    res.status(500).json({ message: "Failed to create product" });
+  }
 };
 
 export const getSellerProducts = async (req, res) => {
@@ -249,10 +270,16 @@ export const getSellerProducts = async (req, res) => {
          const avgRating = reviews.length ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length) : 0;
          const buyers = await Order.countDocuments({ productId: p._id, status: 'paid' });
 
+         const activePromotion = await PromotionRequest.findOne({
+           productId: p._id,
+           status: { $nin: ["REJECTED", "EXPIRED", "CANCELLED"] }
+         }).lean();
+
          return {
            ...p,
            rating: parseFloat(avgRating.toFixed(1)),
-           buyers: buyers
+           buyers: buyers,
+           hasActivePromotion: !!activePromotion
           };
       }));
       const filteredProducts = productsWithStats.filter(matchesFilters);
@@ -275,10 +302,16 @@ export const getSellerProducts = async (req, res) => {
          const avgRating = reviews.length ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length) : 0;
          const buyers = await Order.countDocuments({ productId: p._id, status: 'paid' });
 
+         const activePromotion = await PromotionRequest.findOne({
+           productId: p._id,
+           status: { $nin: ["REJECTED", "EXPIRED", "CANCELLED"] }
+         }).lean();
+
          return {
            ...p,
            rating: parseFloat(avgRating.toFixed(1)),
-           buyers: buyers
+           buyers: buyers,
+           hasActivePromotion: !!activePromotion
           };
       }));
 
@@ -339,21 +372,13 @@ export const uploadProduct = async (req, res) => {
       });
     }
 
-    // Upload file to Cloudinary
-    const fileUploadResult = await new Promise((resolve, reject) => {
-      const result = cloudinary.uploader.upload_stream(
-        {
-          resource_type: "raw",
-          type: "authenticated",  // Secure - not publicly accessible
-          folder: "sellify/products",
-        },
-        (error, uploadResult) => {
-          if (error) reject(error);
-          else resolve(uploadResult);
-        }
-      );
-      result.end(file.buffer);
-    });
+    // Generate product ID beforehand for R2 path structuring
+    const productId = new mongoose.Types.ObjectId();
+
+    // Upload file to Cloudflare R2
+    console.log("Uploading file to R2:", file.originalname);
+    const fileUploadResult = await uploadToR2(file, productId.toString());
+    console.log("R2 upload successful:", fileUploadResult.fileKey);
 
     // Upload thumbnail if provided
     let thumbnailUploadResult = null;
@@ -391,7 +416,7 @@ export const uploadProduct = async (req, res) => {
         // Generate watermarked preview PDF automatically
         const previewResult = await generateAutomaticPreviewPDF(
           file.buffer,
-          fileUploadResult.public_id
+          fileUploadResult.fileKey
         );
 
         console.log(" Preview generated:", {
@@ -422,12 +447,16 @@ export const uploadProduct = async (req, res) => {
     } else {
       // For non-PDF files, use legacy preview generation
       console.log("📄 Non-PDF file - using legacy preview generation...");
-      previewPages = await generatePreviewPages(
-        fileUploadResult.secure_url,
-        fileUploadResult.public_id,
-        file.buffer,
-        3
-      );
+      try {
+         previewPages = await generatePreviewPages(
+           "", // No secure url for R2
+           fileUploadResult.fileKey,
+           file.buffer,
+           3
+         );
+      } catch(err) {
+         console.log("Legacy preview failed, continuing", err.message);
+      }
     }
 
     // Auto-review content based on heuristics
@@ -441,14 +470,19 @@ export const uploadProduct = async (req, res) => {
 
     // Create product with all trust & validation fields
     const product = await Product.create({
+      _id: productId, // Use the pre-generated ID
       sellerId: req.user.id,
       title: title.trim(),
       description: description.trim(),
       category: category || "Software",
       price: Number(price),
       discount: discount ? Number(discount) : 0,
-      fileKey: fileUploadResult.public_id,
-      fileUrl: fileUploadResult.secure_url,
+      fileKey: fileUploadResult.fileKey,
+      fileName: fileUploadResult.fileName,
+      fileSize: fileUploadResult.fileSize,
+      fileType: fileUploadResult.fileType,
+      storageProvider: fileUploadResult.storageProvider,
+      fileUrl: "", // R2 doesn't have a direct public URL
       thumbnailKey: thumbnailUploadResult?.public_id || null,
       thumbnailUrl: thumbnailUploadResult?.secure_url || null,
       previewPdfKey: previewPdfUploadResult?.public_id || null,
@@ -564,6 +598,10 @@ export const updateProduct = async (req, res) => {
     let previewPages = product.previewPages;
     let actualPageCount = product.pageCount;
 
+    let fileType = product.fileType;
+    let fileName = product.fileName;
+    let storageProvider = product.storageProvider;
+
     if (req.files && req.files.file && req.files.file[0]) {
       try {
         const file = req.files.file[0];
@@ -573,8 +611,8 @@ export const updateProduct = async (req, res) => {
         fileSizeBytes = metadata.fileSizeBytes;
         actualPageCount = metadata.pageCount || actualPageCount;
 
-        // Delete old file from Cloudinary if exists
-        if (product.fileKey) {
+        // Delete old file from Cloudinary if exists and it was a Cloudinary file
+        if (product.fileKey && product.storageProvider !== "r2") {
           try {
             await cloudinary.uploader.destroy(product.fileKey, {
               resource_type: "raw",
@@ -585,25 +623,18 @@ export const updateProduct = async (req, res) => {
             // Continue with upload even if deletion fails
           }
         }
+        // Note: we might want to delete from R2 if it was R2, but for now we'll just upload new
 
-        // Upload new file to Cloudinary
-        const uploadResult = await new Promise((resolve, reject) => {
-          const result = cloudinary.uploader.upload_stream(
-            {
-              resource_type: "raw",
-              type: "authenticated",  // Secure - not publicly accessible
-              folder: "sellify/products",
-            },
-            (error, uploadResult) => {
-              if (error) reject(error);
-              else resolve(uploadResult);
-            }
-          );
-          result.end(file.buffer);
-        });
+        // Upload new file to Cloudflare R2
+        console.log("Uploading update to R2:", file.originalname);
+        const uploadResult = await uploadToR2(file, productId);
+        console.log("R2 upload successful:", uploadResult.fileKey);
 
-        fileKey = uploadResult.public_id;
-        fileUrl = uploadResult.secure_url;
+        fileKey = uploadResult.fileKey;
+        fileUrl = ""; // No direct public url for R2
+        fileName = uploadResult.fileName;
+        fileType = uploadResult.fileType;
+        storageProvider = uploadResult.storageProvider;
 
         // 🚀 AUTOMATIC PREVIEW GENERATION for new file
         // Delete old preview if exists
@@ -622,7 +653,7 @@ export const updateProduct = async (req, res) => {
 
             const previewResult = await generateAutomaticPreviewPDF(
               file.buffer,
-              uploadResult.public_id
+              fileKey
             );
 
             previewPdfKey = previewResult.previewPdfKey;
@@ -717,6 +748,10 @@ export const updateProduct = async (req, res) => {
       price: price ? Number(price) : undefined,
       discount: discount !== undefined ? Number(discount) : undefined,
       fileKey: fileKey,
+      fileName: fileName,
+      fileSize: fileSizeBytes,
+      fileType: fileType,
+      storageProvider: storageProvider,
       fileUrl: fileUrl,
       fileSizeBytes: fileSizeBytes,
       pageCount: pageCount ? Number(pageCount) : actualPageCount,
@@ -809,15 +844,20 @@ export const deleteProduct = async (req, res) => {
       });
     }
 
-    // Delete file from Cloudinary if exists
+    // Delete main file from appropriate storage if exists
     if (product.fileKey) {
       try {
-        await cloudinary.uploader.destroy(product.fileKey, {
-          resource_type: "raw",
-          type: "authenticated"  // Must match upload type
-        });
-      } catch (cloudinaryError) {
-        console.error("Cloudinary delete error:", cloudinaryError);
+        if (product.storageProvider === "r2") {
+          await deleteFromR2(product.fileKey);
+        } else {
+          // Fallback for older products still on Cloudinary
+          await cloudinary.uploader.destroy(product.fileKey, {
+            resource_type: "raw",
+            type: "authenticated"  // Must match upload type
+          });
+        }
+      } catch (storageError) {
+        console.error("Storage file delete error:", storageError);
         // Continue with product deletion even if file deletion fails
       }
     }
@@ -827,20 +867,216 @@ export const deleteProduct = async (req, res) => {
       try {
         await cloudinary.uploader.destroy(product.thumbnailKey, { resource_type: "image" });
       } catch (cloudinaryError) {
-        console.error("Cloudinary thumbnail delete error:", cloudinaryError);
-        // Continue with product deletion even if thumbnail deletion fails
+        console.error("Thumbnail delete error:", cloudinaryError);
       }
     }
 
     // Delete product from database
     await Product.findByIdAndDelete(productId);
 
-    res.json({
-      message: "Product deleted successfully",
-    });
+    res.json({ message: "Product deleted successfully" });
   } catch (error) {
-    console.error("Delete error:", error);
+    console.error("Delete product error:", error);
     res.status(500).json({ message: "Failed to delete product" });
+  }
+};
+
+/* ─────────────────────────────────────────────────────────
+   DIRECT-TO-CLOUD UPLOAD FLOW
+───────────────────────────────────────────────────────── */
+
+export const generateUploadPresignedUrl = async (req, res) => {
+  try {
+    const { fileName, contentType, productId } = req.body;
+
+    // Validate file type server-side
+    const allowed = [
+      "application/pdf", 
+      "application/zip", 
+      "application/x-zip-compressed",
+      "image/jpeg", 
+      "image/png", 
+      "image/webp"
+    ];
+    
+    if (!allowed.includes(contentType)) {
+      return res.status(400).json({ message: "File type not allowed" });
+    }
+
+    const safeFilename = fileName.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    const r2Key = `products/${productId}/${Date.now()}-${uuidv4()}-${safeFilename}`;
+
+    const uploadUrl = await getPresignedUploadUrl(r2Key, contentType);
+
+    res.json({ uploadUrl, r2Key });
+  } catch (err) {
+    console.error("Presign error:", err);
+    res.status(500).json({ message: "Failed to generate upload URL" });
+  }
+};
+
+export const confirmProductUpload = async (req, res) => {
+  try {
+    const {
+      productId,
+      r2Key,
+      fileName,
+      fileType,
+      fileSize,
+      title,
+      description,
+      category,
+      price,
+      discount,
+      pageCount,
+      language,
+      format,
+      intendedAudience,
+      thumbnailBase64
+    } = req.body;
+
+    let thumbnailUrl = "";
+    let thumbnailKey = "";
+
+    if (thumbnailBase64) {
+      try {
+        const uploadResponse = await cloudinary.uploader.upload(thumbnailBase64, {
+          folder: "contentSellify/thumbnails",
+        });
+        thumbnailUrl = uploadResponse.secure_url;
+        thumbnailKey = uploadResponse.public_id;
+      } catch (err) {
+        console.error("Custom thumbnail upload failed:", err);
+      }
+    }
+
+    // Save to DB with "processing" status immediately
+    const product = await Product.create({
+      _id: productId, // Use the ID passed from frontend
+      sellerId: req.user.id,
+      title: title.trim(),
+      description: description.trim(),
+      category: category || "Software",
+      price: Number(price),
+      discount: discount ? Number(discount) : 0,
+      fileKey: r2Key,
+      fileName: fileName,
+      fileSize: fileSize,
+      fileSizeBytes: fileSize,
+      fileType: fileType,
+      storageProvider: "r2",
+      fileUrl: "",
+      pageCount: Number(pageCount) || 1,
+      language: language,
+      format: format,
+      intendedAudience: intendedAudience,
+      status: "processing", // Crucial: Will be updated by Cloudflare Worker webhook
+      thumbnailUrl: thumbnailUrl,
+      thumbnailKey: thumbnailKey,
+    });
+
+    // Return instantly — Cloudflare Worker handles the rest
+    res.status(202).json({ 
+      message: "Upload confirmed, background processing started",
+      product 
+    });
+  } catch (err) {
+    console.error("Confirm upload error:", err);
+    res.status(500).json({ message: "Failed to confirm upload" });
+  }
+};
+
+export const handleWorkerUploadComplete = async (req, res) => {
+  try {
+    const { r2Key, thumbnailUrl, previewUrl } = req.body;
+
+    // Find the processing product
+    const product = await Product.findOne({ fileKey: r2Key, status: "processing" });
+    if (!product) return res.status(404).json({ error: "Product not found or already processed" });
+
+    console.log(`[Worker Webhook] Received completion for ${r2Key}`);
+
+    let scanResult = { scanned: true, clean: true }; // Default
+
+    try {
+      // Fetch the file from R2
+      const command = new GetObjectCommand({
+        Bucket: R2_BUCKET_NAME,
+        Key: r2Key,
+      });
+      const { Body } = await r2Client.send(command);
+      
+      // Node.js handles the VirusTotal scan instead of the Cloudflare Worker
+      const fileByteArray = await Body.transformToByteArray();
+      const fileBuffer = Buffer.from(fileByteArray);
+      
+      console.log("Starting VirusTotal scan in background...");
+      scanResult = await scanFileWithVirusTotal(fileBuffer, product.fileName);
+    } catch (scanErr) {
+      console.error("Failed to fetch/scan file from R2:", scanErr);
+    }
+
+    const reviewResult = autoReviewContent({
+      title: product.title,
+      pageCount: product.pageCount,
+      fileSizeBytes: product.fileSize,
+      price: product.price,
+      description: product.description
+    });
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      product._id,
+      { 
+        status: scanResult.clean ? "pending" : "rejected", // Move to admin review, or reject if malware
+        rejectionReason: scanResult.clean ? null : scanResult.reason,
+        thumbnailUrl: thumbnailUrl || product.thumbnailUrl,
+        previewPdfUrl: previewUrl || product.previewPdfUrl,
+        contentReviewed: reviewResult.status,
+        contentReviewDate: new Date(),
+        requiresManualReview: reviewResult.requiresManualReview ?? false,
+        reviewSeverity: reviewResult.severity ?? null,
+        reviewFlags: reviewResult.flags ?? [],
+        reviewScore: reviewResult.score ?? null,
+        malwareScanned: scanResult.scanned,
+        malwareScanDate: scanResult.scanDate || new Date(),
+        virusTotalId: scanResult.virusTotalId || null,
+        virusTotalLink: scanResult.scanLink || null,
+        malwareScanDetails: {
+          detections: scanResult.detections || {},
+          basicCheckOnly: scanResult.basicCheckOnly || false,
+        },
+      },
+      { new: true }
+    );
+
+    // Notify the seller that processing is done
+    await createNotification(
+      product.sellerId,
+      "product_processed",
+      "File Processing Complete",
+      `Your upload for "${product.title}" has been processed and is now pending admin review.`,
+      product._id,
+      "Product"
+    );
+
+    // Notify admins about new product pending review
+    const admins = await User.find({ role: "admin" }).select("_id");
+    for (const admin of admins) {
+      await createNotification(
+        admin._id,
+        "product_pending_review",
+        "New Product Pending Review",
+        `A new product "${product.title}" is waiting for approval.`,
+        product._id,
+        "Product",
+        { actionUrl: "/dashboard/admin/products" }
+      );
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Worker Webhook Error:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 

@@ -7,7 +7,8 @@ import { Suspense, useState, useEffect, useRef } from "react";
 import { useTheme } from "next-themes";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, ChevronDown } from "lucide-react";
-import { FaGoogle, FaGithub } from "react-icons/fa";
+import { FaGithub } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 import toast from "react-hot-toast";
 import { authAPI } from "@/lib/api";
 import { setCookie, removeCookie, getCookie, getStoredUser } from "@/lib/cookies";
@@ -65,11 +66,7 @@ function LoginPageContent() {
 
   const getDefaultRouteForUser = (user: any) => {
     const role = user?.role || "buyer";
-    const isSellerApproved =
-      user?.approvalStatus === "approved" || user?.isApproved === true;
-
     if (role === "buyer") return "/marketplace";
-    if (role === "seller" && !isSellerApproved) return "/pending-approval";
     return `/dashboard/${role}`;
   };
 
@@ -210,7 +207,7 @@ function LoginPageContent() {
       <div className="absolute top-1/2 -right-40 w-[600px] h-[600px] rounded-full bg-cyan-500/20 blur-[180px]" />
 
       {/* CARD */}
-      <div className="relative z-10 w-full max-w-md rounded-3xl p-8 bg-slate-100 dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-[0_30px_120px_rgba(56,189,248,0.25)]">
+      <div className="relative z-10 w-full max-w-md rounded-3xl p-6 sm:p-8 bg-slate-100 dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-[0_30px_120px_rgba(56,189,248,0.25)] -mt-10 sm:-mt-16">
 
         {/* LOGO */}
         <div className="flex flex-col items-center justify-center ">
@@ -240,41 +237,22 @@ function LoginPageContent() {
 
         <form onSubmit={handleLogin} className="space-y-4">
 
-          {/* METHOD SWITCH */}
-          <div className="flex bg-slate-100 dark:bg-white/5 rounded-xl p-1">
-            {["email", /* "phone" */].map(m => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setLoginMethod(m as any)}
-                suppressHydrationWarning
-                className={`flex-1 py-2 text-sm rounded-lg transition ${
-                  loginMethod === m ? "bg-white text-black font-semibold" : "text-slate-500 dark:text-white/60"
-                }`}
-              >
-                {m === "email" ? "Email" : "Phone"}
-              </button>
-            ))}
-          </div>
-
           {/* EMAIL */}
-          {loginMethod === "email" && (
-            <input
-              name="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={handleInputChange}
-              suppressHydrationWarning
-              className="
-                w-full px-3 py-2 sm:px-4 sm:py-3
-                text-sm sm:text-base
-                rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10
-                outline-none focus:border-cyan-400
-                focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)]
-                transition
-              "
-            />
-          )}
+          <input
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleInputChange}
+            suppressHydrationWarning
+            className="
+              w-full px-3 py-2 sm:px-4 sm:py-3
+              text-sm sm:text-base
+              rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10
+              outline-none focus:border-cyan-400
+              focus:shadow-[0_0_0_2px_rgba(56,189,248,0.35)]
+              transition
+            "
+          />
 
           {/* PHONE */}
           {/* {loginMethod === "phone" && (
@@ -364,8 +342,8 @@ function LoginPageContent() {
 
         {/* OAUTH */}
         <div className="mt-6 space-y-3">
-          <OAuthButton icon={<FaGoogle />} label="Google" />
-          <OAuthButton icon={<FaGithub />} label="GitHub" />
+          <OAuthButton icon={<FcGoogle size={20} />} label="Google" />
+          <OAuthButton icon={<FaGithub size={20} />} label="GitHub" />
         </div>
 
         <p className="text-center text-sm text-slate-500 dark:text-white/60 mt-6">

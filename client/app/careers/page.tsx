@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
-import { useAuth } from "@/lib/useAuth";
+import DynamicHeader from "@/app/components/DynamicHeader";
 
 interface Career {
   _id: string;
@@ -33,7 +33,6 @@ interface Career {
 export default function CareersPage() {
   const [careers, setCareers] = useState<Career[]>([]);
   const [loading, setLoading] = useState(true);
-  const { isAuthenticated } = useAuth();
   const [effectiveDate, setEffectiveDate] = useState("January 1, 2026");
   const [lastUpdated, setLastUpdated] = useState("February 1, 2026");
 
@@ -63,50 +62,7 @@ export default function CareersPage() {
 
   return (
     <main className="relative min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white overflow-x-hidden">
-      {/* HEADER */}
-      <header className="fixed top-0 left-0 right-0 z-40 h-16 sm:h-20 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#05050a]/80 backdrop-blur-xl">
-        <nav className="mx-auto flex h-full max-w-7xl items-center justify-between px-5 md:px-6">
-          <div className="flex items-center">
-            <Image
-              src="/bitforge_logo1.png"
-              alt="BitForge logo"
-              width={256}
-              height={256}
-              className="h-10 w-auto sm:h-12 drop-shadow-[0_0_20px_rgba(56,189,248,0.45)]"
-              priority
-            />
-            <span className="-ml-3 text-lg font-bold tracking-tight sm:-ml-4 sm:text-2xl bg-linear-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent leading-tight">
-              BitForge
-            </span>
-          </div>
-
-          <div className="flex items-center gap-4 text-sm">
-            {!isAuthenticated ? (
-              <>
-                <Link
-                  href="/login"
-                  className="rounded-lg border border-slate-300 dark:border-white/20 px-3 py-1.5 text-slate-700 dark:text-white/80 hover:border-cyan-400 hover:text-slate-900 dark:hover:text-white"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/register"
-                  className="hidden rounded-lg bg-cyan-600 dark:bg-linear-to-r dark:from-cyan-400 dark:to-indigo-500 px-4 py-1.5 text-sm font-semibold text-white dark:text-black shadow-md dark:shadow-[0_0_26px_rgba(56,189,248,0.7)] hover:bg-cyan-700 dark:hover:bg-transparent sm:inline-flex"
-                >
-                  Join BitForge
-                </Link>
-              </>
-            ) : (
-              <Link
-                href="/dashboard"
-                className="rounded-lg bg-cyan-600 dark:bg-linear-to-r dark:from-cyan-400 dark:to-indigo-500 px-4 py-1.5 text-sm font-semibold text-white dark:text-black shadow-md dark:shadow-[0_0_26px_rgba(56,189,248,0.7)] hover:bg-cyan-700 dark:hover:bg-transparent"
-              >
-                Dashboard
-              </Link>
-            )}
-          </div>
-        </nav>
-      </header>
+      <DynamicHeader title="Careers" />
 
       {/* BACKGROUND GLOW — dark mode only */}
       <div className="pointer-events-none fixed inset-0 z-0 opacity-40 dark:opacity-70 hidden dark:block">

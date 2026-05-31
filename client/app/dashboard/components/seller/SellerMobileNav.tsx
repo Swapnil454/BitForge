@@ -8,6 +8,11 @@ import { motion } from "framer-motion";
 export default function SellerMobileNav() {
   const pathname = usePathname();
 
+  // Hide mobile nav on pages where we have sticky action bars at the bottom
+  if (pathname?.includes('/promotions/create')) {
+    return null;
+  }
+
   const navItems = [
     { label: "Home", href: "/dashboard/seller", icon: Home },
     { label: "Products", href: "/dashboard/seller/products", icon: FolderOpen },
@@ -17,8 +22,8 @@ export default function SellerMobileNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[500] bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl border-t border-slate-200/50 dark:border-slate-800/50 px-2 py-2 pb-safe flex items-center justify-between shadow-[0_-8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.4)]">
-      <div className="flex items-center justify-around h-[72px] relative w-full max-w-md mx-auto">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[500] bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl border-t border-slate-200/50 dark:border-slate-800/50 px-2 pt-1 pb-safe flex items-center justify-between shadow-[0_-8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.4)]">
+      <div className="flex items-center justify-around h-16 relative w-full max-w-md mx-auto">
         
         {navItems.slice(0, 2).map((item) => {
           const isActive = item.href === "/dashboard/seller" 
@@ -45,11 +50,11 @@ export default function SellerMobileNav() {
         <div className="w-16 flex items-center justify-center h-full relative">
           <Link 
             href="/dashboard/seller/upload"
-            className={`absolute -top-7 flex flex-col items-center justify-center w-16 h-16 active:scale-95 transition-all ${pathname?.startsWith("/dashboard/seller/upload") ? "scale-110 drop-shadow-[0_4px_10px_rgba(79,70,229,0.4)]" : "drop-shadow-lg hover:scale-105"}`}
+            className={`absolute -top-5 flex flex-col items-center justify-center w-14 h-14 active:scale-95 transition-all ${pathname?.startsWith("/dashboard/seller/upload") ? "scale-110 drop-shadow-[0_4px_10px_rgba(79,70,229,0.4)]" : "drop-shadow-lg hover:scale-105"}`}
           >
             <img src="/upload_icon.png" alt="Upload" className="w-full h-full object-contain drop-shadow-sm" />
           </Link>
-          <span className={`text-[10px] absolute bottom-[15px] transition-colors ${pathname?.startsWith("/dashboard/seller/upload") ? "font-semibold text-indigo-600 dark:text-indigo-400" : "font-medium text-slate-500 dark:text-slate-400"}`}>
+          <span className={`text-[10px]  absolute bottom-2.5 transition-colors ${pathname?.startsWith("/dashboard/seller/upload") ? "font-semibold text-indigo-600 dark:text-indigo-400" : "font-medium text-slate-500 dark:text-slate-400"}`}>
             Upload
           </span>
         </div>

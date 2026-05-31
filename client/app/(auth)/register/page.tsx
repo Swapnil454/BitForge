@@ -1,10 +1,10 @@
 
-
 "use client";
 
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { FaGoogle, FaGithub } from "react-icons/fa";
+import { FaGithub } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 import { FiPhone } from "react-icons/fi";
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -178,9 +178,9 @@ function RegisterForm() {
         </div>
 
         {/* OAUTH */}
-        <div className="space-y-2">
-          <OAuthButton label="Google" role={role} />
-          <OAuthButton label="GitHub" role={role} />
+        <div className="space-y-3">
+          <OAuthButton icon={<FcGoogle size={20} />} label="Google" role={role} />
+          <OAuthButton icon={<FaGithub size={20} />} label="GitHub" role={role} />
         </div>
 
         <p className="text-center text-sm text-slate-500 dark:text-white/60 mt-4">
@@ -195,16 +195,17 @@ function RegisterForm() {
 }
 
 
-function OAuthButton({ label, role }: any) {
+function OAuthButton({ icon, label, role }: any) {
   return (
     <button
       onClick={() =>
         (window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/oauth/${label.toLowerCase()}?role=${role}`)
       }
-      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] transition text-sm"
+      type="button"
+      className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] transition"
     >
-      {label === "Google" ? <FaGoogle size={14} /> : <FaGithub size={14} />}
-      Continue with {label}
+      {icon}
+      <span className="text-sm font-semibold">Continue with {label}</span>
     </button>
   );
 }

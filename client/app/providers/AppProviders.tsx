@@ -91,10 +91,35 @@ export default function AppProviders({ children }: AppProvidersProps) {
     // Hard refresh to reload current page with active status
     window.location.reload();
   };
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  // Check authentication status on mount and path change for conditional themes
+  useEffect(() => {
+    setIsAuthenticated(!!getCookie("token"));
+  }, [pathname]);
+
   // Force dark only on public brand/auth pages. Do not tie forcedTheme to auth
   // cookie detection; production cookies can be unavailable while localStorage
   // still has a valid user, and forcedTheme makes setTheme() intentionally inert.
-  const isForceDarkRoute = pathname === "/" || pathname === "/login" || pathname === "/register" || pathname === "/forgot-password" || pathname === "/reset-password";
+  const isAlwaysDarkRoute = 
+    pathname === "/" || 
+    pathname === "/login" || 
+    pathname === "/register" || 
+    pathname === "/forgot-password" || 
+    pathname === "/reset-password";
+
+  const isConditionalDarkRoute = 
+    pathname === "/about" || 
+    pathname === "/contact" || 
+    pathname === "/careers" || 
+    pathname === "/legal/terms-and-conditions" || 
+    pathname === "/legal/privacy-policy" || 
+    pathname === "/legal/refund-cancellation-policy" || 
+    pathname === "/trust-center" || 
+    pathname?.startsWith("/docs") || 
+    pathname === "/status";
+
+  const shouldForceDark = isAlwaysDarkRoute || (isConditionalDarkRoute && !isAuthenticated);
 
   return (
     <ThemeProvider 
@@ -102,7 +127,7 @@ export default function AppProviders({ children }: AppProvidersProps) {
       defaultTheme="system" 
       enableSystem={true}
       disableTransitionOnChange
-      forcedTheme={isForceDarkRoute ? "dark" : undefined}
+      forcedTheme={shouldForceDark ? "dark" : undefined}
     >
       <QueryProvider>
         {children}

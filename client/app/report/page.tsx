@@ -28,7 +28,7 @@ const FloatingInput = ({ label, name, type = "text", value, onChange, error, req
   
   return (
     <div className="relative w-full">
-      <div className={`relative rounded-xl transition-all bg-[#FFFFFF] dark:bg-[#1A1A1F] ${focused ? 'ring-[3px] ring-[#6C63FF]/15 border border-[#6C63FF]' : error ? 'border border-red-500' : 'border border-transparent border-b-2 border-b-[#E5E7EB] dark:border-b-[rgba(255,255,255,0.08)] hover:bg-[#F5F5F7] dark:hover:bg-[#2A2A35]'}`}>
+      <div className={`relative rounded-xl transition-all bg-[#F5F5F7] dark:bg-[rgba(255,255,255,0.04)] ${focused ? 'ring-[3px] ring-[#6C63FF]/15 border border-[#6C63FF]' : error ? 'border border-red-500' : 'border border-transparent border-b-2 border-b-[#E5E7EB] dark:border-b-[rgba(255,255,255,0.08)] hover:bg-[#E5E7EB]/50 dark:hover:bg-[rgba(255,255,255,0.06)]'}`}>
         <input
           type={type}
           name={name}
@@ -331,7 +331,7 @@ export default function ReportPage() {
                     <button
                       type="button"
                       onClick={() => setDropdownOpen(!dropdownOpen)}
-                      className={`w-full flex items-center justify-between px-4 py-4 bg-[#FFFFFF] dark:bg-[#1A1A1F] border rounded-xl transition-all text-left ${errors.issueType ? 'border-red-500' : 'border border-transparent border-b-2 border-b-[#E5E7EB] dark:border-b-[rgba(255,255,255,0.08)] hover:bg-[#F5F5F7] dark:hover:bg-[#2A2A35]'}`}
+                      className={`w-full flex items-center justify-between px-4 py-4 bg-[#F5F5F7] dark:bg-[rgba(255,255,255,0.04)] border rounded-xl transition-all text-left ${errors.issueType ? 'border-red-500' : 'border border-transparent border-b-2 border-b-[#E5E7EB] dark:border-b-[rgba(255,255,255,0.08)] hover:bg-[#E5E7EB]/50 dark:hover:bg-[rgba(255,255,255,0.06)]'}`}
                     >
                       <div className="flex-1">
                         <div className="text-[11px] font-semibold text-[#6C63FF] mb-0.5">Issue Type *</div>
@@ -393,7 +393,7 @@ export default function ReportPage() {
 
                   {/* Textarea */}
                   <div>
-                    <div className={`relative rounded-xl transition-all bg-[#FFFFFF] dark:bg-[#1A1A1F] ${errors.description ? 'border border-red-500' : 'border border-transparent border-b-2 border-b-[#E5E7EB] dark:border-b-[rgba(255,255,255,0.08)] focus-within:ring-[3px] focus-within:ring-[#6C63FF]/15 focus-within:border-[#6C63FF]'}`}>
+                    <div className={`relative rounded-xl transition-all bg-[#F5F5F7] dark:bg-[rgba(255,255,255,0.04)] ${errors.description ? 'border border-red-500' : 'border border-transparent border-b-2 border-b-[#E5E7EB] dark:border-b-[rgba(255,255,255,0.08)] focus-within:ring-[3px] focus-within:ring-[#6C63FF]/15 focus-within:border-[#6C63FF]'}`}>
                       <div className="px-4 pt-3 pb-1 flex justify-between items-center">
                         <span className="text-[11px] font-semibold text-[#6C63FF]">Description *</span>
                         <span className={`text-[10px] font-medium ${

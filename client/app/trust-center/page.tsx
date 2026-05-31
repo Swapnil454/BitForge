@@ -27,7 +27,7 @@ export default async function TrustCenterPage() {
       <div className="relative z-10 mx-auto max-w-6xl px-5 pb-20 pt-16 sm:pt-20 md:pb-28">
 
         {/* HERO */}
-        <section className="mb-6 max-w-4xl pt-2">
+        <section className="mb-6 max-w-4xl mt-7 pt-2">
           <h1 className="text-3xl font-black tracking-tight leading-tight sm:text-4xl md:text-5xl text-slate-900 dark:text-white mb-1">
             Security, privacy, and compliance
             <span className="mt-1 block bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500 bg-clip-text text-transparent leading-tight pb-0.5 dark:from-cyan-400 dark:via-sky-400 dark:to-indigo-400">

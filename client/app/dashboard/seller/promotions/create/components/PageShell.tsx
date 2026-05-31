@@ -11,10 +11,10 @@ export function PageShell({ children }: { children: React.ReactNode }) {
         backHref="/dashboard/seller/promotions"
         backLabel="Promotions"
         title="Create Promotion"
-        subtitle="One request promotes one approved product in the marketplace hero"
+        subtitle=""
       />
 
-      <div className="mx-auto max-w-7xl px-4 pt-6 pb-2 flex justify-center">
+      <div className="mx-auto max-w-7xl px-2 pt-3 md:px-4 md:pt-6 pb-2 flex justify-center">
         <div className="bg-white dark:bg-slate-800 p-1 rounded-full shadow-sm border border-slate-200 dark:border-slate-700 flex items-center gap-1">
           <button
             onClick={() => setLayoutType('modern')}

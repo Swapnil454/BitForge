@@ -109,32 +109,21 @@ export default function PurchasesPage() {
     setDownloadingOrderId(orderId);
 
     try {
-      const response = await api.get(`/download/${orderId}`, { responseType: "blob" });
+      const response = await api.get(`/download/${orderId}`);
 
-      const contentType = response.headers["content-type"] || "application/pdf";
-      const blob = new Blob([response.data], { type: contentType });
-      const url = window.URL.createObjectURL(blob);
+      if (response.data?.mode === "redirect" && response.data?.downloadUrl) {
+        const link = document.createElement("a");
+        link.href = response.data.downloadUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-      const contentDisposition = response.headers["content-disposition"];
-      let filename = "download.pdf";
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename="(.+?)"|filename=([^;\s]+)/);
-        if (match) filename = match[1] || match[2];
+        toast.dismiss(loadingToast);
+        toast.success("Download started securely!");
+        void fetchPage(1, true);
+      } else {
+        throw new Error("Invalid download response format");
       }
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      toast.dismiss(loadingToast);
-      toast.success("Download started successfully");
-
-      // Refresh the current visible list in-place (don't reset scroll)
-      void fetchPage(1, true);
     } catch (error: any) {
       toast.dismiss(loadingToast);
 

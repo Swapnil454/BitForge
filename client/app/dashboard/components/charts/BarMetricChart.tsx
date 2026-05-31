@@ -24,7 +24,7 @@ interface BarMetricChartProps<T> {
 export function BarMetricChart<T extends { month: string }>({
   data,
   dataKey,
-  height = 160,
+  height = 220,
   gradientId = "barGradient",
   barColor = "#6366f1",
   emptyIcon = "",
@@ -64,7 +64,7 @@ export function BarMetricChart<T extends { month: string }>({
       <ResponsiveContainer width="100%" height="100%">
         <BarChart 
           data={displayData} 
-          margin={{ top: 8, right: 16, left: 16, bottom: 0 }}
+          margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
           onMouseMove={(state: any) => {
             if (state && state.isTooltipActive && state.activePayload && state.activePayload.length) {
               onActivePayloadChange?.(state.activePayload[0].payload);
@@ -76,12 +76,14 @@ export function BarMetricChart<T extends { month: string }>({
         >
           <XAxis
             dataKey="month"
-            tick={{ fill: "#a5b4fc", fontSize: 11, fontWeight: 600 }}
+            padding={{ left: 15, right: 15 }}
+            tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 500 }}
             axisLine={false}
             tickLine={false}
             interval="preserveStartEnd"
+            dy={10}
           />
-          <YAxis hide />
+          <YAxis hide domain={[0, 'dataMax']} padding={{ top: 20, bottom: 0 }} />
           <Tooltip
             contentStyle={{
               background: "#18181b",
@@ -113,9 +115,8 @@ export function BarMetricChart<T extends { month: string }>({
           />
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={barColor} stopOpacity={0.8} />
-              <stop offset="80%" stopColor={barColor} stopOpacity={0.2} />
-              <stop offset="100%" stopColor="#fff" stopOpacity={0.01} />
+              <stop offset="0%" stopColor={barColor} stopOpacity={1} />
+              <stop offset="100%" stopColor={barColor} stopOpacity={0.4} />
             </linearGradient>
           </defs>
         </BarChart>

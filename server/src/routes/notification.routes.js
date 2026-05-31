@@ -6,6 +6,7 @@ import {
   markNotificationAsRead,
   markAllAsRead,
   deleteNotification,
+  deleteBulkNotifications,
   getNotificationPreferences,
   updateNotificationPreferences,
   registerPushToken,
@@ -36,6 +37,9 @@ router.patch("/:notificationId/read", markNotificationAsRead);
 
 // Mark all as read
 router.patch("/all/mark-as-read", markAllAsRead);
+
+// Delete bulk notifications
+router.post("/bulk-delete", deleteBulkNotifications);
 
 // Delete notification
 router.delete("/:notificationId", deleteNotification);
