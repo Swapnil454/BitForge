@@ -8,6 +8,7 @@ const SELLER_TABS = [
   "/dashboard/seller",
   "/dashboard/seller/products",
   "/dashboard/seller/promotions",
+  "/dashboard/seller/reviews",
   "/dashboard/seller/settings",
 ];
 

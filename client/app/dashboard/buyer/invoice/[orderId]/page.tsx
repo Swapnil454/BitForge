@@ -67,6 +67,13 @@ export default function InvoicePage() {
     });
   };
 
+  const formatSignatureDate = (date: string) => {
+    if (!date) return "N/A";
+    const d = new Date(date);
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${d.getUTCFullYear()}.${pad(d.getUTCMonth() + 1)}.${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())} UTC`;
+  };
+
   const formatMoney = (amount: number) => {
     const value = Number.isFinite(Number(amount)) ? Number(amount) : 0;
     return `Rs. ${value.toLocaleString("en-IN", {
@@ -242,22 +249,37 @@ export default function InvoicePage() {
         @media print {
           @page {
             size: A4;
-            margin: 0;
-          }
-
-          body {
-            background: #ffffff !important;
             margin: 10mm;
           }
 
-          body > *:not(main) {
+          /* Hide common layout wrappers and specific non-print elements */
+          header, nav, aside, footer, .no-print {
             display: none !important;
+          }
+
+          body, html {
+            background: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
           }
 
           main {
             min-height: 0 !important;
             padding: 0 !important;
+            margin: 0 !important;
             background: transparent !important;
+          }
+
+          /* Reset width constraints */
+          .max-w-4xl, .mx-auto {
+            max-width: none !important;
+            margin: 0 !important;
+          }
+
+          /* Reset height enforcements that cause blank 2nd pages */
+          .min-h-screen, .h-screen, .h-full {
+            min-height: 0 !important;
+            height: auto !important;
           }
 
           .print-area {
@@ -276,19 +298,17 @@ export default function InvoicePage() {
           .print-area .gap-5 {
             gap: 12px !important;
           }
-
-          .no-print {
-            display: none !important;
-          }
         }
       `}</style>
 
-      <PageHeader
-        backLabel="Back"
-        title="Tax Invoice"
-        subtitle={invoice?.invoiceNumber ? `Invoice #${invoice.invoiceNumber}` : ""}
-        rightSlot={<div className="hidden sm:flex gap-3">{actionButtons}</div>}
-      />
+      <div className="no-print">
+        <PageHeader
+          backLabel="Back"
+          title="Tax Invoice"
+          subtitle={invoice?.invoiceNumber ? `Invoice #${invoice.invoiceNumber}` : ""}
+          rightSlot={<div className="hidden sm:flex gap-3">{actionButtons}</div>}
+        />
+      </div>
 
       <main className="min-h-screen bg-slate-100 dark:bg-[#06070b] px-4 py-5 text-slate-900 dark:text-white sm:px-6 sm:py-8">
         <div className="mx-auto max-w-4xl">
@@ -303,8 +323,20 @@ export default function InvoicePage() {
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="text-3xl font-extrabold tracking-tight text-slate-900">BitForge</p>
-                  <p className="mt-1 text-sm text-slate-500">India&apos;s Trusted Digital Marketplace</p>
-                  <p className="mt-4 text-xs font-black uppercase tracking-[0.2em] text-violet-600">Tax Invoice</p>
+                  <p className="mt-1 text-xs font-black uppercase tracking-[0.2em] text-slate-900">Tax Invoice</p>
+
+                  <div className="mt-5 relative inline-block text-[10.5px] leading-[1.35] text-black">
+                    <p>Signature valid</p>
+                    <p>Digitally signed by Bitforge Technologies Pvt. Ltd</p>
+                    <p className="mt-2">Date: {formatSignatureDate(invoice.invoiceDate || invoice.createdAt)}</p>
+                    <p>Reason: Invoice</p>
+                    
+                    <div className="absolute top-[65%] left-[55%] -translate-y-1/2 w-14 h-14 opacity-95 pointer-events-none" style={{ filter: 'drop-shadow(1px 1px 0px rgba(0,0,0,0.5))', transform: 'translateY(-50%) rotate(-5deg) scaleY(1.1)' }}>
+                      <svg viewBox="0 0 100 100" className="w-full h-full">
+                        <path d="M 25 50 L 40 65 L 75 30 L 85 40 L 40 85 L 15 60 Z" fill="#16a34a" stroke="black" strokeWidth="2" strokeLinejoin="miter" />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid gap-3 text-sm sm:text-right">
@@ -320,16 +352,16 @@ export default function InvoicePage() {
               </div>
             </div>
 
-            <div className="grid gap-4 border-b border-slate-200 px-5 py-5 sm:grid-cols-2 sm:px-8">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Billed To</p>
-                <p className="mt-3 text-base font-semibold text-slate-950">{invoice.buyerName || "Valued Customer"}</p>
-                <p className="mt-1 break-all text-sm text-slate-600">{invoice.buyerEmail || "N/A"}</p>
+            <div className="grid gap-4 border-b border-slate-200 px-5 py-4 sm:grid-cols-2 sm:px-8">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Seller</p>
+                <p className="mt-2 text-sm font-semibold text-slate-950">{invoice.sellerName || "BitForge Seller"}</p>
+                <p className="mt-0.5 text-xs text-slate-600">Sold via BitForge platform</p>
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Seller</p>
-                <p className="mt-3 text-base font-semibold text-slate-950">{invoice.sellerName || "BitForge Seller"}</p>
-                <p className="mt-1 text-sm text-slate-600">Sold via BitForge platform</p>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Billed To</p>
+                <p className="mt-2 text-sm font-semibold text-slate-950">{invoice.buyerName || "Valued Customer"}</p>
+                <p className="mt-0.5 break-all text-xs text-slate-600">{invoice.buyerEmail || "N/A"}</p>
               </div>
             </div>
 
@@ -359,7 +391,6 @@ export default function InvoicePage() {
                 <div className="grid grid-cols-[minmax(0,1fr)_56px_104px_104px] gap-3 px-4 py-4 text-sm">
                   <div>
                     <p className="font-semibold text-slate-950">{invoice.productName || "Digital Product"}</p>
-                    <p className="mt-1 text-xs leading-5 text-slate-500">{invoice.productDescription?.substring(0, 140) || "Digital download"}</p>
                   </div>
                   <div className="text-center text-slate-700">1</div>
                   <div className="text-right text-slate-700">{formatMoney(totals.originalPrice)}</div>
@@ -371,7 +402,6 @@ export default function InvoicePage() {
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Line Item</p>
                 <div className="mt-3 border-b border-slate-200 pb-3">
                   <p className="text-base font-semibold text-slate-950">{invoice.productName || "Digital Product"}</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{invoice.productDescription?.substring(0, 200) || "Digital download"}</p>
                 </div>
                 <div className="mt-4 grid gap-3">
                   <MobileStat label="Quantity" value="1" />
@@ -381,46 +411,44 @@ export default function InvoicePage() {
               </div>
             </div>
 
-            <div className="grid gap-5 border-b border-slate-200 px-5 py-5 sm:px-8 lg:grid-cols-[1fr_320px] lg:items-start">
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Payment Status</p>
-                <p className="mt-2 text-lg font-semibold text-emerald-800">Paid</p>
-                <p className="mt-1 text-sm text-emerald-700">This invoice is based on the actual values stored for this order.</p>
-              </div>
-
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <div className="flex justify-between gap-4 py-2 text-sm">
-                  <span className="text-slate-600">Subtotal</span>
-                  <span className="font-medium text-slate-950">{formatMoney(totals.subtotal)}</span>
+            <div className="flex flex-col items-end border-b border-slate-200 px-5 py-4 sm:px-8">
+              <div className="w-full sm:w-80 text-sm">
+                <div className="flex justify-between gap-4 py-1.5 text-slate-600">
+                  <span>Subtotal</span>
+                  <span className="font-medium text-slate-900">{formatMoney(totals.subtotal)}</span>
                 </div>
                 {totals.discountAmount > 0 && (
-                  <div className="flex justify-between gap-4 py-2 text-sm text-emerald-700">
+                  <div className="flex justify-between gap-4 py-1.5 text-emerald-700">
                     <span>Discount ({totals.discountPercent}%)</span>
                     <span>-{formatMoney(totals.discountAmount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between gap-4 py-2 text-sm">
-                  <span className="text-slate-600">GST ({totals.gstPercent}%)</span>
-                  <span className="font-medium text-slate-950">{formatMoney(totals.gstAmount)}</span>
+                <div className="flex justify-between gap-4 py-1.5 text-slate-600">
+                  <span>GST ({totals.gstPercent}%)</span>
+                  <span className="font-medium text-slate-900">{formatMoney(totals.gstAmount)}</span>
                 </div>
-                <div className="flex justify-between gap-4 py-2 text-sm">
-                  <span className="text-slate-600">Platform Fee ({totals.platformPercent}%)</span>
-                  <span className="font-medium text-slate-950">{formatMoney(totals.platformFee)}</span>
+                <div className="flex justify-between gap-4 py-1.5 text-slate-600">
+                  <span>Platform Fee ({totals.platformPercent}%)</span>
+                  <span className="font-medium text-slate-900">{formatMoney(totals.platformFee)}</span>
                 </div>
-                <div className="mt-2 flex justify-between gap-4 border-t border-slate-200 pt-3 text-base font-semibold text-slate-950">
+                <div className="mt-2 flex justify-between gap-4 border-t border-slate-200 pt-2 text-base font-bold text-slate-950">
                   <span>Total Paid</span>
                   <span>{formatMoney(totals.totalPaid)}</span>
+                </div>
+                <div className="mt-3 text-right">
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-900">
+                    Status: Paid
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className="border-b border-slate-200 px-5 py-5 sm:px-8">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Notes</p>
-              <p className="mt-3 text-sm leading-6 text-slate-600">This is a digitally generated invoice. No physical signature is required. For invoice support, contact support@bittforge.in.</p>
-            </div>
-
-            <div className="bg-slate-50 px-5 py-4 text-center text-sm text-slate-600 sm:px-8">
-              <p className="font-medium text-slate-900">Thank you for your purchase.</p>
+            <div className="bg-slate-50 px-5 py-4 sm:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between text-[10px] text-slate-500 rounded-b-[30px]">
+              <div>
+                <p>This is a digitally generated invoice. No physical signature is required.</p>
+                <p>For invoice support, contact support@bittforge.in.</p>
+              </div>
+              <p className="mt-2 sm:mt-0 font-medium text-slate-700">Thank you for your purchase.</p>
             </div>
           </section>
         </div>

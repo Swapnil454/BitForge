@@ -3,6 +3,7 @@ export interface Purchase {
   orderId: string;
   productName: string;
   productId: string | null;
+  productSlug?: string | null;
   thumbnailUrl: string | null;
   sellerName: string;
   amount: number;

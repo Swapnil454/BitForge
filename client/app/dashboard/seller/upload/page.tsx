@@ -129,7 +129,7 @@ export default function UploadAndProductsPage() {
   const showVerificationWarning = user && !isApproved && products.length >= 2;
 
   const finalPrice =
-    price && discount ? Math.max(price - (price * discount) / 100, 0) : price;
+    price && discount ? Number(Math.max(price - (price * discount) / 100, 0).toFixed(2)) : price;
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {

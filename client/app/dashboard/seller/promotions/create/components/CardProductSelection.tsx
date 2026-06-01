@@ -10,7 +10,7 @@ export function CardProductSelection({ isRenewing = false }: { isRenewing?: bool
   const searchParams = useSearchParams();
   const queryProductId = searchParams.get('productId');
   const { selectedProductId, setProduct, setProductLoadingState, productLoadingState, targetLink, setBannerContent } = usePromotionFormStore();
-  const [products, setProducts] = useState<{ _id: string; title: string; thumbnailUrl?: string; status: string }[]>([]);
+  const [products, setProducts] = useState<{ _id: string; slug?: string; title: string; thumbnailUrl?: string; status: string }[]>([]);
   const [isEditing, setIsEditing] = useState(!selectedProductId);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -85,7 +85,7 @@ export function CardProductSelection({ isRenewing = false }: { isRenewing?: bool
     });
     
     // Auto-populate target link based on selected product
-    usePromotionFormStore.getState().setBannerContent({ targetLink: `/marketplace/${id}` });
+    usePromotionFormStore.getState().setBannerContent({ targetLink: `/product/${p.slug || id}` });
     
     setIsEditing(false);
   };

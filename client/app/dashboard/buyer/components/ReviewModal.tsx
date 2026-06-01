@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { reviewAPI } from "@/lib/api";
+import api from "@/lib/api";
 import toast from "react-hot-toast";
-import { Star, AlertTriangle, Lightbulb, PenLine, X, Info, Check, Loader2 } from "lucide-react";
+import { Star, AlertTriangle, Lightbulb, PenLine, X, Info, Check, Loader2, Camera } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ReviewModalProps {
@@ -25,7 +26,11 @@ export default function ReviewModal({
 }: ReviewModalProps) {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
+  const [title, setTitle] = useState("");
   const [comment, setComment] = useState("");
+  const [images, setImages] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [submitting, setSubmitting] = useState(false);
   const [canReview, setCanReview] = useState(true);
   const [canReviewReason, setCanReviewReason] = useState("");
@@ -45,7 +50,6 @@ export default function ReviewModal({
       if (!result.canReview) {
         const reason = result.reason || result.message || "You cannot review this product";
         setCanReviewReason(reason);
-        toast.error(reason);
       }
     } catch (error: any) {
       console.error("Failed to check review eligibility:", error);
@@ -56,6 +60,33 @@ export default function ReviewModal({
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      if (images.length + filesArray.length > 3) {
+        toast.error("You can only upload a maximum of 3 images.");
+        return;
+      }
+      
+      const newImages = [...images, ...filesArray];
+      setImages(newImages);
+      
+      const newPreviewUrls = filesArray.map(file => URL.createObjectURL(file));
+      setPreviewUrls([...previewUrls, ...newPreviewUrls]);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const newImages = [...images];
+    newImages.splice(index, 1);
+    setImages(newImages);
+
+    const newPreviewUrls = [...previewUrls];
+    URL.revokeObjectURL(newPreviewUrls[index]);
+    newPreviewUrls.splice(index, 1);
+    setPreviewUrls(newPreviewUrls);
+  };
+
   const handleSubmit = async () => {
     if (rating === 0) {
       toast.error("Please select a star rating");
@@ -64,15 +95,26 @@ export default function ReviewModal({
 
     try {
       setSubmitting(true);
-      await reviewAPI.createReview({
-        productId,
-        orderId,
-        rating,
-        comment: comment.trim(),
+      const formData = new FormData();
+      formData.append("productId", productId);
+      formData.append("orderId", orderId);
+      formData.append("rating", rating.toString());
+      if (title.trim()) formData.append("title", title.trim());
+      if (comment.trim()) formData.append("comment", comment.trim());
+      
+      images.forEach((image) => {
+        formData.append("images", image);
+      });
+
+      await api.post("/reviews", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
       toast.success("Review submitted successfully!");
       setRating(0);
+      setTitle("");
       setComment("");
+      setImages([]);
+      setPreviewUrls([]);
       onReviewSubmitted?.();
       onClose();
     } catch (error: any) {
@@ -83,10 +125,13 @@ export default function ReviewModal({
   };
 
   // Reset state when closed
-  if (!isOpen && (rating > 0 || comment !== "")) {
+  if (!isOpen && (rating > 0 || comment !== "" || title !== "")) {
     setRating(0);
     setHoverRating(0);
+    setTitle("");
     setComment("");
+    setImages([]);
+    setPreviewUrls([]);
   }
 
   return (
@@ -129,16 +174,21 @@ export default function ReviewModal({
             </div>
 
             {/* Drawer body */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+            <div className="flex-1 overflow-y-auto p-5 space-y-6 flex flex-col">
               {checkingEligibility ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-400 mx-auto mb-4"></div>
-                  <p className="text-slate-500 dark:text-white/60 text-sm">Checking eligibility...</p>
+                <div className="flex-1 flex flex-col items-center justify-center text-center py-12">
+                  <Loader2 className="w-10 h-10 text-cyan-500 animate-spin mx-auto mb-4" />
+                  <p className="text-slate-500 dark:text-white/60 text-sm font-medium">Verifying your purchase...</p>
                 </div>
               ) : !canReview ? (
-                <div className="text-center py-8">
-                  <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-4" />
-                  <p className="text-slate-500 dark:text-white/60 text-sm">{canReviewReason || "You cannot review this product at this time."}</p>
+                <div className="flex-1 flex flex-col items-center justify-center text-center py-12 px-4">
+                  <div className="w-20 h-20 bg-amber-50 dark:bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <AlertTriangle className="w-10 h-10 text-amber-500" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Review Unavailable</h3>
+                  <p className="text-slate-500 dark:text-white/60 text-sm max-w-xs mx-auto">
+                    {canReviewReason || "You cannot review this product at this time."}
+                  </p>
                 </div>
               ) : (
                 <>
@@ -176,6 +226,21 @@ export default function ReviewModal({
                     </div>
                   </div>
 
+                  {/* Title */}
+                  <div>
+                    <label className="block text-slate-900 dark:text-white font-semibold text-sm mb-3">
+                      Review Title (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="What's most important to know?"
+                      maxLength={150}
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-[#0a0a0f] border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-white/40 focus:outline-none focus:border-cyan-500/50 transition-colors"
+                    />
+                  </div>
+
                   {/* Comment */}
                   <div>
                     <label className="block text-slate-900 dark:text-white font-semibold text-sm mb-3">
@@ -202,8 +267,47 @@ export default function ReviewModal({
                     </div>
                   </div>
 
+                  {/* Images Upload */}
+                  <div>
+                    <label className="block text-slate-900 dark:text-white font-semibold text-sm mb-3">
+                      Add Photos (Optional)
+                    </label>
+                    <div className="flex flex-wrap gap-3">
+                      {previewUrls.map((url, index) => (
+                        <div key={index} className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 group">
+                          <img src={url} alt={`Preview ${index}`} className="w-full h-full object-cover" />
+                          <button
+                            onClick={() => removeImage(index)}
+                            className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+                      
+                      {images.length < 3 && (
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="w-20 h-20 rounded-lg border-2 border-dashed border-slate-300 dark:border-white/20 hover:border-cyan-500 dark:hover:border-cyan-400 flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors bg-slate-50 dark:bg-white/5"
+                        >
+                          <Camera size={20} />
+                          <span className="text-[10px] font-medium">Add Photo</span>
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleImageChange}
+                    />
+                    <p className="text-xs text-slate-500 mt-2">Up to 3 images allowed.</p>
+                  </div>
+
                   {/* Review Guidelines */}
-                  <div className="bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/20 rounded-xl p-4">
+                  <div className="bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/20 rounded-xl p-4 mt-6">
                     <h3 className="text-cyan-700 dark:text-cyan-300 font-semibold text-sm mb-2 flex items-center gap-2">
                       <Info className="w-4 h-4" />
                       Review Guidelines

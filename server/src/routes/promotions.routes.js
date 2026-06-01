@@ -7,7 +7,10 @@ import {
 
 const router = express.Router();
 
-router.get("/active", getActivePromotions);
+// Cache active promotions for 60 seconds in the browser/CDN
+const cacheFor = (req, res, next) => { res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=30"); next(); };
+
+router.get("/active", cacheFor, getActivePromotions);
 router.post("/:id/impression", recordPromotionImpression);
 router.post("/:id/click", recordPromotionClick);
 

@@ -540,6 +540,8 @@ export const marketplaceAPI = {
         category?: string;
         sort?: "newest" | "trending" | "rating" | "price_asc" | "price_desc";
         search?: string;
+        sellerId?: string;
+        sellerSlug?: string;
     }) => {
         const response = await api.get('/marketplace', { params });
         return response.data;

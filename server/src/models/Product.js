@@ -12,6 +12,15 @@ const productSchema = new mongoose.Schema({
     type: String,
     default: "Software"
   },
+  categorySlug: {
+    type: String,
+    index: true,
+  },
+  slug: {
+    type: String,
+    unique: true,
+    index: true,
+  },
   price: Number,
   discount: {
     type: Number,

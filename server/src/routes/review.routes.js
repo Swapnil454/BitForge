@@ -8,6 +8,7 @@ import {
   addSellerResponse
 } from "../controllers/review.controller.js";
 import auth from "../middleware/auth.js";
+import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ router.get("/product/:productId", getProductReviews);
 // Protected routes (require authentication)
 router.use(auth);
 
-router.post("/", createReview);
+router.post("/", upload.array("images", 3), createReview);
 router.get("/can-review/:productId", canReview);
 router.patch("/:reviewId", updateReview);
 router.delete("/:reviewId", deleteReview);

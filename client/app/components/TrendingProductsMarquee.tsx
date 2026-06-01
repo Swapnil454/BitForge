@@ -68,7 +68,7 @@ function CleanProductCard({ product }: { product: any }) {
 
   return (
     <Link 
-      href={`/marketplace/${product._id}`}
+      href={`/product/${product.slug || product._id}`}
       className="group relative flex w-[220px] sm:w-[260px] flex-col rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#12121a] overflow-hidden hover:border-cyan-400/50 transition-all hover:shadow-[0_0_20px_rgba(56,189,248,0.15)] hover:-translate-y-1 flex-shrink-0"
     >
       <div className="relative h-40 w-full bg-slate-200 dark:bg-slate-800 overflow-hidden">

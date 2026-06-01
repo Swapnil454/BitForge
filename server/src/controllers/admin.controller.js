@@ -3920,8 +3920,120 @@ export const getModerationLogs = async (req, res) => {
       totalPages: Math.ceil(total / limitNum),
     });
   } catch (error) {
-    console.error("Error fetching moderation logs:", error);
+    console.error("Get moderation logs error:", error);
     res.status(500).json({ message: "Failed to fetch moderation logs" });
+  }
+};
+
+// ----------------------------------------------------------------------
+// Reviews Moderation
+// ----------------------------------------------------------------------
+
+export const getAllReviewsAdmin = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    
+    // Optional filters
+    const { status, search } = req.query;
+    const query = {};
+    
+    if (status === 'hidden') {
+      query.isHidden = true;
+    } else if (status === 'visible') {
+      query.isHidden = false;
+    }
+    
+    // search could match product title or review comment, but for simplicity we'll just match comment for now
+    if (search) {
+      query.comment = { $regex: search, $options: 'i' };
+    }
+
+    const reviews = await Review.find(query)
+      .populate("buyerId", "name email")
+      .populate("sellerId", "name email")
+      .populate("productId", "title")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Review.countDocuments(query);
+
+    res.json({
+      reviews,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    res.status(500).json({ message: "Failed to fetch reviews" });
+  }
+};
+
+export const toggleReviewVisibilityAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isHidden } = req.body;
+
+    const review = await Review.findById(id);
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    review.isHidden = isHidden;
+    await review.save();
+
+    // Recalculate seller rating after changing visibility
+    const product = await Product.findById(review.productId);
+    if (product) {
+      const sellerReviews = await Review.find({ sellerId: product.sellerId, isHidden: false });
+      const totalRating = sellerReviews.reduce((sum, r) => sum + r.rating, 0);
+      const avgRating = sellerReviews.length > 0 ? totalRating / sellerReviews.length : 0;
+      
+      await User.findByIdAndUpdate(product.sellerId, {
+        averageRating: parseFloat(avgRating.toFixed(2)),
+        ratingCount: sellerReviews.length
+      });
+    }
+
+    res.json({ message: `Review ${isHidden ? 'hidden' : 'made visible'} successfully`, review });
+  } catch (error) {
+    console.error("Error toggling review visibility:", error);
+    res.status(500).json({ message: "Failed to update review visibility" });
+  }
+};
+
+export const deleteReviewAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const review = await Review.findByIdAndDelete(id);
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    // Recalculate seller rating
+    const product = await Product.findById(review.productId);
+    if (product) {
+      const sellerReviews = await Review.find({ sellerId: product.sellerId, isHidden: false });
+      const totalRating = sellerReviews.reduce((sum, r) => sum + r.rating, 0);
+      const avgRating = sellerReviews.length > 0 ? totalRating / sellerReviews.length : 0;
+      
+      await User.findByIdAndUpdate(product.sellerId, {
+        averageRating: parseFloat(avgRating.toFixed(2)),
+        ratingCount: sellerReviews.length
+      });
+    }
+
+    res.json({ message: "Review deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting review:", error);
+    res.status(500).json({ message: "Failed to delete review" });
   }
 };
 

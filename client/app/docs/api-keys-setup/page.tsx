@@ -26,7 +26,7 @@ export default function APIKeysSetupPage() {
           API Keys Setup
         </h1>
         <p className="text-lg text-slate-600 dark:text-white/70">
-          Configure Razorpay payments, RazorpayX payouts, and OAuth authentication for Google and GitHub.
+          Configure API keys to connect external services to your BitForge digital product marketplace. This includes setting up Razorpay for payment processing, RazorpayX for automated seller payouts, and OAuth for secure Google and GitHub authentication.
         </p>
       </div>
 

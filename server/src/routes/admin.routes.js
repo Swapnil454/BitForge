@@ -58,7 +58,10 @@ import {
   viewIdentityDocument,
   getProductAnalytics,
   getProductReport,
-  getModerationLogs
+  getModerationLogs,
+  getAllReviewsAdmin,
+  toggleReviewVisibilityAdmin,
+  deleteReviewAdmin
 } from "../controllers/admin.controller.js";
 
 import {
@@ -121,6 +124,11 @@ router.get("/moderation/logs", getModerationLogs);
 router.get("/products/changes/pending", getPendingProductChanges);
 router.post("/products/:id/changes/approve", approveProductChange);
 router.post("/products/:id/changes/reject", rejectProductChange);
+
+// Reviews
+router.get("/reviews", getAllReviewsAdmin);
+router.patch("/reviews/:id/hide", toggleReviewVisibilityAdmin);
+router.delete("/reviews/:id", deleteReviewAdmin);
 
 // Payouts
 router.get("/payouts/pending", getPendingPayouts);

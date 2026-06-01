@@ -24,6 +24,7 @@ interface RecentPurchase {
 
 interface Product {
   _id: string;
+  slug?: string;
   title: string;
   description: string;
   price: number;
@@ -650,7 +651,7 @@ export default function ProductDetailsPage() {
                 Edit Product
               </button>
               <a
-                href={`/marketplace/${product._id}`}
+                href={`/product/${product.slug || product._id}`}
                 target="_blank"
                 rel="noreferrer"
                 className="mt-3 w-full h-11 rounded-xl border border-slate-200 dark:border-white/10 inline-flex items-center justify-center text-sm font-semibold text-slate-700 dark:text-white/80 hover:border-slate-300 dark:hover:border-white/20 transition"

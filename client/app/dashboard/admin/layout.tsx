@@ -9,6 +9,7 @@ const NAV_ROUTES = [
   "/dashboard/admin/products",
   "/dashboard/admin/promotions",
   "/dashboard/admin/security",
+  "/dashboard/admin/reviews",
   "/dashboard/admin/inquiries",
 ];
 

@@ -184,7 +184,7 @@ export default function PurchaseDetailsPage() {
   const currency = new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 2,
   });
 
   if (loading) {
@@ -332,7 +332,7 @@ export default function PurchaseDetailsPage() {
         backHref="/dashboard/buyer/downloads"
         backLabel="Downloads"
         title="Purchase Details"
-        subtitle={`Transaction #${purchase.orderId}`}
+        subtitle={`#${purchase.orderId}`}
         rightSlot={
           <div className="flex items-center gap-2">
              <button 

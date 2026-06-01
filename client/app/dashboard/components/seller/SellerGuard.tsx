@@ -10,6 +10,7 @@ const SELLER_ROOTS = new Set([
   "/dashboard/seller",
   "/dashboard/seller/products",
   "/dashboard/seller/promotions",
+  "/dashboard/seller/reviews",
   "/dashboard/seller/settings",
 ]);
 

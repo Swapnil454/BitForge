@@ -204,12 +204,11 @@ export default function AllOrdersPage() {
         backHref="/dashboard/buyer"
         backLabel="Dashboard"
         title="All Orders"
-        subtitle="View and manage all your purchases"
+        subtitle="Manage all your purchases"
         rightSlot={
           <div className="relative shrink-0" ref={headerMenuRef}>
             <button
               onClick={() => setHeaderMenuOpen((prev) => !prev)}
-              className="h-10 w-10 rounded-xl border border-white/15 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 hover:border-white/30 inline-flex items-center justify-center transition"
               aria-label="Open actions"
             >
               <MoreVertical className="h-5 w-5 text-slate-700 dark:text-white/80" />
