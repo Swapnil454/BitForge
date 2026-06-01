@@ -3,13 +3,15 @@ import {
   getSellerProfile,
   getSellerProducts,
   getSellerReviews,
-  updateSellerProfile
+  updateSellerProfile,
+  getSellerProfileBySlug
 } from "../controllers/sellerProfile.controller.js";
 import auth from "../middleware/auth.js";
 
 const router = express.Router();
 
 // Public routes - anyone can view seller profiles
+router.get("/slug/:slug", getSellerProfileBySlug);
 router.get("/:sellerId", getSellerProfile);
 router.get("/:sellerId/products", getSellerProducts);
 router.get("/:sellerId/reviews", getSellerReviews);

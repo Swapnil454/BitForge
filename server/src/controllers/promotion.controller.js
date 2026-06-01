@@ -21,7 +21,7 @@ const PROMOTION_POPULATE = [
   { path: "sellerId", select: "name email profilePictureUrl" },
   {
     path: "productId",
-    select: "title thumbnailUrl price category status changeRequest isDeleted",
+    select: "title slug thumbnailUrl price category status changeRequest isDeleted",
   },
   { path: "approvedBy", select: "name email" },
 ];
@@ -68,8 +68,8 @@ const addDays = (startDate, days) => {
 const promotionAmountToPaise = (promotion) =>
   Math.round(Number(promotion.amount || 0) * 100);
 
-const normalizeTargetLink = (value, productId) => {
-  const fallback = `/marketplace/${productId}`;
+const normalizeTargetLink = (value, productId, productSlug) => {
+  const fallback = productSlug ? `/product/${productSlug}` : `/marketplace/${productId}`;
 
   if (typeof value !== "string") {
     return fallback;
@@ -77,6 +77,12 @@ const normalizeTargetLink = (value, productId) => {
 
   const trimmed = value.trim();
   if (!trimmed) {
+    return fallback;
+  }
+
+  // Rewrite legacy /marketplace/[mongoId] links to slug-based URLs
+  const legacyPattern = /^\/marketplace\/[a-f0-9]{24}$/i;
+  if (legacyPattern.test(trimmed)) {
     return fallback;
   }
 
@@ -581,7 +587,7 @@ export const createPromotionRequest = async (req, res) => {
       bannerImageKey: finalBannerImageKey,
       adImages,
       buttonText: buttonText?.trim() || "View Product",
-      targetLink: normalizeTargetLink(targetLink, product._id),
+      targetLink: normalizeTargetLink(targetLink, product._id, product.slug),
       promotionGoal: promotionGoal?.trim() || "",
       requestedDurationDays: duration,
       sellerNote: sellerNote?.trim() || "",
@@ -1476,7 +1482,7 @@ export const getActivePromotions = async (req, res) => {
     })
       .sort({ priority: 1, createdAt: -1 })
       .limit(settings.marketplaceHeroMaxAds * 5)
-      .populate({ path: "productId", select: "title thumbnailUrl status changeRequest isDeleted price discount" });
+      .populate({ path: "productId", select: "title slug thumbnailUrl status changeRequest isDeleted price discount" });
 
     const promotions = candidatePromotions
       .filter((promotion) => {
@@ -1493,6 +1499,7 @@ export const getActivePromotions = async (req, res) => {
       subtitle: promotion.subtitle,
       bannerImage: promotion.bannerImage,
       productId: promotion.productId?._id || promotion.productId,
+      product: promotion.productId?.slug ? { slug: promotion.productId.slug } : undefined,
       productTitle: promotion.productTitle,
       productPrice: promotion.productId?.price,
       productDiscount: promotion.productId?.discount,
@@ -1501,7 +1508,8 @@ export const getActivePromotions = async (req, res) => {
       priority: promotion.priority,
       targetLink: normalizeTargetLink(
         promotion.targetLink,
-        promotion.productId?._id || promotion.productId
+        promotion.productId?._id || promotion.productId,
+        promotion.productId?.slug
       ),
       sellerName: promotion.sellerName,
       placement: promotion.placement,

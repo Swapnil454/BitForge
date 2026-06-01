@@ -8,6 +8,12 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true
     },
+    slug: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
     email: {
       type: String,
       required: true,

@@ -69,6 +69,75 @@ export const getSellerProfile = async (req, res) => {
 };
 
 /**
+ * Get public seller profile by Slug
+ * GET /api/sellers/slug/:slug
+ */
+export const getSellerProfileBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    // Get seller basic info
+    const seller = await User.findOne({ slug, role: "seller" }).select(
+      "name email bio profilePictureUrl isVerified identityVerifiedAt createdAt totalSalesCount averageRating ratingCount slug"
+    );
+
+    if (!seller) {
+      return res.status(404).json({ message: "Seller not found" });
+    }
+
+    const sellerId = seller._id;
+
+    // Get seller stats
+    const stats = await getSellerStats(sellerId);
+
+    // Get seller's approved products
+    const products = await Product.find({
+      sellerId: sellerId,
+      status: "approved",
+      changeRequest: "none",
+      isDeleted: { $ne: true }  // Exclude soft-deleted products
+    })
+      .select("title description price discount thumbnailUrl createdAt pageCount format slug categorySlug")
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+    // Get recent reviews for this seller
+    const reviews = await Review.find({
+      sellerId: sellerId,
+      isHidden: false
+    })
+      .populate("buyerId", "name profilePictureUrl")
+      .populate("productId", "title slug")
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    res.json({
+      seller: {
+        id: seller._id,
+        name: seller.name,
+        slug: seller.slug,
+        email: seller.email,
+        bio: seller.bio,
+        profilePictureUrl: seller.profilePictureUrl,
+        isVerified: seller.isVerified,
+        identityVerifiedAt: seller.identityVerifiedAt,
+        memberSince: seller.createdAt,
+        totalSalesCount: seller.totalSalesCount,
+        averageRating: seller.averageRating,
+        ratingCount: seller.ratingCount
+      },
+      stats,
+      products,
+      reviews
+    });
+  } catch (error) {
+    console.error("Get seller profile by slug error:", error);
+    res.status(500).json({ message: "Failed to fetch seller profile" });
+  }
+};
+
+
+/**
  * Get seller's products (paginated)
  * GET /api/sellers/:sellerId/products
  */

@@ -165,3 +165,51 @@ export const sendOtpEmail = async (email, otp, type = 'Email Verification') => {
     html,
   });
 };
+
+export const sendInvoiceEmail = async (email, invoiceData, pdfBuffer) => {
+  const resend = getResendClient();
+
+  if (!process.env.RESEND_FROM_EMAIL) {
+    throw new Error('RESEND_FROM_EMAIL environment variable is not set');
+  }
+
+  const subject = `Your BitForge Order - ${invoiceData.productName}`;
+
+  const html = `
+  <div style="background:#0b0f1a;padding:40px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+    <div style="max-width:600px;margin:0 auto;">
+      <div style="text-align:center;padding:20px;background:linear-gradient(135deg,#0b1220,#111827);border-radius:16px 16px 0 0;">
+        <h1 style="color:#fff;margin:0;font-size:24px;">BitForge</h1>
+      </div>
+      <div style="background:#ffffff;padding:32px 28px;border-radius:0 0 14px 14px;">
+        <h2 style="margin:0 0 12px 0;font-size:22px;color:#111827;">Thank you for your purchase!</h2>
+        <p style="margin:0 0 24px 0;font-size:15px;color:#4b5563;line-height:1.6;">
+          Hi ${invoiceData.buyerName},<br><br>
+          Your payment for <strong>${invoiceData.productName}</strong> was successful. 
+          You can find your digital invoice attached to this email.
+        </p>
+        <p style="margin:0;font-size:14px;color:#6b7280;">
+          Need help? Contact us at <a href="mailto:support@bittforge.in" style="color:#6366f1;text-decoration:none;">support@bittforge.in</a>
+        </p>
+      </div>
+    </div>
+  </div>
+  `;
+
+  // Filename format: product name(first)+invoice.pdf
+  const firstWord = invoiceData.productName ? invoiceData.productName.split(" ")[0].replace(/[^a-zA-Z0-9]/g, "") : "BitForge";
+  const filename = `${firstWord}_invoice.pdf`;
+
+  await resend.emails.send({
+    from: process.env.RESEND_FROM_EMAIL,
+    to: email,
+    subject,
+    html,
+    attachments: [
+      {
+        filename: filename,
+        content: pdfBuffer
+      }
+    ]
+  });
+};

@@ -29,7 +29,9 @@ export default function PageHeader({
         <div className="relative flex min-h-[40px] sm:min-h-[48px] items-center justify-center">
           <button
             onClick={() => {
-              router.back();
+              if (onBack) onBack();
+              else if (backHref) router.push(backHref);
+              else router.back();
             }}
             className="absolute left-0 inline-flex items-center gap-1 text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white transition"
             aria-label={backLabel}

@@ -12,6 +12,7 @@ import SearchDropdown from "@/app/components/buyer/search/SearchDropdown";
 export interface Banner {
   id: string;
   title: string;
+  productId?: any;
   subtitle: string;
   badge?: string;
   buttonText: string;
@@ -124,54 +125,71 @@ export default function HeroAds({
       "from-emerald-600 via-teal-700 to-slate-900",
     ];
 
+    const CACHE_KEY = "hero_promotions_cache";
+    const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+
     const fetchPromotions = async () => {
+      // 1. Try cache first — render instantly
       try {
-        setLoading(true);
+        const cached = sessionStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const { data, ts } = JSON.parse(cached);
+          if (Date.now() - ts < CACHE_TTL && data?.promotions?.length > 0) {
+            // Render from cache immediately, no loading spinner
+            applyPromotions(data);
+            setLoading(false);
+            // Still refetch in background to keep fresh
+          }
+        }
+      } catch (_) {}
+
+      try {
+        setLoading((prev) => prev); // keep existing state, don't re-show spinner if cache hit
         const data = await promotionAPI.getActivePromotions("MARKETPLACE_HERO");
-        const promotions: ActivePromotionBanner[] = data.promotions || [];
-
         if (ignore) return;
-
-        if (promotions.length > 0) {
-          setLiveBanners(
-            promotions.map((promotion, index: number) => ({
-              id: promotion.id,
-              promotionId: promotion.id,
-              title: promotion.title,
-              subtitle: promotion.subtitle,
-              badge: "Sponsored",
-              buttonText: promotion.buttonText || "View Product",
-              link: promotion.targetLink || `/marketplace/${promotion.productId}`,
-              gradientClass: gradients[index % gradients.length],
-              bannerImage: promotion.bannerImage || undefined,
-              heroBgColor: promotion.heroBgColor,
-              heroTextColor: promotion.heroTextColor,
-              heroLayout: promotion.heroLayout,
-              heroTitleColor: promotion.heroTitleColor,
-              heroSubtitleColor: promotion.heroSubtitleColor,
-              heroButtonBgColor: promotion.heroButtonBgColor,
-              heroButtonTextColor: promotion.heroButtonTextColor,
-              heroFontFamily: promotion.heroFontFamily,
-              productPrice: promotion.productPrice,
-              productDiscount: promotion.productDiscount,
-              promotionGoal: promotion.promotionGoal,
-              adImages: promotion.adImages,
-            }))
-          );
-          setAutoRotate(data.settings?.autoRotate !== false);
-        } else {
-          setLiveBanners(defaultBanners);
-          setAutoRotate(true);
-        }
-      } catch {
-        if (!ignore) {
-          setLiveBanners(defaultBanners);
-          setAutoRotate(true);
-        }
+        try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); } catch (_) {}
+        applyPromotions(data);
+      } catch (err) {
+        console.error("Failed to fetch promotions", err);
       } finally {
-        if (!ignore) {
-          setLoading(false);
-        }
+        if (!ignore) setLoading(false);
+      }
+    };
+
+    const applyPromotions = (data: any) => {
+      if (ignore) return;
+      const promotions: ActivePromotionBanner[] = data.promotions || [];
+      if (promotions.length > 0) {
+        setLiveBanners(
+          promotions.map((promotion, index: number) => ({
+            id: promotion.id,
+            promotionId: promotion.id,
+            productId: promotion.productId,
+            title: promotion.title,
+            subtitle: promotion.subtitle,
+            badge: "Sponsored",
+            buttonText: promotion.buttonText || "View Product",
+            link: promotion.targetLink || `/product/${promotion.product?.slug || promotion.productId}`,
+            gradientClass: gradients[index % gradients.length],
+            bannerImage: promotion.bannerImage || undefined,
+            heroBgColor: promotion.heroBgColor,
+            heroTextColor: promotion.heroTextColor,
+            heroLayout: promotion.heroLayout,
+            heroTitleColor: promotion.heroTitleColor,
+            heroSubtitleColor: promotion.heroSubtitleColor,
+            heroButtonBgColor: promotion.heroButtonBgColor,
+            heroButtonTextColor: promotion.heroButtonTextColor,
+            heroFontFamily: promotion.heroFontFamily,
+            productPrice: promotion.productPrice,
+            productDiscount: promotion.productDiscount,
+            promotionGoal: promotion.promotionGoal,
+            adImages: promotion.adImages,
+          }))
+        );
+        setAutoRotate(data.settings?.autoRotate !== false);
+      } else {
+        setLiveBanners(defaultBanners);
+        setAutoRotate(true);
       }
     };
 
@@ -459,8 +477,12 @@ export default function HeroAds({
           <div 
             className="hidden md:flex absolute top-0 left-0 w-full cursor-pointer items-start justify-center motion-safe:animate-in motion-safe:fade-in duration-700 pointer-events-auto"
             onClick={handleBannerClick}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === "Enter" && handleBannerClick()}
+            aria-label={`View ${currentBanner.title}`}
             style={{
-              zIndex: -1,
+              zIndex: 0,
               WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
               maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)'
             }}
@@ -469,7 +491,7 @@ export default function HeroAds({
               <img 
                 src={adImages.length > 0 ? (adImages[0].url.includes("cloudinary.com") ? adImages[0].url.replace("/upload/", "/upload/f_auto,q_100/") : adImages[0].url) : currentBanner.bannerImage} 
                 alt={currentBanner.title || "Promotion Banner"} 
-                className="w-full h-auto object-top"
+                className="w-full h-auto object-top pointer-events-none"
               />
             )}
           </div>

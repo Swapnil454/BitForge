@@ -31,6 +31,7 @@ import {
   Receipt,
   FileText,
   MessageSquare,
+  Star,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { clearAuthStorage, getStoredUser, setCookie, getCookie } from "@/lib/cookies";
@@ -382,6 +383,14 @@ export default function AdminDashboard() {
                       onClick={() => {
                         cacheInvalidator.invalidateChatUnread();
                         router.push("/dashboard/admin/help-center");
+                        setProfileOpen(false);
+                      }} 
+                    />
+                    <MenuItem 
+                      label="Reviews" 
+                      icon={<Star className="h-4 w-4" />}
+                      onClick={() => {
+                        router.push("/dashboard/admin/reviews");
                         setProfileOpen(false);
                       }} 
                     />

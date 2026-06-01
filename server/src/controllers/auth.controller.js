@@ -2,6 +2,7 @@
 
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
+import { generateSlug, generateUniqueSlug } from "../utils/slug.js";
 import { sendOtpEmail } from "../utils/sendEmail.js";
 import { generateToken } from "../utils/token.js";
 import { createNotification } from "./notification.controller.js";
@@ -157,8 +158,12 @@ export const verifyEmailOtp = async (req, res) => {
     }
 
     // Create user in database
+    const baseSlug = generateSlug(pendingUser.name);
+    const slug = await generateUniqueSlug(User, baseSlug);
+
     const userDataForDB = {
       name: pendingUser.name,
+      slug,
       email: pendingUser.email,
       password: pendingUser.password,
       role: pendingUser.role || 'buyer',

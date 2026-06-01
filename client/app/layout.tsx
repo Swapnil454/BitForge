@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import { Toaster } from 'react-hot-toast';
 import AppProviders from "./providers/AppProviders";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
+const inter = Inter({ subsets: ["latin"] });
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://bittforge.in"),
+  metadataBase: new URL("https://www.bittforge.in"),
   title: "BitForge | India's Trusted Digital Marketplace",
   description:
     "Buy and sell digital products securely on BitForge. Instant downloads, verified sellers, and secure payments — all in one powerful marketplace.",
-  alternates: {
-    canonical: "/",
-  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -27,48 +27,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning className={inter.className}>
       <body
       >
         <AppProviders>
           {children}
         </AppProviders>
-        {/*Organization Schema */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              name: "BitForge",
-              url: "https://bittforge.in",
-              logo: "https://bittforge.in/icon.png",
-              sameAs: [
-                "https://instagram.com/bitforge.in",
-                "https://github.com/Swapnil454",
-                "https://www.linkedin.com/in/swapnil-shelke-178096366"
-              ]
-            }),
-          }}
-        />
-
-        {/* Website Schema */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebSite",
-              name: "BitForge",
-              url: "https://bittforge.in",
-              potentialAction: {
-                "@type": "SearchAction",
-                target: "https://bittforge.in/marketplace?q={search_term_string}",
-                "query-input": "required name=search_term_string"
-              }
-            }),
-          }}
-        />
 
         <Toaster 
           position="top-center"
@@ -100,7 +64,45 @@ export default function RootLayout({
             },
           }}
         />
-        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+        {/*Organization Schema */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "BitForge",
+              alternateName: "BittForge",
+              url: "https://www.bittforge.in",
+              logo: "https://www.bittforge.in/logo.png",
+              description: "India's trusted digital product marketplace for creators and developers",
+              foundingLocation: "India",
+              sameAs: [
+                "https://www.linkedin.com/company/bittforge",
+                "https://instagram.com/bitforge.in",
+                "https://github.com/Swapnil454"
+              ]
+            }),
+          }}
+        />
+
+        {/* Website Schema */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "BitForge",
+              url: "https://www.bittforge.in",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: "https://www.bittforge.in/marketplace?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            }),
+          }}
+        />
         {/* Global Autofill Override */}
         <script
           dangerouslySetInnerHTML={{

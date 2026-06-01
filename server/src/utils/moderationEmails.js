@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { generateInvoicePDF } from './pdfGenerator.js';
 
 // Provide a fallback for local testing without crashing if key is missing,
 // but real delivery requires the key.
@@ -404,10 +405,86 @@ export async function sendBuyerInvoiceEmail(buyer, invoiceData) {
   </div>
   `;
 
+  const firstWord = productName ? productName.split(" ")[0].replace(/[^a-zA-Z0-9]/g, "") : "BitForge";
+  const filename = `${firstWord}_invoice.pdf`;
+
+  let attachments = [];
+  try {
+    const pdfBuffer = await generateInvoicePDF(invoiceData);
+    attachments.push({
+      filename: filename,
+      content: pdfBuffer
+    });
+  } catch (error) {
+    console.error('[Email] Failed to generate PDF invoice attachment:', error);
+  }
+
   return await resend.emails.send({
     from: getFromAddress(),
     to: buyer.email,
     replyTo: 'support@bitforge.com',
+    subject,
+    html,
+    attachments
+  });
+}
+
+/**
+ * Sends an email to the admin when a seller requests a payout.
+ * @param {object} seller - { name, email }
+ * @param {number} amount - requested amount
+ */
+export async function sendPayoutRequestAdminEmail(seller, amount) {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('[Email] Skipping sendPayoutRequestAdminEmail: RESEND_API_KEY is not set.');
+    return;
+  }
+
+  const subject = `New Payout Request: ₹${amount} from ${seller.name || seller.email}`;
+  const adminDashboardUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/admin/payouts`;
+
+  const html = `
+  <div style="background:#0b0f1a;padding:32px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+    <div style="max-width:580px;margin:0 auto;">
+      <div style="text-align:center;padding:20px;background:linear-gradient(135deg,#0b1220,#0f172a);border-radius:16px 16px 0 0;">
+        <h1 style="color:#ffffff;margin:0;font-size:24px;">BitForge Admin</h1>
+      </div>
+      <div style="background:#ffffff;padding:32px 28px;border-radius:0 0 14px 14px;">
+        <div style="display:inline-block;background:#fef3c7;color:#92400e;font-size:12px;font-weight:700;letter-spacing:1px;padding:4px 12px;border-radius:20px;margin-bottom:16px;">
+          NEW PAYOUT REQUEST
+        </div>
+        <h2 style="margin:0 0 16px;font-size:22px;color:#111827;">Action Required</h2>
+        <p style="margin:0 0 24px;font-size:15px;color:#4b5563;line-height:1.6;">
+          A seller has just submitted a new withdrawal request.
+        </p>
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:24px;">
+          <table style="width:100%;border-collapse:collapse;">
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#6b7280;">Seller Name</td>
+              <td style="padding:6px 0;font-size:13px;color:#111827;font-weight:600;text-align:right;">${seller.name || 'Unknown'}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#6b7280;">Seller Email</td>
+              <td style="padding:6px 0;font-size:13px;color:#111827;text-align:right;">${seller.email}</td>
+            </tr>
+            <tr style="border-top:1px solid #e5e7eb;">
+              <td style="padding:12px 0 6px;font-size:15px;color:#111827;font-weight:700;">Requested Amount</td>
+              <td style="padding:12px 0 6px;font-size:20px;color:#f59e0b;font-weight:800;text-align:right;">₹${Number(amount).toFixed(2)}</td>
+            </tr>
+          </table>
+        </div>
+        <a href="${adminDashboardUrl}" style="display:inline-block;padding:12px 24px;background:#6366f1;color:white;text-decoration:none;border-radius:10px;font-weight:700;font-size:14px;">
+          Review Payout Request
+        </a>
+      </div>
+    </div>
+  </div>
+  `;
+
+  // Sending to the from address (or a specific admin email) for admin notification
+  return await resend.emails.send({
+    from: getFromAddress(),
+    to: getFromAddress(), // Send to admin email
     subject,
     html,
   });

@@ -15,6 +15,7 @@ interface CartItem {
   _id: string;
   productId: {
     _id: string;
+    slug?: string;
     title: string;
     description: string;
     price: number;
@@ -335,7 +336,7 @@ export default function CartPage() {
                       {/* Thumbnail */}
                       <div 
                         className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 shrink-0 bg-[#F7F7F7] dark:bg-[#0B1221] rounded-xl border border-gray-100 dark:border-white/5 overflow-hidden relative cursor-pointer flex items-center justify-center"
-                        onClick={() => router.push(`/marketplace/${item.productId._id}`)}
+                        onClick={() => router.push(`/product/${item.productId.slug || item.productId._id}`)}
                       >
                         {item.productId?.thumbnailUrl ? (
                           <img
@@ -354,7 +355,7 @@ export default function CartPage() {
                         <div>
                           <h3 
                             className="text-sm md:text-lg font-bold text-slate-900 dark:text-white mb-1 line-clamp-1 hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer tracking-tight"
-                            onClick={() => router.push(`/marketplace/${item.productId._id}`)}
+                            onClick={() => router.push(`/product/${item.productId.slug || item.productId._id}`)}
                           >
                             {item.productId?.title || 'Unknown Product'}
                           </h3>

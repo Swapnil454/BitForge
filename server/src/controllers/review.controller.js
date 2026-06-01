@@ -4,6 +4,7 @@ import Order from "../models/Order.js";
 import User from "../models/User.js";
 import mongoose from "mongoose";
 import { addSellerRating } from "../utils/sellerStats.js";
+import cloudinary from "../config/cloudinary.js";
 
 /**
  * Create a review for a purchased product
@@ -11,7 +12,7 @@ import { addSellerRating } from "../utils/sellerStats.js";
  */
 export const createReview = async (req, res) => {
   try {
-    const { productId, orderId, rating, comment } = req.body;
+    const { productId, orderId, rating, comment, title } = req.body;
 
     // Validation
     if (!productId || !orderId || !rating) {
@@ -54,6 +55,28 @@ export const createReview = async (req, res) => {
       });
     }
 
+    // Upload images to Cloudinary if provided
+    let uploadedImages = [];
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        try {
+          const uploadResult = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+              { folder: "reviews", resource_type: "image" },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+              }
+            );
+            uploadStream.end(file.buffer);
+          });
+          uploadedImages.push(uploadResult.secure_url);
+        } catch (uploadErr) {
+          console.error("Image upload failed:", uploadErr);
+        }
+      }
+    }
+
     // Create review
     const review = await Review.create({
       productId,
@@ -61,7 +84,9 @@ export const createReview = async (req, res) => {
       sellerId: product.sellerId,
       orderId,
       rating: Number(rating),
+      title: title?.trim() || "",
       comment: comment?.trim() || "",
+      images: uploadedImages,
     });
 
     // Update seller's average rating
@@ -154,7 +179,7 @@ export const getProductReviews = async (req, res) => {
 export const updateReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
-    const { rating, comment } = req.body;
+    const { rating, comment, title } = req.body;
 
     const review = await Review.findOne({
       _id: reviewId,
@@ -174,6 +199,10 @@ export const updateReview = async (req, res) => {
 
     if (comment !== undefined) {
       review.comment = comment.trim();
+    }
+
+    if (title !== undefined) {
+      review.title = title.trim();
     }
 
     await review.save();

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 export interface SubCategory {
@@ -41,7 +42,7 @@ export default function CategoryShowcaseCard({ title, categoryId, items, linkTex
           >
             <div className={`w-full aspect-square ${item.imageColor || 'bg-gray-50 dark:bg-slate-800/50'} overflow-hidden relative`}>
                {item.imageUrl ? (
-                 <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover transition-transform duration-500" />
+                 <Image src={item.imageUrl} alt={item.title} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition-transform duration-500" />
                ) : (
                  <div className="w-full h-full bg-slate-100 dark:bg-white/5 transition-colors"></div>
                )}

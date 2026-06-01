@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Heart, ShoppingCart, Zap, Star, TrendingUp, Sparkles, Award } from "lucide-react";
 
 export interface ProductType {
@@ -12,6 +13,7 @@ export interface ProductType {
   category: string;
   thumbnailUrl?: string;
   fileUrl?: string;
+  slug?: string;
   sellerId: { name?: string };
   rating?: number;
   buyers?: number;
@@ -75,7 +77,7 @@ export default function ProductCard({
 
   return (
     <div
-      onClick={() => router.push(`/marketplace/${product._id}`)}
+      onClick={() => router.push(`/product/${product.slug || product._id}`)}
       className={`
         w-full group cursor-pointer bg-white dark:bg-[#0f0f17] transition-all duration-200 shadow-sm
         ${layout === "vertical"
@@ -138,9 +140,13 @@ export default function ProductCard({
       `}>
 
         {/* Category pill — visible on mobile */}
-        <span className={`self-start text-[10px] font-semibold px-2 py-0.5 rounded-full mb-1 ${catStyle.pill}`}>
+        <Link 
+          href={`/category/${product.category.toLowerCase().replace(/\s+/g, '-')}`}
+          onClick={(e) => e.stopPropagation()}
+          className={`self-start text-[10px] font-semibold px-2 py-0.5 rounded-full mb-1 ${catStyle.pill} hover:opacity-80 transition-opacity`}
+        >
           {product.category}
-        </span>
+        </Link>
 
         {/* Title — bold & prominent */}
         <h3 className="font-extrabold text-[14.5px] sm:text-sm text-gray-900 dark:text-white line-clamp-2 leading-snug tracking-tight lg:font-medium lg:text-[15px] lg:text-[#007185] lg:dark:text-[#52a6b8] lg:group-hover:text-[#c7511f]">
@@ -197,7 +203,17 @@ export default function ProductCard({
         {/* Seller Info */}
         <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1 flex items-center gap-1">
           <span className="italic">by</span> 
-          <span className="font-medium text-gray-700 dark:text-slate-300 tracking-wide text-[10.5px]">{product.sellerId?.name || "Unknown"}</span>
+          {product.sellerId?.name ? (
+            <Link 
+              href={`/seller/${(product.sellerId as any).slug || product.sellerId.name.toLowerCase().replace(/\s+/g, '-')}`}
+              onClick={(e) => e.stopPropagation()}
+              className="font-medium text-[#007185] dark:text-[#52a6b8] hover:text-[#c7511f] dark:hover:text-[#e47911] tracking-wide text-[10.5px] transition-colors"
+            >
+              {product.sellerId.name}
+            </Link>
+          ) : (
+            <span className="font-medium text-gray-700 dark:text-slate-300 tracking-wide text-[10.5px]">Unknown</span>
+          )}
         </p>
 
         {/* Delivery — sm+ only */}

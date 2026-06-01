@@ -6,6 +6,8 @@ import Payout from "../models/Payout.js";
 import Product from "../models/Product.js";
 import User from "../models/User.js";
 import PromotionRequest from "../models/PromotionRequest.js";
+import Review from "../models/Review.js";
+import { sendPayoutRequestAdminEmail } from "../utils/moderationEmails.js";
 
 export const getSellerDashboardStats = async (req, res) => {
   try {
@@ -205,6 +207,9 @@ export const requestWithdrawal = async (req, res) => {
   });
 
   console.log(`==> Seller ${sellerId} requested withdrawal: ₹${amount}`);
+
+  // Notify Admin
+  sendPayoutRequestAdminEmail(user, amount).catch(e => console.error('[Email] Failed to send admin payout notification:', e));
 
   res.json({ 
     message: "Withdrawal request submitted",
@@ -790,5 +795,70 @@ export const getGrowthAnalytics = async (req, res) => {
   } catch (error) {
     console.error("Error fetching growth analytics:", error);
     res.status(500).json({ message: "Failed to fetch growth analytics" });
+  }
+};
+
+export const getSellerReviews = async (req, res) => {
+  try {
+    const sellerId = req.user.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const query = { sellerId, isHidden: false };
+
+    // Filter by rating
+    if (req.query.rating) {
+      query.rating = parseInt(req.query.rating);
+    }
+
+    // Filter by response status
+    if (req.query.hasResponse === "true") {
+      query["sellerResponse.text"] = { $exists: true, $ne: "" };
+    } else if (req.query.hasResponse === "false") {
+      query.$or = [
+        { sellerResponse: { $exists: false } },
+        { "sellerResponse.text": { $exists: false } },
+        { "sellerResponse.text": "" }
+      ];
+    }
+
+    // Search in comment or title
+    if (req.query.search) {
+      const searchRegex = { $regex: req.query.search, $options: "i" };
+      const searchOr = [
+        { comment: searchRegex },
+        { title: searchRegex }
+      ];
+      if (query.$or) {
+        query.$and = [{ $or: query.$or }, { $or: searchOr }];
+        delete query.$or;
+      } else {
+        query.$or = searchOr;
+      }
+    }
+
+    const reviews = await Review.find(query)
+      .populate("buyerId", "name email profilePictureUrl")
+      .populate("productId", "title thumbnailUrl")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Review.countDocuments(query);
+
+    res.json({
+      reviews,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+        hasNextPage: page < Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching seller reviews:", error);
+    res.status(500).json({ message: "Failed to fetch reviews" });
   }
 };

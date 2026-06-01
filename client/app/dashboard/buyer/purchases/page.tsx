@@ -298,7 +298,7 @@ export default function PurchasesPage() {
                     downloading={downloadingOrderId === purchase._id}
                     onDownload={download}
                     onReview={(item) => { setSelectedOrder(item); setReviewModalOpen(true); }}
-                    onViewProduct={(productId) => { if (productId) router.push(`/marketplace/${productId}`); }}
+                    onViewProduct={(productId) => { if (productId) router.push(`/product/${productId}`); }}
                     onRaiseDispute={(orderId) => {
                       const p = purchases.find((x) => x._id === orderId);
                       if (p) openDisputeModal(p);

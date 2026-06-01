@@ -44,8 +44,8 @@ export const createCartCheckout = async (req, res) => {
         ? Math.max(originalPrice - (originalPrice * discountPercent) / 100, 0)
         : originalPrice;
 
-      const gst = finalPrice * 0.05; // 5% GST
-      const platformFee = finalPrice * 0.02; // 2% platform fee
+      const gst = originalPrice * 0.05; // 5% GST on original price
+      const platformFee = originalPrice * 0.02; // 2% platform fee on original price
       const sellerAmount = finalPrice * 0.90; // Seller gets 90% of base product price
       const itemTotal = finalPrice + gst + platformFee;
 
@@ -136,11 +136,11 @@ export const createOrder = async (req, res) => {
     ? Math.max(product.price - (product.price * product.discount) / 100, 0)
     : product.price;
 
-  // Calculate GST (5% on final price)
-  const gst = finalPrice * 0.05;
+  // Calculate GST (5% on original price)
+  const gst = product.price * 0.05;
 
-  // Calculate platform fee (2% on final price)
-  const platformFee = finalPrice * 0.02;
+  // Calculate platform fee (2% on original price)
+  const platformFee = product.price * 0.02;
 
   // Calculate total amount
   const totalAmount = finalPrice + gst + platformFee;

@@ -1,10 +1,19 @@
 User-agent: *
 Allow: /
+
 Disallow: /login
 Disallow: /register
-Disallow: /dashboard
-Disallow: /api
+Disallow: /dashboard/
+Disallow: /api/
 Disallow: /cart
 Disallow: /notifications
-Disallow: /pending-approval
-Sitemap: https://bittforge.in/sitemap.xml
+Disallow: /pending-approval/
+
+# Explicitly allow important pages in case of conflicts
+Allow: /marketplace
+Allow: /about
+Allow: /contact
+Allow: /docs
+Allow: /trust-center
+
+Sitemap: https://www.bittforge.in/sitemap.xml

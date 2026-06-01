@@ -62,6 +62,9 @@ export default function GlobalChatListener() {
 
     socket.on("connect_error", (err: any) => {
       console.error("Socket connect error (global chat listener)", err?.message || err);
+      if (err?.message === "Unauthorized" || err?.message === "jwt expired") {
+        socket.disconnect(); // Prevent infinite retry loops for expired tokens
+      }
     });
 
     return () => {

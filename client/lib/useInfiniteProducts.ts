@@ -9,6 +9,8 @@ interface UseInfiniteProductsOptions {
   sort?: "newest" | "trending" | "rating" | "price_asc" | "price_desc";
   search?: string;
   limit?: number;
+  sellerId?: string;
+  sellerSlug?: string;
   /** Pass false to pause fetching (e.g. when on home page that doesn't use grid view) */
   enabled?: boolean;
 }
@@ -30,6 +32,8 @@ export function useInfiniteProducts({
   sort = "newest",
   search,
   limit = PAGE_SIZE,
+  sellerId,
+  sellerSlug,
   enabled = true,
 }: UseInfiniteProductsOptions = {}): UseInfiniteProductsReturn {
   const [products, setProducts] = useState<ProductType[]>([]);
@@ -41,7 +45,7 @@ export function useInfiniteProducts({
 
   // Track whether the initial fetch already happened for current params
   const initialFetchDone = useRef(false);
-  const currentParams = useRef({ category, sort, search });
+  const currentParams = useRef({ category, sort, search, sellerId, sellerSlug });
 
   // Reset when params change
   const reset = useCallback(() => {
@@ -55,20 +59,47 @@ export function useInfiniteProducts({
   // Detect param changes and reset
   useEffect(() => {
     const prev = currentParams.current;
-    if (prev.category !== category || prev.sort !== sort || prev.search !== search) {
-      currentParams.current = { category, sort, search };
+    if (
+      prev.category !== category ||
+      prev.sort !== sort ||
+      prev.search !== search ||
+      prev.sellerId !== sellerId ||
+      prev.sellerSlug !== sellerSlug
+    ) {
+      currentParams.current = { category, sort, search, sellerId, sellerSlug };
       reset();
     }
-  }, [category, sort, search, reset]);
+  }, [category, sort, search, sellerId, sellerSlug, reset]);
 
   // Fetch a specific page
   const fetchPage = useCallback(
     async (pageNum: number) => {
       if (!enabled) return;
 
+      const cacheKey = `products_cache_${JSON.stringify({ category, sort, search, sellerId, sellerSlug, page: pageNum })}`;
+      const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+
       try {
         if (pageNum === 1) {
-          setIsLoading(true);
+          // Page 1: try cache first for instant render
+          try {
+            const cached = sessionStorage.getItem(cacheKey);
+            if (cached) {
+              const { data, ts } = JSON.parse(cached);
+              if (Date.now() - ts < CACHE_TTL && data?.length > 0) {
+                setProducts(data);
+                setHasMore(data.length >= limit);
+                setIsLoading(false);
+                // Still fetch in background silently — don't show spinner
+              } else {
+                setIsLoading(true);
+              }
+            } else {
+              setIsLoading(true);
+            }
+          } catch (_) {
+            setIsLoading(true);
+          }
         } else {
           setIsFetchingMore(true);
         }
@@ -79,6 +110,8 @@ export function useInfiniteProducts({
           category: category || undefined,
           sort,
           search: search || undefined,
+          sellerId: sellerId || undefined,
+          sellerSlug: sellerSlug || undefined,
         });
 
         const incoming: ProductType[] = data.products || [];
@@ -88,6 +121,11 @@ export function useInfiniteProducts({
         );
         setHasMore(data.hasMore ?? incoming.length >= limit);
         setError(null);
+
+        // Cache page 1 results
+        if (pageNum === 1) {
+          try { sessionStorage.setItem(cacheKey, JSON.stringify({ data: incoming, ts: Date.now() })); } catch (_) {}
+        }
       } catch (err: any) {
         setError(err?.response?.data?.message || "Failed to load products");
       } finally {
@@ -95,7 +133,7 @@ export function useInfiniteProducts({
         setIsFetchingMore(false);
       }
     },
-    [category, sort, search, limit, enabled]
+    [category, sort, search, limit, sellerId, sellerSlug, enabled]
   );
 
   // Initial load

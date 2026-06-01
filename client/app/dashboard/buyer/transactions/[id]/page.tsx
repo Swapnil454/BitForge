@@ -196,7 +196,7 @@ export default function TransactionDetailsPage() {
         backHref="/dashboard/buyer/transactions"
         backLabel="Transactions"
         title="Transaction Details"
-        subtitle="Detailed payment and order reference"
+        subtitle="Detailed and order reference"
       />
 
       <main className="max-w-4xl mx-auto px-4 py-5 space-y-4">

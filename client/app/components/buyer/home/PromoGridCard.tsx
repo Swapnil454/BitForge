@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { ProductType } from "../product/ProductCard";
 
 export interface PromoGridCardProps {
@@ -32,12 +33,12 @@ export default function PromoGridCard({ title, items }: PromoGridCardProps) {
           {displayItems.map((item, idx) => (
             <button 
               key={item._id || idx}
-              onClick={() => router.push(`/marketplace/${item._id}`)}
+              onClick={() => router.push(`/product/${item.slug || item._id}`)}
               className="flex flex-col items-start gap-1.5 sm:gap-2 group text-left"
             >
               <div className="w-full aspect-square bg-gray-50 dark:bg-slate-900/50 overflow-hidden relative border border-gray-100 dark:border-slate-800/60 p-1 flex items-center justify-center rounded-md md:rounded-none">
                  {item.thumbnailUrl ? (
-                   <img src={item.thumbnailUrl} alt={item.title} className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal group-hover:scale-105 transition-transform duration-300" />
+                   <Image src={item.thumbnailUrl} alt={item.title} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-contain mix-blend-multiply dark:mix-blend-normal group-hover:scale-105 transition-transform duration-300" />
                  ) : (
                    <div className="w-full h-full bg-gradient-to-br from-cyan-100/30 to-blue-100/30 dark:from-cyan-900/20 dark:to-blue-900/20 flex items-center justify-center p-2 text-center">
                       <span className="text-[10px] text-gray-500 font-medium uppercase">{item.category}</span>

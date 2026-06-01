@@ -30,7 +30,7 @@ export default function OAuthSetupPage() {
             OAuth Authentication Setup
           </h1>
           <p className="text-lg text-slate-600 dark:text-white/70">
-            Enable Google and GitHub OAuth for seamless user registration and login. This guide covers complete OAuth integration for both providers.
+            Enable Google and GitHub OAuth to provide a seamless, secure registration and login experience for your BitForge digital product marketplace. This guide covers complete end-to-end OAuth integration for both major providers.
           </p>
         </div>
 
