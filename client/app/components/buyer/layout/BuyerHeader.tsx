@@ -234,45 +234,64 @@ export default function BuyerHeader({
 
 
 
-              {/* Wishlist */}
-              <button
-                onClick={() => requireAuth("view wishlist", () => router.push("/wishlist"))}
-                className="relative p-2.5 text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-              >
-                <Heart size={22} />
-                {wishlistCount > 0 && (
-                  <span className="absolute top-1 right-1 w-4 h-4 bg-pink-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full ring-2 ring-white dark:ring-[#05050a]">
-                    {wishlistCount > 9 ? "9+" : wishlistCount}
-                  </span>
-                )}
-              </button>
+              {isAuthenticated ? (
+                <>
+                  {/* Wishlist */}
+                  <button
+                    onClick={() => router.push("/wishlist")}
+                    className="relative p-2.5 text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <Heart size={22} />
+                    {wishlistCount > 0 && (
+                      <span className="absolute top-1 right-1 w-4 h-4 bg-pink-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full ring-2 ring-white dark:ring-[#05050a]">
+                        {wishlistCount > 9 ? "9+" : wishlistCount}
+                      </span>
+                    )}
+                  </button>
 
-              {/* Cart */}
-              <button
-                onClick={() => requireAuth("view cart", () => router.push("/cart"))}
-                className="relative p-2.5 text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-              >
-                <ShoppingCart size={22} />
-                {cartCount > 0 && (
-                  <span className="absolute top-1 right-1 w-4 h-4 bg-cyan-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full ring-2 ring-white dark:ring-[#05050a]">
-                    {cartCount > 9 ? "9+" : cartCount}
-                  </span>
-                )}
-              </button>
+                  {/* Cart */}
+                  <button
+                    onClick={() => router.push("/cart")}
+                    className="relative p-2.5 text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <ShoppingCart size={22} />
+                    {cartCount > 0 && (
+                      <span className="absolute top-1 right-1 w-4 h-4 bg-cyan-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full ring-2 ring-white dark:ring-[#05050a]">
+                        {cartCount > 9 ? "9+" : cartCount}
+                      </span>
+                    )}
+                  </button>
 
-              {/* Notifications */}
-              {mounted && isAuthenticated && (
-                <button
-                  onClick={() => router.push("/notifications")}
-                  className="relative p-2.5 text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors hidden sm:flex"
-                >
-                  <Bell size={22} />
-                  {unreadNotificationsCount > 0 && (
-                    <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full ring-2 ring-white dark:ring-[#05050a]">
-                      {unreadNotificationsCount > 9 ? "9+" : unreadNotificationsCount}
-                    </span>
+                  {/* Notifications */}
+                  {mounted && (
+                    <button
+                      onClick={() => router.push("/notifications")}
+                      className="relative p-2.5 text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors hidden sm:flex"
+                    >
+                      <Bell size={22} />
+                      {unreadNotificationsCount > 0 && (
+                        <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full ring-2 ring-white dark:ring-[#05050a]">
+                          {unreadNotificationsCount > 9 ? "9+" : unreadNotificationsCount}
+                        </span>
+                      )}
+                    </button>
                   )}
-                </button>
+                </>
+              ) : (
+                <div className="hidden sm:flex items-center gap-2 mr-1">
+                  <button
+                    onClick={goToLogin}
+                    className="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    Log in
+                  </button>
+                  <button
+                    onClick={goToRegister}
+                    className="px-4 py-2 text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-sm transition-colors"
+                  >
+                    Sign up
+                  </button>
+                </div>
               )}
 
               {/* Hamburger menu — all screen sizes */}

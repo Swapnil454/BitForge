@@ -37,6 +37,7 @@ interface MalwareStats {
 interface ContentReviewQueue {
   products: Array<{
     _id: string;
+    slug?: string;
     title: string;
     description: string;
     price: number;
@@ -405,7 +406,7 @@ export default function SecurityDashboard() {
                               className="flex items-center justify-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg sm:rounded-xl text-[10px] sm:text-[11px] font-black uppercase tracking-wide text-red-500 transition-all flex-1 sm:flex-none">
                               <XCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Reject
                             </button>
-                            <Link href={`/marketplace/${p._id}`}
+                            <Link href={`/product/${p.slug || p._id}`}
                               className="flex items-center justify-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2.5 bg-slate-100 dark:bg-white/[0.04] hover:bg-slate-200 dark:hover:bg-white/[0.08] border border-slate-200 dark:border-white/[0.08] rounded-lg sm:rounded-xl text-[11px] font-black uppercase tracking-wide transition-all text-slate-600 dark:text-white shrink-0">
                               <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             </Link>

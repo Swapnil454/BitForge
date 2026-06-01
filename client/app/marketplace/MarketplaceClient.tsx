@@ -40,6 +40,8 @@ function InfiniteProductGrid({
   category,
   sort,
   search,
+  sellerId,
+  sellerSlug,
   searchTerm,
   setSearchTerm,
   handleSearch,
@@ -56,6 +58,8 @@ function InfiniteProductGrid({
   category?: string;
   sort?: "newest" | "trending" | "rating";
   search?: string;
+  sellerId?: string;
+  sellerSlug?: string;
   searchTerm?: string;
   setSearchTerm?: (term: string) => void;
   handleSearch?: (term?: string) => void;
@@ -68,7 +72,7 @@ function InfiniteProductGrid({
   onBuyNow: (e: React.MouseEvent, id: string) => void;
 }) {
   const { products, isLoading, isFetchingMore, hasMore, error, sentinelRef } =
-    useInfiniteProducts({ category, sort, search });
+    useInfiniteProducts({ category, sort, search, sellerId, sellerSlug });
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const searchContainerRef = React.useRef<HTMLDivElement>(null);
@@ -260,7 +264,17 @@ function HomeView({
 }
 
 // ─── Main Client ──────────────────────────────────────────────────────────────
-export default function MarketplaceClient() {
+export default function MarketplaceClient({ 
+  initialCategory,
+  initialCollection,
+  sellerId,
+  sellerSlug
+}: {
+  initialCategory?: string;
+  initialCollection?: string;
+  sellerId?: string;
+  sellerSlug?: string;
+} = {}) {
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get("search") || "";
   const [searchTerm, setSearchTerm] = useState(initialSearch);
@@ -274,9 +288,29 @@ export default function MarketplaceClient() {
   const [homeLoading, setHomeLoading] = useState(true);
 
   useEffect(() => {
+    const CACHE_KEY = "home_products_cache";
+    const CACHE_TTL = 3 * 60 * 1000; // 3 minutes
+
+    // Load from cache instantly if available
+    try {
+      const cached = sessionStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const { data, ts } = JSON.parse(cached);
+        if (Date.now() - ts < CACHE_TTL && data?.length > 0) {
+          setHomeProducts(data);
+          setHomeLoading(false);
+          // Still refetch silently in background
+        }
+      }
+    } catch (_) {}
+
     import("@/lib/api").then(({ marketplaceAPI }) => {
-      marketplaceAPI.getAllProducts({ limit: 50 })
-        .then((data) => setHomeProducts(data.products || []))
+      marketplaceAPI.getAllProducts({ limit: 40 })
+        .then((data) => {
+          const products = data.products || [];
+          setHomeProducts(products);
+          try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: products, ts: Date.now() })); } catch (_) {}
+        })
         .catch(() => {})
         .finally(() => setHomeLoading(false));
     });
@@ -296,11 +330,11 @@ export default function MarketplaceClient() {
     setSearchQuery(searchParamValue);
   }, [searchParamValue]);
 
-  const categoryParam = searchParams.get("category") || undefined;
-  const collectionParam = searchParams.get("collection") || undefined;
+  const categoryParam = initialCategory || searchParams.get("category") || undefined;
+  const collectionParam = initialCollection || searchParams.get("collection") || undefined;
 
   // Determine grid view mode
-  const isGridView = !!(categoryParam || collectionParam || searchQuery);
+  const isGridView = !!(categoryParam || collectionParam || searchQuery || sellerId || sellerSlug);
 
   // Map collection param to sort
   const collectionSort = (): "newest" | "trending" | "rating" | undefined => {
@@ -312,6 +346,7 @@ export default function MarketplaceClient() {
 
   // Grid view title/subtitle
   const gridTitle = () => {
+    if (sellerSlug || sellerId) return "Seller Products";
     if (searchQuery) return `Results for "${searchQuery}"`;
     if (categoryParam) return ""; // Replaced by highlighted CategoryPill
     if (collectionParam === "Trending") return "Trending Products";
@@ -321,6 +356,7 @@ export default function MarketplaceClient() {
   };
 
   const gridSubtitle = () => {
+    if (sellerSlug || sellerId) return "Explore products by this seller";
     if (searchQuery) return "Scroll to load more results";
     if (categoryParam) return ""; // Replaced by highlighted CategoryPill
     if (collectionParam === "Trending") return "The most popular products right now";
@@ -456,6 +492,8 @@ export default function MarketplaceClient() {
                 category={categoryParam}
                 sort={collectionSort()}
                 search={searchQuery || undefined}
+                sellerId={sellerId}
+                sellerSlug={sellerSlug}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 handleSearch={handleSearch}

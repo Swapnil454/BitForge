@@ -31,6 +31,14 @@ export const createDispute = async (req, res) => {
         .json({ message: "Order is already refunded" });
     }
 
+    // Check if the order is older than 24 hours
+    const hoursSincePurchase = (new Date() - new Date(order.createdAt)) / (1000 * 60 * 60);
+    if (hoursSincePurchase > 24) {
+      return res.status(400).json({ 
+        message: "Disputes can only be raised within 24 hours of purchase" 
+      });
+    }
+
     const existingOpenDispute = await Dispute.findOne({
       orderId,
       buyerId: req.user.id,

@@ -22,7 +22,7 @@ export default function SecurityPage() {
           </span>
           <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">Security Best Practices</h1>
           <p className="text-lg text-slate-600 dark:text-white/70">
-            Guidelines for secure integration, data handling, and compliance with Bitforge.
+            Guidelines for secure integration, data handling, and compliance. Learn how the BitForge digital marketplace handles PCI-compliant payments, API security, and GDPR data privacy.
           </p>
         </div>
 

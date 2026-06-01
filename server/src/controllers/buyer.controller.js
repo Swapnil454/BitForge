@@ -467,6 +467,7 @@ export const getAllBuyerPurchases = async (req, res) => {
       orderId: order.razorpayOrderId || order._id.toString(),
       productName: order.productName || order.productId?.title || "Unknown Product",
       productId: order.productId?._id || null,
+      productSlug: order.productId?.slug || null,
       thumbnailUrl: order.productId?.thumbnailUrl || null,
       sellerName: order.sellerId?.name || "Unknown Seller",
       amount: order.amount || 0,
@@ -494,7 +495,7 @@ export const getAllBuyerPurchases = async (req, res) => {
     const totalPages = Math.max(Math.ceil(totalRecords / limit), 1);
 
     const orders = await Order.find(query)
-      .populate("productId", "title description thumbnailUrl fileUrl fileKey category")
+      .populate("productId", "title description thumbnailUrl fileUrl fileKey category slug")
       .populate("sellerId", "name email")
       .sort({ createdAt: sortBy === "newest" ? -1 : 1 })
       .skip(skip)

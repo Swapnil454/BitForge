@@ -3,8 +3,18 @@ import { Metadata } from "next";
 import MarketplaceClient from "./MarketplaceClient";
 
 export const metadata: Metadata = {
-  title: "Marketplace | Buy Digital Products",
-  description: "Discover premium courses, eBooks, templates, software, and design assets. Build your skills, launch your projects, and grow faster.",
+  title: "BitForge Marketplace — Buy & Sell Digital Products in India",
+  description: "Discover and buy premium digital products on BitForge. Templates, tools, courses, and more from verified Indian creators. Instant download, secure payment.",
+  alternates: {
+    canonical: "https://www.bittforge.in/marketplace",
+  },
+  openGraph: {
+    title: "BitForge Marketplace",
+    description: "India's trusted digital product marketplace",
+    url: "https://www.bittforge.in/marketplace",
+    siteName: "BitForge",
+    type: "website",
+  },
 };
 
 export default function MarketplacePage() {

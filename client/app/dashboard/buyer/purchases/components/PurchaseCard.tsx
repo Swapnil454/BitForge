@@ -131,7 +131,7 @@ export default function PurchaseCard({
                         type="button"
                         onClick={() => {
                           setMenuOpen(false);
-                          onViewProduct(purchase.productId);
+                          onViewProduct(purchase.productSlug || purchase.productId);
                         }}
                         disabled={!purchase.productId}
                         className={`w-full flex items-center gap-2.5 px-3.5 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-colors ${
@@ -149,18 +149,27 @@ export default function PurchaseCard({
                         <FileText className="w-4 h-4 text-blue-500" /> Invoice
                       </Link>
                       
-                      <div className="h-px bg-slate-200 dark:bg-white/10 my-1.5 mx-2" />
-                      
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMenuOpen(false);
-                          onRaiseDispute(purchase._id);
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3.5 sm:px-4 py-2.5 text-xs sm:text-sm font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
-                      >
-                        <AlertCircle className="w-4 h-4" /> Dispute
-                      </button>
+                      {(() => {
+                        const hoursSincePurchase = (new Date().getTime() - new Date(purchase.purchaseDate).getTime()) / (1000 * 60 * 60);
+                        if (hoursSincePurchase <= 24) {
+                          return (
+                            <>
+                              <div className="h-px bg-slate-200 dark:bg-white/10 my-1.5 mx-2" />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMenuOpen(false);
+                                  onRaiseDispute(purchase._id);
+                                }}
+                                className="w-full flex items-center gap-2.5 px-3.5 sm:px-4 py-2.5 text-xs sm:text-sm font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
+                              >
+                                <AlertCircle className="w-4 h-4" /> Dispute
+                              </button>
+                            </>
+                          );
+                        }
+                        return null;
+                      })()}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -185,7 +194,7 @@ export default function PurchaseCard({
           <div className="flex flex-col mt-3">
             <div className="flex items-center justify-between gap-2 min-w-0">
               <p className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight shrink-0">
-                ₹{purchase.amount.toLocaleString()}
+                {new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(purchase.amount)}
               </p>
               
               <button

@@ -41,6 +41,7 @@ import {
   WalletCards,
   ClipboardCheck,
   Home,
+  MessageCircle,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useQueryClient } from "@tanstack/react-query";
@@ -95,6 +96,7 @@ export default function Dashboard() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [managementViewAll, setManagementViewAll] = useState(false);
 
   const handleThemeChange = (newTheme: string) => {
     setTheme(newTheme);
@@ -817,11 +819,19 @@ export default function Dashboard() {
 
         {/* Management */}
         <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.16 }} className="mb-6">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-3 px-1">Management</h2>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Management</h2>
+            <button 
+              onClick={() => setManagementViewAll(!managementViewAll)}
+              className="text-sm font-semibold text-blue-600 dark:text-blue-400 flex items-center hover:underline md:hidden"
+            >
+              {managementViewAll ? "View Less" : "View All"} <ChevronRight className={`w-4 h-4 ml-1 transition-transform ${managementViewAll ? 'rotate-90' : ''}`} />
+            </button>
+          </div>
           <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[24px] border border-white dark:border-slate-800 shadow-[0_8px_30px_rgba(15,23,42,0.06)] dark:shadow-none p-5">
-            <div className="grid grid-cols-4 gap-2 md:grid-cols-2 lg:grid-cols-4 md:gap-4 lg:gap-5">
+            <div className={`${managementViewAll ? 'grid grid-cols-4 gap-2' : 'flex overflow-x-auto no-scrollbar gap-2 md:gap-4 pb-2 md:pb-0'} md:grid md:grid-cols-3 lg:grid-cols-5 lg:gap-5`}>
             
-            <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/promotions")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+            <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/promotions")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all shrink-0 min-w-[72px] md:min-w-0 md:w-full">
               <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
                 <span className="anim-wrapper anim-swing delay-4 inline-flex relative z-10"><Megaphone className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
               </div>
@@ -832,7 +842,7 @@ export default function Dashboard() {
               <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Promote</span>
             </motion.button>
 
-            <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/reports")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+            <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/reports")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all shrink-0 min-w-[72px] md:min-w-0 md:w-full">
               <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
                 <span className="anim-wrapper anim-flip delay-5 inline-flex relative z-10"><FileText className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
               </div>
@@ -843,26 +853,37 @@ export default function Dashboard() {
               <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Reports</span>
             </motion.button>
 
-            <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/support")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+            <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/support")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all shrink-0 min-w-[72px] md:min-w-0 md:w-full">
               <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
                 <span className="anim-wrapper anim-float delay-6 inline-flex relative z-10"><CircleHelp className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
               </div>
               <div className="hidden md:flex flex-col items-start text-left ml-3">
-                <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Help Center</span>
-                <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Support tickets</span>
+                <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Help</span>
+                <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Get support</span>
               </div>
               <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Help</span>
             </motion.button>
 
-            <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/settings")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all w-full">
+            <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/settings")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all shrink-0 min-w-[72px] md:min-w-0 md:w-full">
               <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
                 <span className="anim-wrapper anim-spin delay-7 inline-flex relative z-10"><Settings className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
               </div>
               <div className="hidden md:flex flex-col items-start text-left ml-3">
                 <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Settings</span>
-                <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Preferences</span>
+                <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Manage store</span>
               </div>
               <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Settings</span>
+            </motion.button>
+
+            <motion.button whileHover={{ y: -4 }} whileTap={{ scale: 0.95 }} onClick={() => router.push("/dashboard/seller/reviews")} className="flex flex-col items-center gap-2 group md:flex-row md:justify-start md:p-3 bg-transparent md:bg-slate-50/50 md:dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-2xl md:border md:border-transparent md:hover:border-slate-200 md:dark:hover:border-slate-700 transition-all shrink-0 min-w-[72px] md:min-w-0 md:w-full">
+              <div className="w-[52px] h-[52px] md:w-[48px] md:h-[48px] shrink-0 rounded-full flex items-center justify-center bg-[#f0f4fa] dark:bg-[#1e2338] group-hover:bg-[#e4ebf5] dark:group-hover:bg-[#252a42] transition-all duration-300 hover-shine overflow-hidden relative">
+                <span className="anim-wrapper anim-bounce delay-8 inline-flex relative z-10"><MessageCircle className="w-[22px] h-[22px] md:w-5 md:h-5 text-slate-900 dark:text-white transition-colors" strokeWidth={1.7} /></span>
+              </div>
+              <div className="hidden md:flex flex-col items-start text-left ml-3">
+                <span className="text-[14px] font-bold text-slate-800 dark:text-slate-200 leading-tight">Reviews</span>
+                <span className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">Customer feedback</span>
+              </div>
+              <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight md:hidden">Reviews</span>
             </motion.button>
 
             </div>

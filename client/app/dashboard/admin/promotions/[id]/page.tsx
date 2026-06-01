@@ -403,7 +403,7 @@ export default function AdminPromotionDetailPage() {
                 <div>
                   <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Target Link</dt>
                   <dd className="mt-1 text-sm font-medium text-blue-600 dark:text-blue-400 truncate pr-4">
-                    <a href={promotion.targetLink || `/marketplace/${promotion.productId}`} target="_blank" rel="noreferrer" className="hover:underline flex items-center gap-1.5">
+                    <a href={promotion.targetLink || `/product/${promotion.productId}`} target="_blank" rel="noreferrer" className="hover:underline flex items-center gap-1.5">
                       {promotion.targetLink || "Automatic Product Link"} <ExternalLink className="w-3 h-3" />
                     </a>
                   </dd>
@@ -524,7 +524,7 @@ export default function AdminPromotionDetailPage() {
                     <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400">Target Product</p>
                     <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-white/90 line-clamp-2 leading-tight mt-0.5">{product?.title || promotion.productTitle}</p>
                     <button
-                      onClick={() => router.push(`/marketplace/${product?._id || promotion.productId}`)}
+                      onClick={() => router.push(`/product/${product?.slug || product?._id || promotion.productId}`)}
                       className="mt-1.5 sm:mt-2 inline-flex items-center gap-1 sm:gap-1.5 rounded-xl border border-slate-200 px-2 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:text-white/75 dark:hover:bg-white/5"
                     >
                       Open Product <ExternalLink className="w-3 h-3" />

@@ -351,13 +351,23 @@ export const razorpayWebhook = async (req, res) => {
           }
         });
 
-        const originalPrice = order.amount;
+        const GST_RATE = 0.05;
+        const PLATFORM_FEE_RATE = 0.02;
+
         const discountPercent = product?.discount || 0;
-        const discountAmount = originalPrice * (discountPercent / 100);
-        const priceAfterDiscount = originalPrice - discountAmount;
-        const gstAmount = priceAfterDiscount * GST_RATE;
-        const platformFee = priceAfterDiscount * PLATFORM_FEE_RATE;
-        const totalAmount = priceAfterDiscount + gstAmount + platformFee;
+        const originalPrice = product ? product.price : (order.amount / (1 - discountPercent / 100 + GST_RATE + PLATFORM_FEE_RATE));
+        const finalPrice = discountPercent > 0 
+          ? Math.max(originalPrice - (originalPrice * discountPercent / 100), 0)
+          : originalPrice;
+        
+        const discountAmount = originalPrice - finalPrice;
+        const priceAfterDiscount = finalPrice;
+        const gstAmount = originalPrice * GST_RATE;
+        const platformFee = originalPrice * PLATFORM_FEE_RATE;
+        const totalAmount = priceAfterDiscount + gstAmount + platformFee; // Exact mathematical sum
+
+        // Sync order.amount to avoid 1 cent rounding discrepancies from Razorpay
+        await Order.findByIdAndUpdate(order._id, { amount: totalAmount });
 
         const invoiceNumber = await Invoice.generateInvoiceNumber();
 

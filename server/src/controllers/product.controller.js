@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { generateSlug, generateUniqueSlug } from "../utils/slug.js";
 import cloudinary from "../config/cloudinary.js";
 import { uploadToR2, deleteFromR2, getPresignedUploadUrl } from "../utils/r2Upload.js";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
@@ -208,9 +209,15 @@ export const createProduct = async (req, res) => {
       }
     }
 
+    const baseSlug = generateSlug(req.body.title || "untitled");
+    const slug = await generateUniqueSlug(Product, baseSlug);
+    const categorySlug = generateSlug(req.body.category || "software");
+
     const product = await Product.create({
       ...req.body,
       sellerId: req.user.id,
+      slug,
+      categorySlug,
     });
     res.json(product);
   } catch (error) {
@@ -468,10 +475,16 @@ export const uploadProduct = async (req, res) => {
       description: description
     });
 
+    const baseSlug = generateSlug(title || "untitled");
+    const slug = await generateUniqueSlug(Product, baseSlug);
+    const categorySlug = generateSlug(category || "software");
+
     // Create product with all trust & validation fields
     const product = await Product.create({
       _id: productId, // Use the pre-generated ID
       sellerId: req.user.id,
+      slug,
+      categorySlug,
       title: title.trim(),
       description: description.trim(),
       category: category || "Software",
@@ -970,43 +983,42 @@ export const confirmProductUpload = async (req, res) => {
       language: language,
       format: format,
       intendedAudience: intendedAudience,
-      status: "processing", // Crucial: Will be updated by Cloudflare Worker webhook
+      status: "processing", // Crucial: Will be updated by background process
       thumbnailUrl: thumbnailUrl,
       thumbnailKey: thumbnailKey,
     });
 
-    // Return instantly — Cloudflare Worker handles the rest
+    // Return instantly — Background processing starts locally
     res.status(202).json({ 
       message: "Upload confirmed, background processing started",
       product 
     });
+
+    // Trigger processing immediately in background (for local development or if worker fails)
+    processProductBackground(r2Key, thumbnailUrl, "").catch(err => console.error("Local background processing failed:", err));
+
   } catch (err) {
     console.error("Confirm upload error:", err);
     res.status(500).json({ message: "Failed to confirm upload" });
   }
 };
 
-export const handleWorkerUploadComplete = async (req, res) => {
+export const processProductBackground = async (r2Key, thumbnailUrl, previewUrl) => {
   try {
-    const { r2Key, thumbnailUrl, previewUrl } = req.body;
-
-    // Find the processing product
     const product = await Product.findOne({ fileKey: r2Key, status: "processing" });
-    if (!product) return res.status(404).json({ error: "Product not found or already processed" });
+    if (!product) return;
 
-    console.log(`[Worker Webhook] Received completion for ${r2Key}`);
+    console.log(`[Background Processing] Started for ${r2Key}`);
 
-    let scanResult = { scanned: true, clean: true }; // Default
+    let scanResult = { scanned: true, clean: true };
 
     try {
-      // Fetch the file from R2
       const command = new GetObjectCommand({
         Bucket: R2_BUCKET_NAME,
         Key: r2Key,
       });
       const { Body } = await r2Client.send(command);
       
-      // Node.js handles the VirusTotal scan instead of the Cloudflare Worker
       const fileByteArray = await Body.transformToByteArray();
       const fileBuffer = Buffer.from(fileByteArray);
       
@@ -1027,7 +1039,7 @@ export const handleWorkerUploadComplete = async (req, res) => {
     const updatedProduct = await Product.findByIdAndUpdate(
       product._id,
       { 
-        status: scanResult.clean ? "pending" : "rejected", // Move to admin review, or reject if malware
+        status: scanResult.clean ? "pending" : "rejected",
         rejectionReason: scanResult.clean ? null : scanResult.reason,
         thumbnailUrl: thumbnailUrl || product.thumbnailUrl,
         previewPdfUrl: previewUrl || product.previewPdfUrl,
@@ -1072,7 +1084,19 @@ export const handleWorkerUploadComplete = async (req, res) => {
         { actionUrl: "/dashboard/admin/products" }
       );
     }
+  } catch (err) {
+    console.error("Background Processing Error:", err);
+  }
+};
 
+export const handleWorkerUploadComplete = async (req, res) => {
+  try {
+    const { r2Key, thumbnailUrl, previewUrl } = req.body;
+    
+    // Use the extracted background processor function
+    // Return early, let it run in the background if we don't want to block, but worker is fine with waiting
+    await processProductBackground(r2Key, thumbnailUrl, previewUrl);
+    
     res.json({ ok: true });
   } catch (err) {
     console.error("Worker Webhook Error:", err);

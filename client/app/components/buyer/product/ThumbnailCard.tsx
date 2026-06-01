@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ProductType } from "./ProductCard";
 
 export default function ThumbnailCard({ product }: { product: ProductType }) {
@@ -8,7 +9,7 @@ export default function ThumbnailCard({ product }: { product: ProductType }) {
 
   return (
     <div
-      onClick={() => router.push(`/marketplace/${product._id}`)}
+      onClick={() => router.push(`/product/${product.slug || product._id}`)}
       className="w-[160px] sm:w-[200px] md:w-[240px] lg:w-[280px] flex-shrink-0 cursor-pointer group/card flex flex-col gap-1.5"
       title={product.title}
     >
@@ -22,7 +23,13 @@ export default function ThumbnailCard({ product }: { product: ProductType }) {
           />
         ) : (
           <div className="w-full h-full bg-gray-100 dark:bg-[#0A101D] flex flex-col items-center justify-center text-center p-2">
-            <span className="text-gray-400 dark:text-slate-600 text-[9px] font-medium uppercase tracking-wider mb-0.5">{product.category}</span>
+            <Link 
+              href={`/category/${product.category.toLowerCase().replace(/\s+/g, '-')}`}
+              onClick={(e) => e.stopPropagation()}
+              className="text-gray-400 dark:text-slate-600 text-[9px] font-medium uppercase tracking-wider mb-0.5 hover:text-[#c7511f] dark:hover:text-[#e47911] transition-colors"
+            >
+              {product.category}
+            </Link>
           </div>
         )}
       </div>

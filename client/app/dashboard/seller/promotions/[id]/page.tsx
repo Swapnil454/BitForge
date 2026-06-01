@@ -426,7 +426,7 @@ export default function SellerPromotionDetailPage() {
                 </div>
               </div>
               <button
-                onClick={() => router.push(`/marketplace/${product?._id || promotion.productId}`)}
+                onClick={() => router.push(`/product/${product?._id || promotion.productId}`)}
                 className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold transition hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5"
               >
                 Open Product Page <ExternalLink className="h-3.5 w-3.5" />

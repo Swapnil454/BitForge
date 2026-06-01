@@ -13,6 +13,7 @@ import {
   getAllSales,
   getGrowthAnalytics,
   getAllTransactionsForSeller,
+  getSellerReviews,
 } from "../controllers/seller.controller.js";
 import {
   cancelSellerPromotion,
@@ -56,5 +57,7 @@ router.post(
   upload.single("paymentProof"),
   uploadPromotionPaymentProof
 );
+
+router.get("/reviews", getSellerReviews);
 
 export default router;

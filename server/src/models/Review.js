@@ -30,9 +30,17 @@ const reviewSchema = new mongoose.Schema({
     min: 1,
     max: 5,
   },
+  title: {
+    type: String,
+    maxlength: 150,
+  },
   comment: {
     type: String,
     maxlength: 1000,
+  },
+  images: {
+    type: [String],
+    default: [],
   },
   // Helpful votes
   helpfulCount: {

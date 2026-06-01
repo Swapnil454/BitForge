@@ -26,8 +26,8 @@ export default function QuickStartPage() {
           Quick Start Guide
         </h1>
         <p className="text-lg text-slate-600 dark:text-white/70">
-          Get BitForge up and running in 15 minutes. This guide walks you through project setup,
-          environment configuration, and your first test transaction.
+          Get your BitForge digital product marketplace up and running in under 15 minutes. This guide walks you through the complete Next.js project setup,
+          MongoDB environment configuration, and your first end-to-end transaction using our built-in Razorpay integration.
         </p>
       </div>
 

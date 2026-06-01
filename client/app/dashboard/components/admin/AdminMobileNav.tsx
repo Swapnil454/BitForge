@@ -21,7 +21,7 @@ export default function AdminMobileNav() {
     { label: "Products", href: "/dashboard/admin/products", icon: FolderOpen },
     // Promotions is handled separately in the middle
     { label: "Security", href: "/dashboard/admin/security", icon: Shield },
-    { label: "Support", href: "/dashboard/admin/help-center", icon: CircleHelp },
+    { label: "Reviews", href: "/dashboard/admin/reviews", icon: MessageSquare },
   ];
 
   return (

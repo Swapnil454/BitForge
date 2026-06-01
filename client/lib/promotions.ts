@@ -22,6 +22,7 @@ export interface PromotionUserSummary {
 
 export interface PromotionProductSummary {
   _id?: string;
+  slug?: string;
   title?: string;
   thumbnailUrl?: string | null;
   price?: number;
@@ -130,6 +131,7 @@ export interface ActivePromotionBanner {
   heroButtonTextColor?: string;
   heroFontFamily?: string;
   productId: string;
+  product?: { slug?: string };
   productTitle: string;
   productPrice?: number;
   productDiscount?: number;

@@ -25,7 +25,7 @@ export default function PayoutSystemPage() {
           Payout System
         </h1>
         <p className="text-lg text-slate-600 dark:text-white/70">
-          Understand how earnings work, when you get paid, and how to manage your bank account for payouts.
+          Understand how your digital product earnings work on the BitForge marketplace. Learn when you get paid, how our platform fees are calculated, and how to set up your bank account for automated RazorpayX transfers.
         </p>
       </div>
 
