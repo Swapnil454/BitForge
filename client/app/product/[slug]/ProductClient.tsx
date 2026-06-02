@@ -182,11 +182,29 @@ export default function ProductClient({ initialProduct }: { initialProduct: any 
           name: "BitForge",
           description: product.title,
           order_id: res.data.razorpayOrderId,
-          handler: function (response: any) {
-            toast.success("Payment successful for " + product.title);
-            setTimeout(() => {
-              router.push("/dashboard/buyer");
-            }, 1500);
+          handler: async function (response: any) {
+            try {
+              console.log(' Payment successful:', response);
+              
+              // Verify payment manually on backend since webhooks might not reach localhost
+              try {
+                await api.post('/payments/verify', {
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_signature: response.razorpay_signature,
+                  isCartCheckout: false
+                });
+              } catch (verifyErr) {
+                console.error("Payment verification failed:", verifyErr);
+              }
+
+              toast.success("Payment successful for " + product.title);
+              setTimeout(() => {
+                router.push("/dashboard/buyer/purchases");
+              }, 1500);
+            } catch (err) {
+              console.error('Error after payment:', err);
+            }
           },
           modal: {
             ondismiss: function () {

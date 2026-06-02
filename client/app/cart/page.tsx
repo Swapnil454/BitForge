@@ -180,9 +180,22 @@ export default function CartPage() {
           handler: async function (response: any) {
             try {
               console.log(' Payment successful:', response);
+              
+              // Verify payment manually on backend since webhooks might not reach localhost
+              try {
+                await api.post('/payments/verify', {
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_signature: response.razorpay_signature,
+                  isCartCheckout: true
+                });
+              } catch (verifyErr) {
+                console.error("Payment verification failed:", verifyErr);
+              }
+
               toast.success(`Payment successful! ${itemCount} item(s) purchased.`);
 
-              // Cart will be cleared by webhook, but refresh UI
+              // Cart will be cleared by webhook/verify, but refresh UI
               await fetchCart();
               router.push('/dashboard/buyer/purchases');
               resolve();
