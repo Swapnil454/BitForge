@@ -11,6 +11,7 @@ import ProductReviews from "@/app/marketplace/[id]/components/ProductReviews";
 import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
 import { Heart, ShoppingCart, Info, Archive, CheckCircle, BadgeCheck, Star, Sparkles, Download, FileText, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Script from "next/script";
 
 function TrustRow({ label, active }: { label: string; active: boolean }) {
   return (
@@ -73,13 +74,6 @@ export default function ProductClient({ initialProduct }: { initialProduct: any 
     };
     
     fetchCart();
-
-    if (typeof window !== "undefined" && !(window as any).Razorpay) {
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.async = true;
-      document.body.appendChild(script);
-    }
   }, [product, isAuthenticated]);
 
   const toggleWishlist = () => {
@@ -655,6 +649,7 @@ export default function ProductClient({ initialProduct }: { initialProduct: any 
         onRegister={goToRegister}
         action={pendingAction}
       />
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
     </div>
   );
 }

@@ -146,12 +146,30 @@ export default function BuyerDownloadsPage() {
       const response = await api.get(`/download/${download._id}`);
 
       if (response.data?.mode === "redirect" && response.data?.downloadUrl) {
-        const link = document.createElement("a");
-        link.href = response.data.downloadUrl;
-        // Don't set link.download property so browser relies on the server's Content-Disposition header
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const downloadUrl = response.data.downloadUrl;
+        const filename = response.data.filename || "download";
+
+        if (downloadUrl.includes("cloudinary.com")) {
+          // Legacy Cloudinary URL: Fetch as blob to force custom filename
+          const res = await fetch(downloadUrl);
+          const blob = await res.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = blobUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        } else {
+          // R2 Signed URL: Already handles filename in Content-Disposition
+          const link = document.createElement("a");
+          link.href = downloadUrl;
+          // Don't set link.download property so browser relies on the server's Content-Disposition header
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
 
         toast.dismiss(loadingToast);
         toast.success("Download started securely!");
