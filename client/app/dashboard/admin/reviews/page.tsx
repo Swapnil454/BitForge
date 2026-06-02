@@ -69,8 +69,30 @@ export default function AdminReviewsPage() {
   }, [search]);
 
   const fetchReviews = useCallback(async (page: number = 1, isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    else setLoading(true);
+    const cacheKey = `admin_reviews_page1_${filterStatus}_${debouncedSearch}`;
+
+    if (page === 1) {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        try {
+          const cached = sessionStorage.getItem(cacheKey);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            setReviews(parsed.reviews || []);
+            setPagination(parsed.pagination || { page: 1, limit: 20, total: 0, pages: 1 });
+            setLoading(false);
+          } else {
+            setLoading(true);
+          }
+        } catch (e) {
+          setLoading(true);
+        }
+      }
+    } else {
+      if (isRefresh) setRefreshing(true);
+      else setLoading(true);
+    }
 
     try {
       const params = new URLSearchParams({
@@ -83,6 +105,15 @@ export default function AdminReviewsPage() {
       const res = await api.get(`/admin/reviews?${params.toString()}`);
       setReviews(res.data.reviews || []);
       setPagination(res.data.pagination || { page: 1, limit: 20, total: 0, pages: 1 });
+      
+      if (page === 1) {
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify({
+            reviews: res.data.reviews || [],
+            pagination: res.data.pagination || { page: 1, limit: 20, total: 0, pages: 1 }
+          }));
+        } catch (e) {}
+      }
     } catch (error) {
       console.error("Failed to fetch reviews:", error);
       toast.error("Failed to load reviews");

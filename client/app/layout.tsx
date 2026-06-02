@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { Toaster } from 'react-hot-toast';
 import AppProviders from "./providers/AppProviders";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.bittforge.in"),
@@ -27,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning className={inter.className}>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning style={{ fontFamily: "'Inter', sans-serif" }}>
       <body
       >
         <AppProviders>

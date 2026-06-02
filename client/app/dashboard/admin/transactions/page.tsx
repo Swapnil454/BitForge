@@ -109,7 +109,32 @@ function TransactionsPageContent() {
   }, [page, typeFilter, statusFilter, searchTerm, dateRange, limit]);
 
   const fetchTransactions = async () => {
-    setLoading(true);
+    const cacheKey = `admin_transactions_${page}_${limit}_${searchTerm}_${typeFilter}_${statusFilter}_${dateRange}`;
+    try {
+      if (page === 1) {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setTransactions(parsed.transactions || []);
+          setTotalPages(parsed.pagination?.pages || 1);
+          setTotalFilteredRows(parsed.pagination?.total || 0);
+          setSummary({
+            total: parsed.summary?.total || EMPTY_SUMMARY.total,
+            success: parsed.summary?.success || EMPTY_SUMMARY.success,
+            pending: parsed.summary?.pending || EMPTY_SUMMARY.pending,
+            failed: parsed.summary?.failed || EMPTY_SUMMARY.failed,
+          });
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+      } else {
+        setLoading(true);
+      }
+    } catch (e) {
+      setLoading(true);
+    }
+
     try {
       const data = await adminAPI.getAllTransactions({
         page,
@@ -139,6 +164,11 @@ function TransactionsPageContent() {
         pending: data.summary?.pending || EMPTY_SUMMARY.pending,
         failed: data.summary?.failed || EMPTY_SUMMARY.failed,
       });
+      if (page === 1) {
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify(data));
+        } catch (e) {}
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to load transactions");
       setSummary(EMPTY_SUMMARY);

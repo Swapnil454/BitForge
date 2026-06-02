@@ -42,6 +42,18 @@ export default function PurchasesPage() {
     const parsed = getStoredUser<{ role?: string }>();
     if (!parsed) { router.push("/login"); return; }
     if (parsed.role !== "buyer") { router.push("/dashboard"); return; }
+    
+    // Check cache synchronously before first fetch
+    try {
+      const cached = sessionStorage.getItem("buyer_purchases_page1");
+      if (cached) {
+        const parsedCache = JSON.parse(cached);
+        setPurchases(parsedCache.purchases);
+        setHasNextPage(parsedCache.hasNextPage);
+        setLoading(false);
+      }
+    } catch (e) {}
+
     void fetchPage(1, true);
   }, [router]);
 
@@ -61,8 +73,14 @@ export default function PurchasesPage() {
     if (isFetchingRef.current) return;
     isFetchingRef.current = true;
 
-    if (isInitial) setLoading(true);
-    else setLoadingMore(true);
+    // Only show loading spinner if we don't have cached data
+    if (isInitial) {
+      if (!sessionStorage.getItem("buyer_purchases_page1")) {
+        setLoading(true);
+      }
+    } else {
+      setLoadingMore(true);
+    }
 
     try {
       const data = await buyerAPI.getAllPurchases({
@@ -74,7 +92,23 @@ export default function PurchasesPage() {
       const incoming: Purchase[] = data.purchases || [];
       const pag = data.pagination;
 
-      setPurchases((prev) => (isInitial ? incoming : [...prev, ...incoming]));
+      if (isInitial) {
+        setPurchases(incoming);
+        try {
+          sessionStorage.setItem("buyer_purchases_page1", JSON.stringify({
+            purchases: incoming,
+            hasNextPage: pag?.hasNextPage ?? false
+          }));
+        } catch (e) {}
+      } else {
+        setPurchases((prev) => {
+          // Prevent duplicates when strict mode double-invokes
+          const existingIds = new Set(prev.map(p => p._id));
+          const newItems = incoming.filter(p => !existingIds.has(p._id));
+          return [...prev, ...newItems];
+        });
+      }
+      
       setHasNextPage(pag?.hasNextPage ?? false);
       setPage(targetPage);
     } catch (error: any) {

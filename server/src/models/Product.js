@@ -211,4 +211,9 @@ const productSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+// Indexes to optimize marketplace and product queries in production
+productSchema.index({ status: 1, isDeleted: 1, changeRequest: 1, createdAt: -1 });
+productSchema.index({ categorySlug: 1, status: 1, isDeleted: 1, changeRequest: 1 });
+productSchema.index({ sellerId: 1 });
+
 export default mongoose.model("Product", productSchema);

@@ -80,9 +80,26 @@ export default function AdminReportsPage() {
   };
 
   const fetchReports = async (pageNum: number = 1) => {
+    const cacheKey = `admin_reports_${statusFilter}`;
     try {
-      if (pageNum === 1) setLoading(true);
-      else setLoadingMore(true);
+      if (pageNum === 1) {
+        try {
+          const cached = sessionStorage.getItem(cacheKey);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            setReports(parsed.reports || []);
+            setHasMore(parsed.reports?.length === 7);
+            setPage(1);
+            setLoading(false);
+          } else {
+            setLoading(true);
+          }
+        } catch (e) {
+          setLoading(true);
+        }
+      } else {
+        setLoadingMore(true);
+      }
 
       const res = await reportAPI.getAllReports({ 
         status: statusFilter, 
@@ -94,6 +111,9 @@ export default function AdminReportsPage() {
       
       if (pageNum === 1) {
         setReports(newReports);
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify({ reports: newReports }));
+        } catch (e) {}
       } else {
         setReports(prev => [...prev, ...newReports]);
       }

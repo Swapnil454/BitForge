@@ -244,9 +244,25 @@ export function UserDirectoryPage({ config }: { config: UserDirectoryConfig }) {
   const fetchUsers = async () => {
     const isLoadingNextMobilePage = isMobileViewport && page > 1;
     isFetchingRef.current = true;
+    const cacheKey = `admin_users_page1_${config.role}_${sortParam}_${isVerifiedParam}_${debouncedSearch}`;
 
     if (isLoadingNextMobilePage) {
       setIsLoadingMore(true);
+    } else if (page === 1) {
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setUsers(parsed.users || []);
+          setTotalPages(parsed.totalPages || 1);
+          if (parsed.stats) setStats(parsed.stats);
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+      } catch (e) {
+        setLoading(true);
+      }
     } else {
       setLoading(true);
     }
@@ -289,6 +305,13 @@ export function UserDirectoryPage({ config }: { config: UserDirectoryConfig }) {
 
       if (!isLoadingNextMobilePage) {
         setSelectedRows(new Set());
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify({
+            users: incomingUsers,
+            totalPages: data.pagination?.pages || 1,
+            stats: data.stats
+          }));
+        } catch (e) {}
       }
     } catch {
       toast.error(`Failed to load ${config.rolePlural}`);

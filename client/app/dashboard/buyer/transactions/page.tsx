@@ -101,12 +101,33 @@ function TransactionsPageContent() {
   }, [statusFilter, searchTerm, dateRange, limit]);
 
   useEffect(() => {
+    if (page === 1) {
+      const cacheKey = `buyer_tx_page1_${statusFilter}_${dateRange}_${searchTerm}_${limit}`;
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const parsedCache = JSON.parse(cached);
+          setTransactions(parsedCache.transactions);
+          setTotalPages(parsedCache.totalPages);
+          setTotalFilteredRows(parsedCache.totalFilteredRows);
+          if (parsedCache.summary) setSummary(parsedCache.summary);
+          setLoading(false);
+        }
+      } catch (e) {}
+    }
     fetchTransactions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, statusFilter, searchTerm, dateRange, limit]);
 
   const fetchTransactions = async () => {
-    setLoading(true);
+    const cacheKey = `buyer_tx_page1_${statusFilter}_${dateRange}_${searchTerm}_${limit}`;
+    if (page === 1) {
+      if (!sessionStorage.getItem(cacheKey)) {
+        setLoading(true);
+      }
+    } else {
+      setLoading(true);
+    }
     try {
       const data = await buyerAPI.getAllTransactions({
         page,
@@ -127,6 +148,16 @@ function TransactionsPageContent() {
         isAppending.current = false;
       } else {
         setTransactions(data.transactions || []);
+        if (page === 1) {
+          try {
+            sessionStorage.setItem(cacheKey, JSON.stringify({
+              transactions: data.transactions || [],
+              totalPages: data.pagination?.pages || 1,
+              totalFilteredRows: data.pagination?.total || 0,
+              summary: data.summary || EMPTY_SUMMARY
+            }));
+          } catch (e) {}
+        }
       }
       setTotalPages(data.pagination?.pages || 1);
       setTotalFilteredRows(data.pagination?.total || 0);

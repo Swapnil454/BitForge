@@ -73,10 +73,25 @@ export default function SellerPromotionsPage() {
   }, []);
 
   const fetchPromotions = useCallback(async () => {
+    const cacheKey = "seller_promotions_data";
     try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        setPromotions(JSON.parse(cached));
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+    } catch (e) {
       setLoading(true);
+    }
+
+    try {
       const data = await promotionAPI.getSellerPromotions();
       setPromotions(data.promotions || []);
+      try {
+        sessionStorage.setItem(cacheKey, JSON.stringify(data.promotions || []));
+      } catch (e) {}
     } catch {
       showError("Failed to load promotions");
     } finally {
