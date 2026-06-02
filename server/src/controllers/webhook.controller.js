@@ -117,7 +117,7 @@ export const processCartOrder = async (cartOrder, payment) => {
     
     const transactionRef = `${invoiceNumber}`;
     const qrPayload = generateUpiQrPayload({
-      upiId: payment.vpa || "820812358@ybl",
+      upiId: "rzpbitforge812242.rzp@ypbiz",
       payeeName: "BitForge Technology Services Pvt. Ltd.",
       amount: item.itemTotal,
       invoiceNo: invoiceNumber,
@@ -172,7 +172,7 @@ export const processCartOrder = async (cartOrder, payment) => {
       dynamicQr: {
         qrPayload,
         qrImageUrl: qrImageDataUrl,
-        upiId: payment.vpa || "820812358@ybl",
+        upiId: "rzpbitforge812242.rzp@ypbiz",
         payeeName: "BitForge Technology Services Pvt. Ltd.",
         transactionRef,
         amount: item.itemTotal,
@@ -419,7 +419,7 @@ export const razorpayWebhook = async (req, res) => {
         
         const transactionRef = `${invoiceNumber}`;
         const qrPayload = generateUpiQrPayload({
-          upiId: payment.vpa || "820812358@ybl",
+          upiId: "rzpbitforge812242.rzp@ypbiz",
           payeeName: "BitForge Technology Services Pvt. Ltd.",
           amount: totalAmount,
           invoiceNo: invoiceNumber,
@@ -474,7 +474,7 @@ export const razorpayWebhook = async (req, res) => {
           dynamicQr: {
             qrPayload,
             qrImageUrl: qrImageDataUrl,
-            upiId: payment.vpa || "820812358@ybl",
+            upiId: "rzpbitforge812242.rzp@ypbiz",
             payeeName: "BitForge Technology Services Pvt. Ltd.",
             transactionRef,
             amount: totalAmount,
