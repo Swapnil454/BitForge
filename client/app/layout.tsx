@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Toaster } from 'react-hot-toast';
 import AppProviders from "./providers/AppProviders";
 import "./globals.css";
@@ -148,6 +149,12 @@ export default function RootLayout({
               });
             `
           }}
+        />
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7177082316952753"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
         />
       </body>
     </html>
