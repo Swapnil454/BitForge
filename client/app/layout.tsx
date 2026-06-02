@@ -28,6 +28,11 @@ export default function RootLayout({
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning style={{ fontFamily: "'Inter', sans-serif" }}>
       <body
       >
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7177082316952753"
+          crossOrigin="anonymous"
+        />
         <AppProviders>
           {children}
         </AppProviders>
@@ -149,12 +154,6 @@ export default function RootLayout({
               });
             `
           }}
-        />
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7177082316952753"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
         />
       </body>
     </html>
