@@ -109,7 +109,27 @@ function TransactionsPageContent() {
   }, [page, typeFilter, statusFilter, searchTerm, dateRange, limit]);
 
   const fetchTransactions = async () => {
-    setLoading(true);
+    const cacheKey = `seller_transactions_page1_${typeFilter}_${statusFilter}_${searchTerm}_${dateRange}_${limit}`;
+    if (page === 1) {
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setTransactions(parsed.transactions);
+          setTotalPages(parsed.totalPages);
+          setTotalFilteredRows(parsed.totalFilteredRows);
+          setSummary(parsed.summary);
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+      } catch (e) {
+        setLoading(true);
+      }
+    } else {
+      setLoading(true);
+    }
+
     try {
       const data = await sellerAPI.getAllTransactions({
         page,
@@ -129,7 +149,23 @@ function TransactionsPageContent() {
         });
         isAppending.current = false;
       } else {
-        setTransactions(data.transactions || []);
+        const newTxs = data.transactions || [];
+        setTransactions(newTxs);
+        if (page === 1) {
+          try {
+            sessionStorage.setItem(cacheKey, JSON.stringify({
+              transactions: newTxs,
+              totalPages: data.pagination?.pages || 1,
+              totalFilteredRows: data.pagination?.total || 0,
+              summary: {
+                total: data.summary?.total || EMPTY_SUMMARY.total,
+                success: data.summary?.success || EMPTY_SUMMARY.success,
+                pending: data.summary?.pending || EMPTY_SUMMARY.pending,
+                failed: data.summary?.failed || EMPTY_SUMMARY.failed,
+              }
+            }));
+          } catch (e) {}
+        }
       }
       setTotalPages(data.pagination?.pages || 1);
       setTotalFilteredRows(data.pagination?.total || 0);

@@ -12,6 +12,8 @@ import {
   handlePromotionPaymentFailed,
 } from "./promotion.controller.js";
 import { sendSaleNotificationEmail, sendBuyerInvoiceEmail } from "../utils/moderationEmails.js";
+import { generateUpiQrPayload } from "../utils/generateUpiQrPayload.js";
+import { generateQrImageDataUrl } from "../utils/generateQrImage.js";
 
 import { applyWatermark } from "../utils/watermark.js";
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
@@ -110,6 +112,26 @@ const processCartOrder = async (cartOrder, payment) => {
     // Create invoice for this item
     const invoiceNumber = await Invoice.generateInvoiceNumber();
 
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30);
+    
+    const transactionRef = `${invoiceNumber}`;
+    const qrPayload = generateUpiQrPayload({
+      upiId: "bitforge@upi",
+      payeeName: "BitForge Technology Services Pvt. Ltd.",
+      amount: item.itemTotal,
+      invoiceNo: invoiceNumber,
+      invoiceDate: new Date().toISOString(),
+      transactionRef,
+      gstin: process.env.BITFORGE_GSTIN || "29AAICA3918J1ZE",
+      cgst: item.gst / 2,
+      sgst: item.gst / 2,
+      igst: 0,
+      expiresAt,
+    });
+    
+    const qrImageDataUrl = await generateQrImageDataUrl(qrPayload);
+
     await Invoice.create({
       orderId: order._id,
       invoiceNumber,
@@ -119,6 +141,7 @@ const processCartOrder = async (cartOrder, payment) => {
       buyerEmail: payment.email || buyer?.email || "buyer@example.com",
       sellerId: item.sellerId,
       sellerName: seller?.name || 'BitForge Seller',
+      sellerEmail: seller?.email || 'seller@example.com',
       productId: item.productId,
       productName: item.productName,
       productDescription: product?.description?.substring(0, 100) || 'Digital download',
@@ -136,6 +159,26 @@ const processCartOrder = async (cartOrder, payment) => {
       razorpayOrderId: cartOrder.razorpayOrderId,
       razorpayPaymentId: payment.id,
       paymentMethod: payment.method || 'Razorpay',
+      paymentStatus: "PAID",
+      paymentId: payment.id,
+      paidAt: new Date(),
+      gstin: process.env.BITFORGE_GSTIN || "29AAICA3918J1ZE",
+      gstBreakup: {
+        cgst: item.gst / 2,
+        sgst: item.gst / 2,
+        igst: 0,
+        totalTax: item.gst,
+      },
+      dynamicQr: {
+        qrPayload,
+        qrImageUrl: qrImageDataUrl,
+        upiId: "bitforge@upi",
+        payeeName: "BitForge Technology Services Pvt. Ltd.",
+        transactionRef,
+        amount: item.itemTotal,
+        expiresAt,
+        generatedAt: new Date(),
+      }
     });
 
     console.log(`    Invoice created: ${invoiceNumber}`);
@@ -371,6 +414,26 @@ export const razorpayWebhook = async (req, res) => {
 
         const invoiceNumber = await Invoice.generateInvoiceNumber();
 
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 30);
+        
+        const transactionRef = `${invoiceNumber}`;
+        const qrPayload = generateUpiQrPayload({
+          upiId: "bitforge@upi",
+          payeeName: "BitForge Technology Services Pvt. Ltd.",
+          amount: totalAmount,
+          invoiceNo: invoiceNumber,
+          invoiceDate: new Date().toISOString(),
+          transactionRef,
+          gstin: process.env.BITFORGE_GSTIN || "29AAICA3918J1ZE",
+          cgst: gstAmount / 2,
+          sgst: gstAmount / 2,
+          igst: 0,
+          expiresAt,
+        });
+        
+        const qrImageDataUrl = await generateQrImageDataUrl(qrPayload);
+
         const invoice = await Invoice.create({
           orderId: order._id,
           invoiceNumber,
@@ -380,6 +443,7 @@ export const razorpayWebhook = async (req, res) => {
           buyerEmail: payment.email || buyer?.email || order.buyerId?.email || "buyer@example.com",
           sellerId: order.sellerId,
           sellerName: seller?.name || 'BitForge Seller',
+          sellerEmail: seller?.email || 'seller@example.com',
           productId: order.productId,
           productName: product?.title || order.productName || 'Digital Product',
           productDescription: product?.description?.substring(0, 100) || 'Digital download',
@@ -397,6 +461,26 @@ export const razorpayWebhook = async (req, res) => {
           razorpayOrderId: payment.order_id,
           razorpayPaymentId: payment.id,
           paymentMethod: payment.method || 'Razorpay',
+          paymentStatus: "PAID",
+          paymentId: payment.id,
+          paidAt: new Date(),
+          gstin: process.env.BITFORGE_GSTIN || "29AAICA3918J1ZE",
+          gstBreakup: {
+            cgst: gstAmount / 2,
+            sgst: gstAmount / 2,
+            igst: 0,
+            totalTax: gstAmount,
+          },
+          dynamicQr: {
+            qrPayload,
+            qrImageUrl: qrImageDataUrl,
+            upiId: "bitforge@upi",
+            payeeName: "BitForge Technology Services Pvt. Ltd.",
+            transactionRef,
+            amount: totalAmount,
+            expiresAt,
+            generatedAt: new Date(),
+          }
         });
 
         console.log("==>  Invoice created:", invoice.invoiceNumber);

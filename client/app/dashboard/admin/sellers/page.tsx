@@ -67,8 +67,26 @@ export default function SellersPage() {
   }, [router]);
 
   const fetchSellers = async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    else setLoading(true);
+    const cacheKey = "admin_sellers_data";
+    
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setSellers(parsed.sellers || []);
+          setDeletionRequests(parsed.deletionRequests || []);
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+      } catch (e) {
+        setLoading(true);
+      }
+    }
+
     try {
       const [pendingSellers, pendingDeletions] = await Promise.all([
         adminAPI.getPendingSellers(),
@@ -76,6 +94,12 @@ export default function SellersPage() {
       ]);
       setSellers(pendingSellers || []);
       setDeletionRequests(pendingDeletions || []);
+      try {
+        sessionStorage.setItem(cacheKey, JSON.stringify({
+          sellers: pendingSellers || [],
+          deletionRequests: pendingDeletions || []
+        }));
+      } catch (e) {}
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to load sellers");
     } finally {

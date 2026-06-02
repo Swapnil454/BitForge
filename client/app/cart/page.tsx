@@ -64,6 +64,14 @@ export default function CartPage() {
   useEffect(() => {
     if (!authChecked) return;
 
+    try {
+      const cached = sessionStorage.getItem("buyer_cart_data");
+      if (cached) {
+        setCart(JSON.parse(cached));
+        setLoading(false);
+      }
+    } catch (e) {}
+
     fetchCart();
 
     // Load Razorpay checkout script
@@ -77,9 +85,14 @@ export default function CartPage() {
 
   const fetchCart = async () => {
     try {
-      setLoading(true);
+      if (!sessionStorage.getItem("buyer_cart_data")) {
+        setLoading(true);
+      }
       const data = await cartAPI.getCart();
       setCart(data.cart);
+      try {
+        sessionStorage.setItem("buyer_cart_data", JSON.stringify(data.cart));
+      } catch (e) {}
     } catch (error: any) {
       console.error('Error fetching cart:', error);
       toast.error('Failed to load cart');
@@ -95,6 +108,9 @@ export default function CartPage() {
       setUpdating(productId);
       const data = await cartAPI.updateCartItem(productId, newQuantity);
       setCart(data.cart);
+      try {
+        sessionStorage.setItem("buyer_cart_data", JSON.stringify(data.cart));
+      } catch (e) {}
       toast.success('Cart updated');
     } catch (error: any) {
       console.error('Error updating cart:', error);
@@ -109,6 +125,9 @@ export default function CartPage() {
       setRemoving(productId);
       const data = await cartAPI.removeFromCart(productId);
       setCart(data.cart);
+      try {
+        sessionStorage.setItem("buyer_cart_data", JSON.stringify(data.cart));
+      } catch (e) {}
       toast.success('Item removed from cart');
     } catch (error: any) {
       console.error('Error removing item:', error);
@@ -124,6 +143,9 @@ export default function CartPage() {
     try {
       const data = await cartAPI.clearCart();
       setCart(data.cart);
+      try {
+        sessionStorage.setItem("buyer_cart_data", JSON.stringify(data.cart));
+      } catch (e) {}
       toast.success('Cart cleared');
     } catch (error: any) {
       console.error('Error clearing cart:', error);

@@ -79,8 +79,21 @@ function SellerSalesPageContent() {
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
 
   /* ================= FETCH ================= */
+  
+  const getCacheKey = () => `seller_sales_page1_${filterStatus}_${sortBy}_${month}_${debouncedSearch}`;
 
   useEffect(() => {
+    // Check cache synchronously before first fetch
+    try {
+      const cached = sessionStorage.getItem(getCacheKey());
+      if (cached) {
+        const parsedCache = JSON.parse(cached);
+        setSales(parsedCache.sales);
+        setHasMore(parsedCache.hasMore);
+        setLoading(false);
+      }
+    } catch (e) {}
+
     setPage(1);
     setHasMore(true);
     fetchSales(1, true);
@@ -93,8 +106,14 @@ function SellerSalesPageContent() {
   }, [page]);
 
   const fetchSales = async (pageNum: number, isInitial: boolean = false) => {
-    if (isInitial) setLoading(true);
-    else setLoadingMore(true);
+    // Only show loading spinner if we don't have cached data
+    if (isInitial) {
+      if (!sessionStorage.getItem(getCacheKey())) {
+        setLoading(true);
+      }
+    } else {
+      setLoadingMore(true);
+    }
 
     try {
       const res = await sellerAPI.getAllSales({
@@ -106,15 +125,26 @@ function SellerSalesPageContent() {
       });
       
       const newSales = res.sales || [];
-      if (newSales.length < PAGE_SIZE) {
-        setHasMore(false);
-      } else {
-        setHasMore(true);
-      }
+      const isHasMore = newSales.length >= PAGE_SIZE;
+      
+      setHasMore(isHasMore);
 
-      setSales((prev) => 
-        isInitial ? newSales : [...prev, ...newSales]
-      );
+      if (isInitial) {
+        setSales(newSales);
+        try {
+          sessionStorage.setItem(getCacheKey(), JSON.stringify({
+            sales: newSales,
+            hasMore: isHasMore
+          }));
+        } catch (e) {}
+      } else {
+        setSales((prev) => {
+          // Prevent duplicates when strict mode double-invokes
+          const existingIds = new Set(prev.map(p => p._id));
+          const newItems = newSales.filter((p: Sale) => !existingIds.has(p._id));
+          return [...prev, ...newItems];
+        });
+      }
     } catch {
       toast.error("Failed to load sales");
     } finally {

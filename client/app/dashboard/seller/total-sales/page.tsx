@@ -78,8 +78,29 @@ export default function TotalSalesPage() {
     if (isFetchingRef.current) return;
     isFetchingRef.current = true;
 
-    if (isInitial) setLoading(true);
-    else setLoadingMore(true);
+    const cacheKey = `seller_total_sales_page1_${filterBy}_${sortBy}_${debouncedSearch}`;
+    if (isInitial) {
+      if (targetPage === 1) {
+        try {
+          const cached = sessionStorage.getItem(cacheKey);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            setSales(parsed.sales);
+            setHasNextPage(parsed.hasNextPage);
+            setPage(parsed.page);
+            setLoading(false);
+          } else {
+            setLoading(true);
+          }
+        } catch (e) {
+          setLoading(true);
+        }
+      } else {
+        setLoading(true);
+      }
+    } else {
+      setLoadingMore(true);
+    }
 
     try {
       const statusMap: Record<FilterOption, "all" | "paid" | "created" | "failed"> = {
@@ -103,9 +124,20 @@ export default function TotalSalesPage() {
 
       const incoming: Sale[] = data.sales || [];
       const pag = data.pagination;
+      const calculatedHasNextPage = pag?.pages ? targetPage < pag.pages : incoming.length === PAGE_SIZE;
+
+      if (isInitial && targetPage === 1) {
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify({
+            sales: incoming,
+            hasNextPage: calculatedHasNextPage,
+            page: targetPage
+          }));
+        } catch (e) {}
+      }
 
       setSales((prev) => (isInitial ? incoming : [...prev, ...incoming]));
-      setHasNextPage(pag?.pages ? targetPage < pag.pages : incoming.length === PAGE_SIZE);
+      setHasNextPage(calculatedHasNextPage);
       setPage(targetPage);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to load sales");

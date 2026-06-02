@@ -83,8 +83,23 @@ export default function MyProductsPage() {
 
   const fetchProducts = useCallback(async (pageToFetch: number) => {
     try {
+      const cacheKey = `seller_products_page1_${debouncedSearch}_${selectedCategory}_${selectedPriceRange}`;
       if (pageToFetch === 1) {
-        if (!hasLoadedOnceRef.current) setLoading(true);
+        if (!hasLoadedOnceRef.current) {
+          try {
+            const cached = sessionStorage.getItem(cacheKey);
+            if (cached) {
+              const parsed = JSON.parse(cached);
+              setProducts(parsed.products);
+              setHasMore(parsed.hasMore);
+              setLoading(false);
+            } else {
+              setLoading(true);
+            }
+          } catch (e) {
+            setLoading(true);
+          }
+        }
         else setIsRefreshingFilters(true);
       } else {
         setLoadingMore(true);
@@ -104,9 +119,16 @@ export default function MyProductsPage() {
       
       const newProducts = res.data.products || res.data || [];
       const totalPages = res.data.totalPages || 1;
+      const calculatedHasMore = pageToFetch < totalPages && newProducts.length > 0;
 
       if (pageToFetch === 1) {
         setProducts(newProducts);
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify({
+            products: newProducts,
+            hasMore: calculatedHasMore
+          }));
+        } catch (e) {}
       } else {
         setProducts((prev) => {
           const existingIds = new Set(prev.map(p => p._id));
@@ -115,7 +137,7 @@ export default function MyProductsPage() {
         });
       }
 
-      setHasMore(pageToFetch < totalPages && newProducts.length > 0);
+      setHasMore(calculatedHasMore);
       setPage(pageToFetch);
     } catch {
       showError("Failed to load products");

@@ -123,8 +123,22 @@ export default function DisputesPage() {
   }, [isLoading, loadingMore, hasMore]);
 
   const fetchDisputes = useCallback(async () => {
+    const cacheKey = `admin_disputes_page1_${activeTab}_${sort}_${debouncedSearch}`;
     if (page === 1) {
-      setIsLoading(true);
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setDisputes(parsed.disputes || []);
+          setHasMore(parsed.hasMore);
+          if (parsed.stats) setStats(parsed.stats);
+          setIsLoading(false);
+        } else {
+          setIsLoading(true);
+        }
+      } catch (e) {
+        setIsLoading(true);
+      }
     } else {
       setLoadingMore(true);
     }
@@ -139,8 +153,19 @@ export default function DisputesPage() {
 
       if (page === 1) {
         setDisputes(data.disputes || []);
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify({
+            disputes: data.disputes || [],
+            hasMore: page < (data.pagination?.pages || 1),
+            stats: data.stats
+          }));
+        } catch (e) {}
       } else {
-        setDisputes(prev => [...prev, ...(data.disputes || [])]);
+        setDisputes(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const newItems = (data.disputes || []).filter((p: Dispute) => !existingIds.has(p.id));
+          return [...prev, ...newItems];
+        });
       }
       
       setHasMore(page < (data.pagination?.pages || 1));
@@ -166,8 +191,23 @@ export default function DisputesPage() {
       router.push("/dashboard");
       return;
     }
+
+    if (page === 1) {
+      const cacheKey = `admin_disputes_page1_${activeTab}_${sort}_${debouncedSearch}`;
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const parsedCache = JSON.parse(cached);
+          setDisputes(parsedCache.disputes);
+          setHasMore(parsedCache.hasMore);
+          if (parsedCache.stats) setStats(parsedCache.stats);
+          setIsLoading(false);
+        }
+      } catch (e) {}
+    }
+
     fetchDisputes();
-  }, [fetchDisputes, router]);
+  }, [fetchDisputes, router, page, activeTab, sort, debouncedSearch]);
 
   const handleApproveRefund = async () => {
     if (!selectedDispute) return;

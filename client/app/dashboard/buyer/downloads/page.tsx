@@ -61,6 +61,17 @@ export default function BuyerDownloadsPage() {
   }, [query]);
 
   useEffect(() => {
+    const cacheKey = `buyer_downloads_page1_${sortBy}_${debouncedQuery}`;
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const parsedCache = JSON.parse(cached);
+        setDownloads(parsedCache.downloads);
+        setHasNextPage(parsedCache.hasNextPage);
+        setLoading(false);
+      }
+    } catch (e) {}
+
     void fetchPage(1, true);
   }, [sortBy, debouncedQuery]);
 
@@ -81,8 +92,15 @@ export default function BuyerDownloadsPage() {
   const fetchPage = async (targetPage: number, isInitial: boolean) => {
     if (isFetchingRef.current) return;
     isFetchingRef.current = true;
-    if (isInitial) setLoading(true);
-    else setLoadingMore(true);
+    
+    const cacheKey = `buyer_downloads_page1_${sortBy}_${debouncedQuery}`;
+    if (isInitial) {
+      if (!sessionStorage.getItem(cacheKey)) {
+        setLoading(true);
+      }
+    } else {
+      setLoadingMore(true);
+    }
     try {
       const data = await buyerAPI.getAllPurchases({
         page: targetPage,
@@ -91,8 +109,24 @@ export default function BuyerDownloadsPage() {
         search: debouncedQuery,
       });
       const incoming = data.purchases || [];
-      setDownloads((prev) => (isInitial ? incoming : [...prev, ...incoming]));
-      setHasNextPage(data.pagination?.hasNextPage ?? false);
+      const hasNext = data.pagination?.hasNextPage ?? false;
+      
+      if (isInitial) {
+        setDownloads(incoming);
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify({
+            downloads: incoming,
+            hasNextPage: hasNext
+          }));
+        } catch (e) {}
+      } else {
+        setDownloads((prev) => {
+          const existingIds = new Set(prev.map(p => p._id));
+          const newItems = incoming.filter((p: DownloadItem) => !existingIds.has(p._id));
+          return [...prev, ...newItems];
+        });
+      }
+      setHasNextPage(hasNext);
       setCurrentPage(targetPage);
     } catch {
       toast.error("Failed to load downloads");

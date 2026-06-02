@@ -25,6 +25,7 @@ const invoiceSchema = new mongoose.Schema({
     ref: "User",
   },
   sellerName: String,
+  sellerEmail: String,
   
   // Product details
   productId: {
@@ -57,6 +58,34 @@ const invoiceSchema = new mongoose.Schema({
   paymentMethod: {
     type: String,
     default: "Razorpay",
+  },
+  paymentStatus: {
+    type: String,
+    enum: ["PAID", "PENDING", "FAILED", "EXPIRED", "REFUNDED"],
+    default: "PAID",
+  },
+  paymentId: String,
+  paidAt: Date,
+  
+  // Tax details
+  gstin: String,
+  gstBreakup: {
+    cgst: Number,
+    sgst: Number,
+    igst: Number,
+    totalTax: Number,
+  },
+
+  // QR Code details
+  dynamicQr: {
+    qrPayload: String,
+    qrImageUrl: String,
+    upiId: String,
+    payeeName: String,
+    transactionRef: String,
+    amount: Number,
+    expiresAt: Date,
+    generatedAt: Date,
   },
   
   // Timestamps

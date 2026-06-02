@@ -54,6 +54,17 @@ export default function AllOrdersPage() {
 
   // Handle filter/search changes (reset to page 1)
   useEffect(() => {
+    // Zero-wait caching logic for Page 1
+    const cacheKey = `buyer_orders_page1_${filterBy}_${sortBy}_${debouncedSearch}`;
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        setOrders(parsed.orders);
+        setHasNextPage(parsed.hasNextPage);
+      }
+    } catch (e) {}
+
     void fetchPage(1, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortBy, filterBy, debouncedSearch]);
@@ -74,8 +85,11 @@ export default function AllOrdersPage() {
     if (isFetchingRef.current) return;
     isFetchingRef.current = true;
 
-    if (isInitial) setLoading(true);
-    else setLoadingMore(true);
+    if (isInitial) {
+      if (orders.length === 0) setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
 
     try {
       const statusMap: Record<FilterOption, "all" | "success" | "pending" | "failed"> = {
@@ -103,6 +117,16 @@ export default function AllOrdersPage() {
       setOrders((prev) => (isInitial ? incoming : [...prev, ...incoming]));
       setHasNextPage(pag?.hasNextPage ?? false);
       setPage(targetPage);
+      
+      if (isInitial) {
+        const cacheKey = `buyer_orders_page1_${filterBy}_${sortBy}_${debouncedSearch}`;
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify({
+            orders: incoming,
+            hasNextPage: pag?.hasNextPage ?? false
+          }));
+        } catch (e) {}
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to load orders");
     } finally {

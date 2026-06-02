@@ -151,12 +151,41 @@ export default function SellerReviewsPage() {
   const fetchReviews = useCallback(
     async (page = 1, append = false) => {
       try {
-        if (page === 1) setLoading(true);
-        else setLoadingMore(true);
+        const cacheKey = `seller_reviews_page1_${ratingFilter}_${responseFilter}_${debouncedSearch}`;
+        if (page === 1) {
+          try {
+            const cached = sessionStorage.getItem(cacheKey);
+            if (cached) {
+              const parsed = JSON.parse(cached);
+              setReviews(parsed.reviews);
+              setCurrentPage(parsed.currentPage);
+              setHasNextPage(parsed.hasNextPage);
+              setTotal(parsed.total);
+              setLoading(false);
+            } else {
+              setLoading(true);
+            }
+          } catch (e) {
+            setLoading(true);
+          }
+        } else {
+          setLoadingMore(true);
+        }
 
         const res = await api.get(`/seller/reviews?${buildParams(page)}`);
         const incoming: Review[] = res.data.reviews || [];
         const pag = res.data.pagination || {};
+
+        if (page === 1) {
+          try {
+            sessionStorage.setItem(cacheKey, JSON.stringify({
+              reviews: incoming,
+              currentPage: pag.page || page,
+              hasNextPage: pag.hasNextPage ?? false,
+              total: pag.total || 0
+            }));
+          } catch (e) {}
+        }
 
         setReviews((prev) => (append ? [...prev, ...incoming] : incoming));
         setCurrentPage(pag.page || page);
@@ -169,7 +198,7 @@ export default function SellerReviewsPage() {
         setLoadingMore(false);
       }
     },
-    [buildParams]
+    [buildParams, ratingFilter, responseFilter, debouncedSearch]
   );
 
   /* ── Re-fetch when filters change ── */

@@ -38,7 +38,8 @@ export const getMarketplaceProducts = async (req, res) => {
         .populate("sellerId", "name email isVerified identityVerifiedAt profilePictureUrl bio slug")
         .sort(sort)
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .lean(),
       Product.countDocuments(filter)
     ]);
 
@@ -173,7 +174,8 @@ export const getProductsByCategorySlug = async (req, res) => {
         .populate("sellerId", "name email isVerified identityVerifiedAt profilePictureUrl bio slug")
         .sort(sort)
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .lean(),
       Product.countDocuments(filter)
     ]);
 

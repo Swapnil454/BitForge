@@ -45,10 +45,25 @@ export default function MyReportsPage() {
   }, []);
 
   const fetchReports = async () => {
+    const cacheKey = "seller_reports_data";
     try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        setReports(JSON.parse(cached));
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+    } catch (e) {
       setLoading(true);
+    }
+
+    try {
       const res = await reportAPI.getMyReports({ limit: 50 });
       setReports(res.reports);
+      try {
+        sessionStorage.setItem(cacheKey, JSON.stringify(res.reports));
+      } catch (e) {}
     } catch (error) {
       console.error("Error fetching reports:", error);
       toast.error("Failed to load your reports");

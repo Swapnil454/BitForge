@@ -62,11 +62,26 @@ export default function AdminAllProductsPage() {
   }, [router]);
 
   const fetchAllProducts = async () => {
+    const cacheKey = "admin_all_products_data";
     try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        setProducts(JSON.parse(cached));
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+    } catch (e) {
       setLoading(true);
+    }
+
+    try {
       const data = await adminAPI.getAllProducts();
       const items = Array.isArray(data) ? data : data?.products || [];
       setProducts(items);
+      try {
+        sessionStorage.setItem(cacheKey, JSON.stringify(items));
+      } catch (e) {}
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to load products");
     } finally {
