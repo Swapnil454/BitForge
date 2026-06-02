@@ -90,7 +90,11 @@ export const downloadProduct = async (req, res) => {
     // Determine which key to download: watermarked version (preferred) or original
     const targetKey = order.watermarkedR2Key ? order.watermarkedR2Key : product.fileKey;
 
-    if (product.storageProvider === "r2") {
+    // Determine if the original file is legacy Cloudinary
+    const isLegacyCloudinary = product.fileUrl && product.fileUrl.includes("cloudinary");
+
+    // We use R2 if a watermarked file exists, OR if the original product is NOT legacy Cloudinary
+    if (order.watermarkedR2Key || !isLegacyCloudinary) {
       downloadUrl = await getR2SignedDownloadUrl(targetKey, filename);
     } else {
       // Legacy Cloudinary Private URL
@@ -112,10 +116,10 @@ export const downloadProduct = async (req, res) => {
       orderId: order._id,
       productId: product._id,
       productFileName: filename,
-      storageProvider: product.storageProvider || "cloudinary",
+      storageProvider: order.watermarkedR2Key ? "r2" : (isLegacyCloudinary ? "cloudinary" : "r2"),
       ipAddress,
       userAgent,
-      downloadType: order.watermarkedR2Key ? "watermarked-url" : "signed-url",
+      downloadType: order.watermarkedR2Key ? "watermarked" : "signed-url",
       buyerName: order.buyerId.name || "Unknown",
       buyerEmail: order.buyerId.email || "Unknown",
       signedUrlExpiresAt
@@ -131,7 +135,7 @@ export const downloadProduct = async (req, res) => {
     });
 
     console.log(`📤 Redirecting to signed URL for: "${filename}"`);
-    return res.json({ mode: "redirect", downloadUrl });
+    return res.json({ mode: "redirect", downloadUrl, filename });
 
   } catch (error) {
     console.error(" Download error:", error);

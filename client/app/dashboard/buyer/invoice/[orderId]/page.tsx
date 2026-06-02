@@ -226,14 +226,14 @@ export default function InvoicePage() {
         onClick={handlePrint}
         className="w-full rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 sm:w-auto flex items-center justify-center gap-2"
       >
-        🖨️ Print
+        Print
       </button>
       <button
         onClick={handleDownloadPdf}
         disabled={downloading}
         className="w-full rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto flex items-center justify-center gap-2"
       >
-        {downloading ? "Downloading..." : "⬇️ Download PDF"}
+        {downloading ? "Downloading..." : "Download PDF"}
       </button>
     </>
   );
@@ -243,8 +243,8 @@ export default function InvoicePage() {
       <style jsx global>{`
         @media print {
           @page {
-            size: A4;
-            margin: 0; /* Removing page margin hides browser headers/footers */
+            size: auto;
+            margin: 0mm; /* Hides browser headers/footers */
           }
           header, nav, aside, footer, .no-print {
             display: none !important;
@@ -436,8 +436,8 @@ export default function InvoicePage() {
 
             <div className="text-center mb-2 mt-8 text-slate-700 font-semibold">
               <p className="text-xs mb-1">Thank you for purchase</p>
-              <p className="text-[10px] leading-tight mt-1">If any Query please contact support@bittforge.in</p>
-              <p className="text-[10px] leading-tight">© 2026 BitForge Technologies. All rights reserved</p>
+              <p className="text-[10px] leading-none">If any Query please contact support@bittforge.in</p>
+              <p className="text-[10px] leading-none mt-1">© 2026 BitForge Technologies. All rights reserved</p>
             </div>
 
           </section>
