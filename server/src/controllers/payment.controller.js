@@ -6,6 +6,67 @@ import Product from "../models/Product.js";
 import Order from "../models/Order.js";
 import CartOrder from "../models/CartOrder.js";
 import Cart from "../models/Cart.js";
+import crypto from "crypto";
+import axios from "axios";
+
+export const verifyPayment = async (req, res) => {
+  try {
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+
+    const secret = process.env.RAZORPAY_KEY_SECRET;
+    const expectedSignature = crypto
+      .createHmac("sha256", secret)
+      .update(razorpay_order_id + "|" + razorpay_payment_id)
+      .digest("hex");
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ message: "Invalid signature" });
+    }
+
+    // Since localhost doesn't receive webhooks from Razorpay, simulate it here
+    const webhookPayload = {
+      event: "payment.captured",
+      payload: {
+        payment: {
+          entity: {
+            id: razorpay_payment_id,
+            order_id: razorpay_order_id,
+            amount: 0, // Not strictly used for validation in webhook controller
+            method: "Razorpay",
+            email: req.user?.email || "buyer@example.com"
+          }
+        }
+      }
+    };
+    
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    if (webhookSecret) {
+      const payloadString = JSON.stringify(webhookPayload);
+      const simulatedSignature = crypto
+        .createHmac("sha256", webhookSecret)
+        .update(payloadString)
+        .digest("hex");
+        
+      try {
+        const port = process.env.PORT || 5000;
+        await axios.post(`http://127.0.0.1:${port}/api/webhooks/razorpay`, webhookPayload, {
+          headers: {
+            "x-razorpay-signature": simulatedSignature,
+            "Content-Type": "application/json"
+          }
+        });
+        console.log(`[VerifyPayment] Simulated webhook triggered successfully for order ${razorpay_order_id}`);
+      } catch (webhookErr) {
+        console.error("[VerifyPayment] Local webhook simulation failed:", webhookErr.message);
+      }
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Verification failed:", err);
+    res.status(500).json({ message: "Verification failed" });
+  }
+};
 
 // Cart-based checkout - creates ONE Razorpay order for entire cart
 export const createCartCheckout = async (req, res) => {

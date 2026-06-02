@@ -68,7 +68,7 @@ const generateAndUploadWatermarkedFile = async (order, product, buyer) => {
 const GST_RATE = 0.05; // 5% GST
 const PLATFORM_FEE_RATE = 0.02; // 2% platform fee
 
-const processCartOrder = async (cartOrder, payment) => {
+export const processCartOrder = async (cartOrder, payment) => {
   console.log("==> 🛒 Processing CART order with", cartOrder.items.length, "items");
 
   const buyer = await User.findById(cartOrder.buyerId);
