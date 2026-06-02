@@ -20,7 +20,8 @@ export const getSellerDashboardStats = async (req, res) => {
     // All paid orders for this seller
     const orders = await Order.find({ sellerId, status: "paid" })
       .populate({ path: "productId", select: "title price thumbnail" })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     const totalRevenue = orders.reduce((sum, o) => sum + (o.sellerAmount || 0), 0);
     const totalSales = orders.length;
@@ -87,7 +88,7 @@ export const getSellerEarnings = async (req, res) => {
   const orders = await Order.find({
     sellerId,
     status: "paid",
-  });
+  }).lean();
 
   const totalEarnings = orders.reduce(
     (sum, o) => sum + o.sellerAmount,
@@ -97,7 +98,7 @@ export const getSellerEarnings = async (req, res) => {
   const payouts = await Payout.find({
     sellerId,
     status: { $in: ["processing", "paid"] },
-  });
+  }).lean();
 
   const withdrawn = payouts.reduce(
     (sum, p) => sum + p.amount,
@@ -108,7 +109,7 @@ export const getSellerEarnings = async (req, res) => {
   const pendingPayouts = await Payout.find({
     sellerId,
     status: "pending",
-  }).sort({ createdAt: -1 });
+  }).sort({ createdAt: -1 }).lean();
 
   const pendingAmount = pendingPayouts.reduce(
     (sum, p) => sum + p.amount,
@@ -119,7 +120,7 @@ export const getSellerEarnings = async (req, res) => {
   const payoutHistory = await Payout.find({
     sellerId,
     status: { $in: ["paid", "rejected"] }
-  }).sort({ createdAt: -1 });
+  }).sort({ createdAt: -1 }).lean();
 
   const user = await User.findById(sellerId).select('bankAccounts');
   const primaryAccount = user?.bankAccounts?.find(acc => acc.isPrimary) || user?.bankAccounts?.[0] || null;
@@ -169,7 +170,7 @@ export const requestWithdrawal = async (req, res) => {
   const orders = await Order.find({
     sellerId,
     status: "paid",
-  });
+  }).lean();
 
   const totalEarnings = orders.reduce(
     (sum, o) => sum + o.sellerAmount,
@@ -179,7 +180,7 @@ export const requestWithdrawal = async (req, res) => {
   const payouts = await Payout.find({
     sellerId,
     status: { $in: ["processing", "paid"] },
-  });
+  }).lean();
 
   const withdrawn = payouts.reduce(
     (sum, p) => sum + p.netPayableAmount,
@@ -317,7 +318,8 @@ export const getSellerTransactions = async (req, res) => {
       .populate("buyerId", "name email")
       .sort({ createdAt: -1 })
       .skip((pageNum - 1) * limitNum)
-      .limit(limitNum);
+      .limit(limitNum)
+      .lean();
 
     // Format transactions with breakdown
     const transactions = orders.map(order => {
@@ -445,7 +447,8 @@ export const getAllTransactionsForSeller = async (req, res) => {
       orders = await Order.find(query)
         .populate("buyerId", "name email")
         .populate("productId", "title")
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .lean();
     }
 
     if (normalizedType === "all" || normalizedType === "admin_to_seller") {
@@ -458,7 +461,8 @@ export const getAllTransactionsForSeller = async (req, res) => {
       }
       payouts = await Payout.find(query)
         .populate("sellerId", "name email")
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .lean();
     }
 
     if (normalizedType === "all" || normalizedType === "seller_to_admin") {
@@ -470,7 +474,7 @@ export const getAllTransactionsForSeller = async (req, res) => {
           { transactionId: { $regex: search, $options: "i" } }
         ];
       }
-      promotions = await PromotionRequest.find(query).sort({ createdAt: -1 });
+      promotions = await PromotionRequest.find(query).sort({ createdAt: -1 }).lean();
     }
 
     const buyerTransactions = orders.map(order => ({
@@ -705,7 +709,7 @@ export const getGrowthAnalytics = async (req, res) => {
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
     // Fetch all paid orders
-    const allOrders = await Order.find({ sellerId, status: "paid" });
+    const allOrders = await Order.find({ sellerId, status: "paid" }).lean();
 
     // Current month orders
     const currentMonthOrders = allOrders.filter(

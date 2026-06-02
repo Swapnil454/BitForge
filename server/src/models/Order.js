@@ -72,4 +72,9 @@ const orderSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+// Indexes to optimize order queries
+orderSchema.index({ buyerId: 1, status: 1, createdAt: -1 });
+orderSchema.index({ sellerId: 1, status: 1, createdAt: -1 });
+orderSchema.index({ cartOrderId: 1 });
+
 export default mongoose.model("Order", orderSchema);

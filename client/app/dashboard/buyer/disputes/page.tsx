@@ -114,8 +114,11 @@ export default function BuyerDisputesPage() {
   }, [isLoading, loadingMore, hasMore]);
 
   const fetchDisputes = useCallback(async () => {
+    const cacheKey = `buyer_disputes_page1_${activeTab}_${sort}_${debouncedSearch}`;
     if (page === 1) {
-      setIsLoading(true);
+      if (!sessionStorage.getItem(cacheKey)) {
+        setIsLoading(true);
+      }
     } else {
       setLoadingMore(true);
     }
@@ -130,8 +133,19 @@ export default function BuyerDisputesPage() {
 
       if (page === 1) {
         setDisputes(data.disputes || []);
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify({
+            disputes: data.disputes || [],
+            hasMore: page < (data.pagination?.totalPages || 1),
+            stats: data.stats
+          }));
+        } catch (e) {}
       } else {
-        setDisputes(prev => [...prev, ...(data.disputes || [])]);
+        setDisputes(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const newItems = (data.disputes || []).filter((p: Dispute) => !existingIds.has(p.id));
+          return [...prev, ...newItems];
+        });
       }
       
       setHasMore(page < (data.pagination?.totalPages || 1)); // Fixed from data.pagination?.pages to totalPages since that's what the controller outputs
@@ -157,8 +171,23 @@ export default function BuyerDisputesPage() {
       router.push("/dashboard");
       return;
     }
+
+    if (page === 1) {
+      const cacheKey = `buyer_disputes_page1_${activeTab}_${sort}_${debouncedSearch}`;
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const parsedCache = JSON.parse(cached);
+          setDisputes(parsedCache.disputes);
+          setHasMore(parsedCache.hasMore);
+          if (parsedCache.stats) setStats(parsedCache.stats);
+          setIsLoading(false);
+        }
+      } catch (e) {}
+    }
+
     fetchDisputes();
-  }, [fetchDisputes, router]);
+  }, [fetchDisputes, router, page, activeTab, sort, debouncedSearch]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white">

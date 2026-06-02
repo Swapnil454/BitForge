@@ -12,7 +12,8 @@ export const getBuyerStats = async (req, res) => {
       status: "paid",
     })
       .populate("productId", "title thumbnail")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     // Calculate total spent
     const totalSpent = orders.reduce((sum, order) => sum + (order.amount || 0), 0);
@@ -56,7 +57,7 @@ export const getBuyerSpendingOverTime = async (req, res) => {
       buyerId,
       status: "paid",
       createdAt: { $gte: sixMonthsAgo },
-    });
+    }).lean();
 
     // Group by month
     const monthlyData = {};
@@ -162,7 +163,8 @@ export const getAllBuyerTransactions = async (req, res) => {
     const orders = await Order.find(orderFilter)
       .populate("sellerId", "name email")
       .populate("productId", "title")
-      .populate("buyerId", "name email");
+      .populate("buyerId", "name email")
+      .lean();
 
     let allTransactions = orders.map(order => ({
       _id: order._id,
@@ -244,7 +246,7 @@ export const getBuyerTransactionAnalytics = async (req, res) => {
     else if (dateRange === "90d") startDate.setDate(now.getDate() - 90);
     else startDate = new Date(0); // All time
 
-    const orders = await Order.find({ buyerId, createdAt: { $gte: startDate } }).select("amount status createdAt");
+    const orders = await Order.find({ buyerId, createdAt: { $gte: startDate } }).select("amount status createdAt").lean();
 
     // Process Timeline (aggregate by date)
     const timelineMap = {};
@@ -307,7 +309,8 @@ export const getBuyerPurchaseAnalytics = async (req, res) => {
     const orders = await Order.find({ buyerId, status: "paid", createdAt: { $gte: startDate } })
       .populate("productId", "category title")
       .populate("sellerId", "name email")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     const stats = {
       total: orders.length,
@@ -425,7 +428,8 @@ export const getBuyerTransactionDetails = async (req, res) => {
     // Fetch order
     const order = await Order.findById(orderId)
       .populate("productId", "title")
-      .populate("sellerId", "name email");
+      .populate("sellerId", "name email")
+      .lean();
 
     if (!order) {
       return res.status(404).json({ message: "Transaction not found" });
@@ -499,7 +503,8 @@ export const getAllBuyerPurchases = async (req, res) => {
       .populate("sellerId", "name email")
       .sort({ createdAt: sortBy === "newest" ? -1 : 1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean();
 
     res.json({
       purchases: orders.map(mapPurchase),
@@ -527,7 +532,8 @@ export const getBuyerPurchaseDetails = async (req, res) => {
     // Fetch order
     const order = await Order.findById(purchaseId)
       .populate("productId", "title description thumbnailUrl fileUrl fileKey category isDeleted")
-      .populate("sellerId", "name email");
+      .populate("sellerId", "name email")
+      .lean();
 
     if (!order) {
       return res.status(404).json({ message: "Purchase not found" });
@@ -591,7 +597,7 @@ export const getPurchasedProductDetails = async (req, res) => {
       buyerId,
       productId,
       status: "paid"
-    });
+    }).lean();
 
     if (!order) {
       return res.status(403).json({ 
@@ -602,7 +608,8 @@ export const getPurchasedProductDetails = async (req, res) => {
 
     // Get product details (including soft-deleted)
     const product = await Product.findById(productId)
-      .populate("sellerId", "name email isVerified profilePictureUrl bio");
+      .populate("sellerId", "name email isVerified profilePictureUrl bio")
+      .lean();
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });

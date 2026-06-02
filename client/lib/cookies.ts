@@ -116,4 +116,7 @@ export const getStoredUser = <T = any>(): T | null => {
 export const clearAuthStorage = () => {
   removeCookie("token");
   removeCookie("user");
+  if (typeof window !== "undefined") {
+    sessionStorage.clear();
+  }
 };

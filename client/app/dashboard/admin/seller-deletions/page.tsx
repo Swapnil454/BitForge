@@ -55,9 +55,22 @@ export default function SellerDeletionsPage() {
 
   const fetchRequests = async () => {
     try {
+      const cached = sessionStorage.getItem("admin_seller_deletions");
+      if (cached) {
+        setRequests(JSON.parse(cached));
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+    } catch(e) {
       setLoading(true);
+    }
+    try {
       const data = await adminAPI.getPendingSellerDeletions();
       setRequests(data || []);
+      try {
+        sessionStorage.setItem("admin_seller_deletions", JSON.stringify(data || []));
+      } catch (e) {}
     } catch (error: any) {
       console.error("Failed to fetch seller deletion requests:", error);
       showError("Failed to load deletion requests");

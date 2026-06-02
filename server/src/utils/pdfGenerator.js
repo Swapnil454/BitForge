@@ -14,13 +14,13 @@ export const generateInvoicePDF = (invoice) => {
       const highlightColor = "#16a34a"; // green
 
       // Header
-      doc.fontSize(24).fillColor(primaryColor).text("BitForge", 50, 50);
+      doc.fontSize(24).fillColor(primaryColor).text("BitForge.in", 50, 50);
       doc.fontSize(10).fillColor(secondaryColor).text("TAX INVOICE", 50, 80, { characterSpacing: 2 });
       
       // Signature Box
       doc.rect(50, 100, 200, 60).fillAndStroke("#f8fafc", "#e2e8f0");
       doc.fillColor(highlightColor).fontSize(10).text("Signature valid", 60, 110);
-      doc.fillColor(primaryColor).fontSize(8).text("Digitally signed by Bitforge Technologies Pvt. Ltd", 60, 125);
+      doc.fillColor(primaryColor).fontSize(8).text("Digitally signed by Bitforge Technology Services Pvt. Ltd.", 60, 125);
       
       const d = new Date(invoice.createdAt || Date.now());
       const pad = (n) => n.toString().padStart(2, '0');

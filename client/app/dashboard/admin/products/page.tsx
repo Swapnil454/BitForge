@@ -139,10 +139,27 @@ export default function AdminProductsPage() {
   }, []);
 
   const fetchData = async (pageNum: number) => {
+    const cacheKey = `admin_products_${activeTab}_${search}_${categoryFilter}_${sortOrder}`;
+    
     if (pageNum > 1) {
       setLoadingMore(true);
     } else {
-      setLoading(true);
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setProducts(parsed.products || []);
+          setHasMore(parsed.hasMore);
+          if (parsed.stats) {
+            setStats(prev => ({ ...prev, ...parsed.stats }));
+          }
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+      } catch (e) {
+        setLoading(true);
+      }
     }
 
     try {
@@ -166,6 +183,17 @@ export default function AdminProductsPage() {
         setProducts(prev => [...prev, ...mapped]);
       } else {
         setProducts(mapped);
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify({
+            products: mapped,
+            hasMore: pageNum < (res.pagination?.pages || 1),
+            stats: res.stats ? {
+              pending: res.stats.pending,
+              approved: res.stats.approved,
+              rejected: res.stats.rejected,
+            } : null
+          }));
+        } catch (e) {}
       }
       
       setHasMore(pageNum < (res.pagination?.pages || 1));

@@ -28,7 +28,7 @@ export const getPendingSellers = async (req, res) => {
   const sellers = await User.find({
     role: "seller",
     approvalStatus: "pending",
-  }).select("-password");
+  }).select("-password").lean();
   res.json(sellers);
 };
 
@@ -254,7 +254,8 @@ export const getAllProducts = async (req, res) => {
       .populate("sellerId", "name email")
       .sort(sort)
       .skip(skip)
-      .limit(parseInt(limit));
+      .limit(parseInt(limit))
+      .lean();
 
     const total = await Product.countDocuments(query);
     const approvedCount = await Product.countDocuments({ status: "approved" });
@@ -540,7 +541,7 @@ export const getProductAnalytics = async (req, res) => {
 // Generate PDF Report for Products
 export const getProductReport = async (req, res) => {
   try {
-    const products = await Product.find().populate("sellerId", "name email");
+    const products = await Product.find().populate("sellerId", "name email").lean();
     
     const doc = new PDFDocument({ margin: 50 });
     const filename = `BitForge_Product_Report_${new Date().toISOString().split('T')[0]}.pdf`;
@@ -892,7 +893,7 @@ export const approveProduct = async (req, res) => {
 
   // Notify all buyers about new product availability
   try {
-    const buyers = await User.find({ role: "buyer" });
+    const buyers = await User.find({ role: "buyer" }).lean();
     for (const buyer of buyers) {
       await createNotification(
         buyer._id,
@@ -1108,7 +1109,7 @@ export const approveProductChange = async (req, res) => {
 
       // Notify buyers about updated product (broadcast)
       try {
-        const buyers = await User.find({ role: "buyer" });
+        const buyers = await User.find({ role: "buyer" }).lean();
         for (const buyer of buyers) {
           await createNotification(
             buyer._id,
@@ -1249,7 +1250,8 @@ export const getPendingPayouts = async (req, res) => {
   try {
     const payouts = await Payout.find({ status: "pending" })
       .populate("sellerId", "name email bankAccounts")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     // Format the response with detailed breakdown
     const formattedPayouts = payouts
@@ -1557,7 +1559,8 @@ export const getAllPayouts = async (req, res) => {
       .populate("paidBy", "name email")
       .sort(sortStage)
       .limit(limitNum)
-      .skip(skip);
+      .skip(skip)
+      .lean();
 
     const total = await Payout.countDocuments(filter);
 

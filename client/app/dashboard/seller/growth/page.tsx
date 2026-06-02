@@ -90,9 +90,25 @@ export default function RevenueGrowthPage() {
 
   useEffect(() => {
     (async () => {
+      const cacheKey = "seller_growth_data";
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          setData(JSON.parse(cached));
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+      } catch (e) {
+        setLoading(true);
+      }
+
       try {
         const res = await sellerAPI.getGrowthAnalytics();
         setData(res);
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify(res));
+        } catch (e) {}
       } catch (err: any) {
         toast.error(err.response?.data?.message || "Failed to load analytics");
       } finally {

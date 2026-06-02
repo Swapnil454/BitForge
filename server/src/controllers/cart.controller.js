@@ -13,15 +13,22 @@ export const getCart = async (req, res) => {
         path: 'sellerId',
         select: 'name email'
       }
-    });
+    }).lean();
 
     // Create new cart if doesn't exist
     if (!cart) {
-      cart = await Cart.create({ userId, items: [] });
+      const newCart = await Cart.create({ userId, items: [] });
+      cart = newCart.toObject();
+      cart.totalItems = 0;
+      cart.totalPrice = 0;
+    } else {
+      // Filter out any items with deleted products
+      cart.items = cart.items.filter(item => item.productId != null);
+      
+      // Calculate virtuals manually because we used .lean()
+      cart.totalItems = cart.items.reduce((total, item) => total + (item.quantity || 1), 0);
+      cart.totalPrice = cart.items.reduce((total, item) => total + ((item.price || 0) * (item.quantity || 1)), 0);
     }
-
-    // Filter out any items with deleted products
-    cart.items = cart.items.filter(item => item.productId != null);
     
     res.json({
       success: true,

@@ -47,13 +47,31 @@ export default function AdminPromotionsPage() {
   const [visibleArchivedCount, setVisibleArchivedCount] = useState(10);
 
   const fetchPromotions = useCallback(async (status: "ALL" | PromotionStatus = activeTab) => {
+    const cacheKey = `admin_promotions_${status}`;
     try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        setPromotions(parsed.promotions || []);
+        if (parsed.stats) {
+          setServerStats(parsed.stats);
+        }
+      } else {
+        setLoading(true);
+      }
+    } catch (e) {
       setLoading(true);
+    }
+
+    try {
       const data = await promotionAPI.getAdminPromotions(status === "ALL" ? undefined : { status });
       setPromotions(data.promotions || []);
       if (data.stats) {
         setServerStats(data.stats);
       }
+      try {
+        sessionStorage.setItem(cacheKey, JSON.stringify(data));
+      } catch(e) {}
     } catch {
       showError("Failed to load promotions");
     } finally {

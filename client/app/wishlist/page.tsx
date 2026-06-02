@@ -39,6 +39,9 @@ export default function WishlistPage() {
   const isFetchingRef = useRef(false);
   const [hasFetchedInitial, setHasFetchedInitial] = useState(false);
   const [addingToCartId, setAddingToCartId] = useState<string | null>(null);
+  
+  // Store all populated products locally
+  const [allPopulatedProducts, setAllPopulatedProducts] = useState<Product[]>([]);
 
   // Check authentication on mount
   useEffect(() => {
@@ -56,11 +59,33 @@ export default function WishlistPage() {
   useEffect(() => {
     if (!authChecked) return;
     
-    wishlistAPI.getWishlist()
+    try {
+      const cached = sessionStorage.getItem("buyer_wishlist_data");
+      if (cached) {
+        const parsedCache = JSON.parse(cached);
+        setAllPopulatedProducts(parsedCache.allPopulatedProducts);
+        setWishlist(parsedCache.wishlist);
+        void fetchPage(parsedCache.allPopulatedProducts, 1, true);
+      }
+    } catch (e) {}
+    
+    wishlistAPI.getWishlist(true)
       .then((data) => {
-        const currentWishlist = data.wishlist || [];
+        const fullPopulated = data.wishlist || [];
+        // Map to strings for wishlist ID array
+        const currentWishlist = fullPopulated.map((p: any) => p._id || p);
+        
+        setAllPopulatedProducts(fullPopulated);
         setWishlist(currentWishlist);
-        void fetchPage(currentWishlist, 1, true);
+        
+        try {
+          sessionStorage.setItem("buyer_wishlist_data", JSON.stringify({
+            allPopulatedProducts: fullPopulated,
+            wishlist: currentWishlist
+          }));
+        } catch (e) {}
+
+        void fetchPage(fullPopulated, 1, true);
       })
       .catch((e) => {
         console.error("Failed to fetch wishlist", e);
@@ -69,7 +94,7 @@ export default function WishlistPage() {
       });
   }, [authChecked]);
 
-  const fetchPage = async (fullList: string[], targetPage: number, isInitial = false) => {
+  const fetchPage = async (fullList: any[], targetPage: number, isInitial = false) => {
     if (isFetchingRef.current) return;
     isFetchingRef.current = true;
 
@@ -80,17 +105,21 @@ export default function WishlistPage() {
       return;
     }
 
-    if (isInitial) setLoading(true);
-    else setLoadingMore(true);
+    if (isInitial) {
+      if (products.length === 0) setLoading(true); // only show loading if we don't have cached data yet
+    } else {
+      setLoadingMore(true);
+    }
 
     try {
       const startIndex = (targetPage - 1) * PAGE_SIZE;
       const endIndex = startIndex + PAGE_SIZE;
-      const idsToFetch = fullList.slice(startIndex, endIndex);
+      
+      // We already have the populated products!
+      const incoming = fullList.slice(startIndex, endIndex);
 
-      const promises = idsToFetch.map(id => marketplaceAPI.getProductById(id).catch(() => null));
-      const results = await Promise.all(promises);
-      const incoming = results.filter(Boolean);
+      // Simulate a small delay for smooth UI transition when paginating locally
+      if (!isInitial) await new Promise(res => setTimeout(res, 300));
 
       setProducts(prev => isInitial ? incoming : [...prev, ...incoming]);
       setHasNextPage(endIndex < fullList.length);
@@ -111,7 +140,7 @@ export default function WishlistPage() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasNextPage && !loadingMore && !loading) {
-          void fetchPage(wishlist, page + 1, false);
+          void fetchPage(allPopulatedProducts, page + 1, false);
         }
       },
       { rootMargin: "200px" }

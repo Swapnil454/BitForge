@@ -208,12 +208,32 @@ export default function AdminInquiriesPage() {
 
   // ── RESET whenever tab or debounced search changes ──────────────────────
   const resetAndFetch = useCallback(async (tab: string, q: string) => {
+    const cacheKey = `admin_inquiries_${tab}_${q.trim()}`;
     if (fetchingRef.current) return;
     fetchingRef.current = true;
-    setLoading(true);
-    setInquiries([]);
-    setPage(1);
-    setHasMore(false);
+    
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        setInquiries(parsed.inquiries || []);
+        setTotal(parsed.total || 0);
+        setHasMore(parsed.hasMore || false);
+        setPage(2);
+        setLoading(false);
+      } else {
+        setLoading(true);
+        setInquiries([]);
+        setPage(1);
+        setHasMore(false);
+      }
+    } catch(e) {
+      setLoading(true);
+      setInquiries([]);
+      setPage(1);
+      setHasMore(false);
+    }
+
     try {
       const data = await inquiryAPI.getAll({
         page: 1,
@@ -225,6 +245,9 @@ export default function AdminInquiriesPage() {
       setTotal(data.total || 0);
       setHasMore(data.hasMore || false);
       setPage(2); // next page to fetch
+      try {
+        sessionStorage.setItem(cacheKey, JSON.stringify(data));
+      } catch (e) {}
     } catch {
       toast.error("Failed to load inquiries");
     } finally {

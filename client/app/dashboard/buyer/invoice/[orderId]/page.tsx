@@ -14,6 +14,7 @@ interface Invoice {
   buyerName: string;
   buyerEmail: string;
   sellerName: string;
+  sellerEmail?: string;
   productName: string;
   productDescription: string;
   originalPrice: number;
@@ -31,6 +32,39 @@ interface Invoice {
   razorpayPaymentId: string;
   paymentMethod: string;
   orderId: string;
+  dynamicQr?: {
+    qrImageUrl: string;
+  };
+  gstBreakup?: {
+    cgst: number;
+    sgst: number;
+    igst: number;
+    totalTax: number;
+  };
+}
+
+function amountToWords(amount: number) {
+  const numberToWords = (num: any) => {
+    const a = ["", "One ", "Two ", "Three ", "Four ", "Five ", "Six ", "Seven ", "Eight ", "Nine ", "Ten ", "Eleven ", "Twelve ", "Thirteen ", "Fourteen ", "Fifteen ", "Sixteen ", "Seventeen ", "Eighteen ", "Nineteen "];
+    const b = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+    if ((num = num.toString()).length > 9) return "overflow";
+    let n: any = ("000000000" + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+    if (!n) return;
+    let str = "";
+    str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + " " + a[n[1][1]]) + "Crore " : "";
+    str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + " " + a[n[2][1]]) + "Lakh " : "";
+    str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + " " + a[n[3][1]]) + "Thousand " : "";
+    str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + " " + a[n[4][1]]) + "Hundred " : "";
+    str += (n[5] != 0) ? ((str != "") ? "and " : "") + (a[Number(n[5])] || b[n[5][0]] + " " + a[n[5][1]]) : "";
+    return str;
+  };
+  const wholeNumber = Math.floor(amount);
+  const decimalPart = Math.round((amount - wholeNumber) * 100);
+  let result = wholeNumber > 0 ? numberToWords(wholeNumber) + "Rupees" : "Zero Rupees";
+  if (decimalPart > 0) {
+    result += " and " + numberToWords(decimalPart) + "Paise";
+  }
+  return result.trim() + " Only";
 }
 
 export default function InvoicePage() {
@@ -62,9 +96,9 @@ export default function InvoicePage() {
     if (!date) return "N/A";
     return new Date(date).toLocaleDateString("en-IN", {
       day: "2-digit",
-      month: "long",
+      month: "2-digit",
       year: "numeric",
-    });
+    }).replace(/\//g, '.');
   };
 
   const formatSignatureDate = (date: string) => {
@@ -76,7 +110,7 @@ export default function InvoicePage() {
 
   const formatMoney = (amount: number) => {
     const value = Number.isFinite(Number(amount)) ? Number(amount) : 0;
-    return `Rs. ${value.toLocaleString("en-IN", {
+    return `₹${value.toLocaleString("en-IN", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
@@ -89,7 +123,6 @@ export default function InvoicePage() {
 
     window.print();
 
-    // Restore title after print dialog closes
     setTimeout(() => {
       document.title = originalTitle;
     }, 100);
@@ -143,8 +176,11 @@ export default function InvoicePage() {
     const gstAmount = Number(invoice.gstAmount || 0);
     const platformFee = Number(invoice.platformFee || 0);
     const totalPaid = Number(invoice.totalAmount || subtotal + gstAmount + platformFee);
-    const gstPercent = Math.round(Number(invoice.gstRate || 0.05) * 100);
-    const platformPercent = Math.round(Number(invoice.platformFeeRate || 0.02) * 100);
+    
+    // CGST and SGST
+    const cgst = invoice.gstBreakup?.cgst || gstAmount / 2;
+    const sgst = invoice.gstBreakup?.sgst || gstAmount / 2;
+    const igst = invoice.gstBreakup?.igst || 0;
 
     return {
       originalPrice,
@@ -154,46 +190,28 @@ export default function InvoicePage() {
       gstAmount,
       platformFee,
       totalPaid,
-      gstPercent,
-      platformPercent,
+      cgst,
+      sgst,
+      igst
     };
   }, [invoice]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-100 dark:bg-[#06070b]">
-        {/* Skeleton Header */}
-        <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-white/10 bg-white dark:bg-black/95">
-          <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
-            <div className="relative flex min-h-[58px] items-center justify-center">
-              <div className="h-8 w-24 bg-slate-200 dark:bg-white/5 rounded absolute left-0 animate-pulse"></div>
-              <div className="h-6 w-48 bg-slate-200 dark:bg-white/5 rounded animate-pulse"></div>
-            </div>
-          </div>
-        </header>
-
-        <main className="mx-auto max-w-4xl px-4 py-5 sm:px-6 sm:py-8 w-full">
-          <div className="mb-5 flex justify-end">
-            <div className="grid grid-cols-2 gap-3 w-full sm:w-auto">
-              <div className="h-10 w-full sm:w-24 bg-slate-200 dark:bg-white/10 rounded-xl animate-pulse"></div>
-              <div className="h-10 w-full sm:w-32 bg-cyan-400/20 rounded-xl animate-pulse"></div>
-            </div>
-          </div>
-
-          <div className="rounded-[30px] border border-slate-200 dark:border-white/5 bg-white dark:bg-[#12141c]/50 h-[600px] animate-pulse"></div>
-        </main>
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
       </div>
     );
   }
 
   if (error || !invoice || !totals) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-100 dark:bg-[#06070b] px-4">
-        <div className="w-full max-w-md rounded-[28px] border border-slate-200 dark:border-white/10 bg-slate-900/75 p-8 text-center text-slate-900 dark:text-white shadow-2xl">
-          <p className="mb-4 text-red-400">{error || "Invoice not found"}</p>
+      <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
+        <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 text-center shadow-xl">
+          <p className="mb-4 text-red-500">{error || "Invoice not found"}</p>
           <button
             onClick={() => router.back()}
-            className="rounded-full bg-slate-200 dark:bg-white/10 px-5 py-2.5 text-sm font-medium text-slate-900 dark:text-white transition hover:bg-white/15"
+            className="rounded bg-slate-200 px-5 py-2.5 text-sm font-medium text-slate-900 transition hover:bg-slate-300"
           >
             Go Back
           </button>
@@ -206,39 +224,16 @@ export default function InvoicePage() {
     <>
       <button
         onClick={handlePrint}
-        className="w-full rounded-xl border border-slate-300 dark:border-cyan-400/20 bg-slate-200 dark:bg-cyan-400/10 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-cyan-100 transition hover:bg-slate-300 dark:hover:bg-cyan-400/15 sm:w-auto flex items-center justify-center gap-2"
+        className="w-full rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 sm:w-auto flex items-center justify-center gap-2"
       >
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="6 9 6 2 18 2 18 9"></polyline>
-          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-          <rect x="6" y="14" width="12" height="8"></rect>
-        </svg>
-        Print
+        🖨️ Print
       </button>
       <button
         onClick={handleDownloadPdf}
         disabled={downloading}
-        className="w-full rounded-xl bg-cyan-400 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto flex items-center justify-center gap-2"
+        className="w-full rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto flex items-center justify-center gap-2"
       >
-        {downloading ? (
-          <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="2" x2="12" y2="6"></line>
-            <line x1="12" y1="18" x2="12" y2="22"></line>
-            <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
-            <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
-            <line x1="2" y1="12" x2="6" y2="12"></line>
-            <line x1="18" y1="12" x2="22" y2="12"></line>
-            <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
-            <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
-          </svg>
-        ) : (
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-        )}
-        {downloading ? "Downloading..." : "Download PDF"}
+        {downloading ? "Downloading..." : "⬇️ Download PDF"}
       </button>
     </>
   );
@@ -249,54 +244,26 @@ export default function InvoicePage() {
         @media print {
           @page {
             size: A4;
-            margin: 10mm;
+            margin: 0; /* Removing page margin hides browser headers/footers */
           }
-
-          /* Hide common layout wrappers and specific non-print elements */
           header, nav, aside, footer, .no-print {
             display: none !important;
           }
-
           body, html {
             background: #ffffff !important;
             margin: 0 !important;
             padding: 0 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
           }
-
+          body {
+            padding: 10mm !important;
+          }
           main {
             min-height: 0 !important;
             padding: 0 !important;
             margin: 0 !important;
             background: transparent !important;
-          }
-
-          /* Reset width constraints */
-          .max-w-4xl, .mx-auto {
-            max-width: none !important;
-            margin: 0 !important;
-          }
-
-          /* Reset height enforcements that cause blank 2nd pages */
-          .min-h-screen, .h-screen, .h-full {
-            min-height: 0 !important;
-            height: auto !important;
-          }
-
-          .print-area {
-            border: 0 !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-            page-break-inside: avoid !important;
-          }
-
-          .print-area > div {
-            padding-top: 12px !important;
-            padding-bottom: 12px !important;
-          }
-
-          .print-area .gap-4,
-          .print-area .gap-5 {
-            gap: 12px !important;
           }
         }
       `}</style>
@@ -310,166 +277,172 @@ export default function InvoicePage() {
         />
       </div>
 
-      <main className="min-h-screen bg-slate-100 dark:bg-[#06070b] px-4 py-5 text-slate-900 dark:text-white sm:px-6 sm:py-8">
-        <div className="mx-auto max-w-4xl">
+      <main className="min-h-screen bg-slate-100 px-4 py-5 text-black sm:px-6 sm:py-8 font-sans">
+        <div className="mx-auto max-w-5xl">
           <div className="no-print mb-5 flex justify-end">
             <div className="grid grid-cols-2 gap-3 w-full sm:hidden">
               {actionButtons}
             </div>
           </div>
 
-          <section className="print-area overflow-hidden rounded-[30px] border border-slate-200 bg-white text-slate-900 shadow-[0_28px_80px_rgba(15,23,42,0.32)]">
-            <div className="border-b border-slate-200 bg-slate-50 px-5 py-6 text-slate-900 sm:px-8">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <section className="bg-white p-8 border border-slate-200 text-[13px] leading-relaxed shadow-sm">
+            {/* Header */}
+            <div className="flex justify-between items-start border-b border-black pb-4 mb-4">
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">BitForge.in</h1>
+              </div>
+              <div className="text-right">
+                <p className="font-bold text-base">Tax Invoice/Bill of Supply/Cash Memo</p>
+                <p>(Original for Recipient)</p>
+              </div>
+            </div>
+
+            {/* Signature Block - Row 1 */}
+            <div className="mb-6 relative text-xs inline-block font-semibold text-slate-800">
+              <p className="text-sm">Signature valid</p>
+              <div className="relative inline-block">
+                <p className="whitespace-nowrap relative z-20">Digitally signed by Bitforge Technology Services Pvt. Ltd.</p>
+                <div className="absolute top-[60%] left-[50%] w-12 h-12 pointer-events-none z-10" style={{ transform: 'translate(-50%, -50%)' }}>
+                  <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+                    {/* Shadow */}
+                    <path d="M 30 50 L 44 64 L 74 21 L 86 29 L 46 86 L 20 60 Z" fill="black" transform="translate(1.5, 2)" />
+                    {/* Green Tick */}
+                    <path d="M 30 50 L 44 64 L 74 21 L 86 29 L 46 86 L 20 60 Z" fill="#00b050" stroke="black" strokeWidth="1" strokeLinejoin="miter" />
+                  </svg>
+                </div>
+              </div>
+              <p className="whitespace-nowrap mt-2">Date: {formatSignatureDate(invoice.invoiceDate || invoice.createdAt)}</p>
+              <p>Reason: Invoice</p>
+            </div>
+
+            {/* Top section: Seller / Buyer - Row 2 */}
+            <div className="grid grid-cols-2 gap-8 mb-6">
+              {/* Left Column */}
+              <div>
+                {/* Sold By */}
+                <div className="mb-4">
+                  <p className="font-bold text-sm">Sold By :</p>
+                  <p className="font-medium">{invoice.sellerName}</p>
+                  <p className="font-medium">{invoice.sellerEmail || "N/A"}</p>
+                  <p className="font-medium"><span className="font-bold">PAN No:</span> N/A</p>
+                  <p className="font-medium"><span className="font-bold">GST Registration No:</span> N/A</p>
+                  <p className="font-medium"><span className="font-bold">CIN No:</span> N/A</p>
+                </div>
+                {/* Dynamic QR */}
                 <div>
-                  <p className="text-3xl font-extrabold tracking-tight text-slate-900">BitForge</p>
-                  <p className="mt-1 text-xs font-black uppercase tracking-[0.2em] text-slate-900">Tax Invoice</p>
-
-                  <div className="mt-5 relative inline-block text-[10.5px] leading-[1.35] text-black">
-                    <p>Signature valid</p>
-                    <p>Digitally signed by Bitforge Technologies Pvt. Ltd</p>
-                    <p className="mt-2">Date: {formatSignatureDate(invoice.invoiceDate || invoice.createdAt)}</p>
-                    <p>Reason: Invoice</p>
-                    
-                    <div className="absolute top-[65%] left-[55%] -translate-y-1/2 w-14 h-14 opacity-95 pointer-events-none" style={{ filter: 'drop-shadow(1px 1px 0px rgba(0,0,0,0.5))', transform: 'translateY(-50%) rotate(-5deg) scaleY(1.1)' }}>
-                      <svg viewBox="0 0 100 100" className="w-full h-full">
-                        <path d="M 25 50 L 40 65 L 75 30 L 85 40 L 40 85 L 15 60 Z" fill="#16a34a" stroke="black" strokeWidth="2" strokeLinejoin="miter" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid gap-3 text-sm sm:text-right">
-                  <div>
-                    <p className="text-slate-500">Invoice Number</p>
-                    <p className="font-bold text-slate-900">{invoice.invoiceNumber}</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-500">Invoice Date</p>
-                    <p className="font-semibold text-slate-900">{formatDate(invoice.invoiceDate || invoice.createdAt)}</p>
+                  <p className="font-bold mb-1">Dynamic QR Code:</p>
+                  {invoice.dynamicQr?.qrImageUrl ? (
+                    <img src={invoice.dynamicQr.qrImageUrl} alt="UPI QR Code" className="w-20 h-20 border border-slate-200" />
+                  ) : (
+                    <div className="w-20 h-20 border border-slate-300 flex items-center justify-center text-[10px] text-slate-400">No QR</div>
+                  )}
+                  
+                  <div className="mt-2 text-xs leading-tight">
+                    <p className="font-medium"><span className="font-bold">Order Number:</span> {invoice.razorpayOrderId || invoice.orderId}</p>
+                    <p className="font-medium"><span className="font-bold">Order Date:</span> {formatDate(invoice.createdAt)}</p>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="grid gap-4 border-b border-slate-200 px-5 py-4 sm:grid-cols-2 sm:px-8">
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Seller</p>
-                <p className="mt-2 text-sm font-semibold text-slate-950">{invoice.sellerName || "BitForge Seller"}</p>
-                <p className="mt-0.5 text-xs text-slate-600">Sold via BitForge platform</p>
-              </div>
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Billed To</p>
-                <p className="mt-2 text-sm font-semibold text-slate-950">{invoice.buyerName || "Valued Customer"}</p>
-                <p className="mt-0.5 break-all text-xs text-slate-600">{invoice.buyerEmail || "N/A"}</p>
-              </div>
-            </div>
-
-            <div className="grid gap-4 border-b border-slate-200 px-5 py-5 text-sm sm:grid-cols-3 sm:px-8">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Order ID</p>
-                <p className="mt-2 break-all font-medium text-slate-950">{invoice.razorpayOrderId || invoice.orderId}</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Payment ID</p>
-                <p className="mt-2 break-all font-medium text-slate-950">{invoice.razorpayPaymentId || "N/A"}</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Payment Method</p>
-                <p className="mt-2 font-medium text-slate-950">{invoice.paymentMethod || "Razorpay"}</p>
-              </div>
-            </div>
-
-            <div className="px-5 py-5 sm:px-8">
-              <div className="hidden rounded-2xl border border-slate-200 sm:block">
-                <div className="grid grid-cols-[minmax(0,1fr)_56px_104px_104px] gap-3 border-b border-slate-200 bg-slate-100 px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600">
-                  <span>Description</span>
-                  <span className="text-center">Qty</span>
-                  <span className="text-right">Price</span>
-                  <span className="text-right">Amount</span>
+              {/* Right Column */}
+              <div className="text-right flex flex-col items-end">
+                {/* Billing Address */}
+                <div className="mb-4">
+                  <p className="font-bold text-sm">Billing Address :</p>
+                  <p className="font-medium">{invoice.buyerName}</p>
+                  <p className="font-medium">{invoice.buyerEmail}</p>
                 </div>
-                <div className="grid grid-cols-[minmax(0,1fr)_56px_104px_104px] gap-3 px-4 py-4 text-sm">
-                  <div>
-                    <p className="font-semibold text-slate-950">{invoice.productName || "Digital Product"}</p>
-                  </div>
-                  <div className="text-center text-slate-700">1</div>
-                  <div className="text-right text-slate-700">{formatMoney(totals.originalPrice)}</div>
-                  <div className="text-right font-semibold text-slate-950">{formatMoney(totals.subtotal)}</div>
-                </div>
-              </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:hidden">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Line Item</p>
-                <div className="mt-3 border-b border-slate-200 pb-3">
-                  <p className="text-base font-semibold text-slate-950">{invoice.productName || "Digital Product"}</p>
+                {/* Shipping Address */}
+                <div className="mb-4">
+                  <p className="font-bold text-sm">Shipping Address :</p>
+                  <p className="font-medium">{invoice.buyerName}</p>
+                  <p className="font-medium">{invoice.buyerEmail}</p>
                 </div>
-                <div className="mt-4 grid gap-3">
-                  <MobileStat label="Quantity" value="1" />
-                  <MobileStat label="Price" value={formatMoney(totals.originalPrice)} />
-                  <MobileStat label="Amount" value={formatMoney(totals.subtotal)} strong />
+
+                {/* Invoice Details */}
+                <div className="mt-2 text-xs leading-tight text-right">
+                  <p className="font-medium"><span className="font-bold">Invoice Number :</span> {invoice.invoiceNumber || 'BF-2026-0009'}</p>
+                  <p className="font-medium"><span className="font-bold">Invoice Details :</span> {invoice.razorpayPaymentId || 'N/A'}</p>
+                  <p className="font-medium"><span className="font-bold">Invoice Date :</span> {formatDate(invoice.invoiceDate || invoice.createdAt)}</p>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col items-end border-b border-slate-200 px-5 py-4 sm:px-8">
-              <div className="w-full sm:w-80 text-sm">
-                <div className="flex justify-between gap-4 py-1.5 text-slate-600">
-                  <span>Subtotal</span>
-                  <span className="font-medium text-slate-900">{formatMoney(totals.subtotal)}</span>
-                </div>
-                {totals.discountAmount > 0 && (
-                  <div className="flex justify-between gap-4 py-1.5 text-emerald-700">
-                    <span>Discount ({totals.discountPercent}%)</span>
-                    <span>-{formatMoney(totals.discountAmount)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between gap-4 py-1.5 text-slate-600">
-                  <span>GST ({totals.gstPercent}%)</span>
-                  <span className="font-medium text-slate-900">{formatMoney(totals.gstAmount)}</span>
-                </div>
-                <div className="flex justify-between gap-4 py-1.5 text-slate-600">
-                  <span>Platform Fee ({totals.platformPercent}%)</span>
-                  <span className="font-medium text-slate-900">{formatMoney(totals.platformFee)}</span>
-                </div>
-                <div className="mt-2 flex justify-between gap-4 border-t border-slate-200 pt-2 text-base font-bold text-slate-950">
-                  <span>Total Paid</span>
-                  <span>{formatMoney(totals.totalPaid)}</span>
-                </div>
-                <div className="mt-3 text-right">
-                  <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-900">
-                    Status: Paid
-                  </span>
-                </div>
+            {/* Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-black text-[10px] sm:text-xs text-center">
+                <thead>
+                  <tr className="bg-slate-100 border-b border-black font-bold">
+                    <th className="border border-black p-1 w-6 sm:w-8">Sl. No</th>
+                    <th className="border border-black p-1 text-left">Description</th>
+                    <th className="border border-black p-1">Unit Price</th>
+                    <th className="border border-black p-1 w-8 sm:w-12">Qty</th>
+                    <th className="border border-black p-1">Net Amount</th>
+                    <th className="border border-black p-1">Tax Rate</th>
+                    <th className="border border-black p-1">Tax Type</th>
+                    <th className="border border-black p-1">Tax Amount</th>
+                    <th className="border border-black p-1">Platform Fee</th>
+                    <th className="border border-black p-1">Total Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border border-black p-1">1</td>
+                    <td className="border border-black p-1 text-left">
+                      <p className="font-bold">{invoice.productName}</p>
+                      <p className="text-[9px] text-slate-600">{invoice.productDescription}</p>
+                    </td>
+                    <td className="border border-black p-1">{formatMoney(totals.originalPrice)}</td>
+                    <td className="border border-black p-1">1</td>
+                    <td className="border border-black p-1">{formatMoney(totals.subtotal)}</td>
+                    <td className="border border-black p-1">{(invoice.gstRate || 0.05) * 100}%</td>
+                    <td className="border border-black p-1">
+                      <div className="flex justify-between px-1"><span>CGST</span></div>
+                      <div className="flex justify-between px-1 border-t border-dotted border-slate-400 mt-1 pt-1"><span>SGST</span></div>
+                    </td>
+                    <td className="border border-black p-1">
+                      <div className="text-right px-1">{formatMoney(totals.cgst)}</div>
+                      <div className="text-right px-1 border-t border-dotted border-slate-400 mt-1 pt-1">{formatMoney(totals.sgst)}</div>
+                    </td>
+                    <td className="border border-black p-1">{formatMoney(totals.platformFee)}</td>
+                    <td className="border border-black p-1 font-bold">{formatMoney(totals.totalPaid)}</td>
+                  </tr>
+                  {/* Totals Row */}
+                  <tr className="font-bold">
+                    <td colSpan={4} className="border border-black p-1 text-right">TOTAL:</td>
+                    <td className="border border-black p-1 text-right">{formatMoney(totals.subtotal)}</td>
+                    <td className="border border-black p-1 text-right"></td>
+                    <td className="border border-black p-1 text-right"></td>
+                    <td className="border border-black p-1 text-right">{formatMoney(totals.gstAmount)}</td>
+                    <td className="border border-black p-1 text-right">{formatMoney(totals.platformFee)}</td>
+                    <td className="border border-black p-1 text-right">{formatMoney(totals.totalPaid)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Footer Section */}
+            <div className="border-x border-b border-black text-xs mb-6">
+              <div className="p-2 border-b border-black">
+                <p className="font-bold mb-1">Amount in Words:</p>
+                <p>{amountToWords(totals.totalPaid)}</p>
+              </div>
+              <div className="p-2 h-24 relative">
+                <p className="font-bold text-right right-2 top-2 absolute">For Bitforge Technology Services Pvt. Ltd.:</p>
+                <p className="font-bold text-right right-2 bottom-2 absolute">Authorized Signatory</p>
               </div>
             </div>
 
-            <div className="bg-slate-50 px-5 py-4 sm:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between text-[10px] text-slate-500 rounded-b-[30px]">
-              <div>
-                <p>This is a digitally generated invoice. No physical signature is required.</p>
-                <p>For invoice support, contact support@bittforge.in.</p>
-              </div>
-              <p className="mt-2 sm:mt-0 font-medium text-slate-700">Thank you for your purchase.</p>
+            <div className="text-center mb-2 mt-8 text-slate-700 font-semibold">
+              <p className="text-xs mb-1">Thank you for purchase</p>
+              <p className="text-[10px] leading-tight mt-1">If any Query please contact support@bittforge.in</p>
+              <p className="text-[10px] leading-tight">© 2026 BitForge Technologies. All rights reserved</p>
             </div>
+
           </section>
         </div>
       </main>
     </>
-  );
-}
-
-function MobileStat({
-  label,
-  value,
-  strong,
-}: {
-  label: string;
-  value: string;
-  strong?: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm">
-      <span className="text-slate-500">{label}</span>
-      <span className={strong ? "font-semibold text-slate-950" : "font-medium text-slate-800"}>{value}</span>
-    </div>
   );
 }

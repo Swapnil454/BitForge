@@ -47,10 +47,16 @@ export const getWishlist = async (req, res) => {
     const query = Wishlist.findOne({ userId });
     
     if (populate === "true") {
-      query.populate("products");
+      query.populate({
+        path: "products",
+        populate: {
+          path: "sellerId",
+          select: "name email slug profilePictureUrl isVerified identityVerifiedAt"
+        }
+      });
     }
 
-    const wishlist = await query;
+    const wishlist = await query.lean();
 
     if (!wishlist) {
       return res.json({ wishlist: [] });

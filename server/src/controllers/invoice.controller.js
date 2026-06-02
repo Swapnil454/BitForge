@@ -19,13 +19,14 @@ export const getInvoice = async (req, res) => {
 
     // Populate missing fields from Order/User collections for old invoices
     const needsPopulation = !invoice.buyerName || !invoice.sellerName ||
+      !invoice.buyerEmail || !invoice.sellerEmail ||
       !invoice.productName || !invoice.razorpayPaymentId ||
       !invoice.originalPrice;
 
     if (needsPopulation) {
       const order = await Order.findById(invoice.orderId)
         .populate('buyerId', 'name email')
-        .populate('sellerId', 'name')
+        .populate('sellerId', 'name email')
         .populate('productId', 'title description');
 
       if (order) {
@@ -40,6 +41,9 @@ export const getInvoice = async (req, res) => {
         // Populate seller info
         if (!invoice.sellerName && order.sellerId?.name) {
           invoice.sellerName = order.sellerId.name;
+        }
+        if (!invoice.sellerEmail && order.sellerId?.email) {
+          invoice.sellerEmail = order.sellerId.email;
         }
 
         // Populate product info
@@ -72,6 +76,27 @@ export const getInvoice = async (req, res) => {
   } catch (error) {
     console.error("Error fetching invoice:", error);
     res.status(500).json({ message: "Failed to fetch invoice" });
+  }
+};
+
+export const verifyInvoice = async (req, res) => {
+  try {
+    const invoice = await Invoice.findOne({ invoiceNumber: req.params.invoiceNo }).lean();
+    if (!invoice) {
+      return res.status(404).json({ valid: false, message: "Invoice not found" });
+    }
+    
+    return res.json({
+      valid: true,
+      invoiceNumber: invoice.invoiceNumber,
+      date: invoice.invoiceDate,
+      amount: invoice.totalAmount,
+      sellerName: invoice.sellerName,
+      status: invoice.paymentStatus || "PAID"
+    });
+  } catch (error) {
+    console.error("Error verifying invoice:", error);
+    res.status(500).json({ valid: false, message: "Failed to verify invoice" });
   }
 };
 

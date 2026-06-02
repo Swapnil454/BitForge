@@ -60,9 +60,25 @@ export default function SellerEarningsPage() {
   const isApproved = user?.approvalStatus === "approved" || Boolean(user?.isApproved);
 
   const fetchEarnings = async () => {
+    const cacheKey = "seller_earnings_data";
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        setData(JSON.parse(cached));
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+    } catch (e) {
+      setLoading(true);
+    }
+
     try {
       const response = await sellerAPI.getEarnings();
       setData(response);
+      try {
+        sessionStorage.setItem(cacheKey, JSON.stringify(response));
+      } catch (e) {}
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to load earnings");
     } finally {

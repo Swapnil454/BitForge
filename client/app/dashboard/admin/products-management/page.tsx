@@ -96,11 +96,26 @@ export default function ProductsManagementPage() {
   }, [searchTerm]);
 
   const fetchProducts = useCallback(async () => {
+    const cacheKey = `admin_products_management_${page}_${debouncedSearch}_${statusFilter}_${categoryFilter}_${sortBy}`;
     if (page === 1) {
-      setLoading(true);
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setProducts(parsed.products || []);
+          setTotalPages(parsed.pagination?.pages || 1);
+          setTotalCount(parsed.pagination?.total || 0);
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+      } catch (e) {
+        setLoading(true);
+      }
     } else {
       setIsLoadingMore(true);
     }
+    
     try {
       const data = await adminAPI.getAllProducts({
         page,
@@ -112,6 +127,9 @@ export default function ProductsManagementPage() {
       });
       if (page === 1) {
         setProducts(data.products || []);
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify(data));
+        } catch(e) {}
       } else {
         setProducts((prev) => {
           const newProducts = (data.products || []).filter(

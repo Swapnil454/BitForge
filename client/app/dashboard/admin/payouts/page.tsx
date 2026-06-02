@@ -153,9 +153,28 @@ export default function AdminPayoutsPage() {
   };
 
   const fetchData = async (isRefresh = false, pageNum = page) => {
-    if (pageNum > 1) setLoadingMore(true);
-    else if (isRefresh) setRefreshing(true); 
-    else setLoading(true);
+    const cacheKey = `admin_payouts_${tab}_${statusFilter}_${sortOrder}_${search.trim()}`;
+    if (pageNum > 1) {
+      setLoadingMore(true);
+    } else if (isRefresh) {
+      setRefreshing(true); 
+    } else {
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setPayouts(parsed.payouts || []);
+          setHasMore(parsed.hasMore);
+          if (parsed.stats) setStats(parsed.stats);
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+      } catch (e) {
+        setLoading(true);
+      }
+    }
+
     try {
       const statusParam = tab === "pending"
         ? "pending"
@@ -174,6 +193,13 @@ export default function AdminPayoutsPage() {
       
       if (pageNum === 1) {
         setPayouts(res.payouts || []);
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify({
+            payouts: res.payouts || [],
+            hasMore: pageNum < (res.pagination?.pages || 1),
+            stats: res.stats
+          }));
+        } catch (e) {}
       } else {
         setPayouts(prev => [...prev, ...(res.payouts || [])]);
       }
