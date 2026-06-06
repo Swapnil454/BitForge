@@ -154,7 +154,7 @@ ADMIN_EMAIL=your_admin_inbox
 
 **1. Clone the repository**
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Swapnil454/BitForge.git
 cd contentSellify
 ```
 
