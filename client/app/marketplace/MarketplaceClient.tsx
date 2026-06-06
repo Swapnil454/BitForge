@@ -268,12 +268,14 @@ export default function MarketplaceClient({
   initialCategory,
   initialCollection,
   sellerId,
-  sellerSlug
+  sellerSlug,
+  initialHomeProducts
 }: {
   initialCategory?: string;
   initialCollection?: string;
   sellerId?: string;
   sellerSlug?: string;
+  initialHomeProducts?: ProductType[];
 } = {}) {
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get("search") || "";
@@ -284,10 +286,12 @@ export default function MarketplaceClient({
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
   
   // Hoisted state for home products so CategoryPills can use it everywhere
-  const [homeProducts, setHomeProducts] = useState<ProductType[]>([]);
-  const [homeLoading, setHomeLoading] = useState(true);
+  const [homeProducts, setHomeProducts] = useState<ProductType[]>(initialHomeProducts || []);
+  const [homeLoading, setHomeLoading] = useState(!initialHomeProducts);
 
   useEffect(() => {
+    if (initialHomeProducts) return;
+
     const CACHE_KEY = "home_products_cache";
     const CACHE_TTL = 3 * 60 * 1000; // 3 minutes
 
@@ -314,7 +318,7 @@ export default function MarketplaceClient({
         .catch(() => {})
         .finally(() => setHomeLoading(false));
     });
-  }, []);
+  }, [initialHomeProducts]);
 
   const { isAuthenticated, requireAuth } = useAuth();
   const router = useRouter();

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Toaster } from 'react-hot-toast';
 import AppProviders from "./providers/AppProviders";
 import "./globals.css";
@@ -27,6 +28,11 @@ export default function RootLayout({
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning style={{ fontFamily: "'Inter', sans-serif" }}>
       <body
       >
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7177082316952753"
+          crossOrigin="anonymous"
+        />
         <AppProviders>
           {children}
         </AppProviders>

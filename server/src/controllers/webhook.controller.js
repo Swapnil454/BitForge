@@ -68,7 +68,7 @@ const generateAndUploadWatermarkedFile = async (order, product, buyer) => {
 const GST_RATE = 0.05; // 5% GST
 const PLATFORM_FEE_RATE = 0.02; // 2% platform fee
 
-const processCartOrder = async (cartOrder, payment) => {
+export const processCartOrder = async (cartOrder, payment) => {
   console.log("==> 🛒 Processing CART order with", cartOrder.items.length, "items");
 
   const buyer = await User.findById(cartOrder.buyerId);
@@ -117,7 +117,7 @@ const processCartOrder = async (cartOrder, payment) => {
     
     const transactionRef = `${invoiceNumber}`;
     const qrPayload = generateUpiQrPayload({
-      upiId: "bitforge@upi",
+      upiId: "rzpbitforge812242.rzp@ypbiz",
       payeeName: "BitForge Technology Services Pvt. Ltd.",
       amount: item.itemTotal,
       invoiceNo: invoiceNumber,
@@ -132,7 +132,7 @@ const processCartOrder = async (cartOrder, payment) => {
     
     const qrImageDataUrl = await generateQrImageDataUrl(qrPayload);
 
-    await Invoice.create({
+    const invoice = await Invoice.create({
       orderId: order._id,
       invoiceNumber,
       invoiceDate: new Date(),
@@ -172,7 +172,7 @@ const processCartOrder = async (cartOrder, payment) => {
       dynamicQr: {
         qrPayload,
         qrImageUrl: qrImageDataUrl,
-        upiId: "bitforge@upi",
+        upiId: "rzpbitforge812242.rzp@ypbiz",
         payeeName: "BitForge Technology Services Pvt. Ltd.",
         transactionRef,
         amount: item.itemTotal,
@@ -211,22 +211,7 @@ const processCartOrder = async (cartOrder, payment) => {
 
     // Buyer invoice email (per item)
     if (buyer?.email) {
-      sendBuyerInvoiceEmail(buyer, {
-        invoiceNumber,
-        invoiceDate: new Date(),
-        productName: item.productName,
-        productDescription: product?.description?.substring(0, 100) || 'Digital download',
-        originalPrice: item.originalPrice,
-        discountPercent: item.discountPercent || 0,
-        discountAmount: item.originalPrice * ((item.discountPercent || 0) / 100),
-        priceAfterDiscount: item.finalPrice,
-        gstRate: GST_RATE,
-        gstAmount: item.gst,
-        platformFee: item.platformFee,
-        totalAmount: item.itemTotal,
-        razorpayPaymentId: payment.id,
-        paymentMethod: payment.method || 'Razorpay',
-      }).catch(e => console.error('[Email] Buyer invoice email failed:', e.message));
+      sendBuyerInvoiceEmail(buyer, invoice).catch(e => console.error('[Email] Buyer invoice email failed:', e.message));
     }
   }
 
@@ -419,7 +404,7 @@ export const razorpayWebhook = async (req, res) => {
         
         const transactionRef = `${invoiceNumber}`;
         const qrPayload = generateUpiQrPayload({
-          upiId: "bitforge@upi",
+          upiId: "rzpbitforge812242.rzp@ypbiz",
           payeeName: "BitForge Technology Services Pvt. Ltd.",
           amount: totalAmount,
           invoiceNo: invoiceNumber,
@@ -474,7 +459,7 @@ export const razorpayWebhook = async (req, res) => {
           dynamicQr: {
             qrPayload,
             qrImageUrl: qrImageDataUrl,
-            upiId: "bitforge@upi",
+            upiId: "rzpbitforge812242.rzp@ypbiz",
             payeeName: "BitForge Technology Services Pvt. Ltd.",
             transactionRef,
             amount: totalAmount,
@@ -545,22 +530,7 @@ export const razorpayWebhook = async (req, res) => {
 
         // Buyer invoice email
         if (buyer?.email) {
-          sendBuyerInvoiceEmail(buyer, {
-            invoiceNumber: invoice.invoiceNumber,
-            invoiceDate: invoice.invoiceDate,
-            productName: product?.title || order.productName || 'Digital Product',
-            productDescription: product?.description?.substring(0, 100) || 'Digital download',
-            originalPrice,
-            discountPercent,
-            discountAmount,
-            priceAfterDiscount,
-            gstRate: GST_RATE,
-            gstAmount,
-            platformFee,
-            totalAmount,
-            razorpayPaymentId: payment.id,
-            paymentMethod: payment.method || 'Razorpay',
-          }).catch(e => console.error('[Email] Buyer invoice email failed:', e.message));
+          sendBuyerInvoiceEmail(buyer, invoice).catch(e => console.error('[Email] Buyer invoice email failed:', e.message));
         }
       } else {
         console.log("==> ℹ️ Invoice already exists, skipping creation");
