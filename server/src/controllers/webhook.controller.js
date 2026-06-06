@@ -132,7 +132,7 @@ export const processCartOrder = async (cartOrder, payment) => {
     
     const qrImageDataUrl = await generateQrImageDataUrl(qrPayload);
 
-    await Invoice.create({
+    const invoice = await Invoice.create({
       orderId: order._id,
       invoiceNumber,
       invoiceDate: new Date(),
@@ -211,22 +211,7 @@ export const processCartOrder = async (cartOrder, payment) => {
 
     // Buyer invoice email (per item)
     if (buyer?.email) {
-      sendBuyerInvoiceEmail(buyer, {
-        invoiceNumber,
-        invoiceDate: new Date(),
-        productName: item.productName,
-        productDescription: product?.description?.substring(0, 100) || 'Digital download',
-        originalPrice: item.originalPrice,
-        discountPercent: item.discountPercent || 0,
-        discountAmount: item.originalPrice * ((item.discountPercent || 0) / 100),
-        priceAfterDiscount: item.finalPrice,
-        gstRate: GST_RATE,
-        gstAmount: item.gst,
-        platformFee: item.platformFee,
-        totalAmount: item.itemTotal,
-        razorpayPaymentId: payment.id,
-        paymentMethod: payment.method || 'Razorpay',
-      }).catch(e => console.error('[Email] Buyer invoice email failed:', e.message));
+      sendBuyerInvoiceEmail(buyer, invoice).catch(e => console.error('[Email] Buyer invoice email failed:', e.message));
     }
   }
 
@@ -545,22 +530,7 @@ export const razorpayWebhook = async (req, res) => {
 
         // Buyer invoice email
         if (buyer?.email) {
-          sendBuyerInvoiceEmail(buyer, {
-            invoiceNumber: invoice.invoiceNumber,
-            invoiceDate: invoice.invoiceDate,
-            productName: product?.title || order.productName || 'Digital Product',
-            productDescription: product?.description?.substring(0, 100) || 'Digital download',
-            originalPrice,
-            discountPercent,
-            discountAmount,
-            priceAfterDiscount,
-            gstRate: GST_RATE,
-            gstAmount,
-            platformFee,
-            totalAmount,
-            razorpayPaymentId: payment.id,
-            paymentMethod: payment.method || 'Razorpay',
-          }).catch(e => console.error('[Email] Buyer invoice email failed:', e.message));
+          sendBuyerInvoiceEmail(buyer, invoice).catch(e => console.error('[Email] Buyer invoice email failed:', e.message));
         }
       } else {
         console.log("==> ℹ️ Invoice already exists, skipping creation");
