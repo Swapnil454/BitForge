@@ -220,67 +220,50 @@ export async function sendSaleNotificationEmail(seller, buyer, productTitle, sel
   const subject = `You just made a sale — "${productTitle}"`;
 
   const html = `
-  <div style="background:#0b0f1a;padding:32px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
-    <div style="max-width:580px;margin:0 auto;">
-
+  <div style="background:#f3f4f6;padding:24px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+    <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:4px;overflow:hidden;">
+      
       <!-- Header -->
-      <div style="text-align:center;padding:20px 20px 16px;background:linear-gradient(135deg,#0b1220,#0f172a);border-radius:16px 16px 0 0;border-bottom:1px solid rgba(255,255,255,0.08);">
-        <img src="https://res.cloudinary.com/djhuduvrr/image/upload/f_auto,q_auto,w_520/bitforge_logo1_tuzvyi.png" alt="BitForge" width="180" style="display:block;margin:0 auto 6px;" />
-        <div style="font-size:15px;font-weight:700;color:#ffffff;">BitForge</div>
+      <div style="background:#082453;padding:16px;text-align:center;">
+         <div style="color:#ffffff;font-size:22px;font-weight:700;letter-spacing:1px;font-style:italic;">BitForge</div>
       </div>
 
       <!-- Body -->
-      <div style="background:#ffffff;padding:32px 28px;border-radius:0 0 14px 14px;box-shadow:0 20px 60px rgba(0,0,0,0.25);">
-
-        <div style="display:inline-block;background:#d1fae5;color:#065f46;font-size:12px;font-weight:700;letter-spacing:1px;padding:4px 12px;border-radius:20px;margin-bottom:16px;">
-          SALE CONFIRMED
+      <div style="padding:24px 20px;text-align:center;">
+        
+        <!-- Success Icon -->
+        <div style="margin-bottom:12px;">
+          <div style="display:inline-block;width:36px;height:36px;background:#10b981;border-radius:50%;line-height:36px;color:#fff;font-size:18px;font-weight:bold;">✓</div>
         </div>
 
-        <h2 style="margin:0 0 8px;font-size:22px;color:#111827;">You made a sale! 🎉</h2>
-        <p style="margin:0 0 24px;font-size:15px;color:#4b5563;line-height:1.6;">
-          Hi <strong>${seller.name}</strong>, great news — someone just purchased your product.
-        </p>
+        <h1 style="margin:0 0 6px;font-size:26px;color:#111827;font-weight:700;">₹${Number(sellerAmount).toFixed(2)}</h1>
+        <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">Sale Confirmed</p>
 
-        <!-- Sale details box -->
-        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:24px;">
-          <table style="width:100%;border-collapse:collapse;">
-            <tr>
-              <td style="padding:6px 0;font-size:13px;color:#6b7280;">Product</td>
-              <td style="padding:6px 0;font-size:13px;color:#111827;font-weight:600;text-align:right;">${productTitle}</td>
-            </tr>
-            <tr>
-              <td style="padding:6px 0;font-size:13px;color:#6b7280;">Buyer</td>
-              <td style="padding:6px 0;font-size:13px;color:#111827;text-align:right;">${buyer?.name || buyer?.email || 'A buyer'}</td>
-            </tr>
-            <tr>
-              <td style="padding:6px 0;font-size:13px;color:#6b7280;">Invoice #</td>
-              <td style="padding:6px 0;font-size:13px;color:#6366f1;font-weight:600;text-align:right;">${invoiceNumber}</td>
-            </tr>
-            <tr style="border-top:1px solid #e5e7eb;">
-              <td style="padding:12px 0 6px;font-size:15px;color:#111827;font-weight:700;">Your earnings</td>
-              <td style="padding:12px 0 6px;font-size:20px;color:#10b981;font-weight:800;text-align:right;">₹${Number(sellerAmount).toFixed(2)}</td>
-            </tr>
-          </table>
-        </div>
+        <div style="border-top:1px solid #e5e7eb;margin-bottom:20px;"></div>
 
-        <p style="margin:0 0 20px;font-size:13px;color:#6b7280;line-height:1.5;">
-          Your earnings will be added to your pending balance and will be available for payout once cleared.
-        </p>
+        <!-- Details Table -->
+        <table style="width:100%;border-collapse:collapse;text-align:left;">
+          <tr>
+            <td style="padding:6px 0;font-size:13px;color:#6b7280;width:40%;">Product</td>
+            <td style="padding:6px 0;font-size:13px;color:#111827;text-align:right;font-weight:500;">${productTitle}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;font-size:13px;color:#6b7280;">Invoice Id</td>
+            <td style="padding:6px 0;font-size:13px;color:#111827;text-align:right;">${invoiceNumber}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;font-size:13px;color:#6b7280;vertical-align:top;">Buyer Details</td>
+            <td style="padding:6px 0;font-size:13px;color:#2563eb;text-align:right;vertical-align:top;text-decoration:none;">${buyer?.email || 'N/A'}<br/>${buyer?.name ? `<span style="color:#6b7280;">${buyer.name}</span>` : ''}</td>
+          </tr>
+        </table>
 
-        <a href="${dashboardUrl}" style="display:inline-block;padding:12px 24px;background:#6366f1;color:white;text-decoration:none;border-radius:10px;font-weight:700;font-size:14px;">
-          View Sales Dashboard
-        </a>
-
-        <p style="margin:24px 0 0;font-size:13px;color:#9ca3af;">
-          Need help? <a href="mailto:help@bittforge.in" style="color:#6366f1;text-decoration:none;">help@bittforge.in</a>
-        </p>
       </div>
 
-      <div style="text-align:center;margin-top:18px;">
-        <p style="margin:0;font-size:12px;color:#9ca3af;">© 2026 BitForge. All rights reserved.</p>
-        <p style="margin:4px 0 0;font-size:11px;color:#6b7280;">This is an automated message. Please do not reply.</p>
-      </div>
-
+    </div>
+    
+    <div style="max-width:600px;margin:20px auto 0;text-align:center;font-size:12px;color:#6b7280;line-height:1.6;">
+      <p style="margin:0;">You can view the sale details on the <a href="${dashboardUrl}" style="color:#2563eb;text-decoration:none;">Seller Dashboard</a>.</p>
+      <p style="margin:4px 0 0;">For further assistance, you can reach out to us <a href="mailto:help@bittforge.in" style="color:#2563eb;text-decoration:none;">here</a>.</p>
     </div>
   </div>
   `;
@@ -332,75 +315,56 @@ export async function sendBuyerInvoiceEmail(buyer, invoiceData) {
 
   const row = (label, value, highlight = false) => `
     <tr>
-      <td style="padding:7px 0;font-size:13px;color:${highlight ? '#111827' : '#6b7280'};font-weight:${highlight ? '700' : '400'};">${label}</td>
-      <td style="padding:7px 0;font-size:13px;color:${highlight ? '#111827' : '#374151'};font-weight:${highlight ? '700' : '400'};text-align:right;">${value}</td>
+      <td style="padding:6px 0;font-size:12px;color:${highlight ? '#111827' : '#6b7280'};font-weight:${highlight ? '700' : '400'};">${label}</td>
+      <td style="padding:6px 0;font-size:12px;color:${highlight ? '#111827' : '#374151'};font-weight:${highlight ? '700' : '400'};text-align:right;">${value}</td>
     </tr>`;
 
   const html = `
-  <div style="background:#0b0f1a;padding:32px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
-    <div style="max-width:580px;margin:0 auto;">
-
+  <div style="background:#f3f4f6;padding:24px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+    <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:4px;overflow:hidden;">
+      
       <!-- Header -->
-      <div style="text-align:center;padding:20px 20px 16px;background:linear-gradient(135deg,#0b1220,#0f172a);border-radius:16px 16px 0 0;border-bottom:1px solid rgba(255,255,255,0.08);">
-        <img src="https://res.cloudinary.com/djhuduvrr/image/upload/f_auto,q_auto,w_520/bitforge_logo1_tuzvyi.png" alt="BitForge" width="180" style="display:block;margin:0 auto 6px;" />
-        <div style="font-size:15px;font-weight:700;color:#ffffff;">BitForge</div>
+      <div style="background:#082453;padding:16px;text-align:center;">
+         <div style="color:#ffffff;font-size:22px;font-weight:700;letter-spacing:1px;font-style:italic;">BitForge</div>
       </div>
 
       <!-- Body -->
-      <div style="background:#ffffff;padding:32px 28px;border-radius:0 0 14px 14px;box-shadow:0 20px 60px rgba(0,0,0,0.25);">
-
-        <!-- Invoice badge -->
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
-          <div>
-            <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:#6b7280;margin-bottom:4px;">TAX INVOICE</div>
-            <h2 style="margin:0;font-size:22px;color:#111827;">Payment Confirmed ✓</h2>
-            <p style="margin:6px 0 0;font-size:14px;color:#6b7280;">Hi <strong>${buyer?.name || 'there'}</strong>, your purchase was successful.</p>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:11px;color:#9ca3af;">Invoice</div>
-            <div style="font-size:14px;font-weight:700;color:#6366f1;">#${invoiceNumber}</div>
-            <div style="font-size:11px;color:#9ca3af;margin-top:2px;">${formattedDate}</div>
-          </div>
+      <div style="padding:24px 20px;text-align:center;">
+        
+        <!-- Success Icon -->
+        <div style="margin-bottom:12px;">
+          <div style="display:inline-block;width:36px;height:36px;background:#10b981;border-radius:50%;line-height:36px;color:#fff;font-size:18px;font-weight:bold;">✓</div>
         </div>
 
-        <!-- Product box -->
-        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;margin-bottom:20px;">
-          <div style="font-size:13px;font-weight:700;color:#111827;">${productName}</div>
-          ${productDescription ? `<div style="font-size:12px;color:#6b7280;margin-top:3px;">${productDescription}</div>` : ''}
-          <div style="font-size:11px;color:#9ca3af;margin-top:6px;">Digital download · BitForge Marketplace</div>
-        </div>
+        <h1 style="margin:0 0 6px;font-size:26px;color:#111827;font-weight:700;">₹${Number(totalAmount).toFixed(2)}</h1>
+        <p style="margin:0 0 24px;font-size:14px;color:#6b7280;">Payment Successful</p>
 
-        <!-- Price breakdown -->
-        <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
-          ${row('Original price', `₹${Number(originalPrice).toFixed(2)}`)}
-          ${discountPercent > 0 ? row(`Discount (${discountPercent}%)`, `-₹${Number(discountAmount).toFixed(2)}`) : ''}
-          ${row('Price after discount', `₹${Number(priceAfterDiscount).toFixed(2)}`)}
-          ${row(`GST (${gstPercent}%)`, `₹${Number(gstAmount).toFixed(2)}`)}
-          ${row(`Platform fee (${platformFeePercent}%)`, `₹${Number(platformFee).toFixed(2)}`)}
-          <tr><td colspan="2" style="border-top:2px solid #e5e7eb;padding-top:4px;"></td></tr>
-          ${row('Total paid', `₹${Number(totalAmount).toFixed(2)}`, true)}
+        <div style="border-top:1px solid #e5e7eb;margin-bottom:20px;"></div>
+
+        <!-- Details Table -->
+        <table style="width:100%;border-collapse:collapse;text-align:left;">
+          <tr>
+            <td style="padding:6px 0;font-size:12px;color:#6b7280;width:40%;">Payment Id</td>
+            <td style="padding:6px 0;font-size:12px;color:#111827;text-align:right;">${razorpayPaymentId || invoiceNumber}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;font-size:12px;color:#6b7280;">Amount</td>
+            <td style="padding:6px 0;font-size:12px;color:#111827;text-align:right;">₹${Number(totalAmount).toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;font-size:12px;color:#6b7280;vertical-align:top;">Order Details</td>
+            <td style="padding:6px 0;font-size:12px;color:#111827;text-align:right;vertical-align:top;">${productName}</td>
+          </tr>
         </table>
 
-        <!-- Payment info -->
-        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;margin-bottom:24px;">
-          <div style="font-size:12px;color:#166534;font-weight:600;">Payment Successful</div>
-          <div style="font-size:12px;color:#166534;margin-top:2px;">Method: ${paymentMethod || 'Razorpay'} · Ref: ${razorpayPaymentId || '—'}</div>
-        </div>
-
-        <a href="${ordersUrl}" style="display:inline-block;padding:12px 24px;background:#6366f1;color:white;text-decoration:none;border-radius:10px;font-weight:700;font-size:14px;">
-          View Your Purchases
-        </a>
-
-        <p style="margin:24px 0 0;font-size:13px;color:#9ca3af;line-height:1.5;">
-          Questions? <a href="mailto:help@bittforge.in" style="color:#6366f1;text-decoration:none;">help@bittforge.in</a>
-        </p>
       </div>
 
-      <div style="text-align:center;margin-top:18px;">
-        <p style="margin:0;font-size:12px;color:#9ca3af;">© 2026 BitForge. All rights reserved.</p>
-        <p style="margin:4px 0 0;font-size:11px;color:#6b7280;">This is an automated message. Please do not reply directly.</p>
-      </div>
-
+    </div>
+    
+    <div style="max-width:600px;margin:20px auto 0;text-align:center;font-size:11px;color:#6b7280;line-height:1.4;">
+      <p style="margin:0;">You can view the purchase details on the <a href="${ordersUrl}" style="color:#2563eb;text-decoration:none;">Buyer Dashboard</a>.</p>
+      <p style="margin:4px 0 0;">For further assistance, you can reach out to us <a href="mailto:help@bittforge.in" style="color:#2563eb;text-decoration:none;">here</a>.</p>
+      <p style="margin:12px 0 0;font-size:10px;">Note: A detailed tax invoice is attached to this email.</p>
     </div>
   </div>
   `;
@@ -444,47 +408,59 @@ export async function sendPayoutRequestAdminEmail(seller, amount) {
   const adminDashboardUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard/admin/payouts`;
 
   const html = `
-  <div style="background:#0b0f1a;padding:32px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
-    <div style="max-width:580px;margin:0 auto;">
-      <div style="text-align:center;padding:20px;background:linear-gradient(135deg,#0b1220,#0f172a);border-radius:16px 16px 0 0;">
-        <h1 style="color:#ffffff;margin:0;font-size:24px;">BitForge Admin</h1>
+  <div style="background:#f3f4f6;padding:24px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+    <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:4px;overflow:hidden;">
+      
+      <!-- Header -->
+      <div style="background:#082453;padding:16px;text-align:center;">
+         <div style="color:#ffffff;font-size:22px;font-weight:700;letter-spacing:1px;font-style:italic;">BitForge Admin</div>
       </div>
-      <div style="background:#ffffff;padding:32px 28px;border-radius:0 0 14px 14px;">
-        <div style="display:inline-block;background:#fef3c7;color:#92400e;font-size:12px;font-weight:700;letter-spacing:1px;padding:4px 12px;border-radius:20px;margin-bottom:16px;">
+
+      <!-- Body -->
+      <div style="padding:24px 20px;text-align:center;">
+        
+        <div style="display:inline-block;background:#fef3c7;color:#92400e;font-size:11px;font-weight:700;letter-spacing:1px;padding:4px 12px;border-radius:20px;margin-bottom:12px;">
           NEW PAYOUT REQUEST
         </div>
-        <h2 style="margin:0 0 16px;font-size:22px;color:#111827;">Action Required</h2>
-        <p style="margin:0 0 24px;font-size:15px;color:#4b5563;line-height:1.6;">
-          A seller has just submitted a new withdrawal request.
-        </p>
-        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:24px;">
-          <table style="width:100%;border-collapse:collapse;">
-            <tr>
-              <td style="padding:6px 0;font-size:13px;color:#6b7280;">Seller Name</td>
-              <td style="padding:6px 0;font-size:13px;color:#111827;font-weight:600;text-align:right;">${seller.name || 'Unknown'}</td>
-            </tr>
-            <tr>
-              <td style="padding:6px 0;font-size:13px;color:#6b7280;">Seller Email</td>
-              <td style="padding:6px 0;font-size:13px;color:#111827;text-align:right;">${seller.email}</td>
-            </tr>
-            <tr style="border-top:1px solid #e5e7eb;">
-              <td style="padding:12px 0 6px;font-size:15px;color:#111827;font-weight:700;">Requested Amount</td>
-              <td style="padding:12px 0 6px;font-size:20px;color:#f59e0b;font-weight:800;text-align:right;">₹${Number(amount).toFixed(2)}</td>
-            </tr>
-          </table>
-        </div>
-        <a href="${adminDashboardUrl}" style="display:inline-block;padding:12px 24px;background:#6366f1;color:white;text-decoration:none;border-radius:10px;font-weight:700;font-size:14px;">
-          Review Payout Request
+
+        <h1 style="margin:0 0 6px;font-size:26px;color:#111827;font-weight:700;">₹${Number(amount).toFixed(2)}</h1>
+        <p style="margin:0 0 20px;font-size:14px;color:#6b7280;">Action Required</p>
+
+        <div style="border-top:1px solid #e5e7eb;margin-bottom:20px;"></div>
+
+        <!-- Details Table -->
+        <table style="width:100%;border-collapse:collapse;text-align:left;margin-bottom:24px;">
+          <tr>
+            <td style="padding:6px 0;font-size:12px;color:#6b7280;width:40%;">Seller Name</td>
+            <td style="padding:6px 0;font-size:12px;color:#111827;text-align:right;font-weight:500;">${seller.name || 'Unknown'}</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 0;font-size:12px;color:#6b7280;">Seller Email</td>
+            <td style="padding:6px 0;font-size:12px;color:#111827;text-align:right;">${seller.email}</td>
+          </tr>
+        </table>
+        
+        <a href="${adminDashboardUrl}" style="display:inline-block;padding:10px 24px;background:#111827;color:white;text-decoration:none;border-radius:4px;font-weight:600;font-size:13px;letter-spacing:0.5px;">
+          REVIEW REQUEST
         </a>
+
       </div>
+
+    </div>
+    
+    <div style="max-width:600px;margin:20px auto 0;text-align:center;font-size:11px;color:#6b7280;line-height:1.4;">
+      <p style="margin:0;">This is an automated administrative notification.</p>
+      <p style="margin:4px 0 0;">© 2026 BitForge. All rights reserved.</p>
     </div>
   </div>
   `;
 
-  // Sending to the from address (or a specific admin email) for admin notification
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@bittforge.in';
+
+  // Sending to the admin email for admin notification
   return await resend.emails.send({
     from: getFromAddress(),
-    to: getFromAddress(), // Send to admin email
+    to: adminEmail, // Send to actual admin email
     subject,
     html,
   });

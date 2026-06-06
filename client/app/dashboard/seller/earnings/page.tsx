@@ -42,6 +42,8 @@ export default function SellerEarningsPage() {
   const [withdrawing, setWithdrawing] = useState(false);
   const [cancelling, setCancelling] = useState<string | null>(null);
   
+  const [payoutToCancel, setPayoutToCancel] = useState<string | null>(null);
+
   // Tab for requests box
   const [tab, setTab] = useState<"pending" | "history">("pending");
 
@@ -105,8 +107,14 @@ export default function SellerEarningsPage() {
     }
   };
 
-  const handleCancelPayout = async (payoutId: string) => {
-    if (!confirm("Are you sure you want to cancel this withdrawal request?")) return;
+  const handleCancelPayout = (payoutId: string) => {
+    setPayoutToCancel(payoutId);
+  };
+
+  const confirmCancelPayout = async () => {
+    if (!payoutToCancel) return;
+    const payoutId = payoutToCancel;
+    setPayoutToCancel(null);
     setCancelling(payoutId);
     try {
       await sellerAPI.cancelPayoutRequest(payoutId);
@@ -385,6 +393,39 @@ export default function SellerEarningsPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* CANCEL CONFIRMATION MODAL */}
+      {payoutToCancel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-white dark:bg-[#0b0b14] w-full max-w-sm rounded-[24px] p-6 shadow-2xl border border-slate-200 dark:border-white/10"
+          >
+            <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center border border-red-100 dark:border-red-500/20 mb-4">
+              <X className="w-6 h-6 text-red-600 dark:text-red-400" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Cancel Withdrawal?</h3>
+            <p className="text-[14px] text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
+              Are you sure you want to cancel this withdrawal request? The funds will be returned to your available balance.
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setPayoutToCancel(null)}
+                className="flex-1 px-4 py-2.5 rounded-[12px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+              >
+                Keep it
+              </button>
+              <button
+                onClick={confirmCancelPayout}
+                className="flex-1 px-4 py-2.5 rounded-[12px] font-bold text-white bg-red-600 hover:bg-red-700 shadow-[0_4px_12px_rgba(220,38,38,0.3)] transition-all"
+              >
+                Yes, Cancel
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </main>
   );
 }
