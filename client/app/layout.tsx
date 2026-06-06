@@ -1,20 +1,32 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Toaster } from 'react-hot-toast';
 import AppProviders from "./providers/AppProviders";
+import PWARegister from "@/components/PWARegister";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  themeColor: "#020617",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.bittforge.in"),
   title: "BitForge | India's Trusted Digital Marketplace",
   description:
     "Buy and sell digital products securely on BitForge. Instant downloads, verified sellers, and secure payments — all in one powerful marketplace.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "BitForge",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon.png", type: "image/png", sizes: "48x48" },
+      { url: "/Android_Icon/mipmap-xxxhdpi/ic_launcher.png", type: "image/png", sizes: "192x192" },
+      { url: "/Android_Icon/bitforge_fullname_icon_512.png", type: "image/png", sizes: "512x512" },
     ],
-    apple: "/apple-icon.png",
+    apple: "/Android_Icon/mipmap-xxxhdpi/ic_launcher.png",
   },
 };
 
@@ -28,6 +40,7 @@ export default function RootLayout({
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning style={{ fontFamily: "'Inter', sans-serif" }}>
       <body
       >
+        <PWARegister />
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7177082316952753"
