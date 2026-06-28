@@ -177,8 +177,8 @@ export default function SearchDropdown({
             <div className="space-y-1 px-1 pb-2">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="flex items-center gap-3 px-2 py-2">
-                  <div className="w-7 h-7 rounded-lg bg-slate-200 dark:bg-slate-700 animate-pulse shrink-0" />
-                  <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded animate-pulse w-3/4" />
+                  <div className="w-7 h-7 rounded-lg bg-slate-200 dark:bg-gradient-to-r dark:from-[#1e1e24] dark:to-[#2a2a33] animate-pulse shrink-0" />
+                  <div className="h-4 bg-slate-200 dark:bg-gradient-to-r dark:from-[#1e1e24] dark:to-[#2a2a33] rounded animate-pulse w-3/4" />
                 </div>
               ))}
             </div>
@@ -243,8 +243,8 @@ export default function SearchDropdown({
             <div className="space-y-1 px-1 pb-2">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="flex items-center gap-3 px-2 py-2">
-                  <div className="w-7 h-7 rounded-lg bg-slate-200 dark:bg-slate-700 animate-pulse shrink-0" />
-                  <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded animate-pulse w-2/3" />
+                  <div className="w-7 h-7 rounded-lg bg-slate-200 dark:bg-gradient-to-r dark:from-[#1e1e24] dark:to-[#2a2a33] animate-pulse shrink-0" />
+                  <div className="h-4 bg-slate-200 dark:bg-gradient-to-r dark:from-[#1e1e24] dark:to-[#2a2a33] rounded animate-pulse w-2/3" />
                 </div>
               ))}
             </div>

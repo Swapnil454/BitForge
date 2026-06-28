@@ -22,9 +22,10 @@ import {
   MoreVertical,
   BarChart3,
   RefreshCw,
-  TrendingUp,
   Banknote,
   Wallet,
+  Smartphone,
+  QrCode,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -39,6 +40,8 @@ interface BankAccount {
   isPrimary: boolean;
   isVerified: boolean;
   createdAt: string;
+  upiId?: string;
+  qrCodeImageUrl?: string;
 }
 
 interface BankStats {
@@ -57,6 +60,7 @@ export default function AdminBankAccountPage() {
   const [visibleAccounts, setVisibleAccounts] = useState<Record<string, boolean>>({});
   const [showMenu, setShowMenu] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [expandedQrCodes, setExpandedQrCodes] = useState<Record<string, boolean>>({});
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -115,6 +119,10 @@ export default function AdminBankAccountPage() {
 
   const toggleAccountVisibility = (id: string) => {
     setVisibleAccounts((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const toggleQrCode = (id: string) => {
+    setExpandedQrCodes((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   /* === SKELETON === */
@@ -236,10 +244,26 @@ export default function AdminBankAccountPage() {
 
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-lg font-black text-slate-900 dark:text-white">{acc.accountHolderName}</h3>
+                      <h3 className="text-lg font-black text-slate-900 dark:text-white">
+                        {acc.accountHolderName || (acc.upiId ? "UPI Payout" : "QR Code Payout")}
+                      </h3>
                       <p className="text-sm font-medium text-cyan-400 mt-0.5 flex items-center gap-1.5">
-                        <Landmark className="w-3.5 h-3.5" />
-                        {acc.bankName || "Unknown Bank"}
+                        {acc.bankName ? (
+                          <>
+                            <Landmark className="w-3.5 h-3.5" />
+                            {acc.bankName}
+                          </>
+                        ) : acc.upiId ? (
+                          <>
+                            <Smartphone className="w-3.5 h-3.5" />
+                            Digital Wallet
+                          </>
+                        ) : (
+                          <>
+                            <QrCode className="w-3.5 h-3.5" />
+                            Digital Wallet
+                          </>
+                        )}
                       </p>
                     </div>
                     
@@ -259,32 +283,75 @@ export default function AdminBankAccountPage() {
                       ? "bg-cyan-50/50 dark:bg-cyan-950/20 border-cyan-100 dark:border-cyan-900/30"
                       : "bg-slate-50/80 dark:bg-[#151722]/60 border-slate-200/60 dark:border-white/5"
                   }`}>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-slate-500 dark:text-zinc-500 font-medium shrink-0">Account No</span>
-                      <div className="flex items-center justify-end gap-2 overflow-hidden w-full ml-4">
-                        <span className={`text-slate-900 dark:text-white font-mono font-bold tracking-wider truncate text-right ${visibleAccounts[acc.id] ? "select-all" : ""}`}>
-                          {visibleAccounts[acc.id] ? acc.accountNumber : maskAccountNumber(acc.accountNumber)}
-                        </span>
-                        <button 
-                          onClick={() => toggleAccountVisibility(acc.id)} 
-                          className="text-slate-500 dark:text-zinc-500 hover:text-cyan-400 transition-colors shrink-0 p-1.5 -mr-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-white/5"
-                        >
-                          {visibleAccounts[acc.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center text-sm pt-1 border-t border-slate-200 dark:border-[#27272a]/50">
-                      <span className="text-slate-500 dark:text-zinc-500 font-medium">IFSC Code</span>
-                      <span className="text-slate-700 dark:text-zinc-300 font-mono tracking-wider text-right">
-                        {acc.ifscCode}
-                      </span>
-                    </div>
+                    {acc.accountNumber && (
+                      <>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 dark:text-zinc-500 font-medium shrink-0">Account No</span>
+                          <div className="flex items-center justify-end gap-2 overflow-hidden w-full ml-4">
+                            <span className={`text-slate-900 dark:text-white font-mono font-bold tracking-wider truncate text-right ${visibleAccounts[acc.id] ? "select-all" : ""}`}>
+                              {visibleAccounts[acc.id] ? acc.accountNumber : maskAccountNumber(acc.accountNumber)}
+                            </span>
+                            <button 
+                              onClick={() => toggleAccountVisibility(acc.id)} 
+                              className="text-slate-500 dark:text-zinc-500 hover:text-cyan-400 transition-colors shrink-0 p-1.5 -mr-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-white/5"
+                            >
+                              {visibleAccounts[acc.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center text-sm pt-1 border-t border-slate-200 dark:border-[#27272a]/50">
+                          <span className="text-slate-500 dark:text-zinc-500 font-medium">IFSC Code</span>
+                          <span className="text-slate-700 dark:text-zinc-300 font-mono tracking-wider text-right">
+                            {acc.ifscCode}
+                          </span>
+                        </div>
+                      </>
+                    )}
                     {acc.branchName && (
                       <div className="flex justify-between items-center text-sm pt-3 mt-1 border-t border-slate-200 dark:border-[#27272a]/50">
                         <span className="text-slate-500 dark:text-zinc-500 font-medium">Branch</span>
                         <span className="text-slate-600 dark:text-zinc-400 text-right line-clamp-1 max-w-[180px]">
                           {acc.branchName}
                         </span>
+                      </div>
+                    )}
+                    {acc.upiId && (
+                      <div className="flex justify-between items-center text-sm pt-3 mt-1 border-t border-slate-200 dark:border-[#27272a]/50">
+                        <span className="text-slate-500 dark:text-zinc-500 font-medium flex items-center gap-1.5"><Smartphone className="w-3.5 h-3.5" /> UPI ID</span>
+                        <span className="text-slate-700 dark:text-zinc-300 font-mono tracking-wider text-right">
+                          {acc.upiId}
+                        </span>
+                      </div>
+                    )}
+                    {acc.qrCodeImageUrl && (
+                      <div className="pt-3 mt-1 border-t border-slate-200 dark:border-[#27272a]/50">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 dark:text-zinc-500 font-medium flex items-center gap-1.5"><QrCode className="w-3.5 h-3.5" /> QR Code</span>
+                          <button
+                            onClick={() => toggleQrCode(acc.id)}
+                            className="text-cyan-500 hover:text-cyan-400 font-semibold text-xs tracking-wide transition-colors flex items-center gap-1"
+                          >
+                            {expandedQrCodes[acc.id] ? "Hide QR" : "Show QR"}
+                          </button>
+                        </div>
+                        <AnimatePresence>
+                          {expandedQrCodes[acc.id] && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              className="overflow-hidden mt-3"
+                            >
+                              <div className="bg-slate-50 dark:bg-black/50 p-3 rounded-xl border border-slate-200 dark:border-white/5 flex justify-center">
+                                <img 
+                                  src={acc.qrCodeImageUrl} 
+                                  alt="Payment QR Code"
+                                  className="w-32 h-32 sm:w-40 sm:h-40 object-contain rounded-lg"
+                                />
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     )}
                   </div>
@@ -318,7 +385,6 @@ export default function AdminBankAccountPage() {
           )}
         </div>
       </section>
-
     </main>
   );
 }

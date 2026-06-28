@@ -49,11 +49,38 @@ export default function AdminPromotionDetailPage() {
   const [heroButtonBgColor, setHeroButtonBgColor] = useState("");
   const [heroButtonTextColor, setHeroButtonTextColor] = useState("");
   const [heroFontFamily, setHeroFontFamily] = useState("inherit");
-  const [heroLayout, setHeroLayout] = useState<"floating" | "single" | "minimal">("floating");
+  const [heroLayout, setHeroLayout] = useState<"floating" | "single" | "minimal" | "fullImage">("floating");
 
   // UI State
-  const [modalState, setModalState] = useState<"approve" | "reject" | "pause" | "resume" | "verify" | "rejectPayment" | null>(null);
+  const [modalState, setModalState] = useState<"approve" | "reject" | "pause" | "resume" | "verify" | "rejectPayment" | "editDates" | "delete" | null>(null);
   const [styleExpanded, setStyleExpanded] = useState(false);
+  
+  const [editStartDate, setEditStartDate] = useState("");
+  const [editEndDate, setEditEndDate] = useState("");
+
+  const [isEditingLive, setIsEditingLive] = useState(false);
+  const [savingLiveEdit, setSavingLiveEdit] = useState(false);
+  
+  // Live edit fields
+  const [editTitle, setEditTitle] = useState("");
+  const [editSubtitle, setEditSubtitle] = useState("");
+  const [editButtonText, setEditButtonText] = useState("");
+  const [editTargetLink, setEditTargetLink] = useState("");
+  const [editHeroBgColor, setEditHeroBgColor] = useState("");
+  const [editHeroTextColor, setEditHeroTextColor] = useState<"light" | "dark" | "auto">("auto");
+  const [editHeroTitleColor, setEditHeroTitleColor] = useState("");
+  const [editHeroSubtitleColor, setEditHeroSubtitleColor] = useState("");
+  const [editHeroButtonBgColor, setEditHeroButtonBgColor] = useState("");
+  const [editHeroButtonTextColor, setEditHeroButtonTextColor] = useState("");
+  const [editHeroLayout, setEditHeroLayout] = useState<string>("floating");
+  const [editBannerCardImage, setEditBannerCardImage] = useState<File | null>(null);
+  const [editBannerCardImagePreview, setEditBannerCardImagePreview] = useState<string | null>(null);
+
+  const [editDesktopBannerImage, setEditDesktopBannerImage] = useState<File | null>(null);
+  const [editDesktopBannerImagePreview, setEditDesktopBannerImagePreview] = useState<string | null>(null);
+
+  const [editMobileBannerImage, setEditMobileBannerImage] = useState<File | null>(null);
+  const [editMobileBannerImagePreview, setEditMobileBannerImagePreview] = useState<string | null>(null);
 
   const loadPage = useCallback(async () => {
     try {
@@ -89,6 +116,13 @@ export default function AdminPromotionDetailPage() {
       setHeroButtonTextColor(nextPromotion?.heroButtonTextColor || "");
       setHeroFontFamily(nextPromotion?.heroFontFamily || "inherit");
       setHeroLayout(nextPromotion?.heroLayout || "floating");
+      
+      if (nextPromotion?.startDate) {
+        setEditStartDate(new Date(nextPromotion.startDate).toISOString().slice(0, 16));
+      }
+      if (nextPromotion?.endDate) {
+        setEditEndDate(new Date(nextPromotion.endDate).toISOString().slice(0, 16));
+      }
     } catch {
       showError("Failed to load promotion");
       router.push("/dashboard/admin/promotions");
@@ -123,6 +157,111 @@ export default function AdminPromotionDetailPage() {
       showError(getPromotionErrorMessage(error, "Action failed"));
     } finally {
       setProcessing(false);
+    }
+  };
+
+  const startLiveEdit = () => {
+    if (!promotion) return;
+    setEditTitle(promotion.title);
+    setEditSubtitle(promotion.subtitle || "");
+    setEditButtonText(promotion.buttonText || "");
+    setEditTargetLink(promotion.targetLink || "");
+    setEditHeroBgColor(promotion.heroBgColor || "#2563EB");
+    setEditHeroTextColor(promotion.heroTextColor || "auto");
+    setEditHeroTitleColor(promotion.heroTitleColor || "");
+    setEditHeroSubtitleColor(promotion.heroSubtitleColor || "");
+    setEditHeroButtonBgColor(promotion.heroButtonBgColor || "");
+    setEditHeroButtonTextColor(promotion.heroButtonTextColor || "");
+    setEditHeroLayout(promotion.heroLayout || "floating");
+    setIsEditingLive(true);
+  };
+
+  const handleEditBannerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      showError("Image must be an image file");
+      return;
+    }
+    setEditBannerCardImage(file);
+    setEditBannerCardImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleEditDesktopBannerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      showError("Image must be an image file");
+      return;
+    }
+    setEditDesktopBannerImage(file);
+    setEditDesktopBannerImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleEditMobileBannerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      showError("Image must be an image file");
+      return;
+    }
+    setEditMobileBannerImage(file);
+    setEditMobileBannerImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleSaveLiveEdit = async () => {
+    if (!promotion) return;
+    try {
+      setSavingLiveEdit(true);
+      const formData = new FormData();
+      if (editHeroLayout !== 'fullImage') {
+        if (editBannerCardImage) {
+          formData.append("bannerCardImage", editBannerCardImage);
+        } else {
+          formData.append("existingBannerImage", promotion.bannerImage || "");
+        }
+      }
+
+      if (editHeroLayout === 'fullImage') {
+        if (editDesktopBannerImage) {
+          formData.append("desktopBannerImage", editDesktopBannerImage);
+        } else {
+          formData.append("existingDesktopBanner", promotion.desktopBannerImage || "");
+        }
+        
+        if (editMobileBannerImage) {
+          formData.append("mobileBannerImage", editMobileBannerImage);
+        } else {
+          formData.append("existingMobileBanner", promotion.mobileBannerImage || "");
+        }
+      }
+      
+      formData.append("title", editTitle);
+      formData.append("subtitle", editSubtitle);
+      formData.append("buttonText", editButtonText);
+      formData.append("targetLink", editTargetLink);
+      formData.append("heroBgColor", editHeroBgColor);
+      formData.append("heroTextColor", editHeroTextColor);
+      formData.append("heroTitleColor", editHeroTitleColor);
+      formData.append("heroSubtitleColor", editHeroSubtitleColor);
+      formData.append("heroButtonBgColor", editHeroButtonBgColor);
+      formData.append("heroButtonTextColor", editHeroButtonTextColor);
+      formData.append("heroLayout", editHeroLayout);
+
+      await promotionAPI.updateLiveAdminPromotion(promotion._id, formData);
+      showSuccess("Live promotion updated successfully");
+      setIsEditingLive(false);
+      setEditBannerCardImage(null);
+      setEditBannerCardImagePreview(null);
+      setEditDesktopBannerImage(null);
+      setEditDesktopBannerImagePreview(null);
+      setEditMobileBannerImage(null);
+      setEditMobileBannerImagePreview(null);
+      await loadPage();
+    } catch (error) {
+      showError(getPromotionErrorMessage(error, "Failed to save live edit"));
+    } finally {
+      setSavingLiveEdit(false);
     }
   };
 
@@ -245,6 +384,14 @@ export default function AdminPromotionDetailPage() {
                 className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400"
               >
                 <PlayCircle className="w-4 h-4" /> Resume
+              </button>
+            )}
+            {(isActive || isPaused || promotion.status === "EXPIRED") && (
+              <button
+                onClick={() => setModalState("delete")}
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-white/70"
+              >
+                Delete
               </button>
             )}
             {isPending && (
@@ -382,7 +529,15 @@ export default function AdminPromotionDetailPage() {
 
             {/* Card 3: Promotion Schedule & Routing */}
             <div className="rounded-[2rem] border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#13131a] p-4 sm:p-6">
-              <h3 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-white mb-4 sm:mb-5">Schedule & Routing</h3>
+              <div className="flex items-center justify-between mb-4 sm:mb-5">
+                <h3 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-white">Schedule & Routing</h3>
+                <button 
+                  onClick={() => setModalState("editDates")}
+                  className="text-[10px] sm:text-xs font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
+                >
+                  Edit Dates
+                </button>
+              </div>
               
               <div className="flex items-center gap-4 mb-6 p-4 bg-slate-50 dark:bg-white/5 rounded-2xl">
                 <div className="flex-1">
@@ -500,6 +655,14 @@ export default function AdminPromotionDetailPage() {
                 >
                   Save Priority
                 </button>
+                {promotion.status === "ACTIVE" && (
+                  <button
+                    onClick={startLiveEdit}
+                    className="w-full rounded-xl border border-indigo-200 bg-indigo-50 dark:bg-indigo-500/10 dark:border-indigo-500/20 mt-3 px-3 py-2 text-xs sm:text-sm font-semibold text-indigo-700 dark:text-indigo-400 transition hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
+                  >
+                    Edit Live Details
+                  </button>
+                )}
               </div>
 
               {/* Panel 2: Seller & Product */}
@@ -597,7 +760,7 @@ export default function AdminPromotionDetailPage() {
                     </label>
                     <label className="block">
                       <span className="mb-1.5 block text-xs font-bold text-slate-600 dark:text-white/75">Layout Structure</span>
-                      <select value={heroLayout} onChange={(e) => setHeroLayout(e.target.value as "floating" | "single" | "minimal")} className={`${inputClass} py-2`}>
+                      <select value={heroLayout} onChange={(e) => setHeroLayout(e.target.value as "floating" | "single" | "minimal" | "fullImage")} className={`${inputClass} py-2`}>
                         <option value="floating">Floating</option><option value="single">Single</option><option value="minimal">Minimal</option>
                       </select>
                     </label>
@@ -693,6 +856,56 @@ export default function AdminPromotionDetailPage() {
                 className="flex-[2] rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-600 transition shadow-sm flex items-center justify-center gap-2"
               >
                 {processing ? <Clock className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Approve & Activate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {modalState === "editDates" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-[2rem] bg-white p-6 shadow-2xl dark:bg-[#13131a] border border-slate-200 dark:border-white/10 animate-in fade-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white mb-1 flex items-center gap-2">Edit Promotion Dates</h2>
+            <p className="text-sm text-slate-500 dark:text-white/60 mb-6">Modify the active period for this promotion.</p>
+            
+            <div className="space-y-4">
+              <label className="block">
+                <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Start Date</span>
+                <input type="datetime-local" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} className={inputClass} />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">End Date</span>
+                <input type="datetime-local" value={editEndDate} onChange={(e) => setEditEndDate(e.target.value)} className={inputClass} />
+              </label>
+            </div>
+
+            <div className="mt-8 flex gap-3">
+              <button onClick={() => setModalState(null)} disabled={processing} className="flex-1 rounded-xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10 transition">Cancel</button>
+              <button
+                onClick={() => void runAction(() => promotionAPI.updatePromotionDatesAdmin(promotion._id, { startDate: editStartDate, endDate: editEndDate }), "Dates updated successfully")}
+                disabled={processing || !editStartDate || !editEndDate}
+                className="flex-1 rounded-xl bg-indigo-500 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-600 transition shadow-sm"
+              >
+                Save Dates
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalState === "delete" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-[2rem] bg-white p-6 shadow-2xl dark:bg-[#13131a] border border-slate-200 dark:border-white/10 animate-in fade-in zoom-in-95 duration-200">
+            <h2 className="text-xl font-black text-red-600 dark:text-red-400 mb-1 flex items-center gap-2"><AlertTriangle className="w-5 h-5" /> Soft Delete Promotion</h2>
+            <p className="text-sm text-slate-500 dark:text-white/60 mb-6">This will mark the promotion as CANCELLED but retain the record. The seller will be able to create a new promotion.</p>
+            
+            <div className="mt-8 flex gap-3">
+              <button onClick={() => setModalState(null)} disabled={processing} className="flex-1 rounded-xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10 transition">Cancel</button>
+              <button
+                onClick={() => void runAction(() => promotionAPI.deletePromotionAdmin(promotion._id), "Promotion soft-deleted")}
+                disabled={processing}
+                className="flex-1 rounded-xl bg-red-500 px-4 py-3 text-sm font-bold text-white hover:bg-red-600 transition shadow-sm"
+              >
+                Confirm Delete
               </button>
             </div>
           </div>
@@ -837,6 +1050,163 @@ export default function AdminPromotionDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Live Edit Modal */}
+      {isEditingLive && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="w-full max-w-2xl rounded-[2rem] bg-white p-6 shadow-2xl dark:bg-[#13131a] border border-slate-200 dark:border-white/10 my-8">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white mb-6">Edit Live Promotion</h2>
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+              
+              {editHeroLayout !== "fullImage" ? (
+                <label className="block">
+                  <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Update Image</span>
+                  <div className="mt-1 flex justify-center rounded-2xl border border-dashed border-slate-300 dark:border-white/20 px-6 py-6 transition hover:border-cyan-500 hover:bg-slate-50 dark:hover:bg-white/5">
+                    <div className="text-center">
+                      {editBannerCardImagePreview ? (
+                        <div className="mb-4">
+                          <img src={editBannerCardImagePreview} alt="Preview" className="mx-auto h-32 w-auto rounded-lg object-contain" />
+                          <button onClick={(e) => { e.preventDefault(); setEditBannerCardImage(null); setEditBannerCardImagePreview(null); }} className="mt-2 text-xs font-semibold text-red-500">Remove Image</button>
+                        </div>
+                      ) : promotion?.bannerImage ? (
+                        <div className="mb-4">
+                          <img src={promotion.bannerImage} alt="Current" className="mx-auto h-32 w-auto rounded-lg object-contain" />
+                          <p className="mt-2 text-xs font-medium text-slate-500">Current Image</p>
+                        </div>
+                      ) : (
+                        <div className="mx-auto flex h-8 w-8 items-center justify-center text-slate-400">?</div>
+                      )}
+                      <div className="mt-4 flex text-sm leading-6 text-slate-600 dark:text-white/70 justify-center">
+                        <label className="relative cursor-pointer rounded-md font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500 dark:text-indigo-400">
+                          <span>Upload a new image</span>
+                          <input type="file" className="sr-only" accept="image/*" onChange={handleEditBannerChange} />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </label>
+              ) : (
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Desktop Banner</span>
+                    <div className="mt-1 flex justify-center rounded-2xl border border-dashed border-slate-300 dark:border-white/20 px-6 py-6 transition hover:border-cyan-500 hover:bg-slate-50 dark:hover:bg-white/5">
+                      <div className="text-center w-full">
+                        {editDesktopBannerImagePreview ? (
+                          <div className="mb-4">
+                            <img src={editDesktopBannerImagePreview} alt="Preview" className="mx-auto h-32 w-full object-contain" />
+                            <button onClick={(e) => { e.preventDefault(); setEditDesktopBannerImage(null); setEditDesktopBannerImagePreview(null); }} className="mt-2 text-xs font-semibold text-red-500">Remove</button>
+                          </div>
+                        ) : promotion?.desktopBannerImage ? (
+                          <div className="mb-4">
+                            <img src={promotion.desktopBannerImage} alt="Current Desktop" className="mx-auto h-32 w-full object-contain" />
+                            <p className="mt-2 text-xs font-medium text-slate-500">Current Desktop</p>
+                          </div>
+                        ) : (
+                          <div className="mx-auto flex h-8 w-8 items-center justify-center text-slate-400">?</div>
+                        )}
+                        <div className="mt-4 flex text-sm leading-6 text-slate-600 dark:text-white/70 justify-center">
+                          <label className="relative cursor-pointer rounded-md font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500 dark:text-indigo-400">
+                            <span>Upload desktop image</span>
+                            <input type="file" className="sr-only" accept="image/*" onChange={handleEditDesktopBannerChange} />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Mobile Banner</span>
+                    <div className="mt-1 flex justify-center rounded-2xl border border-dashed border-slate-300 dark:border-white/20 px-6 py-6 transition hover:border-cyan-500 hover:bg-slate-50 dark:hover:bg-white/5">
+                      <div className="text-center w-full">
+                        {editMobileBannerImagePreview ? (
+                          <div className="mb-4">
+                            <img src={editMobileBannerImagePreview} alt="Preview" className="mx-auto h-32 w-full object-contain" />
+                            <button onClick={(e) => { e.preventDefault(); setEditMobileBannerImage(null); setEditMobileBannerImagePreview(null); }} className="mt-2 text-xs font-semibold text-red-500">Remove</button>
+                          </div>
+                        ) : promotion?.mobileBannerImage ? (
+                          <div className="mb-4">
+                            <img src={promotion.mobileBannerImage} alt="Current Mobile" className="mx-auto h-32 w-full object-contain" />
+                            <p className="mt-2 text-xs font-medium text-slate-500">Current Mobile</p>
+                          </div>
+                        ) : (
+                          <div className="mx-auto flex h-8 w-8 items-center justify-center text-slate-400">?</div>
+                        )}
+                        <div className="mt-4 flex text-sm leading-6 text-slate-600 dark:text-white/70 justify-center">
+                          <label className="relative cursor-pointer rounded-md font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500 dark:text-indigo-400">
+                            <span>Upload mobile image</span>
+                            <input type="file" className="sr-only" accept="image/*" onChange={handleEditMobileBannerChange} />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              )}
+
+              <label className="block opacity-75 cursor-not-allowed">
+                <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Layout Type</span>
+                <select value={editHeroLayout} disabled className={`${inputClass} bg-slate-100 dark:bg-white/5`}>
+                  <option value="floating">Floating Modern (Text Left, Image Right)</option>
+                  <option value="fullImage">Full Image (Image Only)</option>
+                  <option value="single">Single Block (Text Overlay)</option>
+                  <option value="minimal">Minimal (Small Image)</option>
+                  <option value="legacy">Legacy (Basic Split)</option>
+                </select>
+                <p className="mt-1 text-xs text-slate-500">Layout cannot be changed after creation.</p>
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Target Link (Optional)</span>
+                <input type="text" value={editTargetLink} onChange={(e) => setEditTargetLink(e.target.value)} placeholder="Leave blank for product page" className={inputClass} />
+              </label>
+
+              {editHeroLayout !== "fullImage" && (
+                <>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Title</span>
+                    <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className={inputClass} />
+                  </label>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Subtitle</span>
+                    <input type="text" value={editSubtitle} onChange={(e) => setEditSubtitle(e.target.value)} className={inputClass} />
+                  </label>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Button Text</span>
+                    <input type="text" value={editButtonText} onChange={(e) => setEditButtonText(e.target.value)} className={inputClass} />
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <label className="block">
+                      <span className="mb-2 block text-xs font-bold text-slate-700 dark:text-white/80">Bg Color</span>
+                      <input type="text" value={editHeroBgColor} onChange={(e) => setEditHeroBgColor(e.target.value)} className={inputClass} placeholder="#FFFFFF" />
+                    </label>
+                    <label className="block">
+                      <span className="mb-2 block text-xs font-bold text-slate-700 dark:text-white/80">Text Theme</span>
+                      <select value={editHeroTextColor} onChange={(e) => setHeroTextColor(e.target.value as any)} className={inputClass}>
+                        <option value="auto">Auto</option><option value="light">Light</option><option value="dark">Dark</option>
+                      </select>
+                    </label>
+                    <label className="block">
+                      <span className="mb-2 block text-xs font-bold text-slate-700 dark:text-white/80">Btn Bg</span>
+                      <input type="text" value={editHeroButtonBgColor} onChange={(e) => setEditHeroButtonBgColor(e.target.value)} className={inputClass} placeholder="#000000" />
+                    </label>
+                    <label className="block">
+                      <span className="mb-2 block text-xs font-bold text-slate-700 dark:text-white/80">Btn Text</span>
+                      <input type="text" value={editHeroButtonTextColor} onChange={(e) => setEditHeroButtonTextColor(e.target.value)} className={inputClass} placeholder="#FFFFFF" />
+                    </label>
+                  </div>
+                </>
+              )}
+
+            </div>
+            <div className="mt-6 flex justify-end gap-3 border-t border-slate-100 dark:border-white/5 pt-4">
+              <button onClick={() => setIsEditingLive(false)} disabled={savingLiveEdit} className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10">Cancel</button>
+              <button onClick={handleSaveLiveEdit} disabled={savingLiveEdit} className="rounded-xl bg-indigo-500 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-600 flex items-center gap-2">
+                {savingLiveEdit && <Clock className="w-4 h-4 animate-spin" />} Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </main>
   );
 }

@@ -3,6 +3,7 @@ import Script from "next/script";
 import { Toaster } from 'react-hot-toast';
 import AppProviders from "./providers/AppProviders";
 import PWARegister from "@/components/PWARegister";
+import PWAInstallBanner from "@/components/PWAInstallBanner";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -41,6 +42,7 @@ export default function RootLayout({
       <body
       >
         <PWARegister />
+        <PWAInstallBanner />
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7177082316952753"

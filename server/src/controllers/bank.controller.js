@@ -1,15 +1,31 @@
 
 
 import User from "../models/User.js";
+import cloudinary from "../config/cloudinary.js";
+
+const uploadBuffer = async (buffer, folder) =>
+  new Promise((resolve, reject) => {
+    const upload = cloudinary.uploader.upload_stream(
+      { folder },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
+    upload.end(buffer);
+  });
 
 // Add bank account (multiple accounts supported)
 export const addBankAccount = async (req, res) => {
   try {
-    const { accountHolderName, accountNumber, ifscCode, bankName, branchName, accountType, isPrimary } = req.body;
+    const { accountHolderName, accountNumber, ifscCode, bankName, branchName, accountType, isPrimary, upiId } = req.body;
 
     // Validate required fields
-    if (!accountHolderName || !accountNumber || !ifscCode) {
-      return res.status(400).json({ message: "Account holder name, account number, and IFSC code are required" });
+    const hasBankDetails = accountHolderName && accountNumber && ifscCode;
+    const hasUpiOrQr = upiId || req.file;
+
+    if (!hasBankDetails && !hasUpiOrQr) {
+      return res.status(400).json({ message: "Please provide either bank account details or a UPI/QR code" });
     }
 
     const user = await User.findById(req.user.id);
@@ -19,9 +35,11 @@ export const addBankAccount = async (req, res) => {
     }
 
     // Check if account number already exists
-    const accountExists = user.bankAccounts.some(acc => acc.accountNumber === accountNumber);
-    if (accountExists) {
-      return res.status(400).json({ message: "This account number is already added" });
+    if (accountNumber) {
+      const accountExists = user.bankAccounts.some(acc => acc.accountNumber && acc.accountNumber === accountNumber);
+      if (accountExists) {
+        return res.status(400).json({ message: "This account number is already added" });
+      }
     }
 
     // If this is the first account or isPrimary is true, make it primary
@@ -34,6 +52,15 @@ export const addBankAccount = async (req, res) => {
       });
     }
 
+    let qrCodeImageUrl = null;
+    let qrCodeImageKey = null;
+
+    if (req.file) {
+      const result = await uploadBuffer(req.file.buffer, "bank-qrcodes");
+      qrCodeImageUrl = result.secure_url;
+      qrCodeImageKey = result.public_id;
+    }
+
     // Add bank account to user's accounts array (Manual Payout Mode)
     user.bankAccounts.push({
       accountHolderName,
@@ -44,6 +71,9 @@ export const addBankAccount = async (req, res) => {
       accountType: accountType || 'savings',
       isPrimary: shouldBePrimary,
       isVerified: true,
+      upiId: upiId || null,
+      qrCodeImageUrl,
+      qrCodeImageKey,
       razorpayContactId: null,
       razorpayFundAccountId: null,
     });
@@ -65,6 +95,8 @@ export const addBankAccount = async (req, res) => {
         accountType: newAccount.accountType,
         isPrimary: newAccount.isPrimary,
         isVerified: newAccount.isVerified,
+        upiId: newAccount.upiId,
+        qrCodeImageUrl: newAccount.qrCodeImageUrl,
         createdAt: newAccount.createdAt,
       }
     });
@@ -98,6 +130,8 @@ export const getBankAccounts = async (req, res) => {
       isPrimary: acc.isPrimary,
       isVerified: acc.isVerified,
       createdAt: acc.createdAt,
+      upiId: acc.upiId,
+      qrCodeImageUrl: acc.qrCodeImageUrl,
     }));
 
     res.json({ bankAccounts: accounts });
@@ -280,5 +314,31 @@ export const deleteBankAccount = async (req, res) => {
   } catch (error) {
     console.error("Error deleting bank account:", error);
     res.status(500).json({ message: "Failed to delete bank account" });
+  }
+};
+
+// Get Platform Bank Account (For sellers making manual payments)
+export const getPlatformBankAccount = async (req, res) => {
+  try {
+    // Find an admin user
+    const admin = await User.findOne({ role: 'admin' }).select('bankAccounts');
+    if (!admin || !admin.bankAccounts || admin.bankAccounts.length === 0) {
+      return res.status(404).json({ message: "Platform bank account not found" });
+    }
+
+    const primaryAccount = admin.bankAccounts.find(acc => acc.isPrimary) || admin.bankAccounts[0];
+
+    res.json({
+      accountHolderName: primaryAccount.accountHolderName,
+      accountNumber: primaryAccount.accountNumber,
+      ifscCode: primaryAccount.ifscCode,
+      bankName: primaryAccount.bankName,
+      branchName: primaryAccount.branchName,
+      upiId: primaryAccount.upiId,
+      qrCodeImageUrl: primaryAccount.qrCodeImageUrl,
+    });
+  } catch (error) {
+    console.error("Error fetching platform bank account:", error);
+    res.status(500).json({ message: "Failed to fetch platform bank account" });
   }
 };

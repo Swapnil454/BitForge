@@ -166,15 +166,12 @@ const userSchema = new mongoose.Schema(
     bankAccounts: [{
       accountHolderName: {
         type: String,
-        required: true
       },
       accountNumber: {
         type: String,
-        required: true
       },
       ifscCode: {
         type: String,
-        required: true
       },
       bankName: String,
       branchName: String,
@@ -193,6 +190,9 @@ const userSchema = new mongoose.Schema(
       },
       razorpayContactId: String,
       razorpayFundAccountId: String,
+      upiId: String,
+      qrCodeImageUrl: String,
+      qrCodeImageKey: String,
       createdAt: {
         type: Date,
         default: Date.now

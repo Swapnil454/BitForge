@@ -89,14 +89,6 @@ export function CardDesktopImages({ locked }: { locked: boolean }) {
     const img = new Image();
     
     img.onload = () => {
-      if (layoutType === 'fullImage') {
-        if (img.width !== 3000 || img.height !== 1200) {
-          updateFloatingImage(index, { uploadState: 'error', errorMessage: `Got ${img.width}x${img.height}` });
-          URL.revokeObjectURL(url);
-          return;
-        }
-      }
-      
       updateFloatingImage(index, { file, url, uploadState: 'success', errorMessage: undefined });
     };
     
@@ -126,44 +118,32 @@ export function CardDesktopImages({ locked }: { locked: boolean }) {
   };
 
   return (
-    <SectionCard stepNumber={layoutType === 'fullImage' ? 4 : 5} title={layoutType === 'fullImage' ? "Desktop Banner Image" : "Desktop Floating Images"} locked={locked}>
+    <SectionCard stepNumber={5} title="Desktop Floating Images" locked={locked}>
       <div className="space-y-3 md:space-y-6">
         
         <details className="group rounded-xl md:rounded-2xl border border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5 [&_summary::-webkit-details-marker]:hidden">
           <summary className="flex cursor-pointer items-center justify-between p-2 md:p-4 text-xs md:text-sm font-semibold text-slate-700 dark:text-white/90">
-            Seller Guidelines for {layoutType === 'fullImage' ? 'Full Banners' : 'Premium Ads'}
+            Seller Guidelines for Premium Ads
             <span className="transition group-open:rotate-180">
               <svg fill="none" height="16" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="16" className="md:w-6 md:h-6"><path d="M6 9l6 6 6-6"></path></svg>
             </span>
           </summary>
           <div className="p-2 pt-0 md:p-4 md:pt-0 text-[10px] md:text-sm text-slate-600 dark:text-white/70">
             <ul className="list-disc pl-4 md:pl-5 space-y-0.5 md:space-y-1">
-              {layoutType === 'fullImage' ? (
-                <>
-                  <li><strong className="text-red-500">Must be exactly 3000 x 1200 pixels.</strong></li>
-                  <li>Use high quality JPEGs or PNGs without transparent backgrounds.</li>
-                  <li>Displayed edge-to-edge on large devices.</li>
-                </>
-              ) : (
-                <>
-                  <li>Transparent PNG or WEBP images for floating effect.</li>
-                  <li>Max 9MB per image. Drag to reorder.</li>
-                </>
-              )}
+              <li>Transparent PNG or WEBP images for floating effect.</li>
+              <li>Max 9MB per image. Drag to reorder.</li>
             </ul>
-            {layoutType !== 'fullImage' && (
-              <div className="mt-2 md:mt-4 flex items-start gap-1.5 md:gap-2 rounded-lg md:rounded-xl bg-amber-50 p-1.5 md:p-3 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
+            <div className="mt-2 md:mt-4 flex items-start gap-1.5 md:gap-2 rounded-lg md:rounded-xl bg-amber-50 p-1.5 md:p-3 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20">
                 <AlertCircle className="w-3 h-3 md:w-4 md:h-4 shrink-0 md:mt-0.5" />
                 <p className="text-[9px] md:text-xs font-medium leading-snug md:leading-relaxed">
                   WEBP transparency cannot be auto-detected, double-check your files.
                 </p>
               </div>
-            )}
           </div>
         </details>
 
-        <div className={`grid grid-cols-3 ${layoutType === 'fullImage' ? 'sm:grid-cols-1 max-w-md mx-auto' : 'sm:grid-cols-3'} gap-2 md:gap-3`}>
-          {floatingImages.slice(0, layoutType === 'fullImage' ? 1 : 3).map((slot, index) => (
+        <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 md:gap-3">
+          {floatingImages.map((slot, index) => (
             <UploadSlot 
               key={`slot-${index}`}
               index={index}
