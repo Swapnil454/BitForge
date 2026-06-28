@@ -42,30 +42,30 @@ export interface Banner {
 const defaultBanners: Banner[] = [
   {
     id: "1",
-    title: "Upgrade Your Digital Toolkit",
-    subtitle: "Get premium courses, eBooks, templates, software and design assets in one place.",
-    badge: "Premium Assets",
-    buttonText: "Explore Deals",
+    title: "",
+    subtitle: "",
+    buttonText: "",
     link: "/marketplace",
-    gradientClass: "from-blue-600 via-indigo-700 to-slate-900"
+    heroLayout: "fullImage",
+    bannerImage: "/buyer.png"
   },
   {
     id: "2",
-    title: "50% Off React Templates",
-    subtitle: "Launch your next SaaS or portfolio faster with our top-rated UI kits.",
-    badge: "Limited Deal",
-    buttonText: "Shop Templates",
+    title: "",
+    subtitle: "",
+    buttonText: "",
     link: "/marketplace?category=Template",
-    gradientClass: "from-cyan-600 via-blue-700 to-slate-900"
+    heroLayout: "fullImage",
+    bannerImage: "/overall.png"
   },
   {
     id: "3",
-    title: "Master Web Development",
-    subtitle: "Learn from industry experts and level up your coding skills today.",
-    badge: "New Courses",
-    buttonText: "Browse Courses",
+    title: "",
+    subtitle: "",
+    buttonText: "",
     link: "/marketplace?category=Course",
-    gradientClass: "from-purple-600 via-indigo-700 to-slate-900"
+    heroLayout: "fullImage",
+    bannerImage: "/seller.png"
   }
 ];
 
@@ -392,7 +392,7 @@ export default function HeroAds({
   const adImages = currentBanner.adImages ? [...currentBanner.adImages].sort((a, b) => a.position - b.position) : [];
 
   return (
-    <div className="relative z-40 md:z-0 w-full mb-0 sm:mb-2 pt-2 md:pt-0">
+    <div className="relative z-40 md:z-0 w-full mb-0 sm:mb-2 pt-2 md:pt-4">
       {/* Mobile Search Bar inside Hero (blends with hero background) */}
       <div className="md:hidden px-4 pb-3 w-full relative z-[100]" ref={searchContainerRef}>
         <div className="flex items-center gap-3 w-full px-4 py-2.5 bg-white dark:bg-slate-800/90 border border-gray-200/50 dark:border-white/10 rounded-2xl shadow-sm transition-all focus-within:ring-2 focus-within:ring-indigo-500/20">
@@ -442,12 +442,12 @@ export default function HeroAds({
         />
       )}
       <div 
-        className={`hidden md:flex relative w-full transition-all duration-700 items-center group ${
+        className={`hidden md:flex relative w-[96%] mx-auto rounded-[24px] overflow-hidden transition-all duration-700 items-center group ${
           !hasModernStyling 
-            ? `bg-gradient-to-r ${currentBanner.gradientClass} h-[180px] sm:h-[220px] md:h-[260px] overflow-hidden` 
+            ? `bg-gradient-to-r ${currentBanner.gradientClass} h-[180px] sm:h-[220px] md:h-[260px]` 
             : layout === "fullImage"
             ? "h-[180px] sm:h-[220px] md:h-[260px]"
-            : "h-auto md:h-[260px] overflow-hidden"
+            : "h-auto md:h-[260px]"
         }`}
         style={bgColor ? { backgroundColor: bgColor } : {}}
       >
@@ -475,23 +475,19 @@ export default function HeroAds({
         {/* Desktop Content Area: hidden on mobile, shown from md+ */}
         {layout === "fullImage" ? (
           <div 
-            className="hidden md:flex absolute top-0 left-0 w-full cursor-pointer items-start justify-center motion-safe:animate-in motion-safe:fade-in duration-700 pointer-events-auto"
+            className="hidden md:flex absolute top-0 left-0 w-full h-full cursor-pointer items-start justify-center motion-safe:animate-in motion-safe:fade-in duration-700 pointer-events-auto"
             onClick={handleBannerClick}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => e.key === "Enter" && handleBannerClick()}
             aria-label={`View ${currentBanner.title}`}
-            style={{
-              zIndex: 0,
-              WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
-              maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)'
-            }}
+            style={{ zIndex: 0 }}
           >
             {(adImages.length > 0 || currentBanner.bannerImage) && (
               <img 
                 src={adImages.length > 0 ? (adImages[0].url.includes("cloudinary.com") ? adImages[0].url.replace("/upload/", "/upload/f_auto,q_100/") : adImages[0].url) : currentBanner.bannerImage} 
                 alt={currentBanner.title || "Promotion Banner"} 
-                className="w-full h-auto object-top pointer-events-none"
+                className="w-full h-full object-fill pointer-events-none"
               />
             )}
           </div>
