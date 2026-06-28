@@ -20,6 +20,10 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "BitForge",
+    startupImage: [
+      "/Android_Icon/bitforge_splash_screen_720x1600.png",
+      "/Android_Icon/bitforge_splash_screen_1080x2400.png"
+    ],
   },
   icons: {
     icon: [
