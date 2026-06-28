@@ -923,6 +923,13 @@ export const promotionAPI = {
         return response.data;
     },
 
+    updateLiveSellerPromotion: async (id: string, formData: FormData) => {
+        const response = await api.patch(`/seller/promotions/${id}/live-update`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        return response.data;
+    },
+
     createPromotionPaymentOrder: async (id: string) => {
         const response = await api.post(`/seller/promotions/${id}/create-payment-order`);
         return response.data;
@@ -939,6 +946,13 @@ export const promotionAPI = {
 
     getAdminPromotions: async (params?: { status?: string; placement?: string }) => {
         const response = await api.get('/admin/promotions', { params });
+        return response.data;
+    },
+
+    updateLiveAdminPromotion: async (id: string, formData: FormData) => {
+        const response = await api.patch(`/admin/promotions/${id}/live-update`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
         return response.data;
     },
 
@@ -998,6 +1012,16 @@ export const promotionAPI = {
 
     updatePromotionPriority: async (id: string, priority: number) => {
         const response = await api.patch(`/admin/promotions/${id}/priority`, { priority });
+        return response.data;
+    },
+
+    updatePromotionDatesAdmin: async (id: string, payload: { startDate: string; endDate: string }) => {
+        const response = await api.patch(`/admin/promotions/${id}/dates`, payload);
+        return response.data;
+    },
+
+    deletePromotionAdmin: async (id: string) => {
+        const response = await api.delete(`/admin/promotions/${id}`);
         return response.data;
     },
 

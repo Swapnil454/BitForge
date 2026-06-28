@@ -61,10 +61,15 @@ export default function GlobalChatListener() {
     });
 
     socket.on("connect_error", (err: any) => {
-      console.error("Socket connect error (global chat listener)", err?.message || err);
-      if (err?.message === "Unauthorized" || err?.message === "jwt expired") {
+      const msg = err?.message || String(err);
+      // Auth errors are real problems — log them
+      if (msg === "Unauthorized" || msg === "jwt expired") {
+        console.error("Socket auth error (global chat listener)", msg);
         socket.disconnect(); // Prevent infinite retry loops for expired tokens
       }
+      // Transport errors (websocket error, net::ERR_*) are expected when the
+      // server is unreachable or restarting. Socket.io will auto-retry; no need
+      // to fill the console with noise.
     });
 
     return () => {

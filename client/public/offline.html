@@ -2,56 +2,143 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BitForge Offline</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>BitForge — Network Error</title>
     <style>
-      body {
+      *, *::before, *::after {
+        box-sizing: border-box;
         margin: 0;
-        min-height: 100vh;
+        padding: 0;
+      }
+
+      html, body {
+        height: 100%;
+        overflow: hidden;
+      }
+
+      body {
+        height: 100vh;
+        height: 100dvh;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-family: Arial, sans-serif;
-        background: #020617;
-        color: #ffffff;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         text-align: center;
         padding: 24px;
+        /* Light mode default */
+        background-color: #eef0f8;
+        color: #1a1a2e;
+        transition: background-color 0.2s, color 0.2s;
       }
 
-      .box {
-        max-width: 420px;
+      /* Dark mode */
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #06070f;
+          color: #ffffff;
+        }
+        #network-icon {
+          content: url("/network_dark.png");
+        }
+        .subtitle {
+          color: #8a8fa8 !important;
+        }
+        .retry-btn {
+          color: #4d8aff !important;
+        }
       }
 
-      h1 {
-        font-size: 28px;
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        max-width: 340px;
+        width: 100%;
+        margin-top: -8vh;
+      }
+
+      .icon-wrap {
+        width: 220px;
+        height: 220px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 4px;
+      }
+
+      #network-icon {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        /* Default: light mode icon */
+        content: url("/network_light.png");
+      }
+
+      .title {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.3px;
+        margin-bottom: 4px;
+        line-height: 1.2;
+      }
+
+      .subtitle {
+        font-size: 14px;
+        color: #6b7280;
+        line-height: 1.55;
         margin-bottom: 12px;
+        max-width: 280px;
       }
 
-      p {
-        color: #cbd5e1;
-        line-height: 1.6;
-      }
-
-      button {
-        margin-top: 20px;
-        padding: 12px 20px;
+      .retry-btn {
+        background: transparent;
         border: none;
-        border-radius: 10px;
-        background: #2563eb;
-        color: #fff;
-        font-weight: 600;
+        color: #2563eb;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
         cursor: pointer;
+        padding: 8px 16px;
+        border-radius: 6px;
+        transition: opacity 0.15s;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .retry-btn:hover {
+        opacity: 0.75;
+      }
+
+      .retry-btn:active {
+        opacity: 0.5;
       }
     </style>
   </head>
   <body>
-    <div class="box">
-      <h1>You are offline</h1>
-      <p>
-        BitForge needs an internet connection to load marketplace products,
-        payments, downloads, and seller data.
-      </p>
-      <button onclick="window.location.reload()">Try Again</button>
+    <div class="container">
+      <div class="icon-wrap">
+        <img id="network-icon" alt="Network error" />
+      </div>
+      <h1 class="title">failed to load</h1>
+      <p class="subtitle">seems like we encountered an error.</p>
+      <button class="retry-btn" onclick="window.location.reload()">RETRY</button>
     </div>
+
+    <script>
+      // Dynamically set correct icon based on system color scheme
+      // (CSS `content:` trick works in Chrome but not all browsers)
+      var icon = document.getElementById("network-icon");
+      var isDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      icon.src = isDark ? "/network_dark.png" : "/network_light.png";
+
+      // Listen for theme changes while page is open
+      if (window.matchMedia) {
+        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(e) {
+          icon.src = e.matches ? "/network_dark.png" : "/network_light.png";
+        });
+      }
+    </script>
   </body>
 </html>

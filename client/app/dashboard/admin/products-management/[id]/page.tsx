@@ -182,7 +182,9 @@ export default function ProductDetailsPage() {
   const handleDeleteProduct = async () => {
     if (!product) return;
 
-    if (deleteConfirmText.trim() !== product.title.trim()) {
+    const normalize = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
+
+    if (normalize(deleteConfirmText) !== normalize(product.title)) {
       toast.error(`Type "${product.title}" to confirm deletion`);
       return;
     }

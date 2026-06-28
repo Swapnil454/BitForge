@@ -73,7 +73,7 @@ export default function BuyerFooter() {
 
           {/* Company */}
           <div className="flex flex-col gap-2 md:gap-4">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-slate-500">
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-black dark:text-slate-500">
               Company
             </h3>
             <ul className="flex flex-col gap-1.5 md:gap-3">
@@ -94,7 +94,7 @@ export default function BuyerFooter() {
 
           {/* Legal */}
           <div className="flex flex-col gap-2 md:gap-4">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-slate-500">
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-black dark:text-slate-500">
               Legal
             </h3>
             <ul className="flex flex-col gap-1.5 md:gap-3">
@@ -110,7 +110,7 @@ export default function BuyerFooter() {
 
           {/* Resources */}
           <div className="flex flex-col gap-2 md:gap-4">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-slate-500">
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-black dark:text-slate-500">
               Resources
             </h3>
             <ul className="flex flex-col gap-1.5 md:gap-3">
@@ -133,7 +133,7 @@ export default function BuyerFooter() {
 
           {/* Socials */}
           <div className="flex flex-col gap-2 md:gap-4">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-slate-500">
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-black dark:text-slate-500">
               Socials
             </h3>
             <div className="flex items-center gap-3 md:gap-4 mt-1">
@@ -142,7 +142,7 @@ export default function BuyerFooter() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="BitForge on GitHub"
-                className="text-gray-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110"
+                className="text-black dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4 md:h-6 md:w-6 fill-current">
                   <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.39.6.11.82-.26.82-.58 0-.29-.01-1.05-.02-2.06-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.74.08-.74 1.2.09 1.84 1.23 1.84 1.23 1.07 1.84 2.8 1.31 3.49 1 .11-.78.42-1.31.76-1.61-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.05.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.65.24 2.87.12 3.17.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.63-5.49 5.93.43.37.81 1.1.81 2.22 0 1.6-.01 2.89-.01 3.28 0 .32.21.7.82.58C20.57 21.8 24 17.3 24 12 24 5.37 18.63 0 12 0Z" />
@@ -153,7 +153,7 @@ export default function BuyerFooter() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="BitForge on LinkedIn"
-                className="text-gray-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110"
+                className="text-black dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4 md:h-6 md:w-6 fill-current">
                   <path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM.25 8.25h4.5V24h-4.5V8.25zM8.75 8.25h4.31v2.14h.06c.6-1.14 2.06-2.34 4.23-2.34 4.52 0 5.36 2.98 5.36 6.86V24h-4.5v-7.14c0-1.7-.03-3.88-2.36-3.88-2.36 0-2.72 1.84-2.72 3.75V24h-4.5V8.25z" />
@@ -164,7 +164,7 @@ export default function BuyerFooter() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="BitForge on Instagram"
-                className="text-gray-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110"
+                className="text-black dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4 md:h-6 md:w-6 fill-current">
                   <path d="M12 2.16c3.2 0 3.584.012 4.85.07 1.17.054 1.97.24 2.43.4.61.24 1.04.53 1.49.98.45.45.74.88.98 1.49.16.46.35 1.26.4 2.43.06 1.27.07 1.65.07 4.85s-.01 3.584-.07 4.85c-.05 1.17-.24 1.97-.4 2.43-.24.61-.53 1.04-.98 1.49-.45.45-.88.74-1.49.98-.46.16-1.26.35-2.43.4-1.27.06-1.65.07-4.85.07s-3.584-.01-4.85-.07c-1.17-.05-1.97-.24-2.43-.4-.61-.24-1.04-.53-1.49-.98-.45-.45-.74-.88-.98-1.49-.16-.46-.35-1.26-.4-2.43C2.17 15.78 2.16 15.4 2.16 12s.01-3.584.07-4.85c.05-1.17.24-1.97.4-2.43.24-.61.53-1.04.98-1.49.45-.45.88-.74 1.49-.98.46-.16 1.26-.35 2.43-.4C8.42 2.17 8.8 2.16 12 2.16m0-2.16C8.74 0 8.332.012 7.052.07 5.77.129 4.78.322 3.96.65 3.11.99 2.39 1.46 1.68 2.17.97 2.88.5 3.6.16 4.45c-.33.82-.52 1.81-.58 3.09C-.01 8.82 0 9.23 0 12c0 2.77-.01 3.18.08 4.46.06 1.28.25 2.27.58 3.09.34.85.81 1.57 1.52 2.28.71.71 1.43 1.18 2.28 1.52.82.33 1.81.52 3.09.58C8.82 23.99 9.23 24 12 24s3.18-.01 4.46-.08c1.28-.06 2.27-.25 3.09-.58.85-.34 1.57-.81 2.28-1.52.71-.71 1.18-1.43 1.52-2.28.33-.82.52-1.81.58-3.09.07-1.28.08-1.69.08-4.46s-.01-3.18-.08-4.46c-.06-1.28-.25-2.27-.58-3.09-.34-.85-.81-1.57-1.52-2.28C21.63 1.46 20.91.99 20.06.65 19.24.32 18.25.13 16.97.07 15.69.01 15.26 0 12 0z" />
@@ -177,7 +177,7 @@ export default function BuyerFooter() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="BitForge on X"
-                className="text-gray-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110"
+                className="text-black dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-all duration-300 hover:scale-110"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4 md:h-6 md:w-6 fill-current">
                   <path d="M3 3h4.9l4.6 6.2L18.1 3H21l-7.1 8.5L21.6 21h-4.9l-5-6.7L5.3 21H2.4l7.5-9L3 3Zm3.2 1.6 10.8 14.8h1.8L8 4.6H6.2Z"/>
@@ -189,13 +189,13 @@ export default function BuyerFooter() {
 
         {/* ── Bottom bar ── */}
         <div className="border-t border-gray-100 dark:border-slate-800/60 pt-3 md:pt-5 flex flex-col sm:flex-row justify-between items-center gap-2 md:gap-3">
-          <p className="text-[10px] md:text-xs text-gray-400 dark:text-slate-500 text-center sm:text-left">
+          <p className="text-[10px] md:text-xs text-black dark:text-slate-500 text-center sm:text-left">
             © {new Date().getFullYear()} BitForge Technologies. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 md:gap-5">
-            <Link href="/legal/privacy-policy"        className="text-[10px] md:text-xs text-gray-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">Privacy</Link>
-            <Link href="/legal/terms-and-conditions"  className="text-[10px] md:text-xs text-gray-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">Terms</Link>
-            <Link href="/status"                      className="text-[10px] md:text-xs text-gray-400 dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">Status</Link>
+            <Link href="/legal/privacy-policy"        className="text-[10px] md:text-xs text-black dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">Privacy</Link>
+            <Link href="/legal/terms-and-conditions"  className="text-[10px] md:text-xs text-black dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">Terms</Link>
+            <Link href="/status"                      className="text-[10px] md:text-xs text-black dark:text-slate-500 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">Status</Link>
           </div>
         </div>
 

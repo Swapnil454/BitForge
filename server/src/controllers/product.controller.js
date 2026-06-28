@@ -963,26 +963,35 @@ export const confirmProductUpload = async (req, res) => {
       }
     }
 
+    // Generate valid slug to prevent MongoDB E11000 duplicate key error
+    const safeTitle = title ? String(title).trim() : "Untitled";
+    const baseSlug = generateSlug(safeTitle);
+    const finalSlug = await generateUniqueSlug(Product, baseSlug);
+    const finalCategory = category || "Software";
+    const safeDesc = description ? String(description).trim() : "";
+
     // Save to DB with "processing" status immediately
     const product = await Product.create({
       _id: productId, // Use the ID passed from frontend
       sellerId: req.user.id,
-      title: title.trim(),
-      description: description.trim(),
-      category: category || "Software",
-      price: Number(price),
+      title: safeTitle,
+      description: safeDesc,
+      category: finalCategory,
+      categorySlug: generateSlug(finalCategory),
+      slug: finalSlug,
+      price: price ? Number(price) : 0,
       discount: discount ? Number(discount) : 0,
       fileKey: r2Key,
       fileName: fileName,
-      fileSize: fileSize,
-      fileSizeBytes: fileSize,
+      fileSize: fileSize || 0,
+      fileSizeBytes: fileSize || 0,
       fileType: fileType,
       storageProvider: "r2",
       fileUrl: "",
       pageCount: Number(pageCount) || 1,
-      language: language,
-      format: format,
-      intendedAudience: intendedAudience,
+      language: language || "English",
+      format: format || "PDF",
+      intendedAudience: intendedAudience || "All Levels",
       status: "processing", // Crucial: Will be updated by background process
       thumbnailUrl: thumbnailUrl,
       thumbnailKey: thumbnailKey,

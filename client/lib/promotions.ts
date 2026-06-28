@@ -56,6 +56,8 @@ export interface PromotionRecord {
   title: string;
   subtitle: string;
   bannerImage?: string | null;
+  desktopBannerImage?: string | null;
+  mobileBannerImage?: string | null;
   adImages?: {
     url: string;
     key: string;
@@ -116,6 +118,8 @@ export interface ActivePromotionBanner {
   title: string;
   subtitle: string;
   bannerImage?: string | null;
+  desktopBannerImage?: string | null;
+  mobileBannerImage?: string | null;
   adImages?: {
     url: string;
     key: string;

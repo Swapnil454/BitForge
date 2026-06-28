@@ -6,6 +6,7 @@ import { CardBannerContent } from './CardBannerContent';
 import { CardCampaignDetails } from './CardCampaignDetails';
 import { CardBannerStyle } from './CardBannerStyle';
 import { CardDesktopImages } from './CardDesktopImages';
+import { CardDesktopBanner } from './CardDesktopBanner';
 import { CardMobileBanner } from './CardMobileBanner';
 import { LivePreviewPanel } from './LivePreviewPanel';
 import { StickyActionBar } from './StickyActionBar';
@@ -173,8 +174,22 @@ export function FormOrchestrator() {
       if (store.layoutType !== 'fullImage' && store.mobileBanner.url) {
         if (store.mobileBanner.file) {
           formData.append('bannerCard', store.mobileBanner.file);
-        } else if (!store.mobileBanner.url.startsWith('blob:')) {
+        } else if (store.mobileBanner.url && !store.mobileBanner.url.startsWith('blob:')) {
           formData.append('existingBannerImage', store.mobileBanner.url);
+        }
+      }
+
+      if (store.layoutType === 'fullImage') {
+        if (store.desktopBanner.file) {
+          formData.append('desktopBannerImage', store.desktopBanner.file);
+        } else if (store.desktopBanner.url && !store.desktopBanner.url.startsWith('blob:')) {
+          formData.append('existingDesktopBanner', store.desktopBanner.url);
+        }
+
+        if (store.mobileBanner.file) {
+          formData.append('mobileBannerImage', store.mobileBanner.file);
+        } else if (store.mobileBanner.url && !store.mobileBanner.url.startsWith('blob:')) {
+          formData.append('existingMobileBanner', store.mobileBanner.url);
         }
       }
 
@@ -250,7 +265,13 @@ export function FormOrchestrator() {
             {store.layoutType === 'modern' && <CardBannerContent locked={isLocked} />}
             <CardCampaignDetails locked={isLocked} />
             {store.layoutType === 'modern' && <CardBannerStyle locked={isLocked} />}
-            <CardDesktopImages locked={isLocked} />
+            
+            {store.layoutType === 'fullImage' ? (
+              <CardDesktopBanner locked={isLocked} />
+            ) : (
+              <CardDesktopImages locked={isLocked} />
+            )}
+
             <CardMobileBanner locked={isLocked} />
           </div>
         </div>

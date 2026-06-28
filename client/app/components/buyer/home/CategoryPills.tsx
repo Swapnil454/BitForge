@@ -21,30 +21,22 @@ export default function CategoryPills({ products = [] }: { products?: ProductTyp
 
   const getCount = (id: string) => products.filter((p) => p.category === id).length;
 
-  const activeClasses = "flex-shrink-0 flex items-center gap-1 sm:gap-1.5 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full sm:rounded-2xl transition-all duration-300 snap-start group cursor-pointer shadow-md hover:shadow-lg shadow-indigo-500/20 border border-transparent";
-  const getInactiveClasses = (hoverClass: string) => `flex-shrink-0 flex items-center gap-1 sm:gap-1.5 bg-white dark:bg-[#0D1B2A] border border-gray-200 dark:border-slate-800 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full sm:rounded-2xl transition-all duration-200 snap-start group cursor-pointer ${hoverClass} dark:hover:text-white`;
+  const activeClasses = "flex-shrink-0 flex items-center bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 px-3 py-1 sm:px-3 sm:py-1.5 rounded-full transition-all duration-300 snap-start cursor-pointer shadow-md shadow-indigo-500/20 border border-transparent";
+  const getInactiveClasses = (hoverClass: string) => `flex-shrink-0 flex items-center bg-white dark:bg-[#0D1B2A] border border-gray-200 dark:border-slate-800 px-3 py-1 sm:px-3 sm:py-1.5 rounded-full transition-all duration-200 snap-start cursor-pointer ${hoverClass} dark:hover:text-white`;
 
   return (
-    <div className="relative z-10 w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6">
-      <div className="py-1 sm:py-1.5">
-        <div className="flex overflow-x-auto gap-2.5 pb-1 scrollbar-hide snap-x">
+    <div className="relative z-10 w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 mt-1 sm:mt-2">
+      <div className="py-1 sm:py-1.5 flex justify-start">
+        <div className="flex overflow-x-auto gap-2 p-1 sm:p-1.5 bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md rounded-full shadow-sm border border-gray-200/50 dark:border-gray-800/50 scrollbar-hide snap-x w-fit max-w-full">
           <Link
             href="/marketplace?collection=All"
             className={isAllActive ? activeClasses : getInactiveClasses("hover:border-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20")}
           >
-            <div className="flex flex-col items-start leading-tight">
-              <span className={`text-[11px] sm:text-xs font-semibold whitespace-nowrap ${isAllActive ? "text-white drop-shadow-sm font-bold" : "text-gray-900 dark:text-white"}`}>
-                Explore All
-              </span>
-              {products.length > 0 && (
-                <span className={`hidden sm:inline text-[8px] sm:text-[9px] font-medium ${isAllActive ? "text-white/80" : "text-gray-400 dark:text-slate-500"}`}>
-                  {products.length} {products.length === 1 ? "product" : "products"}
-                </span>
-              )}
-            </div>
+            <span className={`text-[11px] sm:text-xs font-semibold whitespace-nowrap ${isAllActive ? "text-white drop-shadow-sm" : "text-gray-900 dark:text-white"}`}>
+              Explore All
+            </span>
           </Link>
           {categories.map((cat) => {
-            const count = getCount(cat.id);
             const isActive = currentCategory === cat.id;
             return (
               <Link
@@ -52,16 +44,9 @@ export default function CategoryPills({ products = [] }: { products?: ProductTyp
                 href={`/marketplace?category=${encodeURIComponent(cat.id)}`}
                 className={isActive ? activeClasses : getInactiveClasses(cat.hover)}
               >
-                <div className="flex flex-col items-start leading-tight">
-                  <span className={`text-[11px] sm:text-xs font-semibold whitespace-nowrap ${isActive ? "text-white drop-shadow-sm font-bold" : "text-gray-900 dark:text-white"}`}>
-                    {cat.label}
-                  </span>
-                  {count > 0 && (
-                    <span className={`hidden sm:inline text-[8px] sm:text-[9px] font-medium ${isActive ? "text-white/80" : "text-gray-400 dark:text-slate-500"}`}>
-                      {count} {count === 1 ? "product" : "products"}
-                    </span>
-                  )}
-                </div>
+                <span className={`text-[11px] sm:text-xs font-semibold whitespace-nowrap ${isActive ? "text-white drop-shadow-sm" : "text-gray-900 dark:text-white"}`}>
+                  {cat.label}
+                </span>
               </Link>
             );
           })}

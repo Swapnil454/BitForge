@@ -120,6 +120,9 @@ export default function AppProviders({ children }: AppProvidersProps) {
     pathname === "/status";
 
   const shouldForceDark = isAlwaysDarkRoute || (isConditionalDarkRoute && !isAuthenticated);
+  
+  // If user is unauthenticated and we aren't forcing dark, we strictly force light.
+  const forcedThemeValue = shouldForceDark ? "dark" : (!isAuthenticated ? "light" : undefined);
 
   return (
     <ThemeProvider 
@@ -127,7 +130,7 @@ export default function AppProviders({ children }: AppProvidersProps) {
       defaultTheme="system" 
       enableSystem={true}
       disableTransitionOnChange
-      forcedTheme={shouldForceDark ? "dark" : undefined}
+      forcedTheme={forcedThemeValue}
     >
       <QueryProvider>
         {children}

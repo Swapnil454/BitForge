@@ -127,7 +127,6 @@ export default function AddBankAccountPage() {
                     value={formData.accountHolderName}
                     onChange={handleInputChange}
                     placeholder="e.g. John Doe"
-                    required
                     className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-11"
                   />
                   <ShieldCheck className="w-5 h-5 text-slate-400 dark:text-zinc-500 absolute left-3.5 top-3" />
@@ -142,7 +141,6 @@ export default function AddBankAccountPage() {
                     value={formData.accountNumber}
                     onChange={handleInputChange}
                     placeholder="Enter account number"
-                    required
                     type={showAccountNumberInput ? "text" : "password"}
                     className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-11 pr-12 font-mono tracking-widest"
                   />
@@ -206,7 +204,6 @@ export default function AddBankAccountPage() {
                     value={formData.ifscCode}
                     onChange={handleInputChange}
                     placeholder="e.g. SBIN0001234"
-                    required
                     className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white uppercase placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-11"
                   />
                   <Building2 className="w-5 h-5 text-slate-400 dark:text-zinc-500 absolute left-3.5 top-3" />

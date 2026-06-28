@@ -23,6 +23,7 @@ import PromoGridRow from "@/app/components/buyer/home/PromoGridRow";
 import ProductCardSkeleton from "@/app/components/buyer/product/ProductCardSkeleton";
 import ProductCard, { ProductType } from "@/app/components/buyer/product/ProductCard";
 import { marketplaceSections } from "@/app/components/buyer/data/marketplaceSections";
+import MarketplaceErrorState from "@/app/components/buyer/home/MarketplaceErrorState";
 
 // ─── Skeleton grid used in loading states ────────────────────────────────────
 function GridSkeleton({ count = 8 }: { count?: number }) {
@@ -189,24 +190,20 @@ function HomeView({
     if (type === "Category" && categoryFilter) {
       filtered = filtered.filter((p) => p.category === categoryFilter);
     } else if (type === "Trending") {
-      filtered = [...filtered].sort((a, b) => ((b.buyers as number) || 0) - ((a.buyers as number) || 0));
+      filtered = [...filtered].sort((a, b) => {
+        const diff = ((b.buyers as number) || 0) - ((a.buyers as number) || 0);
+        return diff !== 0 ? diff : String(a._id).localeCompare(String(b._id));
+      });
     } else if (type === "Recommended") {
-      filtered = [...filtered].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      filtered = [...filtered].sort((a, b) => {
+        const diff = (b.rating || 0) - (a.rating || 0);
+        return diff !== 0 ? diff : String(b._id).localeCompare(String(a._id));
+      });
     } else if (type === "NewArrivals") {
       filtered = [...filtered].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
     }
 
-    let result = limit ? filtered.slice(0, limit) : filtered;
-    // Pad to limit by repeating
-    if (limit && result.length > 0 && result.length < limit) {
-      const original = [...result];
-      let i = 0;
-      while (result.length < limit) {
-        result.push({ ...original[i % original.length], _id: `${original[i % original.length]._id}-pad-${result.length}` } as any);
-        i++;
-      }
-    }
-    return result;
+    return limit ? filtered.slice(0, limit) : filtered;
   };
 
   // seeAll URL per section type
@@ -249,7 +246,7 @@ function HomeView({
       })}
 
       {/* "See All" CTA */}
-      <div className="w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 mb-8 flex flex-col items-center gap-2">
+      <div className="w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 -mt-4 sm:-mt-6 mb-2 flex flex-col items-center gap-1.5">
         <p className="text-sm text-gray-400 dark:text-slate-500">Showing a curated selection from our catalogue</p>
         <button
           onClick={() => router.push("/marketplace?collection=All")}
@@ -288,6 +285,9 @@ export default function MarketplaceClient({
   // Hoisted state for home products so CategoryPills can use it everywhere
   const [homeProducts, setHomeProducts] = useState<ProductType[]>(initialHomeProducts || []);
   const [homeLoading, setHomeLoading] = useState(!initialHomeProducts);
+  const [fetchError, setFetchError] = useState(false);
+  const [lastAttemptTime, setLastAttemptTime] = useState<number | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     if (initialHomeProducts) return;
@@ -295,10 +295,10 @@ export default function MarketplaceClient({
     const CACHE_KEY = "home_products_cache";
     const CACHE_TTL = 3 * 60 * 1000; // 3 minutes
 
-    // Load from cache instantly if available
+    // Load from cache instantly if available (only on initial load)
     try {
       const cached = sessionStorage.getItem(CACHE_KEY);
-      if (cached) {
+      if (cached && retryCount === 0) {
         const { data, ts } = JSON.parse(cached);
         if (Date.now() - ts < CACHE_TTL && data?.length > 0) {
           setHomeProducts(data);
@@ -308,17 +308,47 @@ export default function MarketplaceClient({
       }
     } catch (_) {}
 
+    setHomeLoading(true);
+    setFetchError(false);
+
+    const abortController = new AbortController();
+    
+    const timeoutId = setTimeout(() => {
+      abortController.abort();
+      setHomeLoading(false);
+      setFetchError(true);
+    }, 90000);
+
     import("@/lib/api").then(({ marketplaceAPI }) => {
       marketplaceAPI.getAllProducts({ limit: 40 })
         .then((data) => {
+          if (abortController.signal.aborted) return;
+          clearTimeout(timeoutId);
           const products = data.products || [];
           setHomeProducts(products);
+          setHomeLoading(false);
+          setFetchError(false);
           try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data: products, ts: Date.now() })); } catch (_) {}
         })
-        .catch(() => {})
-        .finally(() => setHomeLoading(false));
+        .catch(() => {
+          // If the fetch fails early (e.g. network error in 3s), 
+          // we do NOT show the error state immediately.
+          // We let the 90s timeout handle showing the error state.
+          if (abortController.signal.aborted) return;
+          // Do not clearTimeout(timeoutId) or set state here.
+        });
     });
-  }, [initialHomeProducts]);
+
+    return () => {
+      clearTimeout(timeoutId);
+      abortController.abort();
+    };
+  }, [initialHomeProducts, retryCount]);
+
+  const handleRetry = () => {
+    setLastAttemptTime(Date.now());
+    setRetryCount((c) => c + 1);
+  };
 
   const { isAuthenticated, requireAuth } = useAuth();
   const router = useRouter();
@@ -481,7 +511,7 @@ export default function MarketplaceClient({
             isAuthenticated={isAuthenticated}
           />
         )}
-        {!searchQuery && (
+        {!searchQuery && !fetchError && (
           <div className="mt-0 mb-1 sm:mb-2 relative z-20">
             <CategoryPills products={homeProducts} />
           </div>
@@ -510,6 +540,10 @@ export default function MarketplaceClient({
                 onBuyNow={handleBuyNow}
               />
             </div>
+        ) : fetchError ? (
+          <div className="relative z-10">
+            <MarketplaceErrorState onRetry={handleRetry} lastAttemptTime={lastAttemptTime} isAuthenticated={isAuthenticated} />
+          </div>
         ) : (
           /* Home view: hero + sections + rows */
           <div className="relative z-10">

@@ -82,6 +82,9 @@ import {
   verifyPromotionPaymentAdmin,
   rejectPromotionPaymentAdmin,
   updatePromotionStyleAdmin,
+  updatePromotionDatesAdmin,
+  deletePromotionAdmin,
+  updateLivePromotionAdmin
 } from "../controllers/promotion.controller.js";
 
 import authMiddleware from "../middleware/auth.js";
@@ -196,6 +199,17 @@ router.patch("/promotions/:id/pause", pausePromotionAdmin);
 router.patch("/promotions/:id/resume", resumePromotionAdmin);
 router.patch("/promotions/:id/priority", updatePromotionPriorityAdmin);
 router.patch("/promotions/:id/style", updatePromotionStyleAdmin);
+router.patch("/promotions/:id/dates", updatePromotionDatesAdmin);
+router.patch(
+  "/promotions/:id/live-update",
+  upload.fields([
+    { name: "bannerCardImage", maxCount: 1 },
+    { name: "desktopBannerImage", maxCount: 1 },
+    { name: "mobileBannerImage", maxCount: 1 },
+  ]),
+  updateLivePromotionAdmin
+);
+router.delete("/promotions/:id", deletePromotionAdmin);
 
 // Ad settings
 router.get("/ad-settings", getAdSettingsAdmin);
