@@ -58,14 +58,16 @@ try {
   console.error("Firebase Messaging SW init failed:", error);
 }
 
-const CACHE_NAME = "bitforge-pwa-v3";
+const CACHE_NAME = "bitforge-pwa-v5";
 
 const STATIC_ASSETS = [
   "/",
   "/offline.html",
   "/manifest.json",
   "/Android_Icon/mipmap-xxxhdpi/ic_launcher.png",
-  "/Android_Icon/bitforge_fullname_icon_512.png"
+  "/Android_Icon/bitforge_fullname_icon_512.png",
+  "/network_light.png",
+  "/network_dark.png"
 ];
 
 self.addEventListener("install", (event) => {
