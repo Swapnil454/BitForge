@@ -30,6 +30,8 @@ export interface Banner {
   productDiscount?: number;
   promotionGoal?: string;
   bannerImage?: string;
+  desktopBannerImage?: string;
+  mobileBannerImage?: string;
   adImages?: {
     url: string;
     key: string;
@@ -172,6 +174,8 @@ export default function HeroAds({
             link: promotion.targetLink || `/product/${promotion.product?.slug || promotion.productId}`,
             gradientClass: gradients[index % gradients.length],
             bannerImage: promotion.bannerImage || undefined,
+            desktopBannerImage: promotion.desktopBannerImage || undefined,
+            mobileBannerImage: promotion.mobileBannerImage || undefined,
             heroBgColor: promotion.heroBgColor,
             heroTextColor: promotion.heroTextColor,
             heroLayout: promotion.heroLayout,
@@ -322,13 +326,15 @@ export default function HeroAds({
   const renderMobileBanner = (banner: Banner, keySuffix: string | number) => {
     if (!banner) return <div key={`empty-${keySuffix}`} className="w-full flex-shrink-0 px-4" />;
     
-    const mobileImgUrl = banner.bannerImage
-      ? banner.bannerImage
-      : banner.adImages?.[0]?.url
-        ? (banner.adImages[0].url.includes("cloudinary.com")
-            ? banner.adImages[0].url.replace("/upload/", "/upload/f_auto,q_auto,w_800/")
-            : banner.adImages[0].url)
-        : null;
+    const mobileImgUrl = banner.mobileBannerImage
+      ? banner.mobileBannerImage
+      : banner.bannerImage
+        ? banner.bannerImage
+        : banner.adImages?.[0]?.url
+          ? (banner.adImages[0].url.includes("cloudinary.com")
+              ? banner.adImages[0].url.replace("/upload/", "/upload/f_auto,q_auto,w_800/")
+              : banner.adImages[0].url)
+          : null;
 
     if (!mobileImgUrl) return (
       <div key={`noimg-${keySuffix}`} className="w-full flex-shrink-0 px-4" />
@@ -391,8 +397,10 @@ export default function HeroAds({
   const layout = currentBanner.heroLayout || "floating";
   const adImages = currentBanner.adImages ? [...currentBanner.adImages].sort((a, b) => a.position - b.position) : [];
 
+  const isDefaultBanners = resolvedBanners === defaultBanners;
+
   return (
-    <div className="relative z-40 md:z-0 w-full mb-0 sm:mb-2 pt-2 md:pt-4">
+    <div className={`relative z-40 md:z-0 w-full mb-0 sm:mb-2 pt-2 ${isDefaultBanners ? "md:pt-4" : "md:pt-0"}`}>
       {/* Mobile Search Bar inside Hero (blends with hero background) */}
       <div className="md:hidden px-4 pb-3 w-full relative z-[100]" ref={searchContainerRef}>
         <div className="flex items-center gap-3 w-full px-4 py-2.5 bg-white dark:bg-slate-800/90 border border-gray-200/50 dark:border-white/10 rounded-2xl shadow-sm transition-all focus-within:ring-2 focus-within:ring-indigo-500/20">
@@ -442,12 +450,12 @@ export default function HeroAds({
         />
       )}
       <div 
-        className={`hidden md:flex relative w-[96%] mx-auto rounded-[24px] overflow-hidden transition-all duration-700 items-center group ${
+        className={`hidden md:flex relative ${isDefaultBanners ? "w-[96%] mx-auto rounded-[24px] overflow-hidden" : "w-full"} transition-all duration-700 items-center group ${
           !hasModernStyling 
-            ? `bg-gradient-to-r ${currentBanner.gradientClass} h-[180px] sm:h-[220px] md:h-[260px]` 
+            ? `bg-gradient-to-r ${currentBanner.gradientClass} h-[180px] sm:h-[220px] md:h-[260px] overflow-hidden` 
             : layout === "fullImage"
             ? "h-[180px] sm:h-[220px] md:h-[260px]"
-            : "h-auto md:h-[260px]"
+            : "h-auto md:h-[260px] overflow-hidden"
         }`}
         style={bgColor ? { backgroundColor: bgColor } : {}}
       >
@@ -475,19 +483,23 @@ export default function HeroAds({
         {/* Desktop Content Area: hidden on mobile, shown from md+ */}
         {layout === "fullImage" ? (
           <div 
-            className="hidden md:flex absolute top-0 left-0 w-full h-full cursor-pointer items-start justify-center motion-safe:animate-in motion-safe:fade-in duration-700 pointer-events-auto"
+            className={`hidden md:flex absolute top-0 left-0 w-full ${isDefaultBanners ? 'h-full' : ''} cursor-pointer items-start justify-center motion-safe:animate-in motion-safe:fade-in duration-700 pointer-events-auto`}
             onClick={handleBannerClick}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => e.key === "Enter" && handleBannerClick()}
             aria-label={`View ${currentBanner.title}`}
-            style={{ zIndex: 0 }}
+            style={isDefaultBanners ? { zIndex: 0 } : {
+              zIndex: 0,
+              WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
+              maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)'
+            }}
           >
-            {(adImages.length > 0 || currentBanner.bannerImage) && (
+            {(currentBanner.desktopBannerImage || currentBanner.bannerImage || adImages.length > 0) && (
               <img 
-                src={adImages.length > 0 ? (adImages[0].url.includes("cloudinary.com") ? adImages[0].url.replace("/upload/", "/upload/f_auto,q_100/") : adImages[0].url) : currentBanner.bannerImage} 
+                src={currentBanner.desktopBannerImage || currentBanner.bannerImage || (adImages.length > 0 ? (adImages[0].url.includes("cloudinary.com") ? adImages[0].url.replace("/upload/", "/upload/f_auto,q_100/") : adImages[0].url) : "")} 
                 alt={currentBanner.title || "Promotion Banner"} 
-                className="w-full h-full object-fill pointer-events-none"
+                className={`w-full ${isDefaultBanners ? 'h-full object-fill' : 'h-auto object-top'} pointer-events-none`}
               />
             )}
           </div>
@@ -615,7 +627,11 @@ export default function HeroAds({
             {/* Right Image Area (Image 1) — centered */}
             {hasModernStyling && layout !== "minimal" && (
               <div className="hidden md:flex relative z-10 flex-1 h-full items-center justify-start px-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-8 duration-700">
-                {adImages.length > 0 ? (
+                {currentBanner.bannerImage ? (
+                  <div className="w-auto flex items-center justify-center pointer-events-none shrink-0">
+                    <img src={currentBanner.bannerImage} className="w-full h-auto object-contain drop-shadow-2xl rounded-2xl" style={{ maxHeight: "200px" }} alt="" />
+                  </div>
+                ) : adImages.length > 0 ? (
                   <div
                     className="w-auto flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300 shrink-0"
                     onClick={handleBannerClick}
@@ -626,10 +642,6 @@ export default function HeroAds({
                       className="w-full h-auto object-contain drop-shadow-xl rounded-lg"
                       style={{ maxHeight: "200px" }}
                     />
-                  </div>
-                ) : currentBanner.bannerImage ? (
-                  <div className="w-auto flex items-center justify-center pointer-events-none shrink-0">
-                    <img src={currentBanner.bannerImage} className="w-full h-auto object-contain drop-shadow-2xl rounded-2xl" style={{ maxHeight: "200px" }} alt="" />
                   </div>
                 ) : null}
               </div>

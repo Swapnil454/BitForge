@@ -190,24 +190,20 @@ function HomeView({
     if (type === "Category" && categoryFilter) {
       filtered = filtered.filter((p) => p.category === categoryFilter);
     } else if (type === "Trending") {
-      filtered = [...filtered].sort((a, b) => ((b.buyers as number) || 0) - ((a.buyers as number) || 0));
+      filtered = [...filtered].sort((a, b) => {
+        const diff = ((b.buyers as number) || 0) - ((a.buyers as number) || 0);
+        return diff !== 0 ? diff : String(a._id).localeCompare(String(b._id));
+      });
     } else if (type === "Recommended") {
-      filtered = [...filtered].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      filtered = [...filtered].sort((a, b) => {
+        const diff = (b.rating || 0) - (a.rating || 0);
+        return diff !== 0 ? diff : String(b._id).localeCompare(String(a._id));
+      });
     } else if (type === "NewArrivals") {
       filtered = [...filtered].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
     }
 
-    let result = limit ? filtered.slice(0, limit) : filtered;
-    // Pad to limit by repeating
-    if (limit && result.length > 0 && result.length < limit) {
-      const original = [...result];
-      let i = 0;
-      while (result.length < limit) {
-        result.push({ ...original[i % original.length], _id: `${original[i % original.length]._id}-pad-${result.length}` } as any);
-        i++;
-      }
-    }
-    return result;
+    return limit ? filtered.slice(0, limit) : filtered;
   };
 
   // seeAll URL per section type
@@ -250,7 +246,7 @@ function HomeView({
       })}
 
       {/* "See All" CTA */}
-      <div className="w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 mb-8 flex flex-col items-center gap-2">
+      <div className="w-full max-w-[1800px] mx-auto px-3 md:px-5 lg:px-6 -mt-4 sm:-mt-6 mb-2 flex flex-col items-center gap-1.5">
         <p className="text-sm text-gray-400 dark:text-slate-500">Showing a curated selection from our catalogue</p>
         <button
           onClick={() => router.push("/marketplace?collection=All")}

@@ -55,6 +55,7 @@ export interface PromotionFormState {
   // Assets
   floatingImages: [AssetSlot, AssetSlot, AssetSlot];
   mobileBanner: MobileBannerSlot;
+  desktopBanner: MobileBannerSlot;
 
   // Meta
   draftSaveState: 'idle' | 'saving' | 'saved' | 'error';
@@ -80,6 +81,7 @@ export interface PromotionFormActions {
   reorderFloatingImages: (sourceIndex: number, destIndex: number) => void;
   
   updateMobileBanner: (slot: Partial<MobileBannerSlot>) => void;
+  updateDesktopBanner: (slot: Partial<MobileBannerSlot>) => void;
   
   setDraftState: (state: PromotionFormState['draftSaveState'], timestamp?: number) => void;
   
@@ -116,6 +118,7 @@ const initialState: PromotionFormState = {
 
   floatingImages: [{ ...initialAssetSlot }, { ...initialAssetSlot }, { ...initialAssetSlot }],
   mobileBanner: { ...initialAssetSlot },
+  desktopBanner: { ...initialAssetSlot },
 
   draftSaveState: 'idle',
   lastSavedAt: null,
@@ -155,6 +158,10 @@ export const usePromotionFormStore = create<PromotionFormState & PromotionFormAc
     mobileBanner: { ...state.mobileBanner, ...slot }
   }), false),
 
+  updateDesktopBanner: (slot) => set((state) => ({
+    desktopBanner: { ...state.desktopBanner, ...slot }
+  }), false),
+
   setDraftState: (draftSaveState, timestamp) => set((state) => ({
     draftSaveState,
     lastSavedAt: timestamp !== undefined ? timestamp : state.lastSavedAt
@@ -164,10 +171,10 @@ export const usePromotionFormStore = create<PromotionFormState & PromotionFormAc
     let completed = 0;
     
     if (state.layoutType === 'fullImage') {
-      let total = 4; // Product, Duration, DesktopImage(1), MobileImage
+      let total = 4; // Product, Duration, DesktopBanner, MobileBanner
       if (state.selectedProductId) completed++;
       if (state.requestedDuration > 0) completed++;
-      if (state.floatingImages[0].uploadState === 'success' || state.floatingImages[0].url) completed++;
+      if (state.desktopBanner.uploadState === 'success' || state.desktopBanner.url) completed++;
       if (state.mobileBanner.uploadState === 'success' || state.mobileBanner.url) completed++;
       return { formCompletion: Math.round((completed / total) * 100) };
     }
@@ -190,6 +197,7 @@ export const usePromotionFormStore = create<PromotionFormState & PromotionFormAc
     colorToken: draft.colorToken || state.colorToken,
     floatingImages: draft.floatingImages?.length === 3 ? draft.floatingImages : state.floatingImages,
     mobileBanner: draft.mobileBanner || state.mobileBanner,
+    desktopBanner: draft.desktopBanner || state.desktopBanner,
   }), false),
 
   resetForm: () => set({ ...initialState }, false),

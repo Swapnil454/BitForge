@@ -73,6 +73,18 @@ const promotionRequestSchema = new mongoose.Schema(
     bannerImageKey: {
       type: String,
     },
+    desktopBannerImage: {
+      type: String,
+    },
+    desktopBannerImageKey: {
+      type: String,
+    },
+    mobileBannerImage: {
+      type: String,
+    },
+    mobileBannerImageKey: {
+      type: String,
+    },
     heroBgColor: {
       type: String,
       default: "#2563EB",

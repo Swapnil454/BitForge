@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { showSuccess, showError } from "@/lib/toast";
 import api from "@/lib/api";
 import PageHeader from "@/app/dashboard/buyer/transactions/components/PageHeader";
-import { Landmark, ShieldCheck, CreditCard, Building2, ChevronDown, Eye, EyeOff } from "lucide-react";
+import { Landmark, ShieldCheck, CreditCard, Building2, ChevronDown, Eye, EyeOff, QrCode, Smartphone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminAddBankAccountPage() {
@@ -28,6 +28,8 @@ export default function AdminAddBankAccountPage() {
     branchName: "",
     accountType: "current" as "savings" | "current",
     isPrimary: false,
+    upiId: "",
+    qrCodeImage: null as File | null,
   });
 
   useEffect(() => {
@@ -67,7 +69,19 @@ export default function AdminAddBankAccountPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await api.post("/bank/add", formData);
+      const data = new FormData();
+      data.append("accountHolderName", formData.accountHolderName);
+      data.append("accountNumber", formData.accountNumber);
+      data.append("ifscCode", formData.ifscCode);
+      data.append("bankName", formData.bankName);
+      data.append("branchName", formData.branchName);
+      data.append("accountType", formData.accountType);
+      if (formData.upiId) data.append("upiId", formData.upiId);
+      if (formData.qrCodeImage) data.append("qrCodeImage", formData.qrCodeImage);
+
+      await api.post("/bank/add", data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       showSuccess("Bank account added");
       router.push("/dashboard/admin/bank-account");
     } catch (err: any) {
@@ -81,6 +95,15 @@ export default function AdminAddBankAccountPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
+
+    if (type === "file") {
+      const target = e.target as HTMLInputElement;
+      setFormData((prev) => ({
+        ...prev,
+        [name]: target.files ? target.files[0] : null,
+      }));
+      return;
+    }
 
     setFormData((prev) => ({
       ...prev,
@@ -113,7 +136,7 @@ export default function AdminAddBankAccountPage() {
               Bank Details
             </h2>
             <p className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-zinc-400 max-w-sm">
-              Please ensure all details match your official bank records to avoid payout delays.
+              You can provide either traditional bank details or just a UPI/QR Code below.
             </p>
           </div>
 
@@ -127,7 +150,6 @@ export default function AdminAddBankAccountPage() {
                     value={formData.accountHolderName}
                     onChange={handleInputChange}
                     placeholder="e.g. John Doe"
-                    required
                     className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-9 sm:pl-11"
                   />
                   <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 dark:text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -142,7 +164,6 @@ export default function AdminAddBankAccountPage() {
                     value={formData.accountNumber}
                     onChange={handleInputChange}
                     placeholder="Enter account number"
-                    required
                     type={showAccountNumberInput ? "text" : "password"}
                     className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-9 sm:pl-11 pr-9 sm:pr-12 font-mono tracking-widest"
                   />
@@ -206,7 +227,6 @@ export default function AdminAddBankAccountPage() {
                     value={formData.ifscCode}
                     onChange={handleInputChange}
                     placeholder="e.g. SBIN0001234"
-                    required
                     className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white uppercase placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all pl-9 sm:pl-11"
                   />
                   <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 dark:text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -236,6 +256,45 @@ export default function AdminAddBankAccountPage() {
                   placeholder="Auto-filled via IFSC"
                   className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all"
                 />
+              </div>
+              
+              <div className="sm:col-span-2 pt-4 border-t border-slate-200 dark:border-[#27272a]">
+                <h3 className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-white mb-4">
+                  <Smartphone className="w-4 h-4 text-cyan-500" />
+                  UPI & QR Code (Optional)
+                </h3>
+                <div className="grid sm:grid-cols-2 gap-3 sm:gap-6">
+                  <div className="space-y-1">
+                    <label className="text-[9px] sm:text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">UPI ID</label>
+                    <input
+                      name="upiId"
+                      value={formData.upiId}
+                      onChange={handleInputChange}
+                      placeholder="e.g. yourupi@bank"
+                      className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] sm:text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex items-center justify-between">
+                      <span>QR Code Image</span>
+                      {formData.qrCodeImage && <span className="text-emerald-500 lowercase tracking-normal">Image selected</span>}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="file"
+                        name="qrCodeImage"
+                        accept="image/png, image/jpeg, image/jpg"
+                        onChange={handleInputChange}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      <div className="w-full bg-slate-50 dark:bg-[#18181b] border border-slate-200 dark:border-[#27272a] rounded-xl px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-slate-500 dark:text-zinc-400 flex items-center gap-3 transition-all group hover:border-cyan-500/50">
+                        <QrCode className="w-4 h-4 text-slate-400 group-hover:text-cyan-500 transition-colors" />
+                        <span className="truncate">{formData.qrCodeImage ? formData.qrCodeImage.name : "Upload QR Code (JPG, PNG)"}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
             </form>

@@ -1,5 +1,3 @@
-
-
 import express from "express";
 import auth from "../middleware/auth.js";
 import requireRole from "../middleware/requireRole.js";
@@ -24,7 +22,9 @@ import {
   verifyPromotionPayment,
   uploadPromotionPaymentProof,
   deleteSellerPromotion,
+  updateLivePromotionSeller,
 } from "../controllers/promotion.controller.js";
+import { getPlatformBankAccount } from "../controllers/bank.controller.js";
 
 const router = express.Router();
 
@@ -38,11 +38,14 @@ router.get("/sales", getAllSales);
 router.get("/growth-analytics", getGrowthAnalytics);
 router.post("/withdraw", requestWithdrawal);
 router.delete("/withdraw/:payoutId", cancelPayoutRequest);
+
 router.post(
   "/promotions",
   upload.fields([
     { name: "adImages", maxCount: 3 },
     { name: "bannerCard", maxCount: 1 },
+    { name: "desktopBannerImage", maxCount: 1 },
+    { name: "mobileBannerImage", maxCount: 1 },
   ]),
   createPromotionRequest
 );
@@ -57,6 +60,17 @@ router.post(
   upload.single("paymentProof"),
   uploadPromotionPaymentProof
 );
+router.patch(
+  "/promotions/:id/live-update",
+  upload.fields([
+    { name: "bannerCardImage", maxCount: 1 },
+    { name: "desktopBannerImage", maxCount: 1 },
+    { name: "mobileBannerImage", maxCount: 1 },
+  ]),
+  updateLivePromotionSeller
+);
+
+router.get("/platform-bank-account", getPlatformBankAccount);
 
 router.get("/reviews", getSellerReviews);
 

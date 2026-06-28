@@ -3,6 +3,7 @@
 import express from "express";
 import auth from "../middleware/auth.js";
 import requireRole from "../middleware/requireRole.js";
+import upload from "../middleware/upload.js";
 import { 
   addBankAccount, 
   getBankAccounts, 
@@ -19,6 +20,7 @@ router.post(
   "/add",
   auth,
   requireRole(["seller", "admin"]),
+  upload.single("qrCodeImage"),
   addBankAccount
 );
 

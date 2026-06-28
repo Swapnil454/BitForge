@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Script from "next/script";
 import {
   CreditCard,
   Megaphone,
@@ -13,13 +14,16 @@ import {
   ExternalLink,
   Download,
   Lock,
-  XCircle,
   AlertCircle,
   FileText,
-  Eye
+  Eye,
+  Building2,
+  Smartphone,
+  QrCode,
+  XCircle
 } from "lucide-react";
 import PageHeader from "../../../buyer/transactions/components/PageHeader";
-import { promotionAPI } from "@/lib/api";
+import api, { promotionAPI } from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
 import {
   formatPromotionCurrency,
@@ -67,9 +71,33 @@ export default function SellerPromotionDetailPage() {
   const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
   const [transactionId, setTransactionId] = useState("");
   const [razorpayFailed, setRazorpayFailed] = useState(false);
+  const [platformBankAccount, setPlatformBankAccount] = useState<any>(null);
 
   // Modal states
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [isEditingLive, setIsEditingLive] = useState(false);
+  const [savingLiveEdit, setSavingLiveEdit] = useState(false);
+  
+  // Live edit fields
+  const [editTitle, setEditTitle] = useState("");
+  const [editSubtitle, setEditSubtitle] = useState("");
+  const [editButtonText, setEditButtonText] = useState("");
+  const [editTargetLink, setEditTargetLink] = useState("");
+  const [editHeroBgColor, setEditHeroBgColor] = useState("");
+  const [editHeroTextColor, setEditHeroTextColor] = useState<"light" | "dark" | "auto">("auto");
+  const [editHeroTitleColor, setEditHeroTitleColor] = useState("");
+  const [editHeroSubtitleColor, setEditHeroSubtitleColor] = useState("");
+  const [editHeroButtonBgColor, setEditHeroButtonBgColor] = useState("");
+  const [editHeroButtonTextColor, setEditHeroButtonTextColor] = useState("");
+  const [editHeroLayout, setEditHeroLayout] = useState<string>("floating");
+  const [editBannerCardImage, setEditBannerCardImage] = useState<File | null>(null);
+  const [editBannerCardImagePreview, setEditBannerCardImagePreview] = useState<string | null>(null);
+
+  const [editDesktopBannerImage, setEditDesktopBannerImage] = useState<File | null>(null);
+  const [editDesktopBannerImagePreview, setEditDesktopBannerImagePreview] = useState<string | null>(null);
+
+  const [editMobileBannerImage, setEditMobileBannerImage] = useState<File | null>(null);
+  const [editMobileBannerImagePreview, setEditMobileBannerImagePreview] = useState<string | null>(null);
 
   const fetchPromotion = useCallback(async () => {
     if (!params.id || params.id === "undefined") {
@@ -98,9 +126,122 @@ export default function SellerPromotionDetailPage() {
     } finally {
       setLoading(false);
     }
+    
+    // Fetch platform bank account for manual payment fallback
+    try {
+      const bankRes = await api.get("/seller/platform-bank-account");
+      setPlatformBankAccount(bankRes.data);
+    } catch (e) {
+      console.log("Could not fetch platform bank account", e);
+    }
   }, [params.id, router]);
 
   useEffect(() => { if (params.id) void fetchPromotion(); }, [params.id, fetchPromotion]);
+
+  const startLiveEdit = () => {
+    if (!promotion) return;
+    setEditTitle(promotion.title);
+    setEditSubtitle(promotion.subtitle || "");
+    setEditButtonText(promotion.buttonText || "");
+    setEditTargetLink(promotion.targetLink || "");
+    setEditHeroBgColor(promotion.heroBgColor || "#2563EB");
+    setEditHeroTextColor(promotion.heroTextColor || "auto");
+    setEditHeroTitleColor(promotion.heroTitleColor || "");
+    setEditHeroSubtitleColor(promotion.heroSubtitleColor || "");
+    setEditHeroButtonBgColor(promotion.heroButtonBgColor || "");
+    setEditHeroButtonTextColor(promotion.heroButtonTextColor || "");
+    setEditHeroLayout(promotion.heroLayout || "floating");
+    setIsEditingLive(true);
+  };
+
+  const handleEditBannerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      showError("Image must be an image file");
+      return;
+    }
+    setEditBannerCardImage(file);
+    setEditBannerCardImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleEditDesktopBannerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      showError("Image must be an image file");
+      return;
+    }
+    setEditDesktopBannerImage(file);
+    setEditDesktopBannerImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleEditMobileBannerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      showError("Image must be an image file");
+      return;
+    }
+    setEditMobileBannerImage(file);
+    setEditMobileBannerImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleSaveLiveEdit = async () => {
+    if (!promotion) return;
+    try {
+      setSavingLiveEdit(true);
+      const formData = new FormData();
+      if (editHeroLayout !== 'fullImage') {
+        if (editBannerCardImage) {
+          formData.append("bannerCardImage", editBannerCardImage);
+        } else {
+          formData.append("existingBannerImage", promotion.bannerImage || "");
+        }
+      }
+
+      if (editHeroLayout === 'fullImage') {
+        if (editDesktopBannerImage) {
+          formData.append("desktopBannerImage", editDesktopBannerImage);
+        } else {
+          formData.append("existingDesktopBanner", promotion.desktopBannerImage || "");
+        }
+        
+        if (editMobileBannerImage) {
+          formData.append("mobileBannerImage", editMobileBannerImage);
+        } else {
+          formData.append("existingMobileBanner", promotion.mobileBannerImage || "");
+        }
+      }
+      
+      formData.append("title", editTitle);
+      formData.append("subtitle", editSubtitle);
+      formData.append("buttonText", editButtonText);
+      formData.append("targetLink", editTargetLink);
+      formData.append("heroBgColor", editHeroBgColor);
+      formData.append("heroTextColor", editHeroTextColor);
+      formData.append("heroTitleColor", editHeroTitleColor);
+      formData.append("heroSubtitleColor", editHeroSubtitleColor);
+      formData.append("heroButtonBgColor", editHeroButtonBgColor);
+      formData.append("heroButtonTextColor", editHeroButtonTextColor);
+      formData.append("heroLayout", editHeroLayout);
+
+      await promotionAPI.updateLiveSellerPromotion(promotion._id, formData);
+      showSuccess("Promotion updated successfully");
+      setIsEditingLive(false);
+      setEditBannerCardImage(null);
+      setEditBannerCardImagePreview(null);
+      setEditDesktopBannerImage(null);
+      setEditDesktopBannerImagePreview(null);
+      setEditMobileBannerImage(null);
+      setEditMobileBannerImagePreview(null);
+      await fetchPromotion();
+    } catch (error) {
+      showError(getPromotionErrorMessage(error, "Failed to save live edit"));
+    } finally {
+      setSavingLiveEdit(false);
+    }
+  };
 
   const handleProofChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -234,6 +375,7 @@ export default function SellerPromotionDetailPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-[#05050a] text-slate-900 dark:text-white pb-20">
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       <PageHeader 
         backHref="/dashboard/seller/promotions" 
         backLabel="Promotions" 
@@ -320,6 +462,7 @@ export default function SellerPromotionDetailPage() {
           handleSubmitPaymentProof={handleSubmitPaymentProof}
           submittingProof={submittingProof}
           paymentProof={paymentProof}
+          platformBankAccount={platformBankAccount}
         />
 
         {/* 4. Full-Width Timeline */}
@@ -444,6 +587,11 @@ export default function SellerPromotionDetailPage() {
                     <button onClick={() => router.push(`/marketplace/${product?._id || promotion.productId}`)} className="inline-flex w-full items-center gap-3 rounded-xl p-3 text-sm font-medium transition hover:bg-slate-50 dark:hover:bg-white/5">
                       <Eye className="h-4 w-4" /> View on Marketplace
                     </button>
+                    {promotion.status === "ACTIVE" && (
+                      <button onClick={startLiveEdit} className="inline-flex w-full items-center gap-3 rounded-xl p-3 text-sm font-medium text-indigo-600 transition hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10">
+                        <Megaphone className="h-4 w-4" /> Edit Live Promotion
+                      </button>
+                    )}
                   </>
                 )}
                 {["PENDING_REVIEW", "APPROVED_WAITING_PAYMENT"].includes(promotion.status) && (
@@ -508,6 +656,162 @@ export default function SellerPromotionDetailPage() {
         </div>
       </div>
 
+      {/* Live Edit Modal */}
+      {isEditingLive && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="w-full max-w-2xl rounded-[2rem] bg-white p-6 shadow-2xl dark:bg-[#13131a] border border-slate-200 dark:border-white/10 my-8">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white mb-6">Edit Live Promotion</h2>
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+              
+              {editHeroLayout !== "fullImage" ? (
+                <label className="block">
+                  <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Update Image</span>
+                  <div className="mt-1 flex justify-center rounded-2xl border border-dashed border-slate-300 dark:border-white/20 px-6 py-6 transition hover:border-cyan-500 hover:bg-slate-50 dark:hover:bg-white/5">
+                    <div className="text-center">
+                      {editBannerCardImagePreview ? (
+                        <div className="mb-4">
+                          <img src={editBannerCardImagePreview} alt="Preview" className="mx-auto h-32 w-auto rounded-lg object-contain" />
+                          <button onClick={(e) => { e.preventDefault(); setEditBannerCardImage(null); setEditBannerCardImagePreview(null); }} className="mt-2 text-xs font-semibold text-red-500">Remove Image</button>
+                        </div>
+                      ) : promotion?.bannerImage ? (
+                        <div className="mb-4">
+                          <img src={promotion.bannerImage} alt="Current" className="mx-auto h-32 w-auto rounded-lg object-contain" />
+                          <p className="mt-2 text-xs font-medium text-slate-500">Current Image</p>
+                        </div>
+                      ) : (
+                        <UploadCloud className="mx-auto h-8 w-8 text-slate-400" />
+                      )}
+                      <div className="mt-4 flex text-sm leading-6 text-slate-600 dark:text-white/70 justify-center">
+                        <label className="relative cursor-pointer rounded-md font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500 dark:text-indigo-400">
+                          <span>Upload a new image</span>
+                          <input type="file" className="sr-only" accept="image/*" onChange={handleEditBannerChange} />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </label>
+              ) : (
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Desktop Banner</span>
+                    <div className="mt-1 flex justify-center rounded-2xl border border-dashed border-slate-300 dark:border-white/20 px-6 py-6 transition hover:border-cyan-500 hover:bg-slate-50 dark:hover:bg-white/5">
+                      <div className="text-center w-full">
+                        {editDesktopBannerImagePreview ? (
+                          <div className="mb-4">
+                            <img src={editDesktopBannerImagePreview} alt="Preview" className="mx-auto h-32 w-full object-contain" />
+                            <button onClick={(e) => { e.preventDefault(); setEditDesktopBannerImage(null); setEditDesktopBannerImagePreview(null); }} className="mt-2 text-xs font-semibold text-red-500">Remove</button>
+                          </div>
+                        ) : promotion?.desktopBannerImage ? (
+                          <div className="mb-4">
+                            <img src={promotion.desktopBannerImage} alt="Current Desktop" className="mx-auto h-32 w-full object-contain" />
+                            <p className="mt-2 text-xs font-medium text-slate-500">Current Desktop</p>
+                          </div>
+                        ) : (
+                          <UploadCloud className="mx-auto h-8 w-8 text-slate-400" />
+                        )}
+                        <div className="mt-4 flex text-sm leading-6 text-slate-600 dark:text-white/70 justify-center">
+                          <label className="relative cursor-pointer rounded-md font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500 dark:text-indigo-400">
+                            <span>Upload desktop image</span>
+                            <input type="file" className="sr-only" accept="image/*" onChange={handleEditDesktopBannerChange} />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Mobile Banner</span>
+                    <div className="mt-1 flex justify-center rounded-2xl border border-dashed border-slate-300 dark:border-white/20 px-6 py-6 transition hover:border-cyan-500 hover:bg-slate-50 dark:hover:bg-white/5">
+                      <div className="text-center w-full">
+                        {editMobileBannerImagePreview ? (
+                          <div className="mb-4">
+                            <img src={editMobileBannerImagePreview} alt="Preview" className="mx-auto h-32 w-full object-contain" />
+                            <button onClick={(e) => { e.preventDefault(); setEditMobileBannerImage(null); setEditMobileBannerImagePreview(null); }} className="mt-2 text-xs font-semibold text-red-500">Remove</button>
+                          </div>
+                        ) : promotion?.mobileBannerImage ? (
+                          <div className="mb-4">
+                            <img src={promotion.mobileBannerImage} alt="Current Mobile" className="mx-auto h-32 w-full object-contain" />
+                            <p className="mt-2 text-xs font-medium text-slate-500">Current Mobile</p>
+                          </div>
+                        ) : (
+                          <UploadCloud className="mx-auto h-8 w-8 text-slate-400" />
+                        )}
+                        <div className="mt-4 flex text-sm leading-6 text-slate-600 dark:text-white/70 justify-center">
+                          <label className="relative cursor-pointer rounded-md font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500 dark:text-indigo-400">
+                            <span>Upload mobile image</span>
+                            <input type="file" className="sr-only" accept="image/*" onChange={handleEditMobileBannerChange} />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              )}
+
+              <label className="block opacity-75 cursor-not-allowed">
+                <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Layout Type</span>
+                <select value={editHeroLayout} disabled className={`${inputClass} bg-slate-100 dark:bg-white/5`}>
+                  <option value="floating">Floating Modern (Text Left, Image Right)</option>
+                  <option value="fullImage">Full Image (Image Only)</option>
+                  <option value="single">Single Block (Text Overlay)</option>
+                  <option value="minimal">Minimal (Small Image)</option>
+                  <option value="legacy">Legacy (Basic Split)</option>
+                </select>
+                <p className="mt-1 text-xs text-slate-500">Layout cannot be changed after creation.</p>
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Target Link (Optional)</span>
+                <input type="text" value={editTargetLink} onChange={(e) => setEditTargetLink(e.target.value)} placeholder="Leave blank for product page" className={inputClass} />
+              </label>
+
+              {editHeroLayout !== "fullImage" && (
+                <>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Title</span>
+                    <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className={inputClass} />
+                  </label>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Subtitle</span>
+                    <input type="text" value={editSubtitle} onChange={(e) => setEditSubtitle(e.target.value)} className={inputClass} />
+                  </label>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-bold text-slate-700 dark:text-white/80">Button Text</span>
+                    <input type="text" value={editButtonText} onChange={(e) => setEditButtonText(e.target.value)} className={inputClass} />
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <label className="block">
+                      <span className="mb-2 block text-xs font-bold text-slate-700 dark:text-white/80">Bg Color</span>
+                      <input type="text" value={editHeroBgColor} onChange={(e) => setEditHeroBgColor(e.target.value)} className={inputClass} placeholder="#FFFFFF" />
+                    </label>
+                    <label className="block">
+                      <span className="mb-2 block text-xs font-bold text-slate-700 dark:text-white/80">Text Theme</span>
+                      <select value={editHeroTextColor} onChange={(e) => setEditHeroTextColor(e.target.value as any)} className={inputClass}>
+                        <option value="auto">Auto</option><option value="light">Light</option><option value="dark">Dark</option>
+                      </select>
+                    </label>
+                    <label className="block">
+                      <span className="mb-2 block text-xs font-bold text-slate-700 dark:text-white/80">Btn Bg</span>
+                      <input type="text" value={editHeroButtonBgColor} onChange={(e) => setEditHeroButtonBgColor(e.target.value)} className={inputClass} placeholder="#000000" />
+                    </label>
+                    <label className="block">
+                      <span className="mb-2 block text-xs font-bold text-slate-700 dark:text-white/80">Btn Text</span>
+                      <input type="text" value={editHeroButtonTextColor} onChange={(e) => setEditHeroButtonTextColor(e.target.value)} className={inputClass} placeholder="#FFFFFF" />
+                    </label>
+                  </div>
+                </>
+              )}
+
+            </div>
+            <div className="mt-6 flex justify-end gap-3 border-t border-slate-100 dark:border-white/5 pt-4">
+              <button onClick={() => setIsEditingLive(false)} disabled={savingLiveEdit} className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-200 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10">Cancel</button>
+              <button onClick={handleSaveLiveEdit} disabled={savingLiveEdit} className="rounded-xl bg-indigo-500 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-600 flex items-center gap-2">
+                {savingLiveEdit && <Clock className="w-4 h-4 animate-spin" />} Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Cancel Modal */}
       {showCancelModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm dark:bg-black/60">
@@ -543,7 +847,7 @@ export default function SellerPromotionDetailPage() {
 
 // Sub-components
 
-function CTABlock({ promotion, startingPayment, razorpayFailed, onPay, onToggleManual, showManualPayment, paymentProofPreview, handleProofChange, transactionId, setTransactionId, handleSubmitPaymentProof, submittingProof, paymentProof }: any) {
+function CTABlock({ promotion, startingPayment, razorpayFailed, onPay, onToggleManual, showManualPayment, paymentProofPreview, handleProofChange, transactionId, setTransactionId, handleSubmitPaymentProof, submittingProof, paymentProof, platformBankAccount }: any) {
   if (promotion.status === "PENDING_REVIEW") {
     return (
       <div className="rounded-[2rem] border border-blue-400/20 bg-blue-500/5 p-6 md:p-8">
@@ -580,7 +884,7 @@ function CTABlock({ promotion, startingPayment, razorpayFailed, onPay, onToggleM
         {showManualPayment && <ManualPaymentBlock 
           promotion={promotion} paymentProofPreview={paymentProofPreview} handleProofChange={handleProofChange} 
           transactionId={transactionId} setTransactionId={setTransactionId} handleSubmitPaymentProof={handleSubmitPaymentProof} 
-          submittingProof={submittingProof} paymentProof={paymentProof} />}
+          submittingProof={submittingProof} paymentProof={paymentProof} platformBankAccount={platformBankAccount} />}
       </div>
     );
   }
@@ -603,7 +907,7 @@ function CTABlock({ promotion, startingPayment, razorpayFailed, onPay, onToggleM
         {showManualPayment && <ManualPaymentBlock 
           promotion={promotion} paymentProofPreview={paymentProofPreview} handleProofChange={handleProofChange} 
           transactionId={transactionId} setTransactionId={setTransactionId} handleSubmitPaymentProof={handleSubmitPaymentProof} 
-          submittingProof={submittingProof} paymentProof={paymentProof} />}
+          submittingProof={submittingProof} paymentProof={paymentProof} platformBankAccount={platformBankAccount} />}
       </div>
     );
   }
@@ -645,13 +949,13 @@ function CTABlock({ promotion, startingPayment, razorpayFailed, onPay, onToggleM
   return null;
 }
 
-function ManualPaymentBlock({ promotion, paymentProofPreview, handleProofChange, transactionId, setTransactionId, handleSubmitPaymentProof, submittingProof, paymentProof }: any) {
+function ManualPaymentBlock({ promotion, paymentProofPreview, handleProofChange, transactionId, setTransactionId, handleSubmitPaymentProof, submittingProof, paymentProof, platformBankAccount }: any) {
   return (
-    <div className="max-w-2xl rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5 mt-4">
-      <div className="mb-6">
-        <h3 className="text-lg font-bold">Upload Payment Proof</h3>
+    <div className="max-w-4xl rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/5 mt-4">
+      <div className="mb-6 border-b border-slate-100 pb-4 dark:border-white/5">
+        <h3 className="text-lg font-bold">Manual Payment Submission</h3>
         <p className="text-sm text-slate-500 dark:text-white/60">
-          If Razorpay failed or is unavailable, submit a screenshot and/or transaction ID for manual admin verification.
+          Transfer {formatPromotionCurrency(promotion.amount, promotion.currency)} to the platform account below, then upload your payment proof.
         </p>
       </div>
       
@@ -663,6 +967,70 @@ function ManualPaymentBlock({ promotion, paymentProofPreview, handleProofChange,
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
+          
+          {/* Admin Payment Details Box */}
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-white/5 dark:bg-[#0a0a0f]">
+            <h4 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-cyan-500" /> Platform Bank Details
+            </h4>
+            
+            {platformBankAccount ? (
+              <div className="space-y-4">
+                {platformBankAccount.accountNumber && (
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between border-b border-slate-200/50 pb-2 dark:border-white/5">
+                      <span className="text-slate-500">Bank Name</span>
+                      <span className="font-semibold">{platformBankAccount.bankName || "Platform Bank"}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-slate-200/50 pb-2 dark:border-white/5">
+                      <span className="text-slate-500">Account Holder</span>
+                      <span className="font-semibold">{platformBankAccount.accountHolderName}</span>
+                    </div>
+                    <div className="flex justify-between border-b border-slate-200/50 pb-2 dark:border-white/5">
+                      <span className="text-slate-500">Account No.</span>
+                      <span className="font-mono font-bold text-cyan-600 dark:text-cyan-400 select-all">{platformBankAccount.accountNumber}</span>
+                    </div>
+                    <div className="flex justify-between pb-2">
+                      <span className="text-slate-500">IFSC Code</span>
+                      <span className="font-mono font-bold select-all">{platformBankAccount.ifscCode}</span>
+                    </div>
+                  </div>
+                )}
+
+                {(platformBankAccount.upiId || platformBankAccount.qrCodeImageUrl) && (
+                  <div className="mt-4 border-t border-slate-200 pt-4 dark:border-white/5">
+                    <h4 className="font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                      <Smartphone className="h-4 w-4 text-cyan-500" /> UPI Payment
+                    </h4>
+                    
+                    <div className="flex flex-col gap-5 items-center justify-center mt-2">
+                      {platformBankAccount.qrCodeImageUrl && (
+                        <div className="w-full max-w-[240px] aspect-square rounded-2xl bg-white p-3 shadow-sm border border-slate-200 dark:border-white/10 flex items-center justify-center mx-auto">
+                          <img src={platformBankAccount.qrCodeImageUrl} alt="Admin QR Code" className="w-full h-full object-contain rounded-xl" />
+                        </div>
+                      )}
+                      {platformBankAccount.upiId && (
+                        <div className="w-full text-center">
+                          <p className="text-xs text-slate-500 mb-1.5 uppercase tracking-widest font-bold">UPI ID</p>
+                          <p className="font-mono font-bold text-base md:text-lg bg-white dark:bg-[#16161e] border border-slate-200 dark:border-white/10 px-4 py-3 rounded-xl select-all text-cyan-600 dark:text-cyan-400 inline-block w-full">
+                            {platformBankAccount.upiId}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <AlertCircle className="mb-2 h-6 w-6 text-slate-400" />
+                <p className="text-sm text-slate-500">Platform bank details are currently unavailable.</p>
+              </div>
+            )}
+          </div>
+          
+          {/* Upload Proof Box */}
+          <div className="flex flex-col gap-4">
           <label className="flex h-48 cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 transition hover:border-cyan-400 hover:bg-cyan-400/5 dark:border-white/10 dark:bg-white/5 dark:hover:border-cyan-400/50">
             {paymentProofPreview ? (
               <div className="relative h-full w-full p-2">
@@ -708,6 +1076,7 @@ function ManualPaymentBlock({ promotion, paymentProofPreview, handleProofChange,
               )}
             </div>
           </div>
+        </div>
         </div>
       )}
     </div>

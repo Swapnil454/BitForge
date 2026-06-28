@@ -8,18 +8,37 @@ export default function CategoryShowcaseGrid({ products = [] }: { products?: Pro
   // Helper to get up to 4 latest products for a specific category
   const getCategoryItems = (category: string, defaultItems: any[]) => {
     const categoryProducts = products.filter(p => p.category === category);
-    
-    if (categoryProducts.length > 0) {
-      // Return actual products
-      return categoryProducts.slice(0, 4).map((p: any) => ({
+    let resultItems = categoryProducts.slice(0, 4).map((p: any) => ({
+      title: p.title,
+      imageUrl: p.thumbnailUrl || p.fileUrl,
+      imageColor: "bg-gray-100 dark:bg-slate-800"
+    }));
+
+    // If we have some products but less than 4, fill with other real products first
+    if (resultItems.length > 0 && resultItems.length < 4) {
+      const otherProducts = products.filter(p => p.category !== category);
+      const needed = 4 - resultItems.length;
+      
+      // Take up to 'needed' products from other categories
+      const filler = otherProducts.slice(0, needed).map((p: any) => ({
         title: p.title,
         imageUrl: p.thumbnailUrl || p.fileUrl,
-        imageColor: "bg-gray-100 dark:bg-slate-800" // Fallback
+        imageColor: "bg-gray-100 dark:bg-slate-800"
       }));
+      
+      resultItems = [...resultItems, ...filler];
     }
     
-    // Return default empty placeholders if no real products
-    return defaultItems;
+    // If it's completely empty (0), return default placeholders.
+    // Or if there aren't enough total products in the DB to fill 4, pad with defaults.
+    if (resultItems.length === 0) {
+      return defaultItems;
+    } else if (resultItems.length < 4) {
+      const needed = 4 - resultItems.length;
+      resultItems = [...resultItems, ...defaultItems.slice(resultItems.length, resultItems.length + needed)];
+    }
+    
+    return resultItems;
   };
 
   const showcaseData = [

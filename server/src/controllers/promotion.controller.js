@@ -487,6 +487,16 @@ export const createPromotionRequest = async (req, res) => {
         ? req.files.bannerCard[0] || null
         : null;
 
+    const desktopBannerFile =
+      !Array.isArray(req.files) && Array.isArray(req.files?.desktopBannerImage)
+        ? req.files.desktopBannerImage[0] || null
+        : null;
+
+    const mobileBannerFile =
+      !Array.isArray(req.files) && Array.isArray(req.files?.mobileBannerImage)
+        ? req.files.mobileBannerImage[0] || null
+        : null;
+
     let existingAdImages = [];
     try {
       if (req.body.existingAdImages) {
@@ -515,12 +525,20 @@ export const createPromotionRequest = async (req, res) => {
       return res.status(400).json({ message: "Title and subtitle are required" });
     }
 
-    if (uploadedFiles.length === 0 && existingAdImages.length === 0) {
-      return res.status(400).json({ message: "At least one image is required" });
-    }
+    if (req.body.heroLayout === "fullImage") {
+      const hasDesktop = desktopBannerFile || req.body.existingDesktopBanner;
+      const hasMobile = mobileBannerFile || req.body.existingMobileBanner;
+      if (!hasDesktop || !hasMobile) {
+        return res.status(400).json({ message: "Both desktop and mobile banner images are required for full image layout" });
+      }
+    } else {
+      if (uploadedFiles.length === 0 && existingAdImages.length === 0) {
+        return res.status(400).json({ message: "At least one image is required" });
+      }
 
-    if (uploadedFiles.length + existingAdImages.length > 3) {
-      return res.status(400).json({ message: "Maximum 3 images allowed" });
+      if (uploadedFiles.length + existingAdImages.length > 3) {
+        return res.status(400).json({ message: "Maximum 3 images allowed" });
+      }
     }
 
     const product = await getApprovedOwnedProduct(productId, req.user.id);
@@ -542,6 +560,22 @@ export const createPromotionRequest = async (req, res) => {
           buffer: bannerCardFile.buffer,
           folder: "bitforge/promotions/banner-cards",
           transformation: [{ width: 1600, height: 900, crop: "limit" }],
+        })
+      : null;
+
+    const desktopBannerUpload = desktopBannerFile
+      ? await uploadBuffer({
+          buffer: desktopBannerFile.buffer,
+          folder: "bitforge/promotions/banners-desktop",
+          transformation: [{ width: 3000, height: 3000, crop: "limit" }],
+        })
+      : null;
+
+    const mobileBannerUpload = mobileBannerFile
+      ? await uploadBuffer({
+          buffer: mobileBannerFile.buffer,
+          folder: "bitforge/promotions/banners-mobile",
+          transformation: [{ width: 1600, height: 1600, crop: "limit" }],
         })
       : null;
 
@@ -574,6 +608,12 @@ export const createPromotionRequest = async (req, res) => {
     const finalBannerImage = bannerImageUpload?.secure_url || req.body.existingBannerImage || null;
     const finalBannerImageKey = bannerImageUpload?.public_id || req.body.existingBannerImageKey || null;
 
+    const finalDesktopBanner = desktopBannerUpload?.secure_url || req.body.existingDesktopBanner || null;
+    const finalDesktopBannerKey = desktopBannerUpload?.public_id || req.body.existingDesktopBannerKey || null;
+
+    const finalMobileBanner = mobileBannerUpload?.secure_url || req.body.existingMobileBanner || null;
+    const finalMobileBannerKey = mobileBannerUpload?.public_id || req.body.existingMobileBannerKey || null;
+
     const promotionData = {
       sellerId: req.user.id,
       sellerName: req.user.name,
@@ -585,6 +625,10 @@ export const createPromotionRequest = async (req, res) => {
       subtitle: subtitle?.trim() || "",
       bannerImage: finalBannerImage,
       bannerImageKey: finalBannerImageKey,
+      desktopBannerImage: finalDesktopBanner,
+      desktopBannerImageKey: finalDesktopBannerKey,
+      mobileBannerImage: finalMobileBanner,
+      mobileBannerImageKey: finalMobileBannerKey,
       adImages,
       buttonText: buttonText?.trim() || "View Product",
       targetLink: normalizeTargetLink(targetLink, product._id, product.slug),
@@ -1498,6 +1542,8 @@ export const getActivePromotions = async (req, res) => {
       title: promotion.title,
       subtitle: promotion.subtitle,
       bannerImage: promotion.bannerImage,
+      desktopBannerImage: promotion.desktopBannerImage,
+      mobileBannerImage: promotion.mobileBannerImage,
       productId: promotion.productId?._id || promotion.productId,
       product: promotion.productId?.slug ? { slug: promotion.productId.slug } : undefined,
       productTitle: promotion.productTitle,
@@ -1524,7 +1570,7 @@ export const getActivePromotions = async (req, res) => {
       adImages: promotion.adImages,
     }));
 
-    res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=30");
+    res.setHeader("Cache-Control", "public, max-age=0, s-maxage=10, stale-while-revalidate=30");
 
     return res.json({
       promotions: payload,
@@ -1790,3 +1836,281 @@ export const deleteSellerPromotion = async (req, res) => {
     res.status(500).json({ message: "Failed to delete promotion request" });
   }
 };
+
+export const updateLivePromotionSeller = async (req, res) => {
+  try {
+    const promotionId = req.params.id;
+    if (!isValidObjectId(promotionId)) {
+      return res.status(400).json({ message: "Valid promotion ID is required" });
+    }
+
+    const promotion = await PromotionRequest.findOne({
+      _id: promotionId,
+      sellerId: req.user.id
+    });
+
+    if (!promotion) {
+      return res.status(404).json({ message: "Promotion not found or unauthorized" });
+    }
+
+    if (promotion.status !== "ACTIVE") {
+      return res.status(400).json({ message: "You can only perform live updates on ACTIVE promotions." });
+    }
+
+    // Process image if any
+    let bannerCardFile;
+    let desktopBannerFile;
+    let mobileBannerFile;
+    
+    if (req.files) {
+      if (req.files.bannerCardImage) bannerCardFile = req.files.bannerCardImage[0];
+      if (req.files.desktopBannerImage) desktopBannerFile = req.files.desktopBannerImage[0];
+      if (req.files.mobileBannerImage) mobileBannerFile = req.files.mobileBannerImage[0];
+    }
+
+    let finalBannerImage = promotion.bannerImage;
+    let finalBannerImageKey = promotion.bannerImageKey;
+
+    let finalDesktopBanner = promotion.desktopBannerImage;
+    let finalDesktopBannerKey = promotion.desktopBannerImageKey;
+
+    let finalMobileBanner = promotion.mobileBannerImage;
+    let finalMobileBannerKey = promotion.mobileBannerImageKey;
+
+    if (bannerCardFile) {
+      if (promotion.bannerImageKey) {
+        cloudinary.uploader.destroy(promotion.bannerImageKey).catch(console.error);
+      }
+      const b64 = Buffer.from(bannerCardFile.buffer).toString("base64");
+      const dataURI = "data:" + bannerCardFile.mimetype + ";base64," + b64;
+      const uploadRes = await cloudinary.uploader.upload(dataURI, { folder: "promotions/banners" });
+      finalBannerImage = uploadRes.secure_url;
+      finalBannerImageKey = uploadRes.public_id;
+    }
+
+    if (desktopBannerFile) {
+      if (promotion.desktopBannerImageKey) {
+        cloudinary.uploader.destroy(promotion.desktopBannerImageKey).catch(console.error);
+      }
+      const b64 = Buffer.from(desktopBannerFile.buffer).toString("base64");
+      const dataURI = "data:" + desktopBannerFile.mimetype + ";base64," + b64;
+      const uploadRes = await cloudinary.uploader.upload(dataURI, { folder: "promotions/banners-desktop" });
+      finalDesktopBanner = uploadRes.secure_url;
+      finalDesktopBannerKey = uploadRes.public_id;
+    }
+
+    if (mobileBannerFile) {
+      if (promotion.mobileBannerImageKey) {
+        cloudinary.uploader.destroy(promotion.mobileBannerImageKey).catch(console.error);
+      }
+      const b64 = Buffer.from(mobileBannerFile.buffer).toString("base64");
+      const dataURI = "data:" + mobileBannerFile.mimetype + ";base64," + b64;
+      const uploadRes = await cloudinary.uploader.upload(dataURI, { folder: "promotions/banners-mobile" });
+      finalMobileBanner = uploadRes.secure_url;
+      finalMobileBannerKey = uploadRes.public_id;
+    }
+
+    promotion.bannerImage = finalBannerImage;
+    promotion.bannerImageKey = finalBannerImageKey;
+    promotion.desktopBannerImage = finalDesktopBanner;
+    promotion.desktopBannerImageKey = finalDesktopBannerKey;
+    promotion.mobileBannerImage = finalMobileBanner;
+    promotion.mobileBannerImageKey = finalMobileBannerKey;
+
+    if (req.body.targetLink !== undefined) promotion.targetLink = req.body.targetLink;
+    if (req.body.heroLayout !== undefined) promotion.heroLayout = req.body.heroLayout;
+
+    if (promotion.heroLayout !== "fullImage") {
+      if (req.body.title !== undefined) promotion.title = req.body.title;
+      if (req.body.subtitle !== undefined) promotion.subtitle = req.body.subtitle;
+      if (req.body.buttonText !== undefined) promotion.buttonText = req.body.buttonText;
+      if (req.body.heroBgColor !== undefined) promotion.heroBgColor = req.body.heroBgColor;
+      if (req.body.heroTextColor !== undefined) promotion.heroTextColor = req.body.heroTextColor;
+      if (req.body.heroTitleColor !== undefined) promotion.heroTitleColor = req.body.heroTitleColor;
+      if (req.body.heroSubtitleColor !== undefined) promotion.heroSubtitleColor = req.body.heroSubtitleColor;
+      if (req.body.heroButtonBgColor !== undefined) promotion.heroButtonBgColor = req.body.heroButtonBgColor;
+      if (req.body.heroButtonTextColor !== undefined) promotion.heroButtonTextColor = req.body.heroButtonTextColor;
+    }
+
+    await promotion.save();
+    const populatedPromotion = await applyPromotionPopulate(PromotionRequest.findById(promotion._id));
+
+    res.json({ message: "Live promotion updated successfully", promotion: mapPromotionMetrics(populatedPromotion.toObject()) });
+  } catch (error) {
+    console.error("Live promotion update error:", error);
+    res.status(500).json({ message: "Failed to update live promotion" });
+  }
+};
+
+export const updateLivePromotionAdmin = async (req, res) => {
+  try {
+    const promotionId = req.params.id;
+    if (!isValidObjectId(promotionId)) {
+      return res.status(400).json({ message: "Valid promotion ID is required" });
+    }
+
+    const promotion = await PromotionRequest.findById(promotionId);
+
+    if (!promotion) {
+      return res.status(404).json({ message: "Promotion not found" });
+    }
+
+    if (promotion.status !== "ACTIVE") {
+      return res.status(400).json({ message: "You can only perform live updates on ACTIVE promotions." });
+    }
+
+    // Process image if any
+    let bannerCardFile;
+    let desktopBannerFile;
+    let mobileBannerFile;
+    
+    if (req.files) {
+      if (req.files.bannerCardImage) bannerCardFile = req.files.bannerCardImage[0];
+      if (req.files.desktopBannerImage) desktopBannerFile = req.files.desktopBannerImage[0];
+      if (req.files.mobileBannerImage) mobileBannerFile = req.files.mobileBannerImage[0];
+    }
+
+    let finalBannerImage = promotion.bannerImage;
+    let finalBannerImageKey = promotion.bannerImageKey;
+
+    let finalDesktopBanner = promotion.desktopBannerImage;
+    let finalDesktopBannerKey = promotion.desktopBannerImageKey;
+
+    let finalMobileBanner = promotion.mobileBannerImage;
+    let finalMobileBannerKey = promotion.mobileBannerImageKey;
+
+    if (bannerCardFile) {
+      if (promotion.bannerImageKey) {
+        cloudinary.uploader.destroy(promotion.bannerImageKey).catch(console.error);
+      }
+      const b64 = Buffer.from(bannerCardFile.buffer).toString("base64");
+      const dataURI = "data:" + bannerCardFile.mimetype + ";base64," + b64;
+      const uploadRes = await cloudinary.uploader.upload(dataURI, { folder: "promotions/banners" });
+      finalBannerImage = uploadRes.secure_url;
+      finalBannerImageKey = uploadRes.public_id;
+    }
+
+    if (desktopBannerFile) {
+      if (promotion.desktopBannerImageKey) {
+        cloudinary.uploader.destroy(promotion.desktopBannerImageKey).catch(console.error);
+      }
+      const b64 = Buffer.from(desktopBannerFile.buffer).toString("base64");
+      const dataURI = "data:" + desktopBannerFile.mimetype + ";base64," + b64;
+      const uploadRes = await cloudinary.uploader.upload(dataURI, { folder: "promotions/banners-desktop" });
+      finalDesktopBanner = uploadRes.secure_url;
+      finalDesktopBannerKey = uploadRes.public_id;
+    }
+
+    if (mobileBannerFile) {
+      if (promotion.mobileBannerImageKey) {
+        cloudinary.uploader.destroy(promotion.mobileBannerImageKey).catch(console.error);
+      }
+      const b64 = Buffer.from(mobileBannerFile.buffer).toString("base64");
+      const dataURI = "data:" + mobileBannerFile.mimetype + ";base64," + b64;
+      const uploadRes = await cloudinary.uploader.upload(dataURI, { folder: "promotions/banners-mobile" });
+      finalMobileBanner = uploadRes.secure_url;
+      finalMobileBannerKey = uploadRes.public_id;
+    }
+
+    promotion.bannerImage = finalBannerImage;
+    promotion.bannerImageKey = finalBannerImageKey;
+    promotion.desktopBannerImage = finalDesktopBanner;
+    promotion.desktopBannerImageKey = finalDesktopBannerKey;
+    promotion.mobileBannerImage = finalMobileBanner;
+    promotion.mobileBannerImageKey = finalMobileBannerKey;
+
+    if (req.body.targetLink !== undefined) promotion.targetLink = req.body.targetLink;
+    if (req.body.heroLayout !== undefined) promotion.heroLayout = req.body.heroLayout;
+
+    if (promotion.heroLayout !== "fullImage") {
+      if (req.body.title !== undefined) promotion.title = req.body.title;
+      if (req.body.subtitle !== undefined) promotion.subtitle = req.body.subtitle;
+      if (req.body.buttonText !== undefined) promotion.buttonText = req.body.buttonText;
+      if (req.body.heroBgColor !== undefined) promotion.heroBgColor = req.body.heroBgColor;
+      if (req.body.heroTextColor !== undefined) promotion.heroTextColor = req.body.heroTextColor;
+      if (req.body.heroTitleColor !== undefined) promotion.heroTitleColor = req.body.heroTitleColor;
+      if (req.body.heroSubtitleColor !== undefined) promotion.heroSubtitleColor = req.body.heroSubtitleColor;
+      if (req.body.heroButtonBgColor !== undefined) promotion.heroButtonBgColor = req.body.heroButtonBgColor;
+      if (req.body.heroButtonTextColor !== undefined) promotion.heroButtonTextColor = req.body.heroButtonTextColor;
+    }
+
+    await promotion.save();
+    
+    await notifySeller(
+      promotion.sellerId,
+      "Promotion Updated by Admin",
+      `Your promotion for "${promotion.productTitle}" has been updated by an admin.`,
+      promotion._id,
+      `/dashboard/seller/promotions/${promotion._id}`
+    );
+
+    const populatedPromotion = await applyPromotionPopulate(PromotionRequest.findById(promotion._id));
+
+    res.json({ message: "Live promotion updated successfully by admin", promotion: mapPromotionMetrics(populatedPromotion.toObject()) });
+  } catch (error) {
+    console.error("Live promotion update admin error:", error);
+    res.status(500).json({ message: "Failed to update live promotion" });
+  }
+};
+
+export const updatePromotionDatesAdmin = async (req, res) => {
+  try {
+    const promotionId = req.params.id;
+    if (!isValidObjectId(promotionId)) {
+      return res.status(400).json({ message: "Valid promotion ID is required" });
+    }
+
+    const promotion = await PromotionRequest.findById(promotionId);
+    if (!promotion) {
+      return res.status(404).json({ message: "Promotion not found" });
+    }
+
+    const { startDate, endDate } = req.body;
+    if (!startDate || !endDate) {
+      return res.status(400).json({ message: "Start date and end date are required" });
+    }
+
+    promotion.startDate = new Date(startDate);
+    promotion.endDate = new Date(endDate);
+    
+    // Recalculate duration
+    const diffTime = Math.abs(promotion.endDate - promotion.startDate);
+    promotion.approvedDurationDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // If new endDate is in future and status is EXPIRED, we can reactivate it. But let's leave that to resume logic.
+    // If it's active and new endDate is in past, we could expire it, but let's let the cron handle it.
+
+    await promotion.save();
+    const populatedPromotion = await applyPromotionPopulate(PromotionRequest.findById(promotion._id));
+
+    res.json({ message: "Promotion dates updated successfully", promotion: mapPromotionMetrics(populatedPromotion.toObject()) });
+  } catch (error) {
+    console.error("Update promotion dates error:", error);
+    res.status(500).json({ message: "Failed to update promotion dates" });
+  }
+};
+
+export const deletePromotionAdmin = async (req, res) => {
+  try {
+    const promotionId = req.params.id;
+    if (!isValidObjectId(promotionId)) {
+      return res.status(400).json({ message: "Valid promotion ID is required" });
+    }
+
+    const promotion = await PromotionRequest.findById(promotionId);
+    if (!promotion) {
+      return res.status(404).json({ message: "Promotion not found" });
+    }
+
+    // Soft delete to allow re-creation/renewals
+    promotion.status = "CANCELLED";
+    promotion.adminNote = "Cancelled/Deleted by admin";
+    await promotion.save();
+
+    res.json({ message: "Promotion successfully deleted (soft delete)" });
+  } catch (error) {
+    console.error("Delete promotion admin error:", error);
+    res.status(500).json({ message: "Failed to delete promotion" });
+  }
+};
+
