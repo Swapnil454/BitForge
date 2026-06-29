@@ -58,7 +58,7 @@ try {
   console.error("Firebase Messaging SW init failed:", error);
 }
 
-const CACHE_NAME = "bitforge-pwa-v5";
+const CACHE_NAME = "bitforge-pwa-v6";
 
 const STATIC_ASSETS = [
   "/",
