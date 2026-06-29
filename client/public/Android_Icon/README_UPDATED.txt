@@ -1,23 +1,11 @@
-BitForge Updated Assets - Same Folder Structure
+BitForge Android/PWA icon pack updated.
 
-This ZIP keeps your original Android_Icon folder structure.
+What changed:
+- All mipmap ic_launcher.png files now use a transparent BitForge wordmark.
+- Removed the inner purple square background from launcher icons.
+- ic_launcher_background_432.png is now a clean #020617 background.
+- ic_launcher_foreground_432.png is transparent wordmark foreground.
+- iOS/full splash images updated to the clean full-screen BitForge splash design.
 
-Original folders are preserved:
-- mipmap-mdpi/
-- mipmap-hdpi/
-- mipmap-xhdpi/
-- mipmap-xxhdpi/
-- mipmap-xxxhdpi/
-- launcher foreground/background images
-- full name logo images
-
-Added updated splash files:
-- bitforge_splash_screen_1080x2400.png
-- bitforge_splash_screen_720x1600.png
-
-Added setup snippets:
-- colors.xml
-- themes_splash_example.xml
-
-Use the splash PNG for your custom splash screen artwork.
-Use #07071C as your splash background color.
+Important Android note:
+Android 12+ may still apply its own circle/squircle mask around the launcher icon during startup. This pack removes the visible square inside the icon, but the OS-level splash icon mask cannot be fully disabled by a PWA.
