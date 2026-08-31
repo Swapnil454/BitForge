@@ -94,7 +94,7 @@ export default function OrdersAPIPage() {
         "product": {
           "id": "507f1f77bcf86cd799439011",
           "title": "React Advanced Course",
-          "thumbnail": "https://cdn.Bitforge.com/thumbnails/course1.jpg",
+          "thumbnail": "https://cdn.bittforge.in/thumbnails/course1.jpg",
           "price": 1999
         },
         "seller": {
@@ -104,7 +104,7 @@ export default function OrdersAPIPage() {
         "amount": 1999,
         "status": "completed",
         "paymentId": "pay_ABC123XYZ789",
-        "downloadUrl": "https://cdn.Bitforge.com/downloads/secure/abc123",
+        "downloadUrl": "https://cdn.bittforge.in/downloads/secure/abc123",
         "purchasedAt": "2026-02-05T10:30:00.000Z"
       }
     ],
@@ -196,7 +196,7 @@ export default function OrdersAPIPage() {
       "status": "captured"
     },
     "download": {
-      "url": "https://cdn.Bitforge.com/downloads/secure/abc123",
+      "url": "https://cdn.bittforge.in/downloads/secure/abc123",
       "expiresAt": "2026-02-12T10:30:00.000Z"
     },
     "status": "completed",

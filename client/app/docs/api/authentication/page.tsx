@@ -293,7 +293,7 @@ export default function AuthenticationAPIPage() {
       "role": "seller",
       "isVerified": true,
       "profile": {
-        "avatar": "https://cdn.Bitforge.com/avatars/user123.jpg",
+        "avatar": "https://cdn.bittforge.in/avatars/user123.jpg",
         "bio": "Digital content creator",
         "website": "https://bitforge.in"
       },
